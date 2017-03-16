@@ -1,0 +1,59 @@
+Nov.01.2016 ACCESS Co.,Ltd.
+    * src/cairo-traps-compositor.c
+    fix: modify inappropriate return value.
+
+Mar.17.2016 ACCESS Co.,Ltd.
+    * src/cairo-mutex-impl-private.h
+    disabled mutex.
+
+Mar.02.2016 ACCESS Co.,Ltd.
+    * src/cairo-features.h
+    * src/cairo-gl-device.c
+    * src/cairo-gl-private.h
+    * src/cairo-wgl-context.c
+    workaround for usage of cairo-gl backend on windows.
+
+Feb.17.2016 ACCESS Co.,Ltd.
+    * src/many
+    disabled clib APIs
+
+Nov.17.2015 ACCESS Co.,Ltd.
+    * cairo-tor-scan-converter.c
+    workaround: forcely crash if allocation failed.
+
+Feb.09.2015 ACCESS Co.,Ltd.
+    * cairo-image-compositor.c
+    add: added guard.
+
+Feb.28.2014 ACCESS Co.,Ltd.
+    * src/cairo.c
+    * src/cairo-image-source.c
+    add: added feature of reset variables.
+
+Oct.17.2012 ACCESS Co.,Ltd.
+    * config.h
+    * src/cairo-image-compositor.c
+    * src/cairo-misc.c
+    * src/cairo-scaled-font.c
+    * src/cairo-toy-font-face.c
+    * src/cairo.c
+    add: added feature of reset variables.
+
+Oct.16.2012 ACCESS Co.,Ltd.
+    * config.h:
+    * src/cairo-features.h:
+    add: added rename headers.
+
+2012-10-01  Yoshitaro.Makise  <Yoshitaro.Makise@access-company.com>
+
+    * src/cairo-image-compositor.c:
+    (inplace_renderer_init):
+    fix: reference leak; clear unref'ed pointer.
+
+2012-09-27  Yoshitaro.Makise  <Yoshitaro.Makise@access-company.com>
+
+    * src/cairo-image-compositor.c:
+    (fill_rectangles):
+    (fill_boxes):
+    (composite_boxes):
+    fix: added error check.

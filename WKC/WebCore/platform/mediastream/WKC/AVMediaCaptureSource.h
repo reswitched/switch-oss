@@ -1,0 +1,70 @@
+/*
+ * Copyright (C) 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2015 ACCESS Co.,Ltd. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY APPLE INC. ``AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE INC. OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#ifndef AVMediaCaptureSource_h
+#define AVMediaCaptureSource_h
+
+#if ENABLE(MEDIA_STREAM)
+
+#include "RealtimeMediaSource.h"
+#include <wtf/RetainPtr.h>
+
+namespace WebCore {
+
+class AVMediaCaptureSource : public RealtimeMediaSource {
+public:
+    virtual ~AVMediaCaptureSource();
+
+    virtual void captureSessionStoppedRunning();
+    
+protected:
+    AVMediaCaptureSource(const AtomicString&, RealtimeMediaSource::Type, PassRefPtr<MediaConstraints>);
+
+    virtual const RealtimeMediaSourceStates& states() override;
+
+    virtual void startProducingData() override;
+    virtual void stopProducingData() override;
+
+    virtual void setupCaptureSession() = 0;
+    virtual void updateStates() = 0;
+
+    RealtimeMediaSourceStates* currentStates() { return &m_currentStates; }
+    MediaConstraints* constraints() { return m_constraints.get(); }
+
+private:
+    void setupSession();
+
+    RealtimeMediaSourceStates m_currentStates;
+    RefPtr<MediaConstraints> m_constraints;
+
+    bool m_isRunning;
+};
+
+} // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)
+
+#endif // AVMediaCaptureSource_h
