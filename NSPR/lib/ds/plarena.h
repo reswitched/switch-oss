@@ -221,7 +221,7 @@ PR_IMPORT(void) __asan_unpoison_memory_region(void const volatile *addr, size_t 
         if ((pool)->current == (a)) (pool)->current = &(pool)->first; \
         *(pnext) = (a)->next; \
         PL_CLEAR_ARENA(a); \
-        free(a); \
+        PR_Free(a); \
         (a) = 0; \
     PR_END_MACRO
 

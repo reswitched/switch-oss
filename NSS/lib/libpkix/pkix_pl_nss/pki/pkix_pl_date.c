@@ -433,7 +433,11 @@ PKIX_PL_Date_Create_CurrentOffBySeconds(
         PKIX_ENTER(DATE, "PKIX_PL_Date_Create_CurrentOffBySeconds");
         PKIX_NULLCHECK_ONE(pDate);
 
+#ifdef NN_NINTENDO_SDK
+        time = PR_Now() + ((PRTime)secondsOffset * 1000000);
+#else
         time = PR_Now() + PR_SecondsToInterval(secondsOffset);
+#endif    /*  NN_NINTENDO_SDK  */
         /* create a PKIX_PL_Date object */
         PKIX_CHECK(PKIX_PL_Object_Alloc
                     (PKIX_DATE_TYPE,

@@ -222,6 +222,15 @@ pkix_pl_GeneralName_Create(
 
         nameType = nssAltName->type;
 
+        /* initialize fields */
+        genName->type = nameType;
+        genName->nssGeneralNameList = NULL;
+        genName->directoryName = NULL;
+        genName->OthName = NULL;
+        genName->other = NULL;
+        genName->oid = NULL;
+
+
         /*
          * We use CERT_CreateGeneralNameList to create just one CERTGeneralName
          * item for memory allocation reason. If we want to just create one
@@ -245,13 +254,6 @@ pkix_pl_GeneralName_Create(
         }
 
         genName->nssGeneralNameList = nssGenNameList;
-
-        /* initialize fields */
-        genName->type = nameType;
-        genName->directoryName = NULL;
-        genName->OthName = NULL;
-        genName->other = NULL;
-        genName->oid = NULL;
 
         switch (nameType){
         case certOtherName:
