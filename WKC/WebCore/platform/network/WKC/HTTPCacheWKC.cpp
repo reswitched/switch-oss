@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2011-2016 ACCESS CO., LTD. All rights reserved.
+ *  Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -28,12 +28,15 @@
 #include "FileSystem.h"
 #include "ResourceResponse.h"
 #include "ResourceHandleClient.h"
+#include "ResourceHandleInternalWKC.h"
 #include <wtf/MathExtras.h>
 #include <wtf/MD5.h>
 #include <wkc/wkcclib.h>
 #include <wkc/wkcpeer.h>
 #include <wkc/wkcfilepeer.h>
 #include <wkc/wkcmpeer.h>
+
+#include "WKCEnums.h"
 
 #ifdef __WKC_IMPLICIT_INCLUDE_SYSSTAT
 #include <sys/stat.h>
@@ -65,6 +68,9 @@ HTTPCachedResource::HTTPCachedResource(const String& filename)
     m_lastModified = 0;
     m_responseTime = 0;
     m_age = 0;
+    m_isSSL = false;
+    m_secureState = WKC::ESecureStateWhite; /* non-ssl */
+    m_secureLevel = WKC::ESecureLevelNonSSL; /* non-ssl */
 
     m_contentLength = 0;
     m_resourceSize = 0;
@@ -193,6 +199,14 @@ bool HTTPCachedResource::setResourceResponse(const ResourceResponse &response, b
     m_lastModifiedHeader = response.httpHeaderField(String("Last-Modified"));
     m_eTagHeader = response.httpHeaderField(String("ETag"));
     m_age = response.age() ? (double)response.age().value().count() / 1000 / 1000 : numeric_limits<double>::quiet_NaN();
+    m_accessControlAllowOriginHeader = response.httpHeaderField(String("Access-Control-Allow-Origin"));
+
+    ResourceHandle* job = response.resourceHandle();
+    ResourceHandleInternal* d = job->getInternal();
+    m_isSSL = d->m_isSSL;
+    m_isEVSSL = d->m_isEVSSL;
+    m_secureState = d->m_secureState;
+    m_secureLevel = d->m_secureLevel;
 
     if (!(m_httpequivflags&EHTTPEquivNoCache))
         m_noCache = response.cacheControlContainsNoCache();
@@ -219,18 +233,16 @@ bool HTTPCachedResource::writeFile(const String& filepath)
         return result;
 
     const char *buf = 0;
-    int len, length, written = 0, position = 0;
+    wkc_uint64 len = 0, length = 0, written = 0, position = 0;
 
     for (len = m_resourceData->size(); len > 0;  len -= length) {
         length = m_resourceData->getSomeData(buf, position);
         if (!length)
             goto error_end;
 
-        for (int writelength = length; writelength > 0; writelength -= written) {
-            written = wkcFileFWritePeer(buf, sizeof(char), writelength, fd);
-            if (written < 0)
-                goto error_end;
-        }
+        written = wkcFileFWritePeer(buf, sizeof(char), length, fd);
+        if (written < length)
+            goto error_end;
         position += length;
     }
     nxLog_i("cache write %s", m_url.utf8().data());
@@ -283,7 +295,7 @@ error_end:
 void HTTPCachedResource::calcResourceSize()
 {
     size_t size = sizeof(long long) * 2
-        + sizeof(int) * 3
+        + sizeof(int) * 7
         + sizeof(double) * 6
         + sizeof(int) + ROUNDUP(m_url.utf8().length(), ROUNDUP_UNIT)
         + sizeof(int) + ROUNDUP(m_mimeType.utf8().length(), ROUNDUP_UNIT)
@@ -291,7 +303,8 @@ void HTTPCachedResource::calcResourceSize()
         + sizeof(int) + ROUNDUP(m_suggestedFilename.utf8().length(), ROUNDUP_UNIT)
         + sizeof(int) + ROUNDUP(m_fileName.utf8().length(), ROUNDUP_UNIT)
         + sizeof(int) + ROUNDUP(m_lastModifiedHeader.utf8().length(), ROUNDUP_UNIT)
-        + sizeof(int) + ROUNDUP(m_eTagHeader.utf8().length(), ROUNDUP_UNIT);
+        + sizeof(int) + ROUNDUP(m_eTagHeader.utf8().length(), ROUNDUP_UNIT)
+        + sizeof(int) + ROUNDUP(m_accessControlAllowOriginHeader.utf8().length(), ROUNDUP_UNIT);
 
     m_resourceSize = ROUNDUP(size, ROUNDUP_UNIT);
 }
@@ -318,6 +331,10 @@ int HTTPCachedResource::serialize(char *buffer)
     (*(int*)buffer) = m_httpStatusCode; buffer += sizeof(int);
     (*(int*)buffer) = m_noCache ? 1 : 0; buffer += sizeof(int);
     (*(int*)buffer) = m_mustRevalidate ? 1 : 0; buffer += sizeof(int);
+    (*(int*)buffer) = m_isSSL ? 1 : 0; buffer += sizeof(int);
+    (*(int*)buffer) = m_isEVSSL ? 1 : 0; buffer += sizeof(int);
+    (*(int*)buffer) = m_secureState; buffer += sizeof(int);
+    (*(int*)buffer) = m_secureLevel; buffer += sizeof(int);
     (*(double*)buffer) = m_expires; buffer += sizeof(double);
     (*(double*)buffer) = m_maxAge; buffer += sizeof(double);
     (*(double*)buffer) = m_date; buffer += sizeof(double);
@@ -332,6 +349,7 @@ int HTTPCachedResource::serialize(char *buffer)
     buffer += writeString(buffer, m_fileName);
     buffer += writeString(buffer, m_lastModifiedHeader);
     buffer += writeString(buffer, m_eTagHeader);
+    buffer += writeString(buffer, m_accessControlAllowOriginHeader);
 
     return ROUNDUP(buffer - buf, ROUNDUP_UNIT);
 }
@@ -356,6 +374,10 @@ int HTTPCachedResource::deserialize(char *buffer)
     m_httpStatusCode = (*(int*)buffer); buffer += sizeof(int);
     m_noCache = (*(int*)buffer); buffer += sizeof(int);
     m_mustRevalidate = (*(int*)buffer); buffer += sizeof(int);
+    m_isSSL = (*(int*)buffer); buffer += sizeof(int);
+    m_isEVSSL = (*(int*)buffer); buffer += sizeof(int);
+    m_secureState = (*(int*)buffer); buffer += sizeof(int);
+    m_secureLevel = (*(int*)buffer); buffer += sizeof(int);
     m_expires = (*(double*)buffer); buffer += sizeof(double);
     m_maxAge = (*(double*)buffer); buffer += sizeof(double);
     m_date = (*(double*)buffer); buffer += sizeof(double);
@@ -370,6 +392,7 @@ int HTTPCachedResource::deserialize(char *buffer)
     buffer += readString(buffer, m_fileName);
     buffer += readString(buffer, m_lastModifiedHeader);
     buffer += readString(buffer, m_eTagHeader);
+    buffer += readString(buffer, m_accessControlAllowOriginHeader);
 
     calcResourceSize();
 
@@ -813,7 +836,7 @@ bool HTTPCache::deserializeFATData(char *buffer, int length)
 }
 
 #define DEFAULT_CACHEFAT_FILENAME   "cache.fat"
-#define CACHEFAT_FORMAT_VERSION     4  // Number of int. Increment this if you changed the content format in the fat file.
+#define CACHEFAT_FORMAT_VERSION     6  // Number of int. Increment this if you changed the content format in the fat file.
 
 #define MD5_DIGESTSIZE 16
 
@@ -977,6 +1000,59 @@ error_end:
 
     fastFree(buf);
     return result;
+}
+
+void
+HTTPCache::dumpResourceList()
+{
+    int num = m_resourceList.size();
+
+    nxLog_e("HTTP Cache info");
+    for (int i = 0; i < num; i++){
+        HTTPCachedResource *resource = m_resourceList[i];
+        nxLog_e("----------");
+        nxLog_e("Cache %d: %s", i, resource->fileName().utf8().data());
+        nxLog_e(" URL: %s", resource->url().utf8().data());
+        nxLog_e(" mime type: %s content length: %ld HTTP Status code: %d", resource->mimeType().utf8().data(), resource->contentLength(), resource->httpStatusCode());
+        nxLog_e(" expires: %lf max-age: %lf", resource->expires(), resource->maxAge());
+        nxLog_e(" Last-Modified: %s", resource->lastModifiedHeader().utf8().data());
+        nxLog_e(" eTag: %s", resource->eTagHeader().utf8().data());
+        nxLog_e(" isSSL: %s", resource->isSSL() ? "true" : "false");
+        switch (resource->secureState()){
+        case WKC::SSLSecureState::ESecureStateRed:
+            nxLog_e(" SSL Secure state: Red (Danger)");
+            break;
+        case WKC::SSLSecureState::ESecureStateWhite:
+            nxLog_e(" SSL Secure state: White (non-ssl)");
+            break;
+        case WKC::SSLSecureState::ESecureStateBlue:
+            nxLog_e(" SSL Secure state: Blue (Normal SSL)");
+            break;
+        case WKC::SSLSecureState::ESecureStateGreen:
+            nxLog_e(" SSL Secure state: Green (EV SSL)");
+            break;
+        default:
+            break;
+        }
+        switch (resource->secureLevel()) {
+        case WKC::SSLSecureLevel::ESecureLevelUnahthorized:
+            nxLog_e(" SSL Secure level: Unauthorized");
+            break;
+        case WKC::SSLSecureLevel::ESecureLevelNonSSL:
+            nxLog_e(" SSL Secure level: non-ssl");
+            break;
+        case WKC::SSLSecureLevel::ESecureLevelInsecure:
+            nxLog_e(" SSL Secure level: Insecure");
+            break;
+        case WKC::SSLSecureLevel::ESecureLevelSecure:
+            nxLog_e(" SSL Secure level: Secure");
+            break;
+        default:
+            break;
+        }
+        nxLog_e("----------");
+    }
+    nxLog_e("HTTP Cache info end.");
 }
 
 } // namespace

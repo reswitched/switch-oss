@@ -312,7 +312,6 @@ static Ref<FontCascadeFonts> retrieveOrAddCachedFonts(const FontDescription& fon
         return addResult.iterator->value->fonts.get();
 
     auto& newEntry = addResult.iterator->value;
-    FontCascadeCacheKey k = WTF::move(key);
     newEntry = std::make_unique<FontCascadeCacheEntry>(WTF::move(key), FontCascadeFonts::create(fontSelector));
     Ref<FontCascadeFonts> glyphs = newEntry->fonts.get();
 

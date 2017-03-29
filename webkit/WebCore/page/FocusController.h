@@ -97,13 +97,13 @@ public:
 
 #if PLATFORM(WKC)
     bool setFocusedNode(Node *node);
-    Element* findNextFocusableElement(const FocusDirection& direction, const IntRect* scope = 0);
+    Element* findNextFocusableElement(const FocusDirection& direction, const IntRect* scope = 0, Element* base = 0);
     Element* findNearestFocusableElementFromPoint(const IntPoint& point, const IntRect* scope = 0);
 #endif
 
 private:
 #if PLATFORM(WKC)
-    void findFocusableNodeInDirection(Node* container, const LayoutRect& startingRect, FocusDirection direction, KeyboardEvent* event, FocusCandidate& closest, const LayoutRect* scope);
+    void findFocusableNodeInDirection(Node* container, Node* startingElement, const LayoutRect& startingRect, FocusDirection direction, KeyboardEvent* event, FocusCandidate& closest, const LayoutRect* scope);
 #endif
     void setActiveInternal(bool);
     void setFocusedInternal(bool);

@@ -32,7 +32,8 @@
 namespace WebCore {
 
 #if PLATFORM(WKC)
-WKC_DEFINE_GLOBAL_CLASS_OBJ(double, ResourceRequestBase, s_defaultTimeoutInterval, INT_MAX);
+// We don't use WKC_DEFINE_GLOBAL_CLASS_OBJ for s_defaultTimeoutInterval because WKC_DEFINE_GLOBAL_CLASS_OBJ will reset s_defaultTimeoutInterval to 0, not to INT_MAX.
+double ResourceRequestBase::s_defaultTimeoutInterval = INT_MAX;
 void
 ResourceRequestBase::forceTerminate()
 {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010,2011 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2016 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,6 +34,7 @@
 namespace WebCore {
 
 class ClientCertificate {
+    WTF_MAKE_FAST_ALLOCATED;
 public:
     ClientCertificate();
     ~ClientCertificate();

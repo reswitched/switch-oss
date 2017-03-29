@@ -579,6 +579,13 @@ FrameLoaderClientWKC::dispatchWillPermitSendRequest(WebCore::ResourceHandle* han
     return m_appClient->dispatchWillPermitSendRequest((void*)handle, url, (WKC::ContentComposition)composition, isSync, res.wkc());
 }
 
+void
+FrameLoaderClientWKC::didRestoreFromHTTPCache(WebCore::ResourceHandle* handle, const WebCore::URL& url)
+{
+    ResourceHandlePrivate hdl(handle);
+    m_appClient->didRestoreFromHTTPCache(&hdl.wkc(), url);
+}
+
 #ifdef WKC_ENABLE_CUSTOMJS
 bool
 FrameLoaderClientWKC::dispatchWillCallCustomJS(WKCCustomJSAPIList* api, void** context)
@@ -709,6 +716,9 @@ FrameLoaderClientWKC::createFrame(const WebCore::URL& url, const WTF::String& na
     frame->tree().appendChild(childframe);
     childframe->init();
 
+    if (!frame->loader().activeDocumentLoader()) {
+        return 0;
+    }
     frame->loader().loadURLIntoChildFrame(url, referrer, childframe.get());
     if (!childframe->tree().parent()) {
         return 0;

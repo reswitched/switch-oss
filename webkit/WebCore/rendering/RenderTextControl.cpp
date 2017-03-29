@@ -232,11 +232,20 @@ void RenderTextControl::computePreferredLogicalWidths()
     setPreferredLogicalWidthsDirty(false);
 }
 
+#if !PLATFORM(WKC)
 void RenderTextControl::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& additionalOffset, const RenderLayerModelObject*)
 {
     if (!size().isEmpty())
         rects.append(snappedIntRect(additionalOffset, size()));
 }
+#else
+void RenderTextControl::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer)
+{
+    // Add transformed rect.
+    if (!size().isEmpty())
+        rects.append(roundedIntRect(localToContainerQuad(FloatRect(0, 0, width(), height()), paintContainer).boundingBox()));
+}
+#endif
 
 RenderObject* RenderTextControl::layoutSpecialExcludedChild(bool relayoutChildren)
 {

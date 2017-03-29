@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2015 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2016 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -108,6 +108,15 @@ ResourceHandlePrivate::httphandle()
 }
 
 bool
+ResourceHandlePrivate::isSSL() const
+{
+    WebCore::ResourceHandleInternal* i = m_webcore->getInternal();
+    if (!i)
+        return 0;
+    return i->m_isSSL;
+}
+
+bool
 ResourceHandlePrivate::isEVSSL() const
 {
     WebCore::ResourceHandleInternal* i = m_webcore->getInternal();
@@ -200,6 +209,12 @@ void*
 ResourceHandle::httphandle()
 {
     return m_private.httphandle();
+}
+
+bool
+ResourceHandle::isSSL() const
+{
+    return m_private.isSSL();
 }
 
 bool

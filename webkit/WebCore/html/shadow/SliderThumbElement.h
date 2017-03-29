@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (c) 2016 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -104,6 +105,13 @@ private:
     static const unsigned NoIdentifier = 0;
     unsigned m_exclusiveTouchIdentifier;
     bool m_isRegisteredAsTouchEventListener;
+#endif
+
+#if PLATFORM(WKC)
+private:
+    WKC_DEFINE_GLOBAL_CLASS_OBJ_ENTRY(bool, s_isCancelDragging);
+public:
+    static void cancelDragging() { s_isCancelDragging = true; }
 #endif
 };
 

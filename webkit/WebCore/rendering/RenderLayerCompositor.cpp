@@ -2904,6 +2904,11 @@ bool RenderLayerCompositor::requiresCompositingForPosition(RenderLayerModelObjec
             *viewportConstrainedNotCompositedReason = RenderLayer::NotCompositedForNonViewContainer;
         return false;
     }
+#if PLATFORM(WKC)
+    // Avoid inside frames.
+    if (m_renderView.document().ownerElement())
+        return false;
+#endif
     
     // Subsequent tests depend on layout. If we can't tell now, just keep things the way they are until layout is done.
     if (!m_inPostLayoutUpdate) {

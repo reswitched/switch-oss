@@ -3,7 +3,7 @@
  * Copyright (C) 2006 Apple Computer, Inc.  All rights reserved.
  * Copyright (C) 2008 Collabora Ltd. All rights reserved.
  * All rights reserved.
- * Copyright (c) 2010-2015 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2016 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -1088,6 +1088,16 @@ public:
        Extension of NetFront Browser NX by ACCESS CO., LTD.
     */
     virtual int  dispatchWillPermitSendRequest(void* handle, const char* url, WKC::ContentComposition composition, bool isSync, const WKC::ResourceResponse& redirectResponse) = 0;
+    /**
+        @brief notify loading from HTTP cache.
+        @param handle pointer to WKC::ResourceHandle.
+        @param url content URL when request from network.
+        @details
+        this function is called when finished loading from HTTP cache.
+        @attention
+        Extension of NetFront Browser NX by ACCESS CO., LTD.
+    */
+    virtual void didRestoreFromHTTPCache(WKC::ResourceHandle* handle, const WKC::KURL& url) = 0;
 #ifdef WKC_ENABLE_CUSTOMJS
     virtual bool dispatchWillCallCustomJS(WKCCustomJSAPIList* api, void** context) = 0;
 #endif // WKC_ENABLE_CUSTOMJS

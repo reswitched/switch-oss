@@ -132,6 +132,16 @@ in_timer must be a value obtained by wkcTimerNewPeer().
 The existing implementation can be used for this function without change.
 */
 WKC_PEER_API void wkcTimerCancelPeer(void* in_timer);
+/**
+@brief 
+@param "in_timer" Pointer to timer object
+@param "in_data" Data passed to timer
+@details
+Starts a timer.
+@remarks
+The existing implementation can be used for this function without change.
+*/
+WKC_PEER_API void wkcTimerWakeUpPeer(void* in_timer, void* in_data);
 
 /*
 @brief 
@@ -842,6 +852,9 @@ enum {
     WKC_UNICODE_LINEBREAKCATEGORY_HL,
     WKC_UNICODE_LINEBREAKCATEGORY_CJ,
     WKC_UNICODE_LINEBREAKCATEGORY_RI,
+    WKC_UNICODE_LINEBREAKCATEGORY_ZWJ,
+    WKC_UNICODE_LINEBREAKCATEGORY_EB,
+    WKC_UNICODE_LINEBREAKCATEGORY_EM,
     WKC_UNICODE_LINEBREAKCATEGORIES,
 };
 

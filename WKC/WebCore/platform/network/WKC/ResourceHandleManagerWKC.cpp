@@ -8,7 +8,7 @@
  * Copyright (C) 2009 Appcelerator Inc.
  * Copyright (C) 2009 Brent Fulgham <bfulgham@webkit.org>
  * All rights reserved.
- * Copyright (c) 2010-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -92,6 +92,9 @@
 // debug print
 #define NO_NXLOG
 #include "utils/nxDebugPrint.h"
+
+// customize difinition
+#define ENABLE_WKC_HTTPCACHE_EXCLUDE_ROOT_CONTENT 1 // exclude https root content from HTTP cache.
 
 using namespace std;
 
@@ -1223,6 +1226,11 @@ size_t ResourceHandleManager::downloadTimerHeaderCallback(ResourceHandle* job, R
                     authJar()->setWebUserPassword(d->m_webAuthURL, ProtectionSpaceServerHTTP, d->m_webAuthScheme, d->m_webAuthRealm, d->m_webAuthUser, d->m_webAuthPass, location, true);
                 }
 
+                // delete previous Authorization data.
+                cancelAuthChallenge(job, d->m_currentWebChallenge.protectionSpace().isProxy());
+                curl_easy_setopt(d->m_handle, CURLOPT_USERNAME, NULL);
+                curl_easy_setopt(d->m_handle, CURLOPT_PASSWORD, NULL);
+
                 if (WKC::EInclusionContentComposition < d->m_composition) {
                     d->m_firstRequest.setFirstPartyForCookies(newURL);
                 }
@@ -1276,6 +1284,13 @@ size_t ResourceHandleManager::downloadTimerHeaderCallback(ResourceHandle* job, R
                 }
             }
         }
+
+#if ENABLE(WKC_HTTPCACHE)
+        if (httpCode == 304) {
+            // We must not call didReceiveResponse() when cache is alive, it must be called cache loading.
+            return totalSize;
+        }
+#endif
 
         if (!d->m_response.mimeType().isEmpty()) {
             if (d->client())
@@ -1707,7 +1722,11 @@ bool ResourceHandleManager::finalizingResourceHandle(ResourceHandle* job, Resour
                data will be shown to the user. */
             /* fall  through */
         case CURLE_PARTIAL_FILE:
+#if ENABLE(WKC_HTTPCACHE)
+            if (!(httpCode == 304 && d->m_utilizedHTTPCache) && !d->m_response.responseFired()) {
+#else
             if (!d->m_response.responseFired()) {
+#endif
                 handleLocalReceiveResponse(d->m_handle, job, d);
                 if (d->m_cancelled || d->m_didAuthChallenge || d->m_doRedirectChallenge) {
                     finishLoadingResourceHandle(job, d);
@@ -1730,7 +1749,11 @@ bool ResourceHandleManager::finalizingResourceHandle(ResourceHandle* job, Resour
                     case 300:
                     case 301:
                     case 410:
+#if ENABLE(WKC_HTTPCACHE_EXCLUDE_ROOT_CONTENT)
+                        if (((!job->frame() || !job->frame()->loader().isHostedByObjectElement())) && !(d->m_isSSL && contentComposition(job) == WKC::ERootFrameRootContentComposition)) {
+#else
                         if (!job->frame() || !job->frame()->loader().isHostedByObjectElement()) {
+#endif
                             addHTTPCache(job, url, d->client()->resourceData(), d->m_response);
                         }
                         break;
@@ -1774,10 +1797,14 @@ bool ResourceHandleManager::finalizingResourceHandle(ResourceHandle* job, Resour
             WKC::FrameLoaderClientWKC* fl = frameloaderclientwkc(job);
             if (d->m_isSSL && !d->m_SSLHandshaked && fl) {
                 m_rhmssl->SSLHandshakeInfo(job);
-                if (fl->notifySSLHandshakeStatus(job, WKC::EHandshakeFail)) {
-                    // true means try to re-connect even though current SSL is failed
-                    d->m_sslReconnect = true;
-                    break;
+                bool isHandshakeError = (d->m_msgDataResult == CURLE_SSL_CACERT) ||
+                                        (d->m_msgDataResult == CURLE_PEER_FAILED_VERIFICATION);
+                if (isHandshakeError) {
+                    if (fl->notifySSLHandshakeStatus(job, WKC::EHandshakeFail)) {
+                        // true means try to re-connect even though current SSL is failed
+                        d->m_sslReconnect = true;
+                        break;
+                    }
                 }
                 d->m_SSLHandshaked = true;
             }
@@ -2305,7 +2332,11 @@ void ResourceHandleManager::add(ResourceHandle* job)
     nxLog_i("Async load add [%p] %s", job, kurl.string().latin1().data());
 
 #if ENABLE(WKC_HTTPCACHE)
+#if ENABLE(WKC_HTTPCACHE_EXCLUDE_ROOT_CONTENT)
+    if (!m_httpCache.disabled() && job->firstRequest().cachePolicy() != ReloadIgnoringCacheData && !( kurl.protocolIs("https") && contentComposition(job) == WKC::ERootFrameRootContentComposition) ) {
+#else
     if (!m_httpCache.disabled() && job->firstRequest().cachePolicy() != ReloadIgnoringCacheData) {
+#endif
         HTTPCachedResource *resource = m_httpCache.resourceForURL(kurl);
         if (resource) {
             // this resource has been used
@@ -2787,6 +2818,10 @@ void ResourceHandleManager::dispatchSynchronousJob(ResourceHandle* rjob)
                         failed = true;
                         break;
                     }
+                } else {
+                    kurl = job->firstRequest().url();
+                    d->m_url = fastStrdup(kurl.string().latin1().data());
+                    initializeHandle(job);
                 }
 
                 curl_multi_add_handle(m_curlMultiSyncHandle, d->m_handle);
@@ -4555,6 +4590,8 @@ bool ResourceHandleManager::addHTTPCache(ResourceHandle *handle, URL &url, Share
 void ResourceHandleManager::scheduleLoadResourceFromHTTPCache(ResourceHandle *job)
 {
     job->ref();
+    ResourceHandleInternal* d = job->getInternal();
+    d->m_composition = contentComposition(job);
     m_readCacheJobList.append(job);
     if (!m_readCacheTimer.isActive()) {
         m_readCacheTimer.startOneShot(pollTimeSeconds);
@@ -4592,6 +4629,9 @@ void ResourceHandleManager::readCacheTimerCallback()
         d->m_response.setHTTPStatusCode(resource->httpStatusCode());
         d->m_response.setHTTPHeaderField(String("Last-Modified"), resource->lastModifiedHeader());
         d->m_response.setSource(ResourceResponse::Source::DiskCache);
+        if (!resource->accessControlAllowOriginHeader().isEmpty()) {
+            d->m_response.setHTTPHeaderField(String("Access-Control-Allow-Origin"), resource->accessControlAllowOriginHeader());
+        }
         if (!d->client())
             goto cancel;
         d->client()->didReceiveResponse(job, d->m_response);
@@ -4601,6 +4641,10 @@ void ResourceHandleManager::readCacheTimerCallback()
         if (frame!=job->frame()) {
             goto cancel;
         }
+        d->m_isSSL = resource->isSSL();
+        d->m_isEVSSL = resource->isEVSSL();
+        d->m_secureState = resource->secureState();
+        d->m_secureLevel = resource->secureLevel();
         WKC::FrameLoaderClientWKC* fl = frameloaderclientwkc(job);
         if (!fl || !fl->dispatchWillReceiveData(job, resource->contentLength()))
             goto cancel;
@@ -4614,6 +4658,7 @@ void ResourceHandleManager::readCacheTimerCallback()
             if (m_httpCache.read(resource, buf)) {
                 d->client()->didReceiveData(job, buf, resource->contentLength(), 0);
                 d->client()->didFinishLoading(job, monotonicallyIncreasingTime());
+                fl->didRestoreFromHTTPCache(job, kurl);
             } else {
                 d->client()->didFail(job, ResourceError(String(), CURLE_READ_ERROR, String(d->m_url), String("cache read error"), 0));
                 m_httpCache.removeAll();
@@ -4782,6 +4827,12 @@ void ResourceHandleManager::processHttpEquiv(const String& content, const URL& u
         flags |= HTTPCachedResource::EHTTPEquivMaxAge;
     }
     rsp->update(nocache, mustrevalidate, expires, maxage, flags);
+}
+
+void
+ResourceHandleManager::dumpHTTPCacheResourceList()
+{
+    httpCache()->dumpResourceList();
 }
 
 #endif // ENABLE(WKC_HTTPCACHE)

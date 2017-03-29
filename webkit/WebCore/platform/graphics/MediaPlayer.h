@@ -209,6 +209,7 @@ public:
     virtual void mediaPlayerSeekBegin(MediaPlayer*) { }
     virtual void mediaPlayerSeekEnd(MediaPlayer*) { }
     virtual void mediaPlayerResetUserGestureRestriction(MediaPlayer*) { }
+    virtual void mediaPlayerRemoveUserGestureRestriction(MediaPlayer*) { }
 #endif
     
     // whether the rendering system can accelerate the display of this MediaPlayer.
@@ -472,6 +473,7 @@ public:
     void seekBegin();
     void seekEnd();
     void resetUserGestureRestriction();
+    void removeUserGestureRestriction();
 #endif
 
     void repaint();

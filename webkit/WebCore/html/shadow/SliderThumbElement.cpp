@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (c) 2016 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -54,6 +55,10 @@
 namespace WebCore {
 
 using namespace HTMLNames;
+
+#if PLATFORM(WKC)
+WKC_DEFINE_GLOBAL_CLASS_OBJ(bool, SliderThumbElement, s_isCancelDragging, false);
+#endif
 
 inline static Decimal sliderPosition(HTMLInputElement* element)
 {
@@ -317,6 +322,9 @@ void SliderThumbElement::startDragging()
 
 void SliderThumbElement::stopDragging()
 {
+#if PLATFORM(WKC)
+    s_isCancelDragging = false;
+#endif
     if (!m_inDragMode)
         return;
 
@@ -334,6 +342,12 @@ void SliderThumbElement::stopDragging()
 #if !PLATFORM(IOS)
 void SliderThumbElement::defaultEventHandler(Event* event)
 {
+#if PLATFORM(WKC)
+    if (s_isCancelDragging) {
+        stopDragging();
+    }
+#endif
+
     if (!is<MouseEvent>(*event)) {
         HTMLDivElement::defaultEventHandler(event);
         return;

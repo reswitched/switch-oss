@@ -3517,11 +3517,23 @@ void RenderBlock::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& a
         bool prevInlineHasLineBox = downcast<RenderInline>(*inlineElementContinuation()->element()->renderer()).firstLineBox();
         float topMargin = prevInlineHasLineBox ? collapsedMarginBefore() : LayoutUnit();
         float bottomMargin = nextInlineHasLineBox ? collapsedMarginAfter() : LayoutUnit();
+#if !PLATFORM(WKC)
         LayoutRect rect(additionalOffset.x(), additionalOffset.y() - topMargin, width(), height() + topMargin + bottomMargin);
         if (!rect.isEmpty())
             rects.append(snappedIntRect(rect));
+#else
+        // Add transformed rect.
+        FloatRect rect(0, - topMargin, width(), height() + topMargin + bottomMargin);
+        if (!rect.isEmpty())
+            rects.append(roundedIntRect(localToContainerQuad(rect, paintContainer).boundingBox()));
+#endif
     } else if (width() && height())
+#if !PLATFORM(WKC)
         rects.append(snappedIntRect(additionalOffset, size()));
+#else
+        // Add transformed rect.
+        rects.append(roundedIntRect(localToContainerQuad(FloatRect(0, 0, width(), height()), paintContainer).boundingBox()));
+#endif
 
     if (!hasOverflowClip() && !hasControlClip()) {
         if (childrenInline())
@@ -3531,13 +3543,15 @@ void RenderBlock::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& a
             if (!is<RenderText>(*child) && !is<RenderListMarker>(*child) && is<RenderBox>(*child)) {
                 auto& box = downcast<RenderBox>(*child);
                 FloatPoint pos;
+#if PLATFORM(WKC) // get transformed position always.
+                pos = child->localToContainerPoint(FloatPoint(), paintContainer);
+#else
                 // FIXME: This doesn't work correctly with transforms.
-#if !PLATFORM(WKC) // apply transform to focus ring on Application.
                 if (box.layer())
                     pos = child->localToContainerPoint(FloatPoint(), paintContainer);
                 else
-#endif
                     pos = FloatPoint(additionalOffset.x() + box.x(), additionalOffset.y() + box.y());
+#endif
                 box.addFocusRingRects(rects, flooredLayoutPoint(pos), paintContainer);
             }
         }

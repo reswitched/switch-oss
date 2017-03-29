@@ -3,7 +3,7 @@
  * Copyright (C) 2006 Apple Computer, Inc.  All rights reserved.
  * Copyright (C) 2008 Collabora Ltd. All rights reserved.
  * All rights reserved.
- * Copyright (c) 2010-2015 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2016 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -237,6 +237,7 @@ public:
     bool dispatchWillReceiveData(WebCore::ResourceHandle*, int length);
     int  requestSSLClientCertSelect(WebCore::ResourceHandle* handle, const char* requester, void* certs, int num);
     int  dispatchWillPermitSendRequest(WebCore::ResourceHandle* handle, const char* url, int composition, bool isSync, const WebCore::ResourceResponse& redirectResponse);
+    void didRestoreFromHTTPCache(WebCore::ResourceHandle* handle, const WebCore::URL& url);
 
 #ifdef WKC_ENABLE_CUSTOMJS
     virtual bool dispatchWillCallCustomJS(WKCCustomJSAPIList* api, void** context); //override;

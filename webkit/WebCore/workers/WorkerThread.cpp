@@ -184,11 +184,14 @@ void WorkerThread::workerThread()
     }
 
 #if PLATFORM(WKC)
-    JSC::VM& vm = m_workerGlobalScope->vm();
-    if (!vm.watchdog)
-        vm.watchdog = std::make_unique<JSC::Watchdog>();
-    vm.watchdog->setTimeLimit(vm, std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::duration<double>(1)), shouldTerminate, m_workerGlobalScope->script(), 0);
-
+    {
+        std::chrono::milliseconds interval(100);
+        JSC::VM& vm = m_workerGlobalScope->vm();
+        JSC::JSLockHolder locker(&vm);
+        if (!vm.watchdog)
+            vm.watchdog = std::make_unique<JSC::Watchdog>();
+        vm.watchdog->setTimeLimit(vm, std::chrono::duration_cast<std::chrono::microseconds>(interval), shouldTerminate, m_workerGlobalScope->script(), 0);
+    }
 #endif
     WorkerScriptController* script = m_workerGlobalScope->script();
     InspectorInstrumentation::willEvaluateWorkerScript(workerGlobalScope(), m_startupData->m_startMode);

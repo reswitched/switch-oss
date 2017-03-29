@@ -4,7 +4,7 @@
  *           (C) 2005 Allan Sandfeld Jensen (kde@carewolf.com)
  *           (C) 2005, 2006 Samuel Weinig (sam.weinig@gmail.com)
  * Copyright (C) 2005-2010, 2015 Apple Inc. All rights reserved.
- * Copyright (c) 2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2016-2017 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -757,11 +757,20 @@ LayoutRect RenderBox::outlineBoundsForRepaint(const RenderLayerModelObject* repa
     return LayoutRect(snapRectToDevicePixels(box, document().deviceScaleFactor()));
 }
 
+#if !PLATFORM(WKC)
 void RenderBox::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& additionalOffset, const RenderLayerModelObject*)
 {
     if (!size().isEmpty())
         rects.append(snappedIntRect(additionalOffset, size()));
 }
+#else
+void RenderBox::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer)
+{
+    // Add transformed rect.
+    if (!size().isEmpty())
+        rects.append(roundedIntRect(localToContainerQuad(FloatRect(0, 0, width(), height()), paintContainer).boundingBox()));
+}
+#endif
 
 int RenderBox::reflectionOffset() const
 {

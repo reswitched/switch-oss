@@ -63,15 +63,16 @@ FocusControllerPrivate::focusedOrMainFrame()
 }
 
 Element*
-FocusControllerPrivate::findNextFocusableElement(const FocusDirection& direction, const WKCRect* scope)
+FocusControllerPrivate::findNextFocusableElement(const FocusDirection& direction, const WKCRect* scope, Element* base)
 {
     WebCore::FocusDirection webcore_dir = toWebCoreFocusDirection(direction);
     WebCore::Element* element;
+    WebCore::Element* baseWebCore = base ? ((WebCore::Element*)(((NodePrivate&)(((Node*)base)->priv())).webcore())) : nullptr;
     if (scope) {
         WebCore::IntRect r(scope->fX, scope->fY, scope->fWidth, scope->fHeight);
-        element = m_webcore->findNextFocusableElement(webcore_dir, &r);
+        element = m_webcore->findNextFocusableElement(webcore_dir, &r, baseWebCore);
     } else {
-        element = m_webcore->findNextFocusableElement(webcore_dir, 0);
+        element = m_webcore->findNextFocusableElement(webcore_dir, 0, baseWebCore);
     }
     if (!element)
         return 0;
@@ -141,9 +142,9 @@ FocusController::focusedOrMainFrame()
     return m_private.focusedOrMainFrame();
 }
 
-Element* FocusController::findNextFocusableElement(const FocusDirection& direction, const WKCRect* scope)
+Element* FocusController::findNextFocusableElement(const FocusDirection& direction, const WKCRect* scope, Element* base)
 {
-    return m_private.findNextFocusableElement(direction, scope);
+    return m_private.findNextFocusableElement(direction, scope, base);
 }
 
 Element*

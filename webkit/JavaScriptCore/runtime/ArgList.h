@@ -81,7 +81,7 @@ public:
 
     void append(JSValue v)
     {
-        if (m_size >= m_capacity)
+        if (m_size >= m_capacity || mallocBase())
             return slowAppend(v);
 
         slotFor(m_size) = JSValue::encode(v);
@@ -103,6 +103,10 @@ public:
     static void markLists(HeapRootVisitor&, ListSet&);
 
 private:
+    void expandCapacity();
+
+    void addMarkSet(JSValue);
+
     JS_EXPORT_PRIVATE void slowAppend(JSValue);
         
     EncodedJSValue& slotFor(int item) const
@@ -112,7 +116,7 @@ private:
         
     EncodedJSValue* mallocBase()
     {
-        if (m_capacity == static_cast<int>(inlineCapacity))
+        if (m_buffer == m_inlineBuffer)
             return 0;
         return &slotFor(0);
     }

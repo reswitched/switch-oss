@@ -1,3 +1,42 @@
+2016-10-26  Zalan Bujtas  <zalan@apple.com>
+
+        Ignore out-of-flow siblings when searching for a spanner candidate.
+        https://bugs.webkit.org/show_bug.cgi?id=164042.
+        <rdar://problem/28758456>
+
+        Reviewed by Simon Fraser.
+
+        While searching for the spanner candidates in a flow thread, we have to take into account
+        whether renderers are in- or out-of-flow.
+        What it means is that while traversing the renderer tree to find the the candidate
+        renderer (next sibling/ancestor's next child in pre-order traversal), we have to check if the candidate
+        is in the same layout context too.
+
+        Test: fast/multicol/crash-when-spanner-candidate-is-out-of-flow.html
+
+        * rendering/RenderMultiColumnFlowThread.cpp:
+        (WebCore::spannerPlacehoderCandidate):
+        (WebCore::RenderMultiColumnFlowThread::processPossibleSpannerDescendant):
+
+2016-10-22  Myles C. Maxfield  <mmaxfield@apple.com>
+
+        ASSERTION FAILED: m_fonts in &WebCore::FontCascade::primaryFont
+        https://bugs.webkit.org/show_bug.cgi?id=163459
+
+        Reviewed by Darin Adler.
+
+        The CSS Units and Values spec states that font-relative units, when used
+        in the font-size property, are resolved against the parent element. When
+        calc() is specified, we were trying to resolve them against the current
+        element, which is impossible because of the circular dependency. Instead,
+        we should resolve against the parent style the same way as when calc() 
+        isn't specified.
+
+        Test: fast/text/font-size-calc.html
+
+        * css/StyleBuilderCustom.h:
+        (WebCore::StyleBuilderCustom::applyValueFontSize):
+
 2016-09-09  Chris Dumez  <cdumez@apple.com>
 
         Regression(r186020): Null dereference in getStartDate()

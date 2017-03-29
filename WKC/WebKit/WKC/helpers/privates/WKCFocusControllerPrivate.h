@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2015 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2016 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -47,7 +47,7 @@ public:
     WebCore::FocusController* webcore() const { return m_webcore; }
     FocusController& wkc() { return m_wkc; }
 
-    Element* findNextFocusableElement(const FocusDirection& direction, const WKCRect* scope = 0);
+    Element* findNextFocusableElement(const FocusDirection& direction, const WKCRect* scope = 0, Element* base = 0);
     Element* findNearestFocusableElementFromPoint(const WKCPoint& point, const WKCRect* scope = 0);
  
     Frame* focusedOrMainFrame();

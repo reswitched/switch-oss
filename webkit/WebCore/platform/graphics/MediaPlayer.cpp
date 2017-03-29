@@ -1155,6 +1155,11 @@ void MediaPlayer::resetUserGestureRestriction()
 {
     m_client.mediaPlayerResetUserGestureRestriction(this);
 }
+
+void MediaPlayer::removeUserGestureRestriction()
+{
+    m_client.mediaPlayerRemoveUserGestureRestriction(this);
+}
 #endif
 
 #if ENABLE(WEB_AUDIO)

@@ -35,7 +35,7 @@ public:
     Frame* focusedOrMainFrame();
     FocusControllerPrivate& priv() const { return m_private; }
 
-    Element* findNextFocusableElement(const FocusDirection& direction, const WKCRect* scope = 0);
+    Element* findNextFocusableElement(const FocusDirection& direction, const WKCRect* scope = 0, Element* base = 0);
     Element* findNearestFocusableElementFromPoint(const WKCPoint& point, const WKCRect* scope = 0);
 
 protected:

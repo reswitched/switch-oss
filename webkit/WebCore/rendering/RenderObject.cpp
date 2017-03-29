@@ -1100,7 +1100,7 @@ void RenderObject::collectSelectionRects(Vector<SelectionRect>& rects, unsigned 
 void
 RenderObject::focusRingRects(Vector<IntRect>& rects)
 {
-    FloatPoint absPos = localToAbsolute();
+    FloatPoint absPos = localToContainerPoint(FloatPoint(), nullptr);
     const LayoutPoint pos(absPos.x(), absPos.y());
     addFocusRingRects(rects, pos);
 }
@@ -1139,17 +1139,27 @@ IntRect RenderObject::absoluteBoundingBoxRect(bool useTransforms, bool* wasFixed
 void RenderObject::absoluteFocusRingQuads(Vector<FloatQuad>& quads)
 {
     Vector<IntRect> rects;
+#if PLATFORM(WKC)
+    // addFocusRingRects() needs to be passed transformed offset
+    // because addFocusRingRects() append transformed offset always.
+    FloatPoint absolutePoint = localToContainerPoint(FloatPoint(), nullptr);
+#else
     // FIXME: addFocusRingRects() needs to be passed this transform-unaware
     // localToAbsolute() offset here because RenderInline::addFocusRingRects()
     // implicitly assumes that. This doesn't work correctly with transformed
     // descendants.
     FloatPoint absolutePoint = localToAbsolute();
+#endif
     addFocusRingRects(rects, flooredLayoutPoint(absolutePoint));
     size_t count = rects.size();
     for (size_t i = 0; i < count; ++i) {
         IntRect rect = rects[i];
+#if PLATFORM(WKC)
+        quads.append(FloatQuad(rect));
+#else
         rect.move(-absolutePoint.x(), -absolutePoint.y());
         quads.append(localToAbsoluteQuad(FloatQuad(rect)));
+#endif
     }
 }
 

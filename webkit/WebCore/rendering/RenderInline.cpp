@@ -1565,19 +1565,35 @@ void RenderInline::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& 
 {
 #if PLATFORM(WKC)
     CRASH_IF_STACK_OVERFLOW(WKC_STACK_MARGIN_DEFAULT);
-#endif
+
+    {
+        Vector<IntRect> tmpRects;
+        LayoutPoint point;
+        AbsoluteRectsGeneratorContext context(tmpRects, point);
+        generateLineBoxRects(context);
+        const size_t size = tmpRects.size();
+        // Add transformed rects.
+        for (size_t i = 0; i < size; i++)
+            rects.append(roundedIntRect(localToContainerQuad(FloatRect(tmpRects[i]), paintContainer).boundingBox()));
+    }
+#else
     AbsoluteRectsGeneratorContext context(rects, additionalOffset);
     generateLineBoxRects(context);
+#endif
 
     for (auto& child : childrenOfType<RenderElement>(*this)) {
         if (is<RenderListMarker>(child))
             continue;
         FloatPoint pos(additionalOffset);
+#if PLATFORM(WKC) // get transformed position always.
+        pos = child.localToContainerPoint(FloatPoint(), paintContainer);
+#else
         // FIXME: This doesn't work correctly with transforms.
         if (child.hasLayer())
             pos = child.localToContainerPoint(FloatPoint(), paintContainer);
         else if (is<RenderBox>(child))
             pos.move(downcast<RenderBox>(child).locationOffset());
+#endif
         child.addFocusRingRects(rects, flooredIntPoint(pos), paintContainer);
     }
 

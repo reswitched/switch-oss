@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2006, 2007, 2008, 2014-2015 Apple Inc. All rights reserved.
+ * Copyright (c) 2017 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -827,7 +828,11 @@ void ScrollView::scrollContents(const IntSize& scrollDelta)
         window->invalidateContentsAndRootView(panScrollIconDirtyRect);
     }
 
+#if !PLATFORM(WKC)
     if (canBlitOnScroll()) { // The main frame can just blit the WebView window
+#else
+    if (canBlitOnScroll() && !parent()) {
+#endif
         // FIXME: Find a way to scroll subframes with this faster path
         if (!scrollContentsFastPath(-scrollDelta, scrollViewRect, clipRect))
             scrollContentsSlowPath(updateRect);

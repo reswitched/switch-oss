@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
+ * Copyright (c) 2016 ACCESS CO.,LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -91,7 +92,21 @@ bool Watchdog::didFire(ExecState* exec)
 {
 #if PLATFORM(WKC)
     wkcThreadCheckAlivePeer();
-    wkcThreadYieldPeer();
+    if (wkcThreadCurrentIsMainThreadPeer()) {
+        wkcThreadYieldPeer();
+    } else {
+        // For Worker threads
+        // Worker threads are created at the almost same time.
+        // It means each watchdog fires and yields everytime at close timing.
+        // Then the same thread would be activated again.
+        // So we need to omit yield sometimes.
+
+        // No srand() done and rand() is not thread safe
+        // but we just want to obtain a chance of about 50% probability.
+        if (rand() % 2 == 1) {
+            wkcThreadYieldPeer();
+        }
+    }
 #endif
     if (m_didFire)
         return true;

@@ -4,7 +4,7 @@
  * Copyright (C) 2008 Nuanti Ltd.
  * Copyright (C) 2008 Alp Toker <alp@atoker.com>
  * Copyright (C) 2008 Gustavo Noronha Silva <gns@gnome.org>
- * Copyright (c) 2010-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -484,6 +484,10 @@ ChromeClientWKC::scrollRectIntoView(const WebCore::IntRect& rect) const
 void
 ChromeClientWKC::focusedFrameChanged(WebCore::Frame* frame)
 {
+    if (!frame) {
+        m_appClient->focusedFrameChanged(nullptr);
+        return;
+    }
     FramePrivate fp(frame);
     m_appClient->focusedFrameChanged(&fp.wkc());
 }

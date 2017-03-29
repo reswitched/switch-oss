@@ -116,6 +116,9 @@ namespace JSC {
 class VM;
 
 class TypeProfiler {
+#if PLATFORM(WKC)
+    WTF_MAKE_FAST_ALLOCATED;
+#endif
 public:
     TypeProfiler();
     void logTypesForTypeLocation(TypeLocation*, VM&);

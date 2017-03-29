@@ -35,6 +35,9 @@ namespace JSC {
 class VM;
 
 class TypeLocationCache {
+#if PLATFORM(WKC)
+    WTF_MAKE_FAST_ALLOCATED;
+#endif
 public:
     struct LocationKey {
         LocationKey() {}
@@ -59,7 +62,11 @@ public:
 
     std::pair<TypeLocation*, bool> getTypeLocation(GlobalVariableID, intptr_t, unsigned start, unsigned end, PassRefPtr<TypeSet>, VM*);
 private:     
+#if !PLATFORM(WKC)
     typedef std::unordered_map<LocationKey, TypeLocation*, HashMethod<LocationKey>> LocationMap;
+#else
+    typedef std::unordered_map<LocationKey, TypeLocation*, HashMethod<LocationKey>, std::equal_to<LocationKey>, WKCAllocator<std::pair<const LocationKey, TypeLocation*>>> LocationMap;
+#endif
     LocationMap m_locationMap;
 };
 

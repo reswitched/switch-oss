@@ -151,6 +151,12 @@ void IncrementalSweeper::doSweep(double sweepBeginTime)
     cancelTimer();
 }
 
+void IncrementalSweeper::doSweepSynchronously()
+{
+    while (sweepNextBlock());
+    m_blocksToSweep.clear();
+}
+
 bool IncrementalSweeper::sweepNextBlock()
 {
     while (!m_blocksToSweep.isEmpty()) {
@@ -170,7 +176,12 @@ bool IncrementalSweeper::sweepNextBlock()
 
 void IncrementalSweeper::startSweeping()
 {
-    scheduleTimer();
+    if (WTF::isMainThread()) {
+        scheduleTimer();
+    } else {
+        // In case of worker, do sweep in worker thread.
+        doSweepSynchronously();
+    }
 }
 
 void IncrementalSweeper::willFinishSweeping()

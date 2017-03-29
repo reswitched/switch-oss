@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2015 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -70,6 +70,12 @@ HTMLFormControlElementPrivate::dispatchFormControlChangeEvent()
     webcore()->dispatchFormControlChangeEvent();
 }
 
+bool
+HTMLFormControlElementPrivate::isSuccessfulSubmitButton() const
+{
+    return webcore()->isSuccessfulSubmitButton();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 HTMLFormControlElement::HTMLFormControlElement(HTMLFormControlElementPrivate& parent)
@@ -87,6 +93,12 @@ void
 HTMLFormControlElement::dispatchFormControlChangeEvent()
 {
     return static_cast<HTMLFormControlElementPrivate&>(priv()).dispatchFormControlChangeEvent();
+}
+
+bool
+HTMLFormControlElement::isSuccessfulSubmitButton() const
+{
+    return static_cast<HTMLFormControlElementPrivate&>(priv()).isSuccessfulSubmitButton();
 }
 
 HTMLFormElement*

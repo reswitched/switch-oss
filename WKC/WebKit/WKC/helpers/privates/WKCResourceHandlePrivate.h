@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2015 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2016 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -57,6 +57,7 @@ public:
     int  contentComposition() const;
     void* httphandle();
 
+    bool isSSL() const;
     bool isEVSSL() const;
     int  secureState() const;
     int  secureLevel() const;

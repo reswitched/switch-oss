@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2009 Antonio Gomes <tonikitoo@webkit.org>
- * Copyright (C) 2012-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (C) 2012-2017 ACCESS CO., LTD. All rights reserved.
  *
  * All rights reserved.
  *
@@ -141,7 +141,7 @@ FocusCandidate::FocusCandidate(Node* node, FocusDirection direction)
 #if PLATFORM(WKC)
     if (visibleNode->hasTagName(HTMLNames::aTag) && visibleNode->firstChild()) {
         ASSERT(node->renderer());
-        LayoutRect org_rect = rectToAbsoluteCoordinates(visibleNode->document().frame(), node->renderer()->absoluteBoundingBoxRect());
+        LayoutRect org_rect = rectToAbsoluteCoordinates(visibleNode->document().frame(), node->renderer()->absoluteBoundingBoxRect(true));
         isOrgRectEmpty = org_rect.isEmpty();
     }
 #endif
@@ -1164,6 +1164,9 @@ LayoutRect rectToAbsoluteCoordinates(Frame* initialFrame, const LayoutRect& init
             do {
 #if PLATFORM(WKC)
                 rect.move(offsetLeft(element), offsetTop(element));
+                if (element->renderer() && element->renderer()->style().position() == FixedPosition) {
+                    rect.move(frame->tree().parent()->view()->scrollOffset());
+                }
 #else
                 rect.move(element->offsetLeft(), element->offsetTop());
 #endif
@@ -1191,10 +1194,11 @@ LayoutRect nodeRectInAbsoluteCoordinates(Node* node, bool ignoreBorder)
 #if PLATFORM(WKC)
     LayoutRect rect;
     if (RenderObject* renderer = node->renderer()) {
-        rect = rectToAbsoluteCoordinates(node->document().frame(), renderer->absoluteBoundingBoxRect());
+        rect = renderer->absoluteBoundingBoxRect(true);
         if (node->hasTagName(HTMLNames::aTag) && node->firstChild()) {
             node->getNodeCompositeRect(&rect);
         }
+        rect = rectToAbsoluteCoordinates(node->document().frame(), rect);
     }
 #else
     LayoutRect rect;

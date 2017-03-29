@@ -1040,6 +1040,14 @@ TransformationMatrix RenderLayer::renderableTransform(PaintBehavior paintBehavio
         return matrix;
     }
 
+#if PLATFORM(WKC)
+    if (!canRender3DTransforms()) {
+        TransformationMatrix matrix = *m_transform;
+        makeMatrixRenderable(matrix, false);
+        return matrix;
+    }
+#endif
+
     return *m_transform;
 }
 

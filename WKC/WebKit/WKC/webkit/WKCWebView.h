@@ -1,7 +1,7 @@
 /*
  * WKCWebView.h
  *
- * Copyright (c) 2010-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -207,7 +207,9 @@ namespace WKC {
 @retval "== false" Failed to initialize
 @details
 The heap memory for the browser engine must be set to a value of 10MB or higher.@n
-The heap memory for the font engine must be set to an appropriate value of 256KB or higher. Considering trade-offs with performance, 512KB is the recommended value for the size.
+The heap memory for the font engine must be set to an appropriate value of 256KB or higher, or 0(in case disable font engine).
+Considering trade-offs with performance, 512KB is the recommended value for the size.
+If font_memory and its size is 0, the font engine become disabled and no text drawn.
 @attention
 The method of setting heap memory for the font engine may change in the future.
 */
@@ -343,12 +345,13 @@ WKC_API void WKCWebKitSetFontNoMemoryCallback(FontNoMemoryProc proc);
 
 /**
 @brief Wakes up browser engine
-@param data Data passed by WKCTimerEventHandler::requestWakeUp()
+@param in_timer Timer passed by WKCTimerEventHandler::requestWakeUp()
+@param in_data Data passed by WKCTimerEventHandler::requestWakeUp()
 @return None
 @details
 Wakes up the browser engine that is waiting for timer wakeup using WKCTimerEventHandler::requestWakeUp().
 */
-WKC_API void WKCWebKitWakeUp(void* data);
+WKC_API void WKCWebKitWakeUp(void* in_timer, void* in_data);
 /**
 @brief Get current tick count
 @return Current tick count
@@ -878,6 +881,31 @@ WKC_API void WKCWebKitSetPerformanceMode(int in_mode);
 Set thread priority callback.
 */
 WKC_API void WKCWebkitSetThreadPriorityCallback(WKC::SetThreadPriorityProc in_proc);
+
+/**
+@brief Cancel dragging mode of range input element.
+@details
+Cancel dragging mode of range input element.
+*/
+WKC_API void WKCWebKitCancelRangeInputDragging();
+
+/**
+@brief Sets the interval of watchdog timer in microseconds
+@param in_interval interval time in microseconds
+@details
+This API must be called BEFORE WKC::WKCWebView::WKCWebKitInitialize is called.
+*/
+WKC_API void WKCWebKitSetWatchdogInterval(int in_interval_ms);
+
+/**
+@brief Dump HTTP Cache info.
+@details
+Dump HTTP Cache info.
+@attention
+- This API is debug use only.
+*/
+WKC_API void WKCWebKitDumpHTTPCacheList();
+
 
 /** @brief Class that corresponds to the content display screen of the browser. */
 class WKC_API WKCWebView
@@ -1614,6 +1642,16 @@ public:
        @return None
     */
     void selectAll();
+    /**
+       @brief Gets selection positions
+       @param startOffset Offset of start position
+       @param endOffset Offset of end position
+       @return None
+       @details
+       Gets selection positions.
+       Offsets become negative when failed to get.
+    */
+    void getSelectionPosition(int& startOffset, int& endOffset) const;
 
     /**
        @brief Checks if mime type can be displayed

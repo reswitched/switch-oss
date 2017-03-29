@@ -525,15 +525,17 @@ ssl_app_verify_callback(X509_STORE_CTX *ctx, void *data)
 }
 #endif
 
-static void
-ssl_cert_request_callback(const SSL *ssl, int type, int val)
+static int
+ssl_cert_request_callback(SSL *ssl, X509 **x509, EVP_PKEY **pkey)
 {
-    if (type != SSL_CB_CONNECT_LOOP || val != 1)
-        return;
-
-    nxLog_in("ssl:%p type:%d val:%d", ssl, type, val);
-    ResourceHandleManager::sharedInstance()->rhmssl()->ClientCertSelectCallback((void*)ssl);
+    nxLog_in("ssl:%p ", ssl);
+    ResourceHandleManager::sharedInstance()->rhmssl()->ClientCertSelectCallback((void*)ssl, x509, pkey);
+    if (x509 && pkey) {
+        nxLog_out("ssl:%p x509:%p pkey:%p", ssl, x509, pkey);
+        return 1;
+    }
     nxLog_out("");
+    return 0;
 }
 
 static int
@@ -568,7 +570,8 @@ sslctx_callback(CURL* handle, void* sslctx, void* data)
     }
     URL kurl = job->firstRequest().url();
 
-    SSL_CTX_set_info_callback(sslCtx, ssl_cert_request_callback);
+    SSL_CTX_set_client_cert_cb(sslCtx, ssl_cert_request_callback);
+
     SSL_CTX_set_app_data(sslCtx, job);
     SSL_CTX_set_verify(sslCtx, SSL_CTX_get_verify_mode(sslCtx), ssl_verify_callback);
     //SSL_CTX_set_cert_verify_callback(sslCtx, ssl_app_verify_callback, data);
@@ -625,7 +628,7 @@ void ResourceHandleManagerSSL::initializeHandleSSL(ResourceHandle* job)
         curl_easy_setopt(d->m_handle, CURLOPT_SSL_VERIFYPEER, 1);
     }
 
-    curl_easy_setopt(d->m_handle, CURLOPT_SSL_CIPHER_LIST, "ALL:!aNULL:!eNULL:!SSLv2:!RC2:!RC4:!DES:!EXPORT56:!ADH:+HIGH:+MEDIUM:!LOW");
+    curl_easy_setopt(d->m_handle, CURLOPT_SSL_CIPHER_LIST, "ALL:!aNULL:!eNULL:!SSLv2:!RC2:!RC4:!DES:!EXPORT56:!ADH:!DH:!kECDH:+kECDHe:+HIGH:+MEDIUM:!LOW");
 //    curl_easy_setopt(d->m_handle, CURLOPT_SSL_VERIFYSTATUS, (long)1);
 
     d->m_SSLVerifyPeerResult = 0;
@@ -790,8 +793,9 @@ void ResourceHandleManagerSSL::SSLHandshakeInfo(ResourceHandle* job)
 // callback functions
 //
 
-static void setClientCertAndKey(SSL* ssl, ClientCertificate* cert)
+static void setClientCertAndKey(SSL* ssl, ClientCertificate* cert, X509 **x509, EVP_PKEY **pkey)
 {
+    X509* cert_dup = NULL;
     EVP_PKEY* pri = NULL;
     int orgkey_len;
 
@@ -805,8 +809,12 @@ static void setClientCertAndKey(SSL* ssl, ClientCertificate* cert)
         goto exit_func;
     }
 
+    cert_dup = X509_dup(cert->cert());
+    if (!cert_dup)
+        goto exit_func;
+
     SSL_set_mode(ssl, SSL_MODE_NO_AUTO_CHAIN);
-    if (SSL_use_certificate(ssl, cert->cert()) != 1) {
+    if (SSL_use_certificate(ssl, cert_dup) != 1) {
         goto exit_func;
     }
     if (SSL_use_PrivateKey(ssl, pri) != 1) {
@@ -814,15 +822,22 @@ static void setClientCertAndKey(SSL* ssl, ClientCertificate* cert)
     }
     SSL_check_private_key(ssl);
 
+    *x509 = cert_dup;
+    *pkey = pri;
+
+    return;
+
 exit_func:
     if (orgkey) {
         memset(orgkey, 0, orgkey_len); // delete private key completely
         fastFree(orgkey);
     }
+    if (cert_dup)
+        X509_free(cert_dup);
     if (pri) EVP_PKEY_free(pri);
 }
 
-void ResourceHandleManagerSSL::ClientCertSelectCallback(void *data)
+void ResourceHandleManagerSSL::ClientCertSelectCallback(void *data, X509 **x509, EVP_PKEY **pkey)
 {
     SSL* ssl = (SSL*)data;
     if (!ssl) return;
@@ -841,13 +856,14 @@ void ResourceHandleManagerSSL::ClientCertSelectCallback(void *data)
     ClientCertificate** certInfo = NULL;
     int certInfoIdx = -1;
     int certInfoNum = 0;
-    EVP_PKEY *pri = NULL;
     STACK_OF(X509) *ca = NULL;
-    X509 *x509 = NULL;
     unsigned char* orgpass = NULL;
     int orgpass_len = 0;
     X509 *server = NULL;
     char* requester = NULL;
+
+    *x509 = NULL;
+    *pkey = NULL;
 
     // should verify success!
     if (ssl->verify_mode != SSL_VERIFY_NONE && 0 != SSL_get_verify_result(ssl))
@@ -870,7 +886,6 @@ void ResourceHandleManagerSSL::ClientCertSelectCallback(void *data)
     case SSL3_VERSION:
 #endif
         if (!ssl->s3) return;
-        if (ssl->s3->tmp.message_type != SSL3_MT_CERTIFICATE_REQUEST) return;
         break;
     case DTLS1_VERSION:
         if (!ssl->d1) return;
@@ -912,7 +927,6 @@ void ResourceHandleManagerSSL::ClientCertSelectCallback(void *data)
         case SSL3_VERSION:
 #endif
             if (!ssl->s3) return;
-            if (ssl->s3->tmp.message_type != SSL3_MT_CERTIFICATE_REQUEST) return;
 
             nxLog_i("SSLv3/TLS");
 
@@ -963,7 +977,7 @@ void ResourceHandleManagerSSL::ClientCertSelectCallback(void *data)
     if (!cert) return;
 
     if (cert->cert() && cert->privateKey()) {
-        setClientCertAndKey(ssl, cert);
+        setClientCertAndKey(ssl, cert, x509, pkey);
         return;
     }
 
@@ -972,12 +986,12 @@ void ResourceHandleManagerSSL::ClientCertSelectCallback(void *data)
         if (!orgpass)
             break;
 
-        if (!parse_pkcs12((const unsigned char *)cert->pkcs12(), cert->pkcs12len(), (const char *)orgpass, &pri, &x509, &ca))
+        if (!parse_pkcs12((const unsigned char *)cert->pkcs12(), cert->pkcs12len(), (const char *)orgpass, pkey, x509, &ca))
             break;
 
-        if (SSL_use_certificate(ssl, x509) != 1)
+        if (SSL_use_certificate(ssl, *x509) != 1)
             break;
-        if (SSL_use_PrivateKey(ssl, pri) != 1)
+        if (SSL_use_PrivateKey(ssl, *pkey) != 1)
             break;
         if (!SSL_check_private_key(ssl))
             break;
@@ -991,9 +1005,7 @@ void ResourceHandleManagerSSL::ClientCertSelectCallback(void *data)
         }
         break;
     }
-    if (orgpass) delete [] orgpass;
-    if (pri) EVP_PKEY_free(pri);
-    if (x509) X509_free(x509);
+    if (orgpass) fastFree(orgpass);
 
     return;
 }

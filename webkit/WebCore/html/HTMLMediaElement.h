@@ -550,6 +550,7 @@ private:
     virtual void mediaPlayerSeekBegin(MediaPlayer*);
     virtual void mediaPlayerSeekEnd(MediaPlayer*);
     virtual void mediaPlayerResetUserGestureRestriction(MediaPlayer*);
+    virtual void mediaPlayerRemoveUserGestureRestriction(MediaPlayer*);
 #endif
 
 #if ENABLE(ENCRYPTED_MEDIA)

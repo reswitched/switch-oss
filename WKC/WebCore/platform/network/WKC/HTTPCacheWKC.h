@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2011-2016 ACCESS CO., LTD. All rights reserved.
+ *  Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -68,6 +68,12 @@ public:
     inline double maxAge() const { return m_maxAge; }
     inline const String& lastModifiedHeader() const { return m_lastModifiedHeader; }
     inline const String& eTagHeader() const { return m_eTagHeader; }
+    inline const String& accessControlAllowOriginHeader() const { return m_accessControlAllowOriginHeader; }
+
+    inline bool isSSL() const { return m_isSSL; }
+    inline bool isEVSSL() const { return m_isEVSSL; }
+    inline int secureState() const { return m_secureState; }
+    inline int secureLevel() const { return m_secureLevel; }
 
     inline bool serverPushed() const { return m_serverpushed; }
 
@@ -105,6 +111,12 @@ private:
     String m_lastModifiedHeader;
     String m_eTagHeader;
     String m_fileName;
+    String m_accessControlAllowOriginHeader;
+
+    bool m_isSSL;
+    bool m_isEVSSL;
+    int m_secureState;
+    int m_secureLevel;
 
     SharedBuffer* m_resourceData;
     long long m_contentLength;
@@ -162,6 +174,9 @@ public:
 
     void writeDigest(unsigned char *data, int length);
     bool verifyDigest(unsigned char *data, int length);
+
+    // for debug
+    void dumpResourceList();
 
 private:
     bool m_disabled;

@@ -420,6 +420,9 @@ struct SymbolTableIndexHashTraits : HashTraits<SymbolTableEntry> {
 };
 
 class SymbolTable final : public JSCell {
+#if PLATFORM(WKC)
+    WTF_MAKE_FAST_ALLOCATED;
+#endif
 public:
     typedef JSCell Base;
     static const unsigned StructureFlags = Base::StructureFlags | StructureIsImmortal;
@@ -667,12 +670,22 @@ private:
 
     Map m_map;
     ScopeOffset m_maxScopeOffset;
-    
+
+#if PLATFORM(WKC)
+public:
+#endif
     struct TypeProfilingRareData {
+#if PLATFORM(WKC)
+        WTF_MAKE_FAST_ALLOCATED;
+    public:
+#endif
         UniqueIDMap m_uniqueIDMap;
         OffsetToVariableMap m_offsetToVariableMap;
         UniqueTypeSetMap m_uniqueTypeSetMap;
     };
+#if PLATFORM(WKC)
+private:
+#endif
     std::unique_ptr<TypeProfilingRareData> m_typeProfilingRareData;
 
     bool m_usesNonStrictEval;

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2015 Apple Inc. All rights reserved.
- * Copyright (c) 2015-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2015-2017 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -4757,6 +4757,18 @@ void HTMLMediaElement::mediaPlayerResetUserGestureRestriction(MediaPlayer*)
     beginProcessingMediaPlayerCallback();
     m_mediaSession->addBehaviorRestriction(MediaElementSession::RequireUserGestureForRateChange);
     m_playRequested = false;
+    endProcessingMediaPlayerCallback();
+}
+
+void HTMLMediaElement::mediaPlayerRemoveUserGestureRestriction(MediaPlayer*)
+{
+    LOG(Media, "HTMLMediaElement::mediaPlayerRemoveUserGestureRestriction");
+
+    if (!m_player)
+        return;
+
+    beginProcessingMediaPlayerCallback();
+    m_mediaSession->removeBehaviorRestriction(MediaElementSession::RequireUserGestureForRateChange);
     endProcessingMediaPlayerCallback();
 }
 

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2006, 2007, 2013 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Nuanti Ltd.
- * Copyright (C) 2012-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (C) 2012-2017 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -67,6 +67,7 @@
 
 #if PLATFORM(WKC)
 #include "ElementIterator.h"
+#include "HTMLLabelElement.h"
 #endif
 
 namespace WebCore {
@@ -731,18 +732,24 @@ static bool isFocusControlBannedElement(const FocusCandidate& candidate)
     MainFrame& mainFrame = document.page()->mainFrame();
     FrameView* mainView = mainFrame.view();
 
+    if (!candidate.visibleNode->isElementNode()) {
+        ASSERT_NOT_REACHED();
+        return false;
+    }
+    Element& candidateElement = downcast<Element>(*candidate.visibleNode);
+
     IntRect frameRect = view->frameRect();
     if (view->parent())
         frameRect = view->parent()->contentsToWindow(frameRect);
 
     Vector<FloatQuad> quads;
-    candidate.visibleNode->renderer()->absoluteQuads(quads);
+    candidateElement.renderer()->absoluteQuads(quads);
     size_t n = quads.size();
     LayoutRect candidateRect = candidate.rect;
 
     for (size_t i = 0; i < n; ++i) {
         if (n != 1)
-            candidateRect = rectToAbsoluteCoordinates(candidate.visibleNode->document().frame(), quads[i].enclosingBoundingBox());
+            candidateRect = rectToAbsoluteCoordinates(candidateElement.document().frame(), quads[i].enclosingBoundingBox());
 
         if (candidateRect.isEmpty())
             continue;
@@ -756,12 +763,25 @@ static bool isFocusControlBannedElement(const FocusCandidate& candidate)
         candidateRect = mainView->windowToContents(rect);
         HitTestResult result = mainFrame.eventHandler().hitTestResultAtPoint(candidateRect.center(), HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping | HitTestRequest::DisallowShadowContent);
 
-        // hit test result node is in other window. e.g. iframe
-        if (document != result.innerNode()->document())
+        Node* hitNode = result.innerNode();
+
+        if (hitNode && hitNode->isTextNode())
+            hitNode = hitNode->parentElement();
+
+        if (!hitNode)
             continue;
 
+        // hit test result node is in other window. e.g. iframe
+        if (document != hitNode->document())
+            continue;
+
+        // If the hit test result node is a label and belongs to the same form as the candidate element, then allows to be focused.
+        if (is<HTMLLabelElement>(*hitNode) && candidateElement.isFormControlElement())
+            if (downcast<HTMLLabelElement>(*hitNode).form() == downcast<HTMLFormControlElement>(candidateElement).form())
+                return false;
+
         // hit test result node is not in other node.
-        if (candidate.visibleNode->contains(result.innerNode()))
+        if (candidateElement.contains(hitNode))
             return false;
     }
 
@@ -1177,22 +1197,22 @@ static bool isScrollableContainerNode(Node* node)
 
     if (RenderObject* renderer = node->renderer()) {
         return (renderer->isBox() && downcast<RenderBox>(renderer)->canBeScrolledAndHasScrollableArea()
-             && node->hasChildNodes() && !node->isDocumentNode());
+             && node->hasChildNodes() && !node->isDocumentNode() && node->firstChild()->isElementNode());
     }
 
     return false;
 }
 
-void FocusController::findFocusableNodeInDirection(Node* container, const LayoutRect& startingRect, FocusDirection direction, KeyboardEvent* event, FocusCandidate& closest, const LayoutRect* scope)
+void FocusController::findFocusableNodeInDirection(Node* container, Node* startingElement, const LayoutRect& startingRect, FocusDirection direction, KeyboardEvent* event, FocusCandidate& closest, const LayoutRect* scope)
 {
     ASSERT(container);
-    Element* focusedElement = (focusedFrame() && focusedFrame()->document()) ? focusedFrame()->document()->focusedElement() : 0;
+    ASSERT(startingElement);
 
     Element* element = ElementTraversal::firstWithin(*container);
     FocusCandidate current;
     current.rect = startingRect;
-    current.focusableNode = focusedElement;
-    current.visibleNode = focusedElement;
+    current.focusableNode = startingElement;
+    current.visibleNode = startingElement;
     current.direction = m_lastDirection;
     current.exitRect = m_lastExitRect;
     if (!m_lastEntryRect.isEmpty() && current.rect.contains(m_lastEntryRect))
@@ -1215,11 +1235,11 @@ void FocusController::findFocusableNodeInDirection(Node* container, const Layout
             continue;
 
         if (isScrollableContainerNode(element) && !element->renderer()->isTextArea()) {
-            findFocusableNodeInDirection(element, current.rect, direction, event, closest, scope);
+            findFocusableNodeInDirection(element, startingElement, current.rect, direction, event, closest, scope);
             continue;
         }
 
-        if (element == focusedElement)
+        if (element == startingElement)
             continue;
 
         if (!element->isKeyboardFocusable(event) && !element->isFrameOwnerElement() && !canScrollInDirection(element, direction))
@@ -1237,7 +1257,7 @@ void FocusController::findFocusableNodeInDirection(Node* container, const Layout
             if (!frameElement->contentFrame())
                 continue;
             frameElement->contentFrame()->document()->updateLayoutIgnorePendingStylesheets();
-            findFocusableNodeInDirection(frameElement->contentFrame()->document(), current.rect, direction, event, closest, scope);
+            findFocusableNodeInDirection(frameElement->contentFrame()->document(), startingElement, current.rect, direction, event, closest, scope);
         }
     }
     if (closest.focusableNode && closest.focusableNode->isElementNode() && closest.distance != maxDistance()) {
@@ -1267,7 +1287,9 @@ findFirstFocusableElement(Frame& frame, const LayoutRect* scope)
                 element = owner;
             }
         } else if (isScrollableContainerNode(element) && !element->renderer()->isTextArea()) {
-            element = ElementTraversal::firstChild(*element);
+            Element* child = ElementTraversal::firstChild(*element);
+            if (child)
+                element = child;
         }
         if (element->isFocusable() && !element->isFrameOwnerElement())
             break;
@@ -1298,7 +1320,9 @@ findLastFocusableElement(Frame& frame, const LayoutRect* scope)
                 element = owner;
             }
         } else if (isScrollableContainerNode(element) && !element->renderer()->isTextArea()) {
-            element = ElementTraversal::lastChild(*element);
+            Element* child = ElementTraversal::lastChild(*element);
+            if (child)
+                element = child;
         }
         if (element->isFocusable() && !element->isFrameOwnerElement())
             break;
@@ -1310,7 +1334,7 @@ findLastFocusableElement(Frame& frame, const LayoutRect* scope)
     return 0;
 }
 
-Element* FocusController::findNextFocusableElement(const FocusDirection& direction, const IntRect* scope)
+Element* FocusController::findNextFocusableElement(const FocusDirection& direction, const IntRect* scope, Element* base)
 {
     Frame& frame = focusedOrMainFrame();
     Document* focusedDocument = frame.document();
@@ -1321,8 +1345,10 @@ Element* FocusController::findNextFocusableElement(const FocusDirection& directi
 
     LayoutRect scopeRect(0,0,0,0);
 
-    Element* focusedElement = focusedDocument->focusedElement();
-    if (!focusedElement) {
+    if (!base) {
+        base = focusedDocument->focusedElement();
+    }
+    if (!base) {
         if (scope && !scope->isEmpty()) {
             LayoutRect lr = m_page.mainFrame().view()->windowToContents(*scope);
             scopeRect = lr;
@@ -1337,10 +1363,10 @@ Element* FocusController::findNextFocusableElement(const FocusDirection& directi
     }
 
     LayoutRect startingRect;
-    if (!hasOffscreenRect(focusedElement)) {
-        startingRect = nodeRectInAbsoluteCoordinates(focusedElement, true /* ignore border */);
-    } else if (focusedElement->hasTagName(areaTag)) {
-        startingRect = virtualRectForAreaElementAndDirection(downcast<HTMLAreaElement>(focusedElement), direction);
+    if (!hasOffscreenRect(static_cast<Node*>(base))) {
+        startingRect = nodeRectInAbsoluteCoordinates(base, true /* ignore border */);
+    } else if (base->hasTagName(areaTag)) {
+        startingRect = virtualRectForAreaElementAndDirection(downcast<HTMLAreaElement>(base), direction);
     }
 
     FocusCandidate focusCandidate;
@@ -1349,7 +1375,7 @@ Element* FocusController::findNextFocusableElement(const FocusDirection& directi
         LayoutRect lr = nframe.view()->windowToContents(*scope);
         scopeRect = lr;
     }
-    findFocusableNodeInDirection(nframe.document(), startingRect, direction, 0, focusCandidate, &scopeRect);
+    findFocusableNodeInDirection(nframe.document(), base, startingRect, direction, 0, focusCandidate, &scopeRect);
     ASSERT(!frameOwnerElement(focusCandidate));
 
     Node* node = focusCandidate.focusableNode;
@@ -1462,7 +1488,7 @@ static Element* findVerticallyFocusableElement(FocusDirection direction, Element
             if (!frameView) {
                 return 0;
             }
-            LayoutRect scopeRect = element->renderer()->absoluteBoundingBoxRect();
+            LayoutRect scopeRect = element->renderer()->absoluteBoundingBoxRect(true);
             if (scope && !scope->isEmpty())
                 scopeRect.intersect(*scope);
 
@@ -1559,7 +1585,6 @@ FocusController::findNearestFocusableElementFromPoint(const IntPoint& point, con
     for (; element; element = findVerticallyFocusableElement(FocusDirectionDown, ElementTraversal::next(*element), 0, &scopeRect)) {
         if (!element->isKeyboardFocusable(0))
             continue;
-#if PLATFORM(WKC)
         FocusCandidate candidate = FocusCandidate(element, FocusDirectionDown);
         if (candidate.isNull())
             continue;
@@ -1567,7 +1592,6 @@ FocusController::findNearestFocusableElementFromPoint(const IntPoint& point, con
             continue;
         if (isFocusControlBannedElement(candidate))
             continue;
-#endif
         int dist = distanceBetweenElementAndPoint(element, contentsPoint);
         ASSERT(dist >= 0);
         if (dist == 0) {

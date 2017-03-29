@@ -39,7 +39,9 @@ namespace JSC {
 class TypeLocation;
 
 class TypeProfilerLog {
-
+#if PLATFORM(WKC)
+    WTF_MAKE_FAST_ALLOCATED;
+#endif
 public:
     struct LogEntry {
 #if PLATFORM(WKC)

@@ -120,7 +120,7 @@ public:
 
     void SSLHandshakeInfo(ResourceHandle* job);
 
-    void ClientCertSelectCallback(void* ssl);
+    void ClientCertSelectCallback(void* ssl, X509 **x509, EVP_PKEY **pkey);
 
     CURLSH* getCurlShareHandle(void) { return m_curlShareHandle; }
 

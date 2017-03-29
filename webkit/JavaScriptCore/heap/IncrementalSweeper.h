@@ -54,6 +54,9 @@ public:
 #if USE(CF) || PLATFORM(WKC)
 private:
     void doSweep(double startTime);
+#if PLATFORM(WKC)
+    void doSweepSynchronously();
+#endif
     void scheduleTimer();
     void cancelTimer();
     

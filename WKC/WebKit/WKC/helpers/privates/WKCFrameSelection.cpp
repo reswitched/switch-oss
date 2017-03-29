@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -62,6 +62,12 @@ FrameSelectionPrivate::clear()
 }
 
 void
+FrameSelectionPrivate::setCaretVisible(bool caretIsVisible)
+{
+    m_webcore->setCaretVisible(caretIsVisible);
+}
+
+void
 FrameSelectionPrivate::setCaretBlinkingSuspended(bool suspended)
 {
     m_webcore->setCaretBlinkingSuspended(suspended);
@@ -100,6 +106,12 @@ void
 FrameSelection::clear()
 {
     m_private.clear();
+}
+
+void
+FrameSelection::setCaretVisible(bool caretIsVisible)
+{
+    m_private.setCaretVisible(caretIsVisible);
 }
 
 void

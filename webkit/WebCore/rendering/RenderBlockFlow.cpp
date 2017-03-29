@@ -3431,7 +3431,11 @@ VisiblePosition RenderBlockFlow::positionForPoint(const LayoutPoint& point, cons
 }
 
 
+#if !PLATFORM(WKC)
 void RenderBlockFlow::addFocusRingRectsForInlineChildren(Vector<IntRect>& rects, const LayoutPoint& additionalOffset, const RenderLayerModelObject*)
+#else
+void RenderBlockFlow::addFocusRingRectsForInlineChildren(Vector<IntRect>& rects, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer)
+#endif
 {
     ASSERT(childrenInline());
 
@@ -3440,9 +3444,16 @@ void RenderBlockFlow::addFocusRingRectsForInlineChildren(Vector<IntRect>& rects,
     for (RootInlineBox* curr = firstRootBox(); curr; curr = curr->nextRootBox()) {
         LayoutUnit top = std::max<LayoutUnit>(curr->lineTop(), curr->top());
         LayoutUnit bottom = std::min<LayoutUnit>(curr->lineBottom(), curr->top() + curr->height());
+#if !PLATFORM(WKC)
         LayoutRect rect(additionalOffset.x() + curr->x(), additionalOffset.y() + top, curr->width(), bottom - top);
         if (!rect.isEmpty())
             rects.append(snappedIntRect(rect));
+#else
+        // Add transformed rect.
+        FloatRect rect(curr->x(), top, curr->width(), bottom - top);
+        if (!rect.isEmpty())
+            rects.append(roundedIntRect(localToContainerQuad(rect, paintContainer).boundingBox()));
+#endif
     }
 }
 

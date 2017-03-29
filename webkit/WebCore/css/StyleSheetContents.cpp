@@ -1,6 +1,7 @@
 /*
  * (C) 1999-2003 Lars Knoll (knoll@kde.org)
  * Copyright (C) 2004, 2006, 2007, 2012, 2013 Apple Inc. All rights reserved.
+ * Copyright (c) 2016 ACCESS CO.,LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -488,7 +489,11 @@ bool StyleSheetContents::traverseSubresources(const std::function<bool (const Ca
 bool StyleSheetContents::subresourcesAllowReuse(CachePolicy cachePolicy) const
 {
     bool hasFailedOrExpiredResources = traverseSubresources([cachePolicy](const CachedResource& resource) {
-        if (resource.loadFailedOrCanceled())
+#if PLATFORM(WKC)
+        if (resource.loadFailedOrCanceled() || resource.errorOccurred())
+#else
+        if (resource.loadFailedOrCanceled()) 
+#endif
             return true;
         // We can't revalidate subresources individually so don't use reuse the parsed sheet if they need revalidation.
         if (resource.makeRevalidationDecision(cachePolicy) != CachedResource::RevalidationDecision::No)

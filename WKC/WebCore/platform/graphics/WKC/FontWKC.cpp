@@ -163,10 +163,6 @@ FontCascade::getTextWidth(const FontPlatformData& in_font, int in_flags, const u
             i++;
             continue;
         }
-        if (!(U16_IS_SURROGATE_LEAD(in_str[i]) && U16_IS_SURROGATE_TRAIL(in_str[i+1])) && in_str[i]!=0x0270A && in_str[i+1]!=0x20e3) {
-            i++;
-            continue;
-        }
 
         size_t emojilen = wkcDrawContextIsEmojiSequencePeer(&in_str[i], in_len-i);
         if (!emojilen) {

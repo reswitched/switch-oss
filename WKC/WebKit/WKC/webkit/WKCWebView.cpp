@@ -11,7 +11,7 @@
     Copyright (C) 2009 Igalia S.L.
     Copyright (C) 2009 Movial Creative Technologies Inc.
     Copyright (C) 2009 Bobby Powers
-    Copyright (c) 2010-2016 ACCESS CO., LTD. All rights reserved.
+    Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -200,6 +200,8 @@
 
 #include "bindings/generic/RuntimeEnabledFeatures.h"
 
+#include "shadow/SliderThumbElement.h"
+
 #if ENABLE(CONTENT_EXTENSIONS)
 #include "ContentExtensionCompiler.h"
 #endif
@@ -319,8 +321,6 @@ WKCWebViewPrivate::WKCWebViewPrivate(WKCWebView* parent, WKCClientBuilders& buil
 
     m_focusedElement = 0;
     m_elementFromPoint = 0;
-
-    m_lastNodeUnderMouse = 0;
 
 #if ENABLE(REMOTE_INSPECTOR)
     m_inspectorServerClient = 0;
@@ -1696,12 +1696,10 @@ WKCWebView::notifyMouseMoveTest(const WKCPoint& pos, WKC::MouseButton button, Mo
     coreNode = node ? node->priv().webcore() : 0;
     linkNode = coreNode ? coreNode->enclosingLinkEventParentOrSelf() : 0;
 
-    if (!coreNode || coreNode == m_private->m_lastNodeUnderMouse || !linkNode)
+    if (!coreNode || !linkNode)
         return notifyMouseMove(pos, button, modifiers);
 
-    m_private->m_lastNodeUnderMouse = coreNode;
-
-    renderer = coreNode->renderer();
+    renderer = linkNode->renderer();
     if (renderer && WTF::is<WebCore::RenderElement>(renderer)) {
         renderer = ((WebCore::RenderElement *)renderer)->hoverAncestor();
     } else {
@@ -1715,7 +1713,7 @@ WKCWebView::notifyMouseMoveTest(const WKCPoint& pos, WKC::MouseButton button, Mo
     if (!renderer || !targetNode)
         return notifyMouseMove(pos, button, modifiers);
 
-    for (WebCore::Node* n = coreNode; n && n != targetNode; n = n->parentNode()) {
+    for (WebCore::Node* n = linkNode; n && n != targetNode; n = n->parentNode()) {
         if (n->hasEventListeners(WebCore::eventNames().mouseoverEvent) &&
             n->hasEventListeners(WebCore::eventNames().mousemoveEvent)) {
             contentChanged = true;
@@ -1757,7 +1755,7 @@ WKCWebView::notifyMouseMoveTest(const WKCPoint& pos, WKC::MouseButton button, Mo
 
     renderer = targetNode->renderer();
 
-    for (WebCore::Node* n = coreNode; n && n != targetNode; n = n->parentNode()) {
+    for (WebCore::Node* n = linkNode; n && n != targetNode; n = n->parentNode()) {
         if (n->hasEventListeners(WebCore::eventNames().mouseoverEvent) &&
             n->hasEventListeners(WebCore::eventNames().mousemoveEvent)) {
             contentChanged = true;
@@ -2470,6 +2468,26 @@ void
 WKCWebView::executeScript(const char* script)
 {
     m_private->core()->mainFrame().script().executeScript(WTF::String::fromUTF8(script), true);
+}
+
+void
+WKCWebView::getSelectionPosition(int& startOffset, int& endOffset) const
+{
+    startOffset = -1;
+    endOffset = -1;
+
+    WebCore::Frame* frame = (WebCore::Frame *)&m_private->core()->focusController().focusedOrMainFrame();
+    if (!frame)
+        return;
+    WebCore::FrameSelection& selection = frame->selection();
+    if (!selection.isCaretOrRange())
+        return;
+    WTF::RefPtr<WebCore::Range> range = selection.toNormalizedRange();
+    if (!range)
+        return;
+
+    startOffset = range->startOffset();
+    endOffset = range->endOffset();
 }
 
 bool
@@ -3642,9 +3660,9 @@ WKCWebKitCancelWakeUp(void* in_timer)
 }
 
 WKC_API void
-WKCWebKitWakeUp(void* in_opaque)
+WKCWebKitWakeUp(void* in_timer, void* in_data)
 {
-    //wkcTimerWakeUpPeer(in_opaque);
+    wkcTimerWakeUpPeer(in_timer, in_data);
 }
 
 unsigned int
@@ -3673,6 +3691,15 @@ WKCWebKitIsMemoryCrashing()
 
 static void WKCResetVariables();
 
+#define DEFAULT_WATCHDOG_INTERVAL std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::seconds(20))
+std::chrono::microseconds gWatchdogInterval = DEFAULT_WATCHDOG_INTERVAL;
+
+void
+WKCWebKitSetWatchdogInterval(int in_interval_ms)
+{
+    gWatchdogInterval = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::milliseconds(in_interval_ms));
+}
+
 static bool
 shouldInterruptJavaScript(JSC::ExecState*, void*, void*)
 {
@@ -3680,7 +3707,6 @@ shouldInterruptJavaScript(JSC::ExecState*, void*, void*)
         return true;
     return gValidViews->first()->core()->chrome().client().shouldInterruptJavaScript();
 }
-
 
 bool
 WKCWebKitInitialize(void* memory, unsigned int memory_size, void* font_memory, unsigned int font_memory_size, WKCMemoryEventHandler& memory_event_handler, WKCTimerEventHandler& timer_event_handler)
@@ -3794,7 +3820,7 @@ WKCWebKitInitialize(void* memory, unsigned int memory_size, void* font_memory, u
     JSC::JSLockHolder locker(&vm);
     if (!vm.watchdog)
         vm.watchdog = std::make_unique<JSC::Watchdog>();
-    vm.watchdog->setTimeLimit(vm, std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::duration<double>(20)), shouldInterruptJavaScript, 0, 0);
+    vm.watchdog->setTimeLimit(vm, gWatchdogInterval, shouldInterruptJavaScript, 0, 0);
 
     NX_DP(("WKCWebKitInitialize Exit\n"));
     return true;
@@ -3859,6 +3885,7 @@ WKCWebKitFinalize()
     DeleteCriticalSection(&gCriticalSection);
     gCriticalSectionFlag = false;
 #endif
+    gWatchdogInterval = DEFAULT_WATCHDOG_INTERVAL;
 }
 
 bool
@@ -4318,6 +4345,7 @@ WKCWebKitForceTerminate()
     wkcDebugPrintForceTerminatePeer();
     memset(gTimerEventHandler, 0, sizeof(WKCWebKitTimerEventHandler));
     memset(gMemoryEventHandler, 0, sizeof(WKCWebKitMemoryEventHandler));
+    gWatchdogInterval = DEFAULT_WATCHDOG_INTERVAL;
 
     NX_DP(("WKCWebKitForceTerminate Exit\n"));
 }
@@ -4567,7 +4595,7 @@ WKCWebView::scrollNodeBy(WKC::Node* node, int dx, int dy)
     if (renderer->hasOverflowClip() && isLineClampNoneByParent) {
         int offsetX = layer->scrollXOffset() + dx;
         int offsetY = layer->scrollYOffset() + dy;
-        layer->scrollToOffset(WebCore::IntSize(offsetX, offsetY));
+        layer->scrollToOffset(WebCore::IntSize(offsetX, offsetY), WebCore::RenderLayer::ScrollOffsetClamping::ScrollOffsetClamped);
 
         WebCore::Frame* frame = &renderer->frame();
         if (frame) {
@@ -5146,6 +5174,24 @@ void
 WKCWebkitSetThreadPriorityCallback(WKC::SetThreadPriorityProc in_proc)
 {
     wkcThreadSetThreadPriorityProcPeer(in_proc);
+}
+
+// cancel range input dragging mode.
+
+void
+WKCWebKitCancelRangeInputDragging()
+{
+    WebCore::SliderThumbElement::cancelDragging();
+}
+
+// dump HTTPCache list (for Debug)
+
+void
+WKCWebKitDumpHTTPCacheList()
+{
+    if (WebCore::ResourceHandleManager::isExistSharedInstance()) {
+        WebCore::ResourceHandleManager::sharedInstance()->dumpHTTPCacheResourceList();
+    }
 }
 
 // idn

@@ -672,7 +672,7 @@ void Node::getNodeCompositeRect(LayoutRect* rects, int tx, int ty)
     for (Element* element = ElementTraversal::firstWithin((Element &)*this); element; element = ElementTraversal::nextSibling(*element)) {
         RenderObject* o = element->renderer();
         if (o) {
-            IntRect rect = o->absoluteBoundingBoxRect(false);
+            IntRect rect = o->absoluteBoundingBoxRect(true);
             if (!rect.isEmpty() && !(rect.x() < 0 || rect.y() < 0)) {
                 if (element->firstChild()) {
                     element->getNodeCompositeRect(rects, tx, ty);

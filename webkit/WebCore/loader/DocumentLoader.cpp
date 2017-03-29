@@ -383,11 +383,6 @@ void DocumentLoader::notifyFinished(CachedResource* resource)
     ASSERT(m_mainResource);
     if (!m_mainResource->errorOccurred() && !m_mainResource->wasCanceled()) {
         finishedLoading(m_mainResource->loadFinishTime());
-#if PLATFORM(WKC)
-        if (m_frame) {
-            MemoryCache::singleton().remove(*m_mainResource);
-        }
-#endif
         return;
     }
 
@@ -450,7 +445,11 @@ void DocumentLoader::finishedLoading(double finishTime)
     // If the document specified an application cache manifest, it violates the author's intent if we store it in the memory cache
     // and deny the appcache the chance to intercept it in the future, so remove from the memory cache.
     if (m_frame) {
+#if !PLATFORM(WKC)
         if (m_mainResource && m_frame->document()->hasManifest())
+#else
+        if (m_mainResource)
+#endif
             MemoryCache::singleton().remove(*m_mainResource);
     }
     m_applicationCacheHost->finishedLoadingMainResource();
