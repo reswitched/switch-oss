@@ -259,6 +259,8 @@ protected:
     void setRenderBlockFlowHasMarkupTruncation(bool b) { m_renderBlockFlowHasMarkupTruncation = b; }
     unsigned renderBlockFlowLineLayoutPath() const { return m_renderBlockFlowLineLayoutPath; }
     bool renderBlockFlowHasMarkupTruncation() const { return m_renderBlockFlowHasMarkupTruncation; }
+    
+    bool noLongerAffectsParentBlock() const { return s_noLongerAffectsParentBlock; }
 
 private:
     RenderElement(ContainerNode&, Ref<RenderStyle>&&, unsigned baseTypeFlags);

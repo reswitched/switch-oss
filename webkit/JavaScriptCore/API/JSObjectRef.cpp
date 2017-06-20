@@ -423,19 +423,19 @@ bool JSObjectSetPrivate(JSObjectRef object, void* data)
 
     // Get wrapped object if proxied
     if (jsObject->inherits(JSProxy::info()))
-        jsObject = jsCast<JSProxy*>(jsObject)->target();
+        jsObject = static_cast<JSProxy*>(jsObject)->target();
 
     if (jsObject->inherits(JSCallbackObject<JSGlobalObject>::info())) {
-        jsCast<JSCallbackObject<JSGlobalObject>*>(jsObject)->setPrivate(data);
+        static_cast<JSCallbackObject<JSGlobalObject>*>(jsObject)->setPrivate(data);
         return true;
     }
     if (jsObject->inherits(JSCallbackObject<JSDestructibleObject>::info())) {
-        jsCast<JSCallbackObject<JSDestructibleObject>*>(jsObject)->setPrivate(data);
+        static_cast<JSCallbackObject<JSDestructibleObject>*>(jsObject)->setPrivate(data);
         return true;
     }
 #if JSC_OBJC_API_ENABLED
     if (jsObject->inherits(JSCallbackObject<JSAPIWrapperObject>::info())) {
-        jsCast<JSCallbackObject<JSAPIWrapperObject>*>(jsObject)->setPrivate(data);
+        static_cast<JSCallbackObject<JSAPIWrapperObject>*>(jsObject)->setPrivate(data);
         return true;
     }
 #endif

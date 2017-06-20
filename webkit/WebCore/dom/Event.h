@@ -111,8 +111,8 @@ public:
     EventTarget* target() const { return m_target.get(); }
     void setTarget(PassRefPtr<EventTarget>);
 
-    EventTarget* currentTarget() const { return m_currentTarget; }
-    void setCurrentTarget(EventTarget* currentTarget) { m_currentTarget = currentTarget; }
+    EventTarget* currentTarget() const { return m_currentTarget.get(); }
+    void setCurrentTarget(EventTarget*);
 
     unsigned short eventPhase() const { return m_eventPhase; }
     void setEventPhase(unsigned short eventPhase) { m_eventPhase = eventPhase; }
@@ -203,7 +203,7 @@ private:
     bool m_cancelBubble;
 
     unsigned short m_eventPhase;
-    EventTarget* m_currentTarget;
+    RefPtr<EventTarget> m_currentTarget;
     RefPtr<EventTarget> m_target;
     DOMTimeStamp m_createTime;
 

@@ -225,8 +225,8 @@ Frame::~Frame()
 
     disconnectOwnerElement();
 
-    for (auto& observer : m_destructionObservers)
-        observer->frameDestroyed();
+    while (auto* destructionObserver = m_destructionObservers.takeAny())
+        destructionObserver->frameDestroyed();
 
     if (!isMainFrame())
         m_mainFrame.selfOnlyDeref();
@@ -273,6 +273,11 @@ void Frame::setDocument(RefPtr<Document>&& newDocument)
 {
     ASSERT(!newDocument || newDocument->frame() == this);
 
+    if (m_documentIsBeingReplaced)
+        return;
+
+    m_documentIsBeingReplaced = true;
+    
     if (m_doc && !m_doc->inPageCache())
         m_doc->prepareForDestruction();
 
@@ -286,6 +291,8 @@ void Frame::setDocument(RefPtr<Document>&& newDocument)
         newDocument->didBecomeCurrentDocumentInFrame();
 
     InspectorInstrumentation::frameDocumentUpdated(this);
+
+    m_documentIsBeingReplaced = false;
 }
 
 #if ENABLE(ORIENTATION_EVENTS)
@@ -608,6 +615,8 @@ int Frame::checkOverflowScroll(OverflowScrollAction action)
             selectionPosition.setY(view->scrollY() + view->visibleHeight() + scrollBoundsAdjustment);
         }
     }
+
+    Ref<Frame> protectedThis(*this);
 
     if (action == PerformOverflowScroll && (deltaX || deltaY)) {
         layer->scrollToOffset(IntSize(layer->scrollXOffset() + deltaX, layer->scrollYOffset() + deltaY));

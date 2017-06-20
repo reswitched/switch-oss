@@ -5,7 +5,7 @@
  *           (C) 2005, 2006 Samuel Weinig (sam.weinig@gmail.com)
  * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2013 Apple Inc. All rights reserved.
  * Copyright (C) 2010 Google Inc. All rights reserved.
- * Copyright (c) 2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2016-2017 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -28,6 +28,9 @@
 #include "RenderBoxModelObject.h"
 
 #include "BorderEdge.h"
+#if PLATFORM(WKC)
+#include "CachedImage.h"
+#endif
 #include "FloatRoundedRect.h"
 #include "Frame.h"
 #include "FrameView.h"
@@ -664,6 +667,17 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
     StyleImage* bgImage = bgLayer->image();
     bool shouldPaintBackgroundImage = bgImage && bgImage->canRender(this, style().effectiveZoom());
     
+#if PLATFORM(WKC)
+    // Try to decode bg image here if not yet done, because bg color needs to be drawn if unable to decode bg image.
+    if (shouldPaintBackgroundImage && (baseBgColorUsage != BaseBackgroundColorOnly)) {
+        CachedImage* cachedImage = bgImage->cachedImage();
+        if (cachedImage) {
+            RefPtr<Image> image = cachedImage->image();
+            if (image && image->isBitmapImage() && !image->nativeImageForCurrentFrame())
+                shouldPaintBackgroundImage = false;
+        }
+    }
+#endif
     bool forceBackgroundToWhite = false;
     if (document().printing()) {
         if (style().printColorAdjust() == PrintColorAdjustEconomy)
@@ -2607,9 +2621,11 @@ void RenderBoxModelObject::moveChildrenTo(RenderBoxModelObject* toBoxModelObject
         // Save our next sibling as moveChildTo will clear it.
         RenderObject* nextSibling = child->nextSibling();
         
+        // FIXME: This logic here fails to detect the first letter in certain cases
+        // and skips a valid sibling renderer (see webkit.org/b/163737).
         // Check to make sure we're not saving the firstLetter as the nextSibling.
         // When the |child| object will be moved, its firstLetter will be recreated,
-        // so saving it now in nextSibling would let us with a destroyed object.
+        // so saving it now in nextSibling would leave us with a stale object.
         if (is<RenderTextFragment>(*child) && is<RenderText>(nextSibling)) {
             RenderObject* firstLetterObj = nullptr;
             if (RenderBlock* block = downcast<RenderTextFragment>(*child).blockForAccompanyingFirstLetter()) {

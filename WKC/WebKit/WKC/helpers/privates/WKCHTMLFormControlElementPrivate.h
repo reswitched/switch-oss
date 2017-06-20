@@ -22,12 +22,14 @@
 
 #include "helpers/WKCHTMLFormControlElement.h"
 #include "helpers/privates/WKCHTMLElementPrivate.h"
+#include "AtomicString.h"
 
 namespace WebCore {
 class HTMLFormControlElement;
 } // namespace
 
 namespace WKC {
+class AtomicStringPrivate;
 class HTMLFormElementPrivate;
 
 class HTMLFormControlElementWrap : public HTMLFormControlElement {
@@ -51,10 +53,13 @@ public:
     void dispatchFormControlInputEvent();
     void dispatchFormControlChangeEvent();
     bool isSuccessfulSubmitButton() const;
+    const AtomicString& type();
 
 private:
     HTMLFormControlElementWrap m_wkc;
     HTMLFormElementPrivate* m_formElement;
+    WTF::AtomicString m_type;
+    AtomicStringPrivate* m_atomicstring_priv;
 };
 } // namespace
 

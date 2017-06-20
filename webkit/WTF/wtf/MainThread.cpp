@@ -241,6 +241,7 @@ static void callFunctionObject(void* context)
     auto function = std::unique_ptr<std::function<void ()>>(static_cast<std::function<void ()>*>(context));
     (*function)();
 #if PLATFORM(WKC)
+    function->~function();
     WTF::fastFree(function.release());
 #endif
 }

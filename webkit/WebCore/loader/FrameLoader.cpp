@@ -594,7 +594,7 @@ void FrameLoader::clear(Document* newDocument, bool clearWindowProperties, bool 
     if (clearWindowProperties) {
         InspectorInstrumentation::frameWindowDiscarded(&m_frame, m_frame.document()->domWindow());
         m_frame.document()->domWindow()->resetUnlessSuspendedForPageCache();
-        m_frame.script().clearWindowShell(newDocument->domWindow(), m_frame.document()->inPageCache());
+        m_frame.script().clearWindowShellsNotMatchingDOMWindow(newDocument->domWindow(), m_frame.document()->inPageCache());
     }
 
     m_frame.selection().prepareForDestruction();
@@ -607,6 +607,9 @@ void FrameLoader::clear(Document* newDocument, bool clearWindowProperties, bool 
     m_frame.setDocument(0);
 
     subframeLoader().clear();
+
+    if (clearWindowProperties)
+        m_frame.script().setDOMWindowForWindowShell(newDocument->domWindow());
 
     if (clearScriptObjects)
         m_frame.script().clearScriptObjects();
@@ -1175,6 +1178,11 @@ static ShouldOpenExternalURLsPolicy shouldOpenExternalURLsPolicyToApply(Frame& s
     return propagatedPolicy;
 }
 
+bool FrameLoader::isNavigationAllowed() const
+{
+    return m_pageDismissalEventBeingDispatched == PageDismissalType::None && NavigationDisablerForBeforeUnload::isNavigationAllowed();
+}
+
 void FrameLoader::loadURL(const FrameLoadRequest& frameLoadRequest, const String& referrer, FrameLoadType newLoadType, Event* event, PassRefPtr<FormState> prpFormState)
 {
     if (m_inStopAllLoaders)
@@ -1215,7 +1223,7 @@ void FrameLoader::loadURL(const FrameLoadRequest& frameLoadRequest, const String
         return;
     }
 
-    if (m_pageDismissalEventBeingDispatched != PageDismissalType::None)
+    if (!isNavigationAllowed())
         return;
 
 #if PLATFORM(WKC)
@@ -1428,7 +1436,7 @@ void FrameLoader::loadWithDocumentLoader(DocumentLoader* loader, FrameLoadType t
 
     ASSERT(m_frame.view());
 
-    if (m_pageDismissalEventBeingDispatched != PageDismissalType::None)
+    if (!isNavigationAllowed())
         return;
 
     if (m_frame.document())
@@ -1627,7 +1635,7 @@ void FrameLoader::reload(bool endToEndReload)
 void FrameLoader::stopAllLoaders(ClearProvisionalItemPolicy clearProvisionalItemPolicy)
 {
     ASSERT(!m_frame.document() || !m_frame.document()->inPageCache());
-    if (m_pageDismissalEventBeingDispatched != PageDismissalType::None)
+    if (!isNavigationAllowed())
         return;
 
     // If this method is called from within this method, infinite recursion can occur (3442218). Avoid this.
@@ -1844,12 +1852,13 @@ void FrameLoader::commitProvisionalLoad()
         // commit to happen before any changes to viewport arguments and dealing with this there is difficult.
         m_frame.page()->chrome().setDispatchViewportDataDidChangeSuppressed(true);
 #endif
-        prepareForCachedPageRestore();
+        willRestoreFromCachedPage();
 
         // FIXME: This API should be turned around so that we ground CachedPage into the Page.
         cachedPage->restore(*m_frame.page());
 
         dispatchDidCommitLoad();
+
 #if PLATFORM(IOS)
         m_frame.page()->chrome().setDispatchViewportDataDidChangeSuppressed(false);
         m_frame.page()->chrome().dispatchViewportPropertiesDidChange(m_frame.page()->viewportArguments());
@@ -1930,20 +1939,20 @@ void FrameLoader::transitionToCommitted(CachedPage* cachedPage)
     if (pdl != m_provisionalDocumentLoader)
         return;
 
-    // Nothing else can interupt this commit - set the Provisional->Committed transition in stone
     if (m_documentLoader)
         m_documentLoader->stopLoadingSubresources();
     if (m_documentLoader)
         m_documentLoader->stopLoadingPlugIns();
 
+    // Setting our document loader invokes the unload event handler of our child frames.
+    // Script can do anything. If the script initiates a new load, we need to abandon the
+    // current load or the two will stomp each other.
     setDocumentLoader(m_provisionalDocumentLoader.get());
+    if (pdl != m_provisionalDocumentLoader)
+        return;
     setProvisionalDocumentLoader(0);
 
-    if (pdl != m_documentLoader) {
-        ASSERT(m_state == FrameStateComplete);
-        return;
-    }
-
+    // Nothing else can interupt this commit - set the Provisional->Committed transition in stone
     setState(FrameStateCommittedPage);
 
 #if ENABLE(TOUCH_EVENTS) && !PLATFORM(IOS)
@@ -2072,7 +2081,7 @@ void FrameLoader::closeOldDataSources()
     m_client.setMainFrameDocumentReady(false); // stop giving out the actual DOMDocument to observers
 }
 
-void FrameLoader::prepareForCachedPageRestore()
+void FrameLoader::willRestoreFromCachedPage()
 {
     ASSERT(!m_frame.tree().parent());
     ASSERT(m_frame.page());
@@ -2412,11 +2421,11 @@ void FrameLoader::setOriginalURLForDownloadRequest(ResourceRequest& request)
     }
 }
 
-void FrameLoader::didLayout(LayoutMilestones milestones)
+void FrameLoader::didReachLayoutMilestone(LayoutMilestones milestones)
 {
     ASSERT(m_frame.isMainFrame());
 
-    m_client.dispatchDidLayout(milestones);
+    m_client.dispatchDidReachLayoutMilestone(milestones);
 }
 
 void FrameLoader::didFirstLayout()
@@ -2451,6 +2460,11 @@ void FrameLoader::frameLoadCompleted()
 
 void FrameLoader::detachChildren()
 {
+    // Any subframe inserted by unload event handlers executed in the loop below will not get unloaded
+    // because we create a copy of the subframes list before looping. Therefore, it would be unsafe to
+    // allow loading of subframes at this point.
+    SubframeLoadingDisabler subframeLoadingDisabler(m_frame.document());
+
     Vector<Ref<Frame>, 16> childrenToDetach;
     childrenToDetach.reserveInitialCapacity(m_frame.tree().childCount());
     for (Frame* child = m_frame.tree().lastChild(); child; child = child->tree().previousSibling())
@@ -3105,6 +3119,8 @@ void FrameLoader::continueLoadAfterNewWindowPolicy(const ResourceRequest& reques
     RefPtr<Frame> mainFrame = m_client.dispatchCreatePage(action);
     if (!mainFrame)
         return;
+
+    mainFrame->loader().forceSandboxFlags(frame->loader().effectiveSandboxFlags());
 
     if (frameName != "_blank")
         mainFrame->tree().setName(frameName);

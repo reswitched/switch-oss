@@ -839,6 +839,7 @@ namespace JSC {
 
         JumpList m_exceptionChecks;
         JumpList m_exceptionChecksWithCallFrameRollback;
+        Label m_exceptionHandler;
 
         unsigned m_getByIdIndex;
         unsigned m_putByIdIndex;

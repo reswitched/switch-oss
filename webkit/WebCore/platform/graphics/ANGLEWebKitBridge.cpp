@@ -242,13 +242,21 @@ bool ANGLEWebKitBridge::compileShaderSource(const char* shaderSource, ANGLEShade
 
     bool validateSuccess = ShCompile(compiler, shaderSourceStrings, 1, SH_OBJECT_CODE | SH_VARIABLES | extraCompileOptions);
     if (!validateSuccess) {
+#if !PLATFORM(WKC)
         const std::string& log = ShGetInfoLog(compiler);
+#else
+        const wkc_angle_string& log = ShGetInfoLog(compiler);
+#endif
         if (log.length())
             shaderValidationLog = log.c_str();
         return false;
     }
 
+#if !PLATFORM(WKC)
     const std::string& objectCode = ShGetObjectCode(compiler);
+#else
+    const wkc_angle_string& objectCode = ShGetObjectCode(compiler);
+#endif
     if (objectCode.length())
         translatedShaderSource = objectCode.c_str();
     

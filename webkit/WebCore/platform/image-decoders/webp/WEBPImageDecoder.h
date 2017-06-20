@@ -34,8 +34,16 @@
 #if USE(WEBP)
 
 #include "webp/decode.h"
+
+#if ENABLE(WKC_BLINK_AWEBP)
+#include "webp/demux.h"
+#if USE(QCMSLIB)
+#define QCMS_WEBP_COLOR_CORRECTION
+#endif
+#else
 #if USE(QCMSLIB) && (WEBP_DECODER_ABI_VERSION > 0x200)
 #define QCMS_WEBP_COLOR_CORRECTION
+#endif
 #endif
 
 namespace WebCore {
@@ -46,29 +54,80 @@ public:
     virtual ~WEBPImageDecoder();
 
     virtual String filenameExtension() const { return "webp"; }
+#if ENABLE(WKC_BLINK_AWEBP)
+    virtual void setData(SharedBuffer* data, bool allDataReceived);
+    virtual bool setSize(unsigned width, unsigned height);
+    virtual size_t frameCount();
+    virtual int repetitionCount() const;
+    virtual void clearFrameBufferCache(size_t clearBeforeFrame);
+#else
     virtual bool isSizeAvailable();
+#endif
     virtual ImageFrame* frameBufferAtIndex(size_t index);
 
 private:
+#if ENABLE(WKC_BLINK_AWEBP)
+    size_t decodeFrameCount();
+    size_t findRequiredPreviousFrame(size_t frameIndex, bool frameRectIsOpaque);
+    void initializeNewFrame(size_t index);
+    void decode(size_t index);
+    bool decodeSingleFrame(const uint8_t* dataBytes, size_t dataSize, size_t frameIndex);
+    bool frameIsCompleteAtIndex(size_t) const;
+#else
     bool decode(bool onlySize);
+#endif
 
     WebPIDecoder* m_decoder;
+#if ENABLE(WKC_BLINK_AWEBP)
+    WebPDecBuffer m_decoderBuffer;
+    bool m_frameBackgroundHasAlpha;
+#ifdef QCMS_WEBP_COLOR_CORRECTION
+    bool m_hasColorProfile;
+#endif
+#else
     bool m_hasAlpha;
+#endif
     int m_formatFlags;
 
 #ifdef QCMS_WEBP_COLOR_CORRECTION
     qcms_transform* colorTransform() const { return m_transform; }
+#if ENABLE(WKC_BLINK_AWEBP)
+    bool createColorTransform(const char* data, size_t);
+    void readColorProfile();
+#else
     void createColorTransform(const char* data, size_t);
     void readColorProfile(const uint8_t* data, size_t);
     void applyColorProfile(const uint8_t* data, size_t, ImageFrame&);
+#endif
+    void clearColorTransform();
 
-    bool m_haveReadProfile;
     qcms_transform* m_transform;
+#if !ENABLE(WKC_BLINK_AWEBP)
+    bool m_haveReadProfile;
     int m_decodedHeight;
+#endif
 #else
+#if !ENABLE(WKC_BLINK_AWEBP)
     void applyColorProfile(const uint8_t*, size_t, ImageFrame&) { };
 #endif
+#endif
     void clear();
+
+#if ENABLE(WKC_BLINK_AWEBP)
+    bool updateDemuxer();
+    bool initFrameBuffer(size_t index);
+    void applyPostProcessing(size_t frameIndex);
+
+    WebPDemuxer* m_demux;
+    WebPDemuxState m_demuxState;
+    int m_repetitionCount;
+    int m_decodedHeight;
+
+    typedef void (*AlphaBlendFunction)(ImageFrame&, ImageFrame&, int, int, int);
+    AlphaBlendFunction m_blendFunction;
+
+    void clearDecoder();
+#endif
 };
 
 } // namespace WebCore

@@ -2469,7 +2469,7 @@ void RenderLayer::scrollTo(int x, int y)
         }
 
 #if PLATFORM(IOS) && ENABLE(TOUCH_EVENTS)
-        renderer().document().dirtyTouchEventRects();
+        renderer().document().setTouchEventRegionsNeedUpdate();
 #endif
         DebugPageOverlays::didLayout(renderer().frame());
     }
@@ -6877,7 +6877,7 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
 
 #if PLATFORM(IOS) && ENABLE(TOUCH_EVENTS)
     if (diff == StyleDifferenceRecompositeLayer || diff >= StyleDifferenceLayoutPositionedMovementOnly)
-        renderer().document().dirtyTouchEventRects();
+        renderer().document().setTouchEventRegionsNeedUpdate();
 #else
     UNUSED_PARAM(diff);
 #endif

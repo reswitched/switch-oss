@@ -1,7 +1,7 @@
 /*
  * WKCPrefs.cpp
  *
- * Copyright (c) 2011-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -40,6 +40,7 @@
 #include "platform/ScrollView.h"
 
 #include <wkc/wkcgpeer.h>
+#include <wkc/wkcglpeer.h>
 #include <wkc/wkcmediapeer.h>
 
 #include "NotImplemented.h"
@@ -523,6 +524,14 @@ void
 setUseNearestFilter(bool flag)
 {
     wkcDrawContexCairoSetUseFilterNearestPeer(flag);
+}
+
+void
+activateWebGL()
+{
+#if ENABLE(WEBGL)
+    bool ret = wkcGLActivatePeer();
+#endif
 }
 
 void

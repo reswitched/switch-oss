@@ -916,8 +916,14 @@ void CachedResourceLoader::loadDone(CachedResource* resource, bool shouldPerform
             if (resource->type() == CachedResource::MainResource)
                 initiatorDocument = document()->parentDocument();
             ASSERT(initiatorDocument);
+#if PLATFORM(WKC)
+            if (initiatorDocument) {
+#endif
             const InitiatorInfo& info = initiatorIt->value;
             initiatorDocument->domWindow()->performance()->addResourceTiming(info.name, initiatorDocument, resource->resourceRequest(), resource->response(), info.startTime, resource->loadFinishTime());
+#if PLATFORM(WKC)
+            }
+#endif
             m_initiatorMap.remove(initiatorIt);
         }
     }

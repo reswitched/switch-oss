@@ -93,7 +93,7 @@ bool WebGLBuffer::associateBufferDataImpl(const void* data, GC3Dsizeiptr byteLen
 
 bool WebGLBuffer::associateBufferData(GC3Dsizeiptr size)
 {
-    return associateBufferDataImpl(0, size);
+    return associateBufferDataImpl(nullptr, size);
 }
 
 bool WebGLBuffer::associateBufferData(ArrayBuffer* array)
@@ -164,15 +164,15 @@ GC3Dsizeiptr WebGLBuffer::byteLength() const
     return m_byteLength;
 }
 
-int WebGLBuffer::getCachedMaxIndex(GC3Denum type)
+WTF::Optional<unsigned> WebGLBuffer::getCachedMaxIndex(GC3Denum type)
 {
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(m_maxIndexCache); ++i)
         if (m_maxIndexCache[i].type == type)
             return m_maxIndexCache[i].maxIndex;
-    return -1;
+    return WTF::Nullopt;
 }
 
-void WebGLBuffer::setCachedMaxIndex(GC3Denum type, int value)
+void WebGLBuffer::setCachedMaxIndex(GC3Denum type, unsigned value)
 {
     size_t numEntries = WTF_ARRAY_LENGTH(m_maxIndexCache);
     for (size_t i = 0; i < numEntries; ++i)

@@ -198,6 +198,11 @@ void Event::setTarget(PassRefPtr<EventTarget> target)
         receivedTarget();
 }
 
+void Event::setCurrentTarget(EventTarget* currentTarget)
+{
+    m_currentTarget = currentTarget;
+}
+
 void Event::receivedTarget()
 {
 }

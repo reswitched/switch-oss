@@ -27,6 +27,7 @@
 
 #if ENABLE(GAMEPAD)
 
+#include "GamepadProviderClient.h"
 #include <wtf/NeverDestroyed.h>
 
 namespace WebCore {
@@ -75,6 +76,14 @@ const Vector<PlatformGamepad*>& GamepadProvider::platformGamepads()
         defaultGamepads = new Vector<PlatformGamepad*>();
     return *defaultGamepads;
 #endif
+}
+
+void GamepadProvider::dispatchPlatformGamepadInputActivity()
+{
+    for (auto& client : m_clients)
+        client->platformGamepadInputActivity(m_shouldMakeGamepadsVisible);
+
+    m_shouldMakeGamepadsVisible = false;
 }
 
 } // namespace WebCore

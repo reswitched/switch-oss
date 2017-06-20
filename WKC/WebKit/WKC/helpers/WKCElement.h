@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2015 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -25,6 +25,7 @@
 #include "WKCNode.h"
 
 namespace WKC {
+class AtomicString;
 class Attribute;
 class QualifiedName;
 class ElementPrivate;
@@ -39,6 +40,7 @@ public:
     void focus(bool restorePreviousSelection = true);
     void updateFocusAppearance(bool restorePreviousSelection);
     void blur();
+    const AtomicString& computeInheritedLanguage() const;
 
     bool isFocusable() const;
 

@@ -28,6 +28,10 @@
 
 #include <string.h>
 
+#if HAVE(QOS_CLASSES)
+#include <bmalloc/bmalloc.h>
+#endif
+
 namespace WTF {
 
 struct NewThreadContext {
@@ -92,15 +96,32 @@ ThreadIdentifier createThread(ThreadFunction entryPoint, void* data, const char*
 void setCurrentThreadIsUserInteractive()
 {
 #if HAVE(QOS_CLASSES)
-    pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0);
+    pthread_set_qos_class_self_np(adjustedQOSClass(QOS_CLASS_USER_INTERACTIVE), relativePriority);
 #endif
 }
 
 void setCurrentThreadIsUserInitiated()
 {
 #if HAVE(QOS_CLASSES)
-    pthread_set_qos_class_self_np(QOS_CLASS_USER_INITIATED, 0);
+    pthread_set_qos_class_self_np(adjustedQOSClass(QOS_CLASS_USER_INITIATED), relativePriority);
 #endif
 }
+
+#if HAVE(QOS_CLASSES)
+static qos_class_t globalMaxQOSclass { QOS_CLASS_UNSPECIFIED };
+
+void setGlobalMaxQOSClass(qos_class_t maxClass)
+{
+    bmalloc::api::setScavengerThreadQOSClass(maxClass);
+    globalMaxQOSclass = maxClass;
+}
+
+qos_class_t adjustedQOSClass(qos_class_t originalClass)
+{
+    if (globalMaxQOSclass != QOS_CLASS_UNSPECIFIED)
+        return std::min(originalClass, globalMaxQOSclass);
+    return originalClass;
+}
+#endif
 
 } // namespace WTF

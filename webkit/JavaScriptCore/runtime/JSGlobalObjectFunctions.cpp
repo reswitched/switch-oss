@@ -53,6 +53,8 @@ using namespace Unicode;
 
 namespace JSC {
 
+static const char* const ObjectProtoCalledOnNullOrUndefinedError = "Object.prototype.__proto__ called on null or undefined";
+
 template<unsigned charactersCount>
 static Bitmap<256> makeCharacterBitmap(const char (&characters)[charactersCount])
 {
@@ -861,11 +863,11 @@ private:
 
 EncodedJSValue JSC_HOST_CALL globalFuncProtoGetter(ExecState* exec)
 {
-    if (exec->thisValue().isUndefinedOrNull()) 
-        return throwVMError(exec, createTypeError(exec, "Can't convert undefined or null to object"));
+    JSValue thisValue = exec->thisValue().toThis(exec, StrictMode);
+    if (thisValue.isUndefinedOrNull())
+        return throwVMTypeError(exec, ASCIILiteral(ObjectProtoCalledOnNullOrUndefinedError));
 
-    JSObject* thisObject = jsDynamicCast<JSObject*>(exec->thisValue().toThis(exec, NotStrictMode));
-
+    JSObject* thisObject = jsDynamicCast<JSObject*>(thisValue);
     if (!thisObject)
         return JSValue::encode(exec->thisValue().synthesizePrototype(exec));
 
@@ -911,12 +913,13 @@ bool checkProtoSetterAccessAllowed(ExecState* exec, JSObject* object)
 
 EncodedJSValue JSC_HOST_CALL globalFuncProtoSetter(ExecState* exec)
 {
-    if (exec->thisValue().isUndefinedOrNull()) 
-        return throwVMError(exec, createTypeError(exec, "Can't convert undefined or null to object"));
+    JSValue thisValue = exec->thisValue().toThis(exec, StrictMode);
+    if (thisValue.isUndefinedOrNull())
+        return throwVMTypeError(exec, ASCIILiteral(ObjectProtoCalledOnNullOrUndefinedError));
 
     JSValue value = exec->argument(0);
 
-    JSObject* thisObject = jsDynamicCast<JSObject*>(exec->thisValue().toThis(exec, NotStrictMode));
+    JSObject* thisObject = jsDynamicCast<JSObject*>(thisValue);
 
     // Setting __proto__ of a primitive should have no effect.
     if (!thisObject)

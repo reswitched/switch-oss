@@ -104,6 +104,10 @@ public:
     double duration() const;
     double currentTime() const;
 
+    typedef union {
+        double asDouble;
+    } RemoteCommandArgument;
+
     enum RemoteControlCommandType {
         NoCommand,
         PlayCommand,
@@ -114,9 +118,11 @@ public:
         EndSeekingBackwardCommand,
         BeginSeekingForwardCommand,
         EndSeekingForwardCommand,
+        SeekToPlaybackPositionCommand,
     };
     bool canReceiveRemoteControlCommands() const;
-    void didReceiveRemoteControlCommand(RemoteControlCommandType);
+    void didReceiveRemoteControlCommand(RemoteControlCommandType, const RemoteCommandArgument* argument = nullptr);
+    bool supportsSeeking() const;
 
     enum DisplayType {
         Normal,
@@ -140,6 +146,8 @@ public:
 #if PLATFORM(IOS)
     virtual bool requiresPlaybackTargetRouteMonitoring() const { return false; }
 #endif
+
+    String sourceApplicationIdentifier() const;
 
 protected:
     PlatformMediaSessionClient& client() const { return m_client; }
@@ -175,7 +183,8 @@ public:
     virtual double mediaSessionCurrentTime() const;
     
     virtual bool canReceiveRemoteControlCommands() const = 0;
-    virtual void didReceiveRemoteControlCommand(PlatformMediaSession::RemoteControlCommandType) = 0;
+    virtual void didReceiveRemoteControlCommand(PlatformMediaSession::RemoteControlCommandType, const PlatformMediaSession::RemoteCommandArgument*) = 0;
+    virtual bool supportsSeeking() const = 0;
 
     virtual void setShouldBufferData(bool) { }
     virtual bool elementIsHidden() const { return false; }
@@ -189,6 +198,7 @@ public:
     virtual void setShouldPlayToPlaybackTarget(bool) { }
 
     virtual const Document* hostingDocument() const = 0;
+    virtual String sourceApplicationIdentifier() const = 0;
 
 protected:
     virtual ~PlatformMediaSessionClient() { }

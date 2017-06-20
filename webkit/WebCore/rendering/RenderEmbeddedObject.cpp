@@ -427,12 +427,14 @@ bool RenderEmbeddedObject::isReplacementObscured() const
     if (!rootRenderView)
         return true;
 
-    IntRect rootViewRect = view().frameView().convertToRootView(snappedIntRect(rect));
-    
+    // We should always start hit testing a clean tree.
+    view().frameView().updateLayoutAndStyleIfNeededRecursive();
+
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping | HitTestRequest::DisallowShadowContent | HitTestRequest::AllowChildFrameContent);
     HitTestResult result;
     HitTestLocation location;
     
+    IntRect rootViewRect = view().frameView().convertToRootView(snappedIntRect(rect));
     LayoutUnit x = rootViewRect.x();
     LayoutUnit y = rootViewRect.y();
     LayoutUnit width = rootViewRect.width();

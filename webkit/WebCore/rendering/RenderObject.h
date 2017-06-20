@@ -336,6 +336,7 @@ public:
     virtual bool isTextControl() const { return false; }
     virtual bool isTextArea() const { return false; }
     virtual bool isTextField() const { return false; }
+    virtual bool isSearchField() const { return false; }
     virtual bool isTextControlInnerBlock() const { return false; }
     virtual bool isVideo() const { return false; }
     virtual bool isWidget() const { return false; }
@@ -478,7 +479,7 @@ public:
         // RenderBlock::createAnonymousBlock(). This includes creating an anonymous
         // RenderBlock having a BLOCK or BOX display. Other classes such as RenderTextFragment
         // are not RenderBlocks and will return false. See https://bugs.webkit.org/show_bug.cgi?id=56709. 
-        return isAnonymous() && (style().display() == BLOCK || style().display() == BOX) && style().styleType() == NOPSEUDO && isRenderBlock() && !isListMarker() && !isRenderFlowThread() && !isRenderMultiColumnSet() && !isRenderView()
+        return isAnonymous() && (style().display() == BLOCK || style().display() == BOX) && style().styleType() == NOPSEUDO && isRenderBlock() && !isListMarker() && !isRenderFlowThread() && !isRenderNamedFlowFragment() && !isRenderMultiColumnSet() && !isRenderView()
 #if ENABLE(FULLSCREEN_API)
             && !isRenderFullScreen()
             && !isRenderFullScreenPlaceholder()

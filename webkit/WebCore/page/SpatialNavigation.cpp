@@ -100,6 +100,22 @@ static inline bool isDiagonalDirection(FocusDirection direction)
         return false;
     }
 }
+
+bool isInsideFocusableFrame(Element* element)
+{
+    FrameView* view = element->document().frame()->view();
+
+    bool isFocusable = true;
+    for (; view; view = downcast<FrameView>(view->parent())) {
+        Element* owner = view->frame().ownerElement();
+        if (owner && !owner->isFocusable()) {
+            isFocusable = false;
+            break;
+        }
+    }
+
+    return isFocusable;
+}
 #endif
 
 FocusCandidate::FocusCandidate(Node* node, FocusDirection direction)
@@ -136,7 +152,19 @@ FocusCandidate::FocusCandidate(Node* node, FocusDirection direction)
     }
 
     focusableNode = node;
+#if PLATFORM(WKC)
+    FrameView* frameView = node->document().view();
+    if (frameView) {
+        if (frameView->parent()) {
+            frameView = frameView->frame().tree().top().view();
+        }
+        IntRect r(rect.x(), rect.y(), rect.width(), rect.height());
+        frameView->contentsToWindow(r);
+        isOffscreen = !frameView->visibleContentRect().intersects(r);
+    }
+#else
     isOffscreen = hasOffscreenRect(visibleNode);
+#endif
     isOffscreenAfterScrolling = hasOffscreenRect(visibleNode, direction);
 #if PLATFORM(WKC)
     if (visibleNode->hasTagName(HTMLNames::aTag) && visibleNode->firstChild()) {

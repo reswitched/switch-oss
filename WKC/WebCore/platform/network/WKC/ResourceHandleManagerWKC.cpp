@@ -1676,6 +1676,14 @@ bool ResourceHandleManager::finalizingResourceHandle(ResourceHandle* job, Resour
         }
     }
     if (httpCode == 401 || 407 == httpCode) {
+        if (d->m_msgDataResult != CURLE_OK){
+            finishLoadingResourceHandle(job, d);
+            if (d->client()){
+                ResourceError err(String(), d->m_msgDataResult, String(d->m_url), String(curl_easy_strerror((CURLcode)d->m_msgDataResult)), job);
+                d->client()->didFail(job, err);
+            }
+            return true;
+        }
         didReceiveAuthenticationChallenge(job, d->m_currentWebChallenge);
         if (d->m_cancelled || d->m_didAuthChallenge) {
             finishLoadingResourceHandle(job, d);
@@ -3102,6 +3110,9 @@ void ResourceHandleManager::initializeHandle(ResourceHandle* job)
     // if file/data scheme loading, do not set proxy/authenticate
     if (d->m_fileLoading || d->m_dataLoading) {
         d->m_response.setResourceHandle(job);
+        if (d->m_fileLoading) {
+            handleLocalReceiveResponse(d->m_handle, job, d);
+        }
         nxLog_out("");
         return;
     }

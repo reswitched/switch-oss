@@ -506,6 +506,21 @@ PassNativeImagePtr BitmapImage::nativeImageForCurrentFrame()
     return frameAtIndex(currentFrame());
 }
 
+#if USE(CG)
+Vector<NativeImagePtr> BitmapImage::framesNativeImages()
+{
+    Vector<NativeImagePtr> images;
+    size_t count = frameCount();
+
+    for (size_t i = 0; i < count; ++i) {
+        if (auto image = frameImageAtIndex(i))
+            images.append(image);
+    }
+
+    return images;
+}
+#endif
+
 bool BitmapImage::frameHasAlphaAtIndex(size_t index)
 {
     if (!ensureFrameIsCached(index, CacheMetadataOnly))

@@ -1036,10 +1036,14 @@ String validationMessagePatternMismatchText()
     return WEB_UI_STRING("pattern mismatch", "Validation message for input form controls requiring a constrained value according to pattern");
 }
 
+#if !PLATFORM(COCOA)
+
 String validationMessageTooLongText(int, int)
 {
     return WEB_UI_STRING("too long", "Validation message for form control elements with a value longer than maximum allowed length");
 }
+
+#endif
 
 String validationMessageRangeUnderflowText(const String&)
 {

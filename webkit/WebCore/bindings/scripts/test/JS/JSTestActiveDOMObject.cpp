@@ -179,7 +179,7 @@ EncodedJSValue jsTestActiveDOMObjectExcitingAttr(ExecState* exec, JSObject* slot
     UNUSED_PARAM(slotBase);
     UNUSED_PARAM(thisValue);
     auto* castedThis = jsCast<JSTestActiveDOMObject*>(slotBase);
-    if (!BindingSecurity::shouldAllowAccessToDOMWindow(exec, castedThis->impl()))
+    if (!shouldAllowAccessToFrame(state, castedThis->wrapped().frame()))
         return JSValue::encode(jsUndefined());
     auto& impl = castedThis->impl();
     JSValue result = jsNumber(impl.excitingAttr());
@@ -209,7 +209,7 @@ EncodedJSValue JSC_HOST_CALL jsTestActiveDOMObjectPrototypeFunctionExcitingFunct
     if (UNLIKELY(!castedThis))
         return throwThisTypeError(*exec, "TestActiveDOMObject", "excitingFunction");
     ASSERT_GC_OBJECT_INHERITS(castedThis, JSTestActiveDOMObject::info());
-    if (!BindingSecurity::shouldAllowAccessToDOMWindow(exec, castedThis->impl()))
+    if (!shouldAllowAccessToFrame(state, castedThis->wrapped().frame()))
         return JSValue::encode(jsUndefined());
     auto& impl = castedThis->impl();
     if (UNLIKELY(exec->argumentCount() < 1))

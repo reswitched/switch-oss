@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -95,6 +95,8 @@ public:
     NodeList* getElementsByTagName(const String&);
     NodeList* querySelectorAll(const String&);
 
+    Element* parentOrShadowHostElement();
+
 private:
     friend class ElementPrivate;
     friend class DocumentPrivate;
@@ -119,6 +121,8 @@ private:
     HTMLElementPrivate* m_HTMLElement;
     NodeListPrivate* m_nodeList;
     NodeListPrivate* m_querySelectorNodeList;
+
+    ElementPrivate* m_parentOrShadowHostElement;
 };
 } // namespace
 

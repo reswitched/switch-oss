@@ -1,7 +1,7 @@
 /*
  *  wkcglpeer.h
  *
- *  Copyright(c) 2009-2015 ACCESS CO., LTD. All rights reserved.
+ *  Copyright(c) 2009-2017 ACCESS CO., LTD. All rights reserved.
  */
 
 #ifndef _WKC_GL_PEER_H_
@@ -45,14 +45,28 @@ struct WKCGLAttributes_ {
     bool fStencil;
     bool fAntialias;
     bool fPremultipliedAlpha;
-    bool fCanRecoverFromContextLoss;
     bool fPreserveDrawingBuffer;
     bool fNoExtensions;
     bool fShareResources;
-    bool fPreferDiscreteGPU;
+    bool fPreferLowPowerToHighPerformance;
+    bool fForceSoftwareRenderer;
+    bool fFailIfMajorPerformanceCaveat;
+    bool fUseGLES3;
+    float fDevicePixelRatio;
 };
 /** @brief Type definitions of WKCGLAttributes */
 typedef struct WKCGLAttributes_ WKCGLAttributes;
+
+
+/** @brief callback definitions for wkcGLRegisterTextureCallbacksPeer */
+typedef bool (*wkcGLTextureMakeProc)(int num, unsigned int* out_textures);
+typedef void (*wkcGLTextureDeleteProc)(int num, unsigned int* in_textures);
+typedef bool (*wkcGLTextureChangeProc)(int num, unsigned int* inout_textures);
+
+/** @brief callback definitions for wkcGLRegisterOffscreenBufferCallbacksPeer */
+typedef bool (*wkcGLOffscreenBufferMakeProc)(int in_width, int in_height, int in_bpp, void** out_buffer);
+typedef void (*wkcGLOffscreenBufferDeleteProc)(void* in_buffer);
+typedef bool (*wkcGLOffscreenBufferChangeProc)(int in_width, int in_height, int in_bpp, void** inout_buffer);
 
 /*
   initialize / finalize / force-terminate GL peers
@@ -65,6 +79,39 @@ typedef struct WKCGLAttributes_ WKCGLAttributes;
 Write the necessary processes for initializing the GL peer layer.
 */
 WKC_PEER_API bool wkcGLInitializePeer(void);
+
+/**
+@brief Enable GL peer
+@retval !=false Succeeded
+@retval ==false Failed
+@details
+This API must be called after wkcGLInitializePeer
+*/
+WKC_PEER_API bool wkcGLActivatePeer();
+
+/**
+@brief Registeres callbacks for texture creation in peers
+@details
+This API must call before loading any WebGL contents.
+*/
+WKC_PEER_API void wkcGLRegisterTextureCallbacksPeer(
+        wkcGLTextureMakeProc in_texture_maker_proc,
+        wkcGLTextureDeleteProc in_texture_deleter_proc,
+        wkcGLTextureChangeProc in_texture_changer_proc
+        );
+
+/**
+@brief Registeres callbacks for offscreen buffer for GL peers
+@details
+This API must call before loading any WebGL contents.
+This buffer is used for showing gl texture without AC layers.
+*/
+WKC_PEER_API void wkcGLRegisterOffscreenBufferCallbacksPeer(
+        wkcGLOffscreenBufferMakeProc in_buf_creater_proc,
+        wkcGLOffscreenBufferDeleteProc in_buf_deleter_proc,
+        wkcGLOffscreenBufferChangeProc in_buf_changer_proc
+        );
+
 /**
 @brief Finalizes GL peer
 @details
@@ -92,10 +139,11 @@ WKC_PEER_API void wkcGLRegisterDeviceLockProcsPeer(void(*in_lock)(void*), void(*
 @brief Create GL peer instances
 @param inout_attr HW attributes
 @param in_hostwindow WebCore::HostWindow itself
+@param in_layer WKCGenericLayer
 @details
 Creates GL context.
 */
-WKC_PEER_API void* wkcGLCreateContextPeer(WKCGLAttributes* inout_attr, void* in_hostwindow);
+WKC_PEER_API void* wkcGLCreateContextPeer(WKCGLAttributes* inout_attr, void* in_hostwindow, void* in_layer);
 /**
 @brief Delete GL peer instances
 @param in_context context

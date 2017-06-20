@@ -1571,9 +1571,9 @@ bool withinTextUnitOfGranularity(const VisiblePosition& vp, TextGranularity gran
     return (prevBoundary < vp && vp < nextBoundary);
 }
 
-static VisiblePosition nextCharacterBoundaryInDirection(const VisiblePosition& vp, SelectionDirection direction)
+static VisiblePosition nextCharacterBoundaryInDirection(const VisiblePosition& vp, SelectionDirection direction, EditingBoundaryCrossingRule rule)
 {
-    return directionIsDownstream(direction) ? vp.next() : vp.previous();
+    return directionIsDownstream(direction) ? vp.next(rule) : vp.previous(rule);
 }
 
 static VisiblePosition nextWordBoundaryInDirection(const VisiblePosition& vp, SelectionDirection direction)
@@ -1713,7 +1713,7 @@ VisiblePosition positionOfNextBoundaryOfGranularity(const VisiblePosition& vp, T
 {
     switch (granularity) {
     case CharacterGranularity:
-        return nextCharacterBoundaryInDirection(vp, direction);
+        return nextCharacterBoundaryInDirection(vp, direction, CanCrossEditingBoundary);
     case WordGranularity:
         return nextWordBoundaryInDirection(vp, direction);
     case SentenceGranularity:
@@ -1827,14 +1827,14 @@ void charactersAroundPosition(const VisiblePosition& position, UChar32& oneAfter
     VisiblePosition startPosition = position;
     VisiblePosition endPosition = position;
 
-    VisiblePosition nextPosition = nextCharacterBoundaryInDirection(position, DirectionForward);
+    VisiblePosition nextPosition = nextCharacterBoundaryInDirection(position, DirectionForward, CannotCrossEditingBoundary);
     if (nextPosition.isNotNull())
         endPosition = nextPosition;
 
-    VisiblePosition previousPosition = nextCharacterBoundaryInDirection(position, DirectionBackward);
+    VisiblePosition previousPosition = nextCharacterBoundaryInDirection(position, DirectionBackward, CannotCrossEditingBoundary);
     if (previousPosition.isNotNull()) {
         startPosition = previousPosition;
-        previousPosition = nextCharacterBoundaryInDirection(previousPosition, DirectionBackward);
+        previousPosition = nextCharacterBoundaryInDirection(previousPosition, DirectionBackward, CannotCrossEditingBoundary);
         if (previousPosition.isNotNull())
             startPosition = previousPosition;
     }

@@ -202,9 +202,10 @@ inline JITArrayMode jitArrayModeForStructure(Structure* structure)
 struct ByValInfo {
     ByValInfo() { }
     
-    ByValInfo(unsigned bytecodeIndex, CodeLocationJump badTypeJump, JITArrayMode arrayMode, int16_t badTypeJumpToDone, int16_t returnAddressToSlowPath)
+    ByValInfo(unsigned bytecodeIndex, CodeLocationJump badTypeJump, CodeLocationLabel exceptionHandler, JITArrayMode arrayMode, int16_t badTypeJumpToDone, int16_t returnAddressToSlowPath)
         : bytecodeIndex(bytecodeIndex)
         , badTypeJump(badTypeJump)
+        , exceptionHandler(exceptionHandler)
         , arrayMode(arrayMode)
         , badTypeJumpToDone(badTypeJumpToDone)
         , returnAddressToSlowPath(returnAddressToSlowPath)
@@ -214,6 +215,7 @@ struct ByValInfo {
     
     unsigned bytecodeIndex;
     CodeLocationJump badTypeJump;
+    CodeLocationLabel exceptionHandler;
     JITArrayMode arrayMode; // The array mode that was baked into the inline JIT code.
     int16_t badTypeJumpToDone;
     int16_t returnAddressToSlowPath;

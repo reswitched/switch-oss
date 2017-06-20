@@ -127,6 +127,12 @@ static EditingBehaviorType editingBehaviorTypeForPlatform()
     ;
 }
 
+#if PLATFORM(COCOA)
+static const bool defaultYouTubeFlashPluginReplacementEnabled = true;
+#else
+static const bool defaultYouTubeFlashPluginReplacementEnabled = false;
+#endif
+
 #if PLATFORM(IOS)
 static const bool defaultFixedPositionCreatesStackingContext = true;
 static const bool defaultFixedBackgroundsPaintRelativeToDocument = true;
@@ -138,6 +144,7 @@ static const bool defaultShouldRespectImageOrientation = true;
 static const bool defaultImageSubsamplingEnabled = true;
 static const bool defaultScrollingTreeIncludesFrames = true;
 static const bool defaultMediaControlsScaleWithPageZoom = true;
+static const bool defaultQuickTimePluginReplacementEnabled = true;
 #else
 static const bool defaultFixedPositionCreatesStackingContext = false;
 static const bool defaultFixedBackgroundsPaintRelativeToDocument = false;
@@ -149,6 +156,7 @@ static const bool defaultShouldRespectImageOrientation = false;
 static const bool defaultImageSubsamplingEnabled = false;
 static const bool defaultScrollingTreeIncludesFrames = false;
 static const bool defaultMediaControlsScaleWithPageZoom = true;
+static const bool defaultQuickTimePluginReplacementEnabled = false;
 #endif
 
 static const bool defaultAllowsPictureInPictureMediaPlayback = true;

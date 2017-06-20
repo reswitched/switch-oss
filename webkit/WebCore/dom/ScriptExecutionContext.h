@@ -129,7 +129,11 @@ public:
         template<typename T>
 #endif
         Task(T task)
+#if !PLATFORM(WKC)
             : m_task(WTF::move(task))
+#else
+            : m_task(std::allocator_arg, m_allocator, WTF::move(task))
+#endif
             , m_isCleanupTask(false)
         {
         }

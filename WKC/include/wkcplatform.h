@@ -4,7 +4,7 @@
  * Copyright (C) 2006-2009, 2013-2015 Apple Inc. All rights reserved.
  * Copyright (C) 2007-2009 Torch Mobile, Inc.
  * Copyright (C) 2010, 2011 Research In Motion Limited. All rights reserved.
- * Copyright (c) 2010-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -133,7 +133,7 @@
 #define ENABLE_MEDIA_CONTROLS_SCRIPT 1
 #define ENABLE_ENCRYPTED_MEDIA 0
 #define ENABLE_ENCRYPTED_MEDIA_V2 0
-#define ENABLE_WEB_AUDIO 0
+#define ENABLE_WEB_AUDIO 1
 
 #define ENABLE_FILTERS_LEVEL_2 0
 #define ENABLE_SVG_FONTS 1
@@ -190,6 +190,7 @@
 
 #define ENABLE_APNG 1
 #define USE_WEBP 1
+#define ENABLE_WKC_BLINK_AWEBP 1
 
 #define ENABLE_WKC_WEB_NFC 0
 

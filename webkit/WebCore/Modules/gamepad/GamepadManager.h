@@ -51,7 +51,7 @@ public:
 
     virtual void platformGamepadConnected(PlatformGamepad&) override final;
     virtual void platformGamepadDisconnected(PlatformGamepad&) override final;
-    virtual void platformGamepadInputActivity() override final;
+    virtual void platformGamepadInputActivity(bool shouldMakeGamepadVisible) final;
 
     void registerNavigator(NavigatorGamepad*);
     void unregisterNavigator(NavigatorGamepad*);

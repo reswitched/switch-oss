@@ -691,6 +691,8 @@ static CSSParser::ParseResult parseSimpleLengthValue(MutableStyleProperties* dec
 
 static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int valueID, const CSSParserContext& parserContext, StyleSheetContents* styleSheetContents)
 {
+    UNUSED_PARAM(parserContext); // Make sure parserContext is used.
+
     if (!valueID)
         return false;
 
@@ -1025,12 +1027,6 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         if (valueID == CSSValueDisc || valueID == CSSValueCircle || valueID == CSSValueSquare || valueID == CSSValueNone)
             return true;
         break;
-#if ENABLE(IOS_TEXT_AUTOSIZING)
-    case CSSPropertyWebkitTextSizeAdjust:
-        if (valueID == CSSValueAuto || valueID == CSSValueNone)
-            return true;
-        break;
-#endif
     case CSSPropertyTransformStyle:
     case CSSPropertyWebkitTransformStyle:
         if (valueID == CSSValueFlat || valueID == CSSValuePreserve3d)
@@ -2920,6 +2916,15 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         break;
 #if ENABLE(IOS_TEXT_AUTOSIZING)
     case CSSPropertyWebkitTextSizeAdjust:
+        // FIXME: Support toggling the validation of this property via a runtime setting that is independent of
+        // whether isTextAutosizingEnabled() is true. We want to enable this property on iOS, when simulating
+        // a iOS device in Safari's responsive design mode and when optionally enabled in DRT/WTR. Otherwise,
+        // this property should be disabled by default.
+#if !PLATFORM(IOS)
+         if (!isTextAutosizingEnabled())
+             return false;
+#endif
+
         if (id == CSSValueAuto || id == CSSValueNone)
             validPrimitive = true;
         else {

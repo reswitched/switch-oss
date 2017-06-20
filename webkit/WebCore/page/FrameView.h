@@ -560,6 +560,9 @@ public:
 
     void show() override;
 
+    void willDestroyRenderTree();
+    void didDestroyRenderTree();
+
 protected:
     virtual bool scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect) override;
     virtual void scrollContentsSlowPath(const IntRect& updateRect) override;

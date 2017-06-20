@@ -3,7 +3,7 @@
  * Copyright (C) 2011 Google Inc. All rights reserved.
  * Copyright (C) 2012 ChangSeok Oh <shivamidow@gmail.com>
  * Copyright (C) 2012 Research In Motion Limited. All rights reserved.
- * Copyright (c) 2011-2015 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -252,7 +252,11 @@ GraphicsContext3DPrivate::create(GraphicsContext3D* parent, GraphicsContext3D::A
         attrs.preserveDrawingBuffer,
         attrs.noExtensions,
         attrs.shareResources,
-        attrs.preferDiscreteGPU,
+        attrs.preferLowPowerToHighPerformance,
+        attrs.forceSoftwareRenderer,
+        attrs.failIfMajorPerformanceCaveat,
+        attrs.useGLES3,
+        attrs.devicePixelRatio,
     };
 
     GraphicsContext3DPrivate* v = new GraphicsContext3DPrivate();
@@ -260,7 +264,7 @@ GraphicsContext3DPrivate::create(GraphicsContext3D* parent, GraphicsContext3D::A
     std::unique_ptr<GraphicsContext3DPrivate> self;
     self.reset(v);
 
-    self->m_peer = wkcGLCreateContextPeer(&ga, (void *)hostwindow);
+    self->m_peer = wkcGLCreateContextPeer(&ga, (void *)hostwindow, self->m_layer);
     if (!self->m_peer) {
         return nullptr;
     }
@@ -2373,14 +2377,21 @@ GraphicsContext3D::vertexAttribDivisor(GC3Duint index, GC3Duint divisor)
 
 #include "GraphicsContext3D.h"
 
+#include "Extensions3D.h"
+#if USE(OPENGL_ES_2)
+#include "Extensions3DOpenGLES.h"
+#else
+#include "Extensions3DOpenGL.h"
+#endif
+
 namespace WebCore {
 
 class GraphicsContext3DPrivate
 {
 public:
-    static PassOwnPtr<GraphicsContext3DPrivate> create(GraphicsContext3D::Attributes& attrs, HostWindow* hostwindow, bool in_direct)
+    static std::unique_ptr<GraphicsContext3DPrivate> create(GraphicsContext3D::Attributes& attrs, HostWindow* hostwindow, bool in_direct)
     {
-        return 0;
+        return nullptr;
     }
     ~GraphicsContext3DPrivate() {}
 

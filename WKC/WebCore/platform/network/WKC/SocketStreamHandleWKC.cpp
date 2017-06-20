@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2009 Brent Fulgham.  All rights reserved.
  * Copyright (C) 2009 Google Inc.  All rights reserved.
- * Copyright (c) 2012-2015 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2012-2017 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -65,6 +65,8 @@ namespace WebCore {
 SocketStreamHandle::SocketStreamHandle(const URL& url, SocketStreamHandleClient* client, NetworkingContext& networkingContext)
     : SocketStreamHandleBase(url, client)
     , m_constructed(false)
+    , m_clientCallingFromTimer(false)
+    , m_needClosing(false)
     , m_socketState(None)
     , m_socket(-1)
     , m_progressTimer(*this, &SocketStreamHandle::progressTimerFired)
@@ -334,6 +336,12 @@ SocketStreamHandle::progressTimerFired()
         return;
     }
 
+    if (m_needClosing) {
+        RefPtr<SocketStreamHandle> protect(static_cast<SocketStreamHandle*>(this)); // platformClose calls the client, which may make the handle get deallocated immediately.
+        platformClose();
+        return;
+    }
+
     switch (m_state) {
     case Connecting:
     {
@@ -343,8 +351,11 @@ SocketStreamHandle::progressTimerFired()
         }
         if (!m_handle || !m_multiHandle) {
             m_state = Open;
-            if (m_client)
+            if (m_client) {
+                m_clientCallingFromTimer = true;
                 m_client->didOpenSocketStream(this);
+                m_clientCallingFromTimer = false;
+            }
             return;
         }
 
@@ -367,9 +378,13 @@ SocketStreamHandle::progressTimerFired()
         // socket opened
         RefPtr<SocketStreamHandle> protect(static_cast<SocketStreamHandle*>(this)); // platformClose calls the client, which may make the handle get deallocated immediately.
         m_state = Open;
-        if (m_client)
+        if (m_client) {
+            m_clientCallingFromTimer = true;
             m_client->didOpenSocketStream(this);
-        m_socketState = Connected;
+            m_clientCallingFromTimer = false;
+        }
+        if (!m_needClosing)
+            m_socketState = Connected;
         nextProgress(true);
         break;
     }
@@ -400,8 +415,11 @@ SocketStreamHandle::progressTimerFired()
             RefPtr<SocketStreamHandle> protect(static_cast<SocketStreamHandle*>(this)); // platformClose calls the client, which may make the handle get deallocated immediately.
             if (CURLE_OK == ret) {
                 _LOG(Network, "SocketStreamHandle::progressTimerFired() Recved(%d)", inoutLen);
-                if (0 < inoutLen && m_client)
+                if (0 < inoutLen && m_client) {
+                    m_clientCallingFromTimer = true;
                     m_client->didReceiveSocketStreamData(this, (const char*)m_recvData, inoutLen);
+                    m_clientCallingFromTimer = false;
+                }
                 nextProgress(true);
             }
             else if (CURLE_AGAIN == ret) {
@@ -460,6 +478,7 @@ int SocketStreamHandle::platformSend(const char* data, int len)
             // for check receiveing FIN
             // Expect m_socket is non-blocking socket.
             outLen = wkcNetRecvPeer(m_socket, (void*)m_recvData, 2048, 0);
+            recverror = wkcNetGetLastErrorPeer();
             if (0 < outLen) {
                 if (m_client) {
                     m_client->didReceiveSocketStreamData(this, (const char*)m_recvData, outLen);
@@ -494,6 +513,14 @@ void SocketStreamHandle::platformClose()
     if (!m_constructed || !m_handle || !m_multiHandle) {
         return;
     }
+
+    if (m_clientCallingFromTimer) {
+        m_needClosing = true;
+        return;
+    }
+
+    if (m_needClosing)
+        m_needClosing = false;
 
     CURL*  handle = (CURL*)m_handle;
     CURLM* multiHandle = (CURLM*)m_multiHandle;

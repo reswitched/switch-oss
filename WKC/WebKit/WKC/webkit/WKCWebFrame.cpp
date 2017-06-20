@@ -1,7 +1,7 @@
 /*
  *  WKCWebFrame.cpp
  *
- *  Copyright (c) 2010-2016 ACCESS CO., LTD. All rights reserved.
+ *  Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -49,9 +49,7 @@
 #include "IconLoader.h"
 #include "ImageWKC.h"
 #include <image-decoders/ImageDecoder.h>
-#ifdef WKC_ENABLE_CUSTOMJS
-#include "ScriptValue.h"
-#endif // WKC_ENABLE_CUSTOMJS
+#include "bindings/ScriptValue.h"
 #if ENABLE(MHTML)
 #include "MHTMLArchive.h"
 #endif
@@ -843,6 +841,8 @@ WKCWebFrame::setForcedSandboxNavigation()
     coreFrame->loader().forceSandboxFlags(WebCore::SandboxNavigation);
 }
 
+#endif // WKC_ENABLE_CUSTOMJS
+
 void
 WKCWebFrame::executeScript(const char* script)
 {
@@ -853,8 +853,6 @@ WKCWebFrame::executeScript(const char* script)
 
     coreFrame->script().executeScript(WTF::String::fromUTF8(script), true);
 }
-
-#endif // WKC_ENABLE_CUSTOMJS
 
 void
 WKCWebFrame::setJavaScriptPaused(bool pause)

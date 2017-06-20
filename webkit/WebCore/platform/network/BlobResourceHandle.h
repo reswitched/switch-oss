@@ -57,6 +57,15 @@ public:
 
     bool aborted() const { return m_aborted; }
 
+    enum class Error {
+        NoError = 0,
+        NotFoundError = 1,
+        SecurityError = 2,
+        RangeError = 3,
+        NotReadableError = 4,
+        MethodNotAllowed = 5
+    };
+
 private:
     BlobResourceHandle(BlobData*, const ResourceRequest&, ResourceHandleClient*, bool async);
     virtual ~BlobResourceHandle();
@@ -74,7 +83,7 @@ private:
     void getSizeForNext();
     void seek();
     void consumeData(const char* data, int bytesRead);
-    void failed(int errorCode);
+    void failed(Error);
 
     void readAsync();
     void readDataAsync(const BlobDataItem&);
@@ -87,8 +96,10 @@ private:
     void notifyResponseOnSuccess();
     void notifyResponseOnError();
     void notifyReceiveData(const char*, int);
-    void notifyFail(int errorCode);
+    void notifyFail(Error);
     void notifyFinish();
+
+    bool erroredOrAborted() const { return m_aborted || m_errorCode != Error::NoError; }
 
     RefPtr<BlobData> m_blobData;
     bool m_async;
@@ -96,7 +107,7 @@ private:
     std::unique_ptr<FileStream> m_stream; // For synchronous loading.
     Vector<char> m_buffer;
     Vector<long long> m_itemLengthList;
-    int m_errorCode;
+    Error m_errorCode;
     bool m_aborted;
     long long m_rangeOffset;
     long long m_rangeEnd;

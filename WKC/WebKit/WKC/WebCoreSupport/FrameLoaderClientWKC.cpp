@@ -530,9 +530,9 @@ FrameLoaderClientWKC::dispatchDidLayout()
 }
 
 void
-FrameLoaderClientWKC::dispatchDidLayout(WebCore::LayoutMilestones milestones)
+FrameLoaderClientWKC::dispatchDidReachLayoutMilestone(WebCore::LayoutMilestones milestones)
 {
-    m_appClient->dispatchDidLayout((int)milestones);
+    m_appClient->dispatchDidReachLayoutMilestone((int)milestones);
 }
 
 // WKC extension

@@ -191,9 +191,6 @@ public:
     // The lang attribute support is incomplete and should only be turned on for tests.
     void setLangAttributeAwareFormControlUIEnabled(bool isEnabled) { m_isLangAttributeAwareFormControlUIEnabled = isEnabled; }
 
-    void setPluginReplacementEnabled(bool isEnabled) { m_isPluginReplacementEnabled = isEnabled; }
-    bool pluginReplacementEnabled() const { return m_isPluginReplacementEnabled; }
-
 #if ENABLE(GAMEPAD)
     void setGamepadsEnabled(bool areEnabled) { m_areGamepadsEnabled = areEnabled; }
     bool gamepadsEnabled() const { return m_areGamepadsEnabled; }
@@ -224,7 +221,6 @@ private:
     bool m_isCSSRegionsEnabled;
     bool m_isCSSCompositingEnabled;
     bool m_isLangAttributeAwareFormControlUIEnabled;
-    bool m_isPluginReplacementEnabled;
 
 #if ENABLE(JAVASCRIPT_I18N_API)
     bool m_isJavaScriptI18NAPIEnabled;

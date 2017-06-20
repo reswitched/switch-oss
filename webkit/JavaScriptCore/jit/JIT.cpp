@@ -662,19 +662,33 @@ CompilationResult JIT::privateCompile(JITCompilationEffort effort)
         m_putByIds[i].finalize(patchBuffer);
 
     m_codeBlock->setNumberOfByValInfos(m_byValCompilationInfo.size());
-    for (unsigned i = 0; i < m_byValCompilationInfo.size(); ++i) {
-        CodeLocationJump badTypeJump = CodeLocationJump(patchBuffer.locationOf(m_byValCompilationInfo[i].badTypeJump));
-        CodeLocationLabel doneTarget = patchBuffer.locationOf(m_byValCompilationInfo[i].doneTarget);
-        CodeLocationLabel slowPathTarget = patchBuffer.locationOf(m_byValCompilationInfo[i].slowPathTarget);
-        CodeLocationCall returnAddress = patchBuffer.locationOf(m_byValCompilationInfo[i].returnAddress);
+    if (m_byValCompilationInfo.size()) {
+        CodeLocationLabel exceptionHandler = patchBuffer.locationOf(m_exceptionHandler);
         
-        m_codeBlock->byValInfo(i) = ByValInfo(
-            m_byValCompilationInfo[i].bytecodeIndex,
-            badTypeJump,
-            m_byValCompilationInfo[i].arrayMode,
-            differenceBetweenCodePtr(badTypeJump, doneTarget),
-            differenceBetweenCodePtr(returnAddress, slowPathTarget));
+        for (const auto& byValCompilationInfo : m_byValCompilationInfo) {
+            PatchableJump patchableNotIndexJump = byValCompilationInfo.notIndexJump;
+            CodeLocationJump notIndexJump = CodeLocationJump();
+            if (Jump(patchableNotIndexJump).isSet())
+                notIndexJump = CodeLocationJump(patchBuffer.locationOf(patchableNotIndexJump));
+            CodeLocationJump badTypeJump = CodeLocationJump(patchBuffer.locationOf(byValCompilationInfo.badTypeJump));
+            CodeLocationLabel doneTarget = patchBuffer.locationOf(byValCompilationInfo.doneTarget);
+            CodeLocationLabel nextHotPathTarget = patchBuffer.locationOf(byValCompilationInfo.nextHotPathTarget);
+            CodeLocationLabel slowPathTarget = patchBuffer.locationOf(byValCompilationInfo.slowPathTarget);
+            CodeLocationCall returnAddress = patchBuffer.locationOf(byValCompilationInfo.returnAddress);
+
+            *byValCompilationInfo.byValInfo = ByValInfo(
+                byValCompilationInfo.bytecodeIndex,
+                notIndexJump,
+                badTypeJump,
+                exceptionHandler,
+                byValCompilationInfo.arrayMode,
+                byValCompilationInfo.arrayProfile,
+                differenceBetweenCodePtr(badTypeJump, doneTarget),
+                differenceBetweenCodePtr(badTypeJump, nextHotPathTarget),
+                differenceBetweenCodePtr(returnAddress, slowPathTarget));
+        }
     }
+
     for (unsigned i = 0; i < m_callCompilationInfo.size(); ++i) {
         CallCompilationInfo& compilationInfo = m_callCompilationInfo[i];
         CallLinkInfo& info = *compilationInfo.callLinkInfo;
@@ -741,7 +755,8 @@ void JIT::privateCompileExceptionHandlers()
         jumpToExceptionHandler();
     }
 
-    if (!m_exceptionChecks.empty()) {
+    if (!m_exceptionChecks.empty() || m_byValCompilationInfo.size()) {
+        m_exceptionHandler = label();
         m_exceptionChecks.link(this);
 
         // lookupExceptionHandler is passed two arguments, the VM and the exec (the CallFrame*).

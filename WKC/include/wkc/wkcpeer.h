@@ -1,7 +1,7 @@
 /*
  *  wkcpeer.h
  *
- *  Copyright(c) 2009-2016 ACCESS CO., LTD. All rights reserved.
+ *  Copyright(c) 2009-2017 ACCESS CO., LTD. All rights reserved.
  */
 
 #ifndef _WKC_PEER_H_
@@ -10,6 +10,7 @@
 #include <stdio.h>
 
 #include <wkc/wkcbase.h>
+#include <wkc/wkcthreadprocs.h>
 
 /**
    @file
@@ -226,8 +227,13 @@ WKC_PEER_API double wkcGetMonotonicallyIncreasingTimePeer(void);
 /** @brief Function that is executed in generated thread */
 typedef void* (*wkcThreadProc)(void *);
 
-/** @brief Function that is set thread priority. */
-typedef void (*wkcSetThreadPriorityProc)(const char* in_name, int* out_priority, int* out_core);
+/**
+@brief Set callback function for threads.
+@param in_proc Pointer to callback function.
+@details
+Set callback function for threads.
+*/
+WKC_PEER_API void wkcThreadCallbackSetPeer(const WKCThreadProcs* in_procs);
 
 /**
 @brief Initializes Thread Peer layer
@@ -634,14 +640,6 @@ Executes the in_func function once only at once.
 The behavior must be the same as the pthread_once() function.
 */
 WKC_PEER_API void wkcThreadOncePeer(void* in_key, void(*in_func)(void));
-
-/**
-@brief Set callback function that sets thread priority
-@param in_proc Callback function pointer for set thread priority.
-@details
-Set the function that sets thread priority.
-*/
-WKC_PEER_API void wkcThreadSetThreadPriorityProcPeer(wkcSetThreadPriorityProc in_proc);
 
 #ifdef WKC_LIGHTMUTEX_TYPE
 typedef WKC_LIGHTMUTEX_TYPE WKCLightMutex;

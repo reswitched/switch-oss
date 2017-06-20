@@ -215,6 +215,21 @@ Plan::CompilationPath Plan::compileInThreadImpl(LongLivedState& longLivedState)
         return FailPath;
     }
     
+    bool changed = false;
+
+#define RUN_PHASE(phase)                                         \
+    do {                                                         \
+        if (Options::safepointBeforeEachPhase()) {               \
+            Safepoint::Result safepointResult;                   \
+            {                                                    \
+                GraphSafepoint safepoint(dfg, safepointResult);  \
+            }                                                    \
+            if (safepointResult.didGetCancelled())               \
+                return CancelPath;                               \
+        }                                                        \
+        changed |= phase(dfg);                                   \
+    } while (false);                                             \
+
     // By this point the DFG bytecode parser will have potentially mutated various tables
     // in the CodeBlock. This is a good time to perform an early shrink, which is more
     // powerful than a late one. It's safe to do so because we haven't generated any code
@@ -229,11 +244,16 @@ Plan::CompilationPath Plan::compileInThreadImpl(LongLivedState& longLivedState)
         dfg.dump();
     }
     
-    performCPSRethreading(dfg);
-    performUnification(dfg);
-    performPredictionInjection(dfg);
+    RUN_PHASE(performLiveCatchVariablePreservationPhase);
+
+    if (Options::useMaximalFlushInsertionPhase())
+        RUN_PHASE(performMaximalFlushInsertion);
     
-    performStaticExecutionCountEstimation(dfg);
+    RUN_PHASE(performCPSRethreading);
+    RUN_PHASE(performUnification);
+    RUN_PHASE(performPredictionInjection);
+    
+    RUN_PHASE(performStaticExecutionCountEstimation);
     
     if (mode == FTLForOSREntryMode) {
         bool result = performOSREntrypointCreation(dfg);
@@ -241,18 +261,18 @@ Plan::CompilationPath Plan::compileInThreadImpl(LongLivedState& longLivedState)
             finalizer = std::make_unique<FailedFinalizer>(*this);
             return FailPath;
         }
-        performCPSRethreading(dfg);
+        RUN_PHASE(performCPSRethreading);
     }
     
     if (validationEnabled())
         validate(dfg);
     
-    performBackwardsPropagation(dfg);
-    performPredictionPropagation(dfg);
-    performFixup(dfg);
-    performStructureRegistration(dfg);
-    performInvalidationPointInjection(dfg);
-    performTypeCheckHoisting(dfg);
+    RUN_PHASE(performBackwardsPropagation);
+    RUN_PHASE(performPredictionPropagation);
+    RUN_PHASE(performFixup);
+    RUN_PHASE(performStructureRegistration);
+    RUN_PHASE(performInvalidationPointInjection);
+    RUN_PHASE(performTypeCheckHoisting);
     
     dfg.m_fixpointState = FixpointNotConverged;
     
@@ -264,19 +284,18 @@ Plan::CompilationPath Plan::compileInThreadImpl(LongLivedState& longLivedState)
     if (validationEnabled())
         validate(dfg);
         
-    performStrengthReduction(dfg);
-    performLocalCSE(dfg);
-    performCPSRethreading(dfg);
-    performCFA(dfg);
-    performConstantFolding(dfg);
-    bool changed = false;
-    changed |= performCFGSimplification(dfg);
-    changed |= performLocalCSE(dfg);
+    RUN_PHASE(performStrengthReduction);
+    RUN_PHASE(performCPSRethreading);
+    RUN_PHASE(performCFA);
+    RUN_PHASE(performConstantFolding);
+    changed = false;
+    RUN_PHASE(performCFGSimplification);
+    RUN_PHASE(performLocalCSE);
     
     if (validationEnabled())
         validate(dfg);
     
-    performCPSRethreading(dfg);
+    RUN_PHASE(performCPSRethreading);
     if (!isFTL(mode)) {
         // Only run this if we're not FTLing, because currently for a LoadVarargs that is forwardable and
         // in a non-varargs inlined call frame, this will generate ForwardVarargs while the FTL
@@ -297,11 +316,11 @@ Plan::CompilationPath Plan::compileInThreadImpl(LongLivedState& longLivedState)
         // ArgumentsEliminationPhase does everything that this phase does, and it doesn't introduce this
         // pathology.
         
-        changed |= performVarargsForwarding(dfg); // Do this after CFG simplification and CPS rethreading.
+        RUN_PHASE(performVarargsForwarding); // Do this after CFG simplification and CPS rethreading.
     }
     if (changed) {
-        performCFA(dfg);
-        performConstantFolding(dfg);
+        RUN_PHASE(performCFA);
+        RUN_PHASE(performConstantFolding);
     }
     
     // If we're doing validation, then run some analyses, to give them an opportunity
@@ -316,16 +335,17 @@ Plan::CompilationPath Plan::compileInThreadImpl(LongLivedState& longLivedState)
     case DFGMode: {
         dfg.m_fixpointState = FixpointConverged;
     
-        performTierUpCheckInjection(dfg);
+        RUN_PHASE(performTierUpCheckInjection);
 
-        performFastStoreBarrierInsertion(dfg);
-        performCleanUp(dfg);
-        performCPSRethreading(dfg);
-        performDCE(dfg);
-        performPhantomInsertion(dfg);
-        performStackLayout(dfg);
-        performVirtualRegisterAllocation(dfg);
-        performWatchpointCollection(dfg);
+        RUN_PHASE(performFastStoreBarrierInsertion);
+        RUN_PHASE(performStoreBarrierClustering);
+        RUN_PHASE(performCleanUp);
+        RUN_PHASE(performCPSRethreading);
+        RUN_PHASE(performDCE);
+        RUN_PHASE(performPhantomInsertion);
+        RUN_PHASE(performStackLayout);
+        RUN_PHASE(performVirtualRegisterAllocation);
+        RUN_PHASE(performWatchpointCollection);
         dumpAndVerifyGraph(dfg, "Graph after optimization:");
         
         JITCompiler dataFlowJIT(dfg);
@@ -345,38 +365,37 @@ Plan::CompilationPath Plan::compileInThreadImpl(LongLivedState& longLivedState)
             return FailPath;
         }
         
-        performCleanUp(dfg); // Reduce the graph size a bit.
-        performCriticalEdgeBreaking(dfg);
-        performLoopPreHeaderCreation(dfg);
-        performCPSRethreading(dfg);
-        performSSAConversion(dfg);
-        performSSALowering(dfg);
+        RUN_PHASE(performCleanUp); // Reduce the graph size a bit.
+        RUN_PHASE(performCriticalEdgeBreaking);
+        if (Options::createPreHeaders())
+            RUN_PHASE(performLoopPreHeaderCreation);
+        RUN_PHASE(performCPSRethreading);
+        RUN_PHASE(performSSAConversion);
+        RUN_PHASE(performSSALowering);
         
         // Ideally, these would be run to fixpoint with the object allocation sinking phase.
-        performArgumentsElimination(dfg);
+        RUN_PHASE(performArgumentsElimination);
         if (Options::usePutStackSinking())
-            performPutStackSinking(dfg);
+            RUN_PHASE(performPutStackSinking);
         
-        performConstantHoisting(dfg);
-        performGlobalCSE(dfg);
-        performLivenessAnalysis(dfg);
-        performIntegerRangeOptimization(dfg);
-        performLivenessAnalysis(dfg);
-        performCFA(dfg);
-        performConstantFolding(dfg);
-        performCleanUp(dfg); // Reduce the graph size a lot.
+        RUN_PHASE(performConstantHoisting);
+        RUN_PHASE(performGlobalCSE);
+        RUN_PHASE(performLivenessAnalysis);
+        RUN_PHASE(performCFA);
+        RUN_PHASE(performConstantFolding);
+        RUN_PHASE(performCleanUp); // Reduce the graph size a lot.
         changed = false;
-        changed |= performStrengthReduction(dfg);
+        RUN_PHASE(performStrengthReduction);
         if (Options::enableObjectAllocationSinking()) {
-            changed |= performCriticalEdgeBreaking(dfg);
-            changed |= performObjectAllocationSinking(dfg);
+            RUN_PHASE(performCriticalEdgeBreaking);
+            RUN_PHASE(performObjectAllocationSinking);
         }
         if (changed) {
             // State-at-tail and state-at-head will be invalid if we did strength reduction since
             // it might increase live ranges.
-            performLivenessAnalysis(dfg);
-            performCFA(dfg);
-            performConstantFolding(dfg);
+            RUN_PHASE(performLivenessAnalysis);
+            RUN_PHASE(performCFA);
+            RUN_PHASE(performConstantFolding);
         }
         
         // Currently, this relies on pre-headers still being valid. That precludes running CFG
@@ -384,27 +403,40 @@ Plan::CompilationPath Plan::compileInThreadImpl(LongLivedState& longLivedState)
         // wrong with running LICM earlier, if we wanted to put other CFG transforms above this point.
         // Alternatively, we could run loop pre-header creation after SSA conversion - but if we did that
         // then we'd need to do some simple SSA fix-up.
-        performLICM(dfg);
+        RUN_PHASE(performLivenessAnalysis);
+        RUN_PHASE(performCFA);
+        RUN_PHASE(performLICM);
         
-        performCleanUp(dfg);
-        performIntegerCheckCombining(dfg);
-        performGlobalCSE(dfg);
+        // FIXME: Currently: IntegerRangeOptimization *must* be run after LICM.
+        //
+        // IntegerRangeOptimization makes changes on nodes based on preceding blocks
+        // and nodes. LICM moves nodes which can invalidates assumptions used
+        // by IntegerRangeOptimization.
+        //
+        // Ideally, the dependencies should be explicit. See https://bugs.webkit.org/show_bug.cgi?id=157534.
+        RUN_PHASE(performLivenessAnalysis);
+        RUN_PHASE(performIntegerRangeOptimization);
+        
+        RUN_PHASE(performCleanUp);
+        RUN_PHASE(performIntegerCheckCombining);
+        RUN_PHASE(performGlobalCSE);
         
         // At this point we're not allowed to do any further code motion because our reasoning
         // about code motion assumes that it's OK to insert GC points in random places.
         dfg.m_fixpointState = FixpointConverged;
         
-        performLivenessAnalysis(dfg);
-        performCFA(dfg);
-        performGlobalStoreBarrierInsertion(dfg);
+        RUN_PHASE(performLivenessAnalysis);
+        RUN_PHASE(performCFA);
+        RUN_PHASE(performGlobalStoreBarrierInsertion);
+        RUN_PHASE(performStoreBarrierClustering);
         if (Options::enableMovHintRemoval())
-            performMovHintRemoval(dfg);
-        performCleanUp(dfg);
-        performDCE(dfg); // We rely on this to kill dead code that won't be recognized as dead by LLVM.
-        performStackLayout(dfg);
-        performLivenessAnalysis(dfg);
-        performOSRAvailabilityAnalysis(dfg);
-        performWatchpointCollection(dfg);
+            RUN_PHASE(performMovHintRemoval);
+        RUN_PHASE(performCleanUp);
+        RUN_PHASE(performDCE); // We rely on this to kill dead code that won't be recognized as dead by B3.
+        RUN_PHASE(performStackLayout);
+        RUN_PHASE(performLivenessAnalysis);
+        RUN_PHASE(performOSRAvailabilityAnalysis);
+        RUN_PHASE(performWatchpointCollection);
         
         if (FTL::canCompile(dfg) == FTL::CannotCompile) {
             finalizer = std::make_unique<FailedFinalizer>(*this);
@@ -479,6 +511,8 @@ Plan::CompilationPath Plan::compileInThreadImpl(LongLivedState& longLivedState)
         RELEASE_ASSERT_NOT_REACHED();
         return FailPath;
     }
+
+#undef RUN_PHASE
 }
 
 bool Plan::isStillValid()

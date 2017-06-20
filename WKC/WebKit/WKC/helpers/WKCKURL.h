@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2014 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -49,6 +49,8 @@ public:
     unsigned short port() const;
     const String path() const;
     const String lastPathComponent() const;
+
+    bool setProtocol(const String&);
 
     KURLPrivate* parent() const { return m_parent; }
 

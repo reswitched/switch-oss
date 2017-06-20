@@ -275,6 +275,7 @@ Page::~Page()
         m_scrollingCoordinator->pageDestroyed();
 
     backForward().close();
+    PageCache::singleton().removeAllItemsForPage(*this);
 
 #ifndef NDEBUG
     pageCounter.decrement();
@@ -1514,7 +1515,7 @@ void Page::addRelevantRepaintedObject(RenderObject* object, const LayoutRect& ob
         m_isCountingRelevantRepaintedObjects = false;
         resetRelevantPaintedObjectCounter();
         if (Frame* frame = &mainFrame())
-            frame->loader().didLayout(DidHitRelevantRepaintedObjectsAreaThreshold);
+            frame->loader().didReachLayoutMilestone(DidHitRelevantRepaintedObjectsAreaThreshold);
     }
 }
 

@@ -3,7 +3,7 @@
  * Copyright (C) 2006 Zack Rusin <zack@kde.org>
  * Copyright (C) 2006 Apple Computer, Inc.
  * All rights reserved.
- * Copyright (c) 2010-2015 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -75,6 +75,7 @@ public:
     virtual void respondToChangedContents() override;
     virtual void respondToChangedSelection(WebCore::Frame*) override;
     virtual void didChangeSelectionAndUpdateLayout() override;
+    virtual void updateEditorStateAfterLayoutIfEditabilityChanged() override;
     virtual void didEndEditing() override;
     virtual void didWriteSelectionToPasteboard() override;
 

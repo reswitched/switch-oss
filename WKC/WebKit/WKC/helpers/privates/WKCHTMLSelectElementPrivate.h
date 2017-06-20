@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2013-2017 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -21,14 +21,14 @@
 #define _WKC_HELPERS_PRIVATE_HTMLSELECTELEMENT_H_
 
 #include "helpers/WKCHTMLSElectElement.h"
-#include "helpers/privates/WKCHTMLElementPrivate.h"
+#include "helpers/privates/WKCHTMLFormControlElementPrivate.h"
 
 namespace WebCore {
 class HTMLSelectElement;
 } // namespace
 
 namespace WKC {
-class HTMLSelectElementPrivate : public HTMLElementPrivate {
+class HTMLSelectElementPrivate : public HTMLFormControlElementPrivate {
 public:
     HTMLSelectElementPrivate(WebCore::HTMLSelectElement*);
     ~HTMLSelectElementPrivate();

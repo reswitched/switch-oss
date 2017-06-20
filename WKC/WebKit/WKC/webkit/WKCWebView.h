@@ -40,6 +40,7 @@
 #include <wkc/wkcfileprocs.h>
 #include <wkc/wkcmediaprocs.h>
 #include <wkc/wkcpasteboardprocs.h>
+#include <wkc/wkcthreadprocs.h>
 
 // prototypes
 namespace WKC {
@@ -75,6 +76,7 @@ namespace WKC {
     typedef WKCMediaPlayerProcs MediaPlayerProcs;
     /** @brief Type definition of PasteboardProcs. For more information, see the section "Structure - WKCPasteboardProcs_" in "NetFront Browser NX $(NETFRONT_NX_VERSION) WKC Peer API Reference". */
     typedef WKCPasteboardProcs PasteboardProcs;
+    typedef WKCThreadProcs ThreadProcs;
 
     /** @brief Structure for storing client certificate informations */
     struct clientCertInfo_ {
@@ -163,12 +165,13 @@ namespace WKC {
     } WKCEPUBData;
 
     typedef struct LayerCallbacks_ {
-        bool (*fTextureMakeProc)(void* in_layer, int in_width, int in_height, int in_bpp, void** out_bitmap, int* out_rowbytes, int* out_width, int* out_height, void** out_opaque_texture);
+        bool (*fTextureMakeProc)(void* in_layer, int in_width, int in_height, int in_bpp, void** out_bitmap, int* out_rowbytes, int* out_width, int* out_height, void** out_opaque_texture, bool is_3dcanvas);
         void (*fTextureDeleteProc)(void *in_layer, void* in_bitmap);
-        void (*fTextureUpdateProc)(void *in_opaque, int in_width, int in_height, void *in_bitmap);
-        bool (*fTextureChangeProc)(void* in_layer, int in_width, int in_height, int in_bpp, void** out_bitmap, int* out_rowbytes, int* out_width, int* out_height, void** out_opaque_texture);
+        void (*fTextureUpdateProc)(void *in_opaque, int in_width, int in_height, void *in_bitmap, int in_texture);
+        bool (*fTextureChangeProc)(void* in_layer, int in_width, int in_height, int in_bpp, void** out_bitmap, int* out_rowbytes, int* out_width, int* out_height, void** out_opaque_texture, bool is_3dcanvas);
         void (*fDidChangeParentProc)(void *in_layer);
         bool (*fCanAllocateProc)(int in_width, int in_height, int in_blendmode);
+        void (*fAttachedGlTexturesProc)(void* in_layer, int* in_textures, int in_num);
     } LayerCallbacks;
 
     enum {
@@ -186,6 +189,12 @@ namespace WKC {
     typedef void (*SetThreadPriorityProc)(const char* in_name, int* out_priority, int* out_core);
     typedef void (*FontNoMemoryProc)();
     typedef void (*GetCurrentTimeProc)(wkc_int64* out_posixtime);
+
+    typedef struct WebGLTextureCallbacks_ {
+        bool (*fTextureMakeProc)(int num, unsigned int* out_textures);
+        void (*fTextureDeleteProc)(int num, unsigned int* in_textures);
+        bool (*fTextureChangeProc)(int num, unsigned int* inout_textures);
+    } WebGLTextureCallbacks;
 }
 
 /*@}*/
@@ -394,6 +403,19 @@ WKC_API void WKCWebKitSetHWOffscreenDeviceParams(const HWOffscreenDeviceParams* 
 Sets layer callbacks. This function is needed for specific targets.
 */
 WKC_API void WKCWebKitSetLayerCallbacks(const LayerCallbacks* callbacks);
+
+/**
+@brief Sets WebGL texture callbacks
+@param callbacks Callbacks
+@details
+Sets WebGL texture creation related callbacks.
+If the application have to manage OpenGL texture creation/destruction,
+then register callbacks with this API.
+Or the textures will be created/destroyed inside the engine.
+This function must be called before loading any WebGL contents.
+*/
+WKC_API void WKCWebKitSetWebGLTextureCallbacks(const WebGLTextureCallbacks* callbacks);
+
 /**
 @brief Gets layer infos
 @param layer Layer
@@ -404,10 +426,11 @@ WKC_API void WKCWebKitSetLayerCallbacks(const LayerCallbacks* callbacks);
 @param offscreen Offscreen
 @param offscreenwidth Offscreen width
 @param offscreenheight Offscreen height
+@param is_3dcanvas whether 3d canvas or not
 @details
 Obtains layer infos
 */
-WKC_API void WKCWebKitGetLayerProperties(void* layer, void** opaque_texture, int* width, int* height, bool* need_yflip, void** offscreen, int*offscreenwidth, int* offscreenheight);
+WKC_API void WKCWebKitGetLayerProperties(void* layer, void** opaque_texture, int* width, int* height, bool* need_yflip, void** offscreen, int*offscreenwidth, int* offscreenheight, bool* is_3dcanvas);
 
 /**
 @brief Create an offscreen
@@ -646,6 +669,7 @@ Registers callback to set processing for the platform pasteboard.
 All WKC::PasteboardProcs member callbacks must be implemented.
 */
 WKC_API void WKCWebKitSetPasteboardProcs(const WKC::PasteboardProcs* procs);
+WKC_API void WKCWebKitSetThreadProcs(const WKC::ThreadProcs* procs);
 /**
 @brief get server certificate chian
 @param in_url url
@@ -873,14 +897,6 @@ WKC_API void WKCWebKitSetDeviceMode(int in_mode);
 Set performance mode.
 */
 WKC_API void WKCWebKitSetPerformanceMode(int in_mode);
-
-/**
-@brief Set thread priority proc.
-@param in_proc Callback of set thread priority.
-@details
-Set thread priority callback.
-*/
-WKC_API void WKCWebkitSetThreadPriorityCallback(WKC::SetThreadPriorityProc in_proc);
 
 /**
 @brief Cancel dragging mode of range input element.
@@ -1961,7 +1977,7 @@ public:
     */
     WKC::Element* getElementFromPoint(int x, int y);
     /**
-       @brief Gets information about whether element below pointer is clickable or not (whether there is a click event listener) using specified coordinates
+       @brief Gets information about whether element below pointer is clickable or not using specified coordinates
        @param x X coordinate
        @param y Y coordinate
        @retval "!= false" Clickable
@@ -1970,6 +1986,13 @@ public:
        Every coordinate value must be specified using the same coordinate system as WKC::WKCWebView::notifyMouseDown (Move, Up).
     */
     bool clickableFromPoint(int x, int y);
+    /**
+       @brief Gets information about whether specified element is clickable or not
+       @param element Pointer to element
+       @retval "!= false" Clickable
+       @retval "== false" Not clickable
+    */
+    bool isClickableElement(WKC::Element* element);
     /**
        @brief Gets information about whether element below pointer is draggable or not (whether there is an ondrag, dragstart, or dragend event listener) using specified coordinates
        @param x X coordinate

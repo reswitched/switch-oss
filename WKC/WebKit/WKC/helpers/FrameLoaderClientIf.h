@@ -433,7 +433,7 @@ public:
        @return None
        @endcond
     */
-    virtual void dispatchDidLayout(int) = 0;
+    virtual void dispatchDidReachLayoutMilestone(int) = 0;
 
     /**
        @cond WKC_PRIVATE_DOCUMENT

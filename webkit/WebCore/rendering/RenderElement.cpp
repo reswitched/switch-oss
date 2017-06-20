@@ -835,7 +835,7 @@ void RenderElement::styleWillChange(StyleDifference diff, const RenderStyle& new
 #endif
 #if PLATFORM(IOS) && ENABLE(TOUCH_EVENTS)
         if (visibilityChanged)
-            document().dirtyTouchEventRects();
+            document().setTouchEventRegionsNeedUpdate();
 #endif
         if (visibilityChanged) {
             if (AXObjectCache* cache = document().existingAXObjectCache())
@@ -1060,9 +1060,6 @@ void RenderElement::willBeRemovedFromTree()
         removeLayers(layer);
     }
 
-    if (m_style->hasFixedBackgroundImage() && !frame().settings().fixedBackgroundsPaintRelativeToDocument())
-        view().frameView().removeSlowRepaintObject(this);
-
     if (isOutOfFlowPositioned() && parent()->childrenInline())
         parent()->dirtyLinesFromChangedChild(*this);
 
@@ -1074,6 +1071,9 @@ void RenderElement::willBeRemovedFromTree()
 
 void RenderElement::willBeDestroyed()
 {
+    if (m_style->hasFixedBackgroundImage() && !frame().settings().fixedBackgroundsPaintRelativeToDocument())
+        view().frameView().removeSlowRepaintObject(this);
+
     animation().cancelAnimations(*this);
 
     destroyLeftoverChildren();

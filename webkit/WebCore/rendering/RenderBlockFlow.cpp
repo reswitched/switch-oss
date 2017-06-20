@@ -1999,6 +1999,10 @@ void RenderBlockFlow::styleDidChange(StyleDifference diff, const RenderStyle* ol
         parentBlock->markAllDescendantsWithFloatsForLayout();
         parentBlock->markSiblingsWithFloatsForLayout();
     }
+    // Fresh floats need to be reparented if they actually belong to the previous anonymous block.
+    // It copies the logic of RenderBlock::addChildIgnoringContinuation
+    if (noLongerAffectsParentBlock() && style().isFloating() && previousSibling() && previousSibling()->isAnonymousBlock())
+        downcast<RenderBoxModelObject>(*parent()).moveChildTo(&downcast<RenderBoxModelObject>(*previousSibling()), this);
 
     if (auto fragment = renderNamedFlowFragment())
         fragment->setStyle(RenderNamedFlowFragment::createStyle(style()));
@@ -3772,11 +3776,10 @@ void RenderBlockFlow::addChild(RenderObject* newChild, RenderObject* beforeChild
 {
     if (multiColumnFlowThread())
         return multiColumnFlowThread()->addChild(newChild, beforeChild);
-    if (beforeChild) {
-        if (RenderFlowThread* containingFlowThread = flowThreadContainingBlock())
-            beforeChild = containingFlowThread->resolveMovedChild(beforeChild);
-    }
-    RenderBlock::addChild(newChild, beforeChild);
+    auto* beforeChildOrPlaceholder = beforeChild;
+    if (auto* containingFlowThread = flowThreadContainingBlock())
+        beforeChildOrPlaceholder = containingFlowThread->resolveMovedChild(beforeChild);
+    RenderBlock::addChild(newChild, beforeChildOrPlaceholder);
 }
 
 void RenderBlockFlow::removeChild(RenderObject& oldChild)

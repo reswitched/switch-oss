@@ -249,6 +249,13 @@ std::unique_ptr<GlyphToPathTranslator> SVGTextRunRenderingContext::createGlyphTo
     SVGFontElement* fontElement = nullptr;
     SVGFontFaceElement* fontFaceElement = nullptr;
 
+#if PLATFORM(WKC)
+    if (!font.isSVGFont()) {
+        // Guard in case Font::m_svgData is null caused by memory allocation failure.
+        return std::make_unique<DummyGlyphToPathTranslator>();
+    }
+#endif
+
     const SVGFontData* svgFontData = svgFontAndFontFaceElementForFontData(&font, fontFaceElement, fontElement);
     if (!fontElement || !fontFaceElement)
         return std::make_unique<DummyGlyphToPathTranslator>();

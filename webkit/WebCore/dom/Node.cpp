@@ -341,6 +341,14 @@ Node::~Node()
         willBeDeletedFrom(document());
 
     document().decrementReferencingNodeCount();
+
+#if ENABLE(TOUCH_EVENTS) && PLATFORM(IOS) && (!ASSERT_DISABLED || ENABLE(SECURITY_ASSERTIONS))
+    for (auto* document : Document::allDocuments()) {
+        ASSERT_WITH_SECURITY_IMPLICATION(!document->touchEventListenersContain(*this));
+        ASSERT_WITH_SECURITY_IMPLICATION(!document->touchEventHandlersContain(*this));
+        ASSERT_WITH_SECURITY_IMPLICATION(!document->touchEventTargetsContain(*this));
+    }
+#endif
 }
 
 void Node::willBeDeletedFrom(Document& document)
@@ -780,19 +788,15 @@ bool Document::shouldInvalidateNodeListAndCollectionCaches(const QualifiedName* 
 
 void Document::invalidateNodeListAndCollectionCaches(const QualifiedName* attrName)
 {
-#if !ASSERT_DISABLED
-    m_inInvalidateNodeListAndCollectionCaches = true;
-#endif
-    HashSet<LiveNodeList*> lists = WTF::move(m_listsInvalidatedAtDocument);
-    m_listsInvalidatedAtDocument.clear();
+    Vector<LiveNodeList*, 8> lists;
+    copyToVector(m_listsInvalidatedAtDocument, lists);
     for (auto* list : lists)
         list->invalidateCacheForAttribute(attrName);
-    HashSet<HTMLCollection*> collections = WTF::move(m_collectionsInvalidatedAtDocument);
+
+    Vector<HTMLCollection*, 8> collections;
+    copyToVector(m_collectionsInvalidatedAtDocument, collections);
     for (auto* collection : collections)
         collection->invalidateCache(attrName);
-#if !ASSERT_DISABLED
-    m_inInvalidateNodeListAndCollectionCaches = false;
-#endif
 }
 
 void Node::invalidateNodeListAndCollectionCachesInAncestors(const QualifiedName* attrName, Element* attributeOwnerElement)
@@ -1844,7 +1848,7 @@ static inline bool tryAddEventListener(Node* targetNode, const AtomicString& eve
 #endif // PLATFORM(IOS)
 
 #if ENABLE(IOS_GESTURE_EVENTS) && ENABLE(TOUCH_EVENTS)
-    if (eventType == eventNames().gesturestartEvent || eventType == eventNames().gesturechangeEvent || eventType == eventNames().gestureendEvent)
+    if (eventNames().isGestureEventType(eventType))
         targetNode->document().addTouchEventListener(targetNode);
 #endif
 
@@ -1885,7 +1889,7 @@ static inline bool tryRemoveEventListener(Node* targetNode, const AtomicString& 
 #endif // PLATFORM(IOS)
 
 #if ENABLE(IOS_GESTURE_EVENTS) && ENABLE(TOUCH_EVENTS)
-    if (eventType == eventNames().gesturestartEvent || eventType == eventNames().gesturechangeEvent || eventType == eventNames().gestureendEvent)
+    if (eventNames().isGestureEventType(eventType))
         targetNode->document().removeTouchEventListener(targetNode);
 #endif
 

@@ -38,7 +38,7 @@ public:
 
     virtual void platformGamepadConnected(PlatformGamepad&) = 0;
     virtual void platformGamepadDisconnected(PlatformGamepad&) = 0;
-    virtual void platformGamepadInputActivity() = 0;
+    virtual void platformGamepadInputActivity(bool shouldMakeGamepadVisible) = 0;
 };
 
 } // namespace WebCore

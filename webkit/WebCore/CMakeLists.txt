@@ -1,4 +1,5 @@
 set(WebCore_INCLUDE_DIRECTORIES
+    "${CMAKE_BINARY_DIR}"
     "${WEBCORE_DIR}"
     "${WEBCORE_DIR}/Modules/airplay"
     "${WEBCORE_DIR}/Modules/battery"

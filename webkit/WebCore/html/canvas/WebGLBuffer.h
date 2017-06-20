@@ -29,6 +29,7 @@
 #include "WebGLSharedObject.h"
 
 #include <wtf/Forward.h>
+#include <wtf/Optional.h>
 
 namespace JSC {
 class ArrayBuffer;
@@ -54,11 +55,10 @@ public:
     GC3Dsizeiptr byteLength() const;
     const JSC::ArrayBuffer* elementArrayBuffer() const { return m_elementArrayBuffer.get(); }
 
-    // Gets the cached max index for the given type. Returns -1 if
-    // none has been set.
-    int getCachedMaxIndex(GC3Denum type);
+    // Gets the cached max index for the given type if one has been set.
+    WTF::Optional<unsigned> getCachedMaxIndex(GC3Denum type);
     // Sets the cached max index for the given type.
-    void setCachedMaxIndex(GC3Denum type, int value);
+    void setCachedMaxIndex(GC3Denum type, unsigned value);
 
     GC3Denum getTarget() const { return m_target; }
     void setTarget(GC3Denum);
@@ -87,11 +87,10 @@ private:
     // that size.
     struct MaxIndexCacheEntry {
         GC3Denum type;
-        int maxIndex;
+        unsigned maxIndex;
     };
     // OpenGL ES 2.0 only has two valid index types (UNSIGNED_BYTE
-    // and UNSIGNED_SHORT), but might as well leave open the
-    // possibility of adding others.
+    // and UNSIGNED_SHORT) plus one extension (UNSIGNED_INT).
     MaxIndexCacheEntry m_maxIndexCache[4];
     unsigned int m_nextAvailableCacheEntry;
 

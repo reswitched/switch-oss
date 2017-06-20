@@ -147,9 +147,11 @@ void PlatformContextCairo::pushImageMask(cairo_surface_t* surface, const FloatRe
     cairo_push_group(m_cr.get());
     cairo_set_operator(m_cr.get(), CAIRO_OPERATOR_SOURCE);
 
+#if !PLATFORM(WKC) // The code below results in incorrect compositing with the surface.
     cairo_set_source_surface(m_cr.get(), currentTarget, 0, 0);
     cairo_rectangle(m_cr.get(), rect.x(), rect.y(), rect.width(), rect.height());
     cairo_fill(m_cr.get());
+#endif
 }
 
 static void drawPatternToCairoContext(cairo_t* cr, cairo_pattern_t* pattern, const FloatRect& destRect, float alpha)

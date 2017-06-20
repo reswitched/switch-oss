@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2013-2017 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -27,7 +27,7 @@
 namespace WKC {
 
 HTMLSelectElementPrivate::HTMLSelectElementPrivate(WebCore::HTMLSelectElement* parent)
-    : HTMLElementPrivate(parent)
+    : HTMLFormControlElementPrivate(parent)
 {
 }
 
@@ -42,7 +42,7 @@ HTMLSelectElementPrivate::showPopup()
 }
 
 HTMLSelectElement::HTMLSelectElement(HTMLSelectElementPrivate& parent)
-    : HTMLElement(parent)
+    : HTMLFormControlElement(parent)
 {
 }
 

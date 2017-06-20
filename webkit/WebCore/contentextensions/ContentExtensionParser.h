@@ -39,6 +39,7 @@ namespace ContentExtensions {
 class ContentExtensionRule;
 
 std::error_code parseRuleList(const String& rules, Vector<ContentExtensionRule>&);
+WEBCORE_EXPORT bool isValidCSSSelector(const String&);
 
 } // namespace ContentExtensions
 } // namespace WebCore

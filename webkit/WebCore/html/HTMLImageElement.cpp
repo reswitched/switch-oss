@@ -38,6 +38,7 @@
 #include "MIMETypeRegistry.h"
 #include "MediaList.h"
 #include "MediaQueryEvaluator.h"
+#include "NodeTraversal.h"
 #include "Page.h"
 #include "RenderImage.h"
 #include "Settings.h"
@@ -303,6 +304,11 @@ void HTMLImageElement::didAttachRenderers()
 
 Node::InsertionNotificationRequest HTMLImageElement::insertedInto(ContainerNode& insertionPoint)
 {
+    if (m_form && rootElement() != m_form->rootElement()) {
+        m_form->removeImgElement(this);
+        m_form = nullptr;
+    }
+
     if (!m_form) { // m_form can be non-null if it was set in constructor.
         m_form = HTMLFormElement::findClosestFormAncestor(*this);
         if (m_form)

@@ -88,8 +88,6 @@ EXTERN_C void _CFCachedURLResponseSetBecameFileBackedCallBackBlock(CFCachedURLRe
 #endif
 #endif // PLATFORM(COCOA)
 
-EXTERN_C void CFURLConnectionInvalidateConnectionCache();
-
 EXTERN_C CFStringRef const kCFHTTPCookieLocalFileDomain;
 
 // FIXME: We should only forward declare this SPI when building for iOS without the Apple Internal SDK.

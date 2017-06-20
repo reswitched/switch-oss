@@ -1913,14 +1913,13 @@ macro nativeCallTrampoline(executableOffsetToFunction)
         error
     end
 
-    functionEpilogue()
-
     btqnz VM::m_exception[t3], .handleException
+
+    functionEpilogue()
     ret
 
 .handleException:
     storep cfr, VM::topCallFrame[t3]
-    restoreStackPointerAfterCall()
     jmp _llint_throw_from_slow_path_trampoline
 end
 

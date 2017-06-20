@@ -2231,6 +2231,9 @@ void FrameSelection::setShouldShowBlockCursor(bool shouldShowBlockCursor)
 
 void FrameSelection::updateAppearanceAfterLayout()
 {
+    if (auto* client = m_frame->editor().client())
+        client->updateEditorStateAfterLayoutIfEditabilityChanged();
+
     setCaretRectNeedsUpdate();
     updateAndRevealSelection(AXTextStateChangeIntent());
     updateDataDetectorsForSelection();

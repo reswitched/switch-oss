@@ -94,6 +94,7 @@ public:
 
     WEBCORE_EXPORT bool isAttachment() const;
     WEBCORE_EXPORT String suggestedFilename() const;
+    WEBCORE_EXPORT static String sanitizeSuggestedFilename(const String&);
 
     WEBCORE_EXPORT void includeCertificateInfo() const;
     bool containsCertificateInfo() const { return m_includesCertificateInfo; }

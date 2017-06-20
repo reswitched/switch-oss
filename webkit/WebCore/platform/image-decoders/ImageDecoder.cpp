@@ -133,6 +133,10 @@ ImageFrame::ImageFrame()
     , m_duration(0)
     , m_disposalMethod(DisposeNotSpecified)
     , m_premultiplyAlpha(true)
+#if ENABLE(WKC_BLINK_AWEBP)
+    , m_alphaBlendSource(BlendAtopPreviousFrame)
+    , m_requiredPreviousFrameIndex(-1)
+#endif
 {
 } 
 

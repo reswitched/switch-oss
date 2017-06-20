@@ -488,6 +488,8 @@ Page* DOMWindow::page()
 
 void DOMWindow::frameDestroyed()
 {
+    Ref<DOMWindow> protectedThis(*this);
+
     willDestroyDocumentInFrame();
     FrameDestructionObserver::frameDestroyed();
     resetDOMWindowProperties();
@@ -1770,11 +1772,11 @@ bool DOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<Event
 #endif
 #if ENABLE(IOS_TOUCH_EVENTS)
     else if (eventNames().isTouchEventType(eventType))
-        ++m_touchEventListenerCount;
+        ++m_touchAndGestureEventListenerCount;
 #endif
 #if ENABLE(IOS_GESTURE_EVENTS)
     else if (eventNames().isGestureEventType(eventType))
-        ++m_touchEventListenerCount;
+        ++m_touchAndGestureEventListenerCount;
 #endif
 #if ENABLE(GAMEPAD)
     else if (eventNames().isGamepadEventType(eventType))
@@ -1859,14 +1861,14 @@ bool DOMWindow::removeEventListener(const AtomicString& eventType, EventListener
 #endif
 #if ENABLE(IOS_TOUCH_EVENTS)
     else if (eventNames().isTouchEventType(eventType)) {
-        ASSERT(m_touchEventListenerCount > 0);
-        --m_touchEventListenerCount;
+        ASSERT(m_touchAndGestureEventListenerCount > 0);
+        --m_touchAndGestureEventListenerCount;
     }
 #endif
 #if ENABLE(IOS_GESTURE_EVENTS)
     else if (eventNames().isGestureEventType(eventType)) {
-        ASSERT(m_touchEventListenerCount > 0);
-        --m_touchEventListenerCount;
+        ASSERT(m_touchAndGestureEventListenerCount > 0);
+        --m_touchAndGestureEventListenerCount;
     }
 #endif
 #if ENABLE(GAMEPAD)
@@ -1967,7 +1969,7 @@ void DOMWindow::removeAllEventListeners()
 #endif
 
 #if ENABLE(IOS_TOUCH_EVENTS) || ENABLE(IOS_GESTURE_EVENTS)
-    m_touchEventListenerCount = 0;
+    m_touchAndGestureEventListenerCount = 0;
 #endif
 
 #if ENABLE(TOUCH_EVENTS)
@@ -2193,9 +2195,9 @@ PassRefPtr<DOMWindow> DOMWindow::open(const String& urlString, const AtomicStrin
 #endif
 
     if (!firstWindow.allowPopUp()) {
-        // Because FrameTree::find() returns true for empty strings, we must check for empty frame names.
+        // Because FrameTree::findFrameForNavigation() returns true for empty strings, we must check for empty frame names.
         // Otherwise, illegitimate window.open() calls with no name will pass right through the popup blocker.
-        if (frameName.isEmpty() || !m_frame->tree().find(frameName))
+        if (frameName.isEmpty() || !m_frame->loader().findFrameForNavigation(frameName, activeDocument))
             return nullptr;
     }
 

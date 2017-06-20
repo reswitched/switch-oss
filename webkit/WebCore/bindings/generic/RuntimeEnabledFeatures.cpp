@@ -54,11 +54,6 @@ RuntimeEnabledFeatures::RuntimeEnabledFeatures()
     , m_isCSSRegionsEnabled(false)
     , m_isCSSCompositingEnabled(false)
     , m_isLangAttributeAwareFormControlUIEnabled(false)
-#if PLATFORM(IOS)
-    , m_isPluginReplacementEnabled(true)
-#else
-    , m_isPluginReplacementEnabled(false)
-#endif
 #if ENABLE(MEDIA_STREAM)
     , m_isMediaStreamEnabled(true)
     , m_isPeerConnectionEnabled(true)

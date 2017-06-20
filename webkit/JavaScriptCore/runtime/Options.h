@@ -135,6 +135,7 @@ typedef const char* optionString;
     v(bool, dumpGraphAfterParsing, false, nullptr) \
     v(bool, dumpGraphAtEachPhase, false, nullptr) \
     v(bool, verboseDFGByteCodeParsing, false, nullptr) \
+    v(bool, safepointBeforeEachPhase, true, nullptr) \
     v(bool, verboseCompilation, false, nullptr) \
     v(bool, verboseFTLCompilation, false, nullptr) \
     v(bool, logCompilationChanges, false, nullptr) \
@@ -321,6 +322,8 @@ typedef const char* optionString;
     \
     v(bool, enableDollarVM, false, "installs the $vm debugging tool in global objects") \
     v(optionString, functionOverrides, nullptr, "file with debugging overrides for function bodies") \
+    \
+    v(bool, useConcurrentGCSplitTesting, false, "If true, A/B split testing will be performed on the concurrent GC, yielding a 50% chance that concurrent GC is disabled.") \
 
 class Options {
 public:

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Apple Inc. All rights reserved.
+ * Copyright (C) 2014-2016 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -146,11 +146,11 @@ private:
     void setUnderlyingString(const StringImpl*) { }
     void setUnderlyingString(const StringView&) { }
 #endif
-
-    static const unsigned is16BitStringFlag = 1u << 31;
+    void clear();
 
     const void* m_characters { nullptr };
     unsigned m_length { 0 };
+    bool m_is8Bit { true };
 
 #if CHECK_STRINGVIEW_LIFETIME
     void adoptUnderlyingString(UnderlyingString*);
@@ -202,11 +202,11 @@ inline StringView::~StringView()
 inline StringView::StringView(StringView&& other)
     : m_characters(other.m_characters)
     , m_length(other.m_length)
+    , m_is8Bit(other.m_is8Bit)
 {
     ASSERT(other.underlyingStringIsValid());
 
-    other.m_characters = nullptr;
-    other.m_length = 0;
+    other.clear();
 
     setUnderlyingString(other);
     other.setUnderlyingString(nullptr);
@@ -215,6 +215,7 @@ inline StringView::StringView(StringView&& other)
 inline StringView::StringView(const StringView& other)
     : m_characters(other.m_characters)
     , m_length(other.m_length)
+    , m_is8Bit(other.m_is8Bit)
 {
     ASSERT(other.underlyingStringIsValid());
 
@@ -227,9 +228,9 @@ inline StringView& StringView::operator=(StringView&& other)
 
     m_characters = other.m_characters;
     m_length = other.m_length;
+    m_is8Bit = other.m_is8Bit;
 
-    other.m_characters = nullptr;
-    other.m_length = 0;
+    other.clear();
 
     setUnderlyingString(other);
     other.setUnderlyingString(nullptr);
@@ -243,6 +244,7 @@ inline StringView& StringView::operator=(const StringView& other)
 
     m_characters = other.m_characters;
     m_length = other.m_length;
+    m_is8Bit = other.m_is8Bit;
 
     setUnderlyingString(other);
 
@@ -251,20 +253,16 @@ inline StringView& StringView::operator=(const StringView& other)
 
 inline void StringView::initialize(const LChar* characters, unsigned length)
 {
-    // FIXME: We need a better solution here, because there is no guarantee that
-    // the length here won't be too long. Maybe at least a RELEASE_ASSERT?
-    ASSERT(!(length & is16BitStringFlag));
     m_characters = characters;
     m_length = length;
+    m_is8Bit = true;
 }
 
 inline void StringView::initialize(const UChar* characters, unsigned length)
 {
-    // FIXME: We need a better solution here, because there is no guarantee that
-    // the length here won't be too long. Maybe at least a RELEASE_ASSERT?
-    ASSERT(!(length & is16BitStringFlag));
     m_characters = characters;
-    m_length = is16BitStringFlag | length;
+    m_length = length;
+    m_is8Bit = false;
 }
 
 inline StringView::StringView(const LChar* characters, unsigned length)
@@ -302,8 +300,7 @@ inline StringView::StringView(const String& string)
 {
     setUnderlyingString(string.impl());
     if (!string.impl()) {
-        m_characters = nullptr;
-        m_length = 0;
+        clear();
         return;
     }
     if (string.is8Bit()) {
@@ -311,6 +308,13 @@ inline StringView::StringView(const String& string)
         return;
     }
     initialize(string.characters16(), string.length());
+}
+
+inline void StringView::clear()
+{
+    m_characters = nullptr;
+    m_length = 0;
+    m_is8Bit = true;
 }
 
 inline StringView StringView::empty()
@@ -359,7 +363,7 @@ inline bool StringView::isEmpty() const
 
 inline unsigned StringView::length() const
 {
-    return m_length & ~is16BitStringFlag;
+    return m_length;
 }
 
 inline StringView::operator bool() const
@@ -369,7 +373,7 @@ inline StringView::operator bool() const
 
 inline bool StringView::is8Bit() const
 {
-    return !(m_length & is16BitStringFlag);
+    return m_is8Bit;
 }
 
 inline StringView StringView::substring(unsigned start, unsigned length) const
@@ -424,8 +428,7 @@ inline void StringView::getCharactersWithUpconvert(UChar* destination) const
         return;
     }
     auto characters16 = this->characters16();
-    unsigned length = this->length();
-    for (unsigned i = 0; i < length; ++i)
+    for (unsigned i = 0; i < m_length; ++i)
         destination[i] = characters16[i];
 }
 
@@ -447,35 +450,35 @@ inline String StringView::toString() const
 {
     if (is8Bit())
         return String(characters8(), m_length);
-    return String(characters16(), length());
+    return String(characters16(), m_length);
 }
 
 inline float StringView::toFloat(bool& isValid) const
 {
     if (is8Bit())
         return charactersToFloat(characters8(), m_length, &isValid);
-    return charactersToFloat(characters16(), length(), &isValid);
+    return charactersToFloat(characters16(), m_length, &isValid);
 }
 
 inline int StringView::toInt(bool& isValid) const
 {
     if (is8Bit())
         return charactersToInt(characters8(), m_length, &isValid);
-    return charactersToInt(characters16(), length(), &isValid);
+    return charactersToInt(characters16(), m_length, &isValid);
 }
 
 inline String StringView::toStringWithoutCopying() const
 {
     if (is8Bit())
         return StringImpl::createWithoutCopying(characters8(), m_length);
-    return StringImpl::createWithoutCopying(characters16(), length());
+    return StringImpl::createWithoutCopying(characters16(), m_length);
 }
 
 inline size_t StringView::find(UChar character, unsigned start) const
 {
     if (is8Bit())
         return WTF::find(characters8(), m_length, character, start);
-    return WTF::find(characters16(), length(), character, start);
+    return WTF::find(characters16(), m_length, character, start);
 }
 
 #if !CHECK_STRINGVIEW_LIFETIME

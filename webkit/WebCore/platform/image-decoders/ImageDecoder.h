@@ -45,7 +45,8 @@
 #include <ApplicationServices/ApplicationServices.h>
 #include <wtf/RetainPtr.h>
 #endif
-#elif PLATFORM(WKC)
+#endif
+#if PLATFORM(WKC)
 #include "ImageWKC.h"
 #endif
 
@@ -69,6 +70,25 @@ namespace WebCore {
             DisposeOverwritePrevious  // Clear frame to previous framebuffer
                                       // contents
         };
+#if ENABLE(WKC_BLINK_AWEBP)
+        // Indicates how non-opaque pixels in the current frame rectangle
+        // are blended with those in the previous frame.
+        // Notes:
+        // * GIF always uses 'BlendAtopPreviousFrame'.
+        // * WebP also uses the 'BlendAtopBgcolor' option. This is useful for
+        //   cases where one wants to transform a few opaque pixels of the
+        //   previous frame into non-opaque pixels in the current frame.
+        enum AlphaBlendSource {
+            // Blend non-opaque pixels atop the corresponding pixels in the
+            // initial buffer state (i.e. any previous frame buffer after having
+            // been properly disposed).
+            BlendAtopPreviousFrame,
+
+            // Blend non-opaque pixels against fully transparent (i.e. simply
+            // overwrite the corresponding pixels).
+            BlendAtopBgcolor,
+        };
+#endif
         typedef unsigned PixelData;
 
         ImageFrame();
@@ -126,6 +146,10 @@ namespace WebCore {
         unsigned duration() const { return m_duration; }
         FrameDisposalMethod disposalMethod() const { return m_disposalMethod; }
         bool premultiplyAlpha() const { return m_premultiplyAlpha; }
+#if ENABLE(WKC_BLINK_AWEBP)
+        AlphaBlendSource alphaBlendSource() const { return m_alphaBlendSource; }
+        size_t requiredPreviousFrameIndex() const { return m_requiredPreviousFrameIndex; }
+#endif
 
         void setHasAlpha(bool alpha);
         void setColorProfile(const ColorProfile&);
@@ -134,6 +158,10 @@ namespace WebCore {
         void setDuration(unsigned duration) { m_duration = duration; }
         void setDisposalMethod(FrameDisposalMethod method) { m_disposalMethod = method; }
         void setPremultiplyAlpha(bool premultiplyAlpha) { m_premultiplyAlpha = premultiplyAlpha; }
+#if ENABLE(WKC_BLINK_AWEBP)
+        void setAlphaBlendSource(AlphaBlendSource alphaBlendSource) { m_alphaBlendSource = alphaBlendSource; }
+        void setRequiredPreviousFrameIndex(size_t previousFrameIndex) { m_requiredPreviousFrameIndex = previousFrameIndex; }
+#endif
 
 #if PLATFORM(WKC)
         void setAllowReduceColor(bool flag);
@@ -271,6 +299,16 @@ namespace WebCore {
         unsigned m_duration;
         FrameDisposalMethod m_disposalMethod;
         bool m_premultiplyAlpha;
+
+#if ENABLE(WKC_BLINK_AWEBP)
+        AlphaBlendSource m_alphaBlendSource;
+        // The frame that must be decoded before this frame can be decoded.
+        // -1 if this frame doesn't require any previous frame.
+        // This is used by ImageDecoder::clearCacheExceptFrame(), and will never
+        // be read for image formats that do not have multiple frames.
+        size_t m_requiredPreviousFrameIndex;
+#endif
+
 #if PLATFORM(WKC)
         ImageWKC* m_image;
 #endif

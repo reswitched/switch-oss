@@ -357,7 +357,7 @@ void SourceBuffer::resetParserState()
     // 7. Set append state to WAITING_FOR_SEGMENT.
     m_appendState = WaitingForSegment;
 
-    m_private->abort();
+    m_private->resetParserState();
 }
 
 void SourceBuffer::abort(ExceptionCode& ec)
@@ -455,6 +455,7 @@ void SourceBuffer::abortIfUpdating()
     // 3.1. Abort the buffer append and stream append loop algorithms if they are running.
     m_appendBufferTimer.stop();
     m_pendingAppendData.clear();
+    m_private->abort();
 
     m_removeTimer.stop();
     m_pendingRemoveStart = MediaTime::invalidTime();
@@ -1657,8 +1658,12 @@ void SourceBuffer::sourceBufferPrivateDidReceiveSample(SourceBufferPrivate*, Pas
         // 1.5 Let track buffer equal the track buffer that the coded frame will be added to.
         AtomicString trackID = sample->trackID();
         auto it = m_trackBufferMap.find(trackID);
-        if (it == m_trackBufferMap.end())
-            it = m_trackBufferMap.add(trackID, TrackBuffer()).iterator;
+        if (it == m_trackBufferMap.end()) {
+            // The client managed to append a sample with a trackID not present in the initialization
+            // segment. This would be a good place to post an message to the developer console.
+            didDropSample();
+            return;
+        }
         TrackBuffer& trackBuffer = it->value;
 
         // 1.6 ↳ If last decode timestamp for track buffer is set and decode timestamp is less than last

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007 Apple Inc. All rights reserved.
+ * Copyright (C) 2006-2007, 2016 Apple Inc. All rights reserved.
  * Copyright (C) 2010 Igalia S.L
  *
  * Redistribution and use in source and binary forms, with or without
@@ -235,6 +235,8 @@ void ContextMenuController::contextMenuItemSelected(ContextMenuItem* item)
     Frame* frame = m_context.hitTestResult().innerNonSharedNode()->document().frame();
     if (!frame)
         return;
+
+    Ref<Frame> protector(*frame);
 
     switch (item->action()) {
     case ContextMenuItemTagOpenLinkInNewWindow:

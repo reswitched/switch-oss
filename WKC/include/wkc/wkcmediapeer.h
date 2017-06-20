@@ -1322,12 +1322,26 @@ WKC_PEER_API float wkcAudioGetVolumePeer(void* in_self);
 @param in_self Device descriptor
 @param in_data Stream
 @param in_len Stream length
-@retval WKC_MEDIA_ERROR_OK Succeeded
-@retval WKC_MEDIA_ERROR_GENERIC Failed
+@retval Size of consumed data
 @details
 Write the process for outputting the stream specified by in_data and in_len to the device.
 */
-WKC_PEER_API int wkcAudioWritePeer(void* in_self, void* in_data, unsigned int in_len);
+WKC_PEER_API unsigned int wkcAudioWritePeer(void* in_self, void* in_data, unsigned int in_len);
+/**
+@brief Outputs to audio device
+@param in_self Device descriptor
+@param in_data Pointer to array of channel data
+@param in_channels Number of channels
+@param in_frame_count Count of frames in each channel data
+@param in_max_abs_value Pointer to array of the maximum absolute value in each channel data
+@retval !=false Succeeded
+@retval ==false Failed
+@details
+Write the process for outputting the stream specified by in_data to the device.
+If the return value is not false, wkcAudioWriteRawPeer will be called again with the next data after some sleep.
+If the return value is false, wkcAudioWriteRawPeer will be called again with the same data after some sleep.
+*/
+WKC_PEER_API bool wkcAudioWriteRawPeer(void* in_self, float** in_data, unsigned int in_channels, unsigned int in_frame_count, float* in_max_abs_value);
 /**
 @brief Returns preferred sample rate of audio device
 @retval Preferred sample rate of audio device

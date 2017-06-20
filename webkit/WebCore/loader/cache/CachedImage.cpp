@@ -484,7 +484,7 @@ void CachedImage::decodedSizeChanged(const Image* image, int delta)
     if (!image || image != m_image)
         return;
     
-    setDecodedSize(decodedSize() + delta);
+    setDecodedSize(static_cast<unsigned>(decodedSize() + delta));
 }
 
 void CachedImage::didDraw(const Image* image)

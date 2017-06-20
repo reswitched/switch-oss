@@ -1106,9 +1106,13 @@ WKCWebViewPrivate::notifyServiceScriptedAnimations()
     WebCore::MainFrame& frame = core()->mainFrame();
     if (!frame.view()) return;
     double cur = WTF::monotonicallyIncreasingTime();
+#if ENABLE(WEBGL)
     wkcGLBeginPaintPeer();
+#endif
     frame.view()->serviceScriptedAnimations(cur);
+#if ENABLE(WEBGL)
     wkcGLEndPaintPeer();
+#endif
 #endif
 }
 
@@ -1442,13 +1446,13 @@ void
 WKCWebView::notifyRelayout(bool force)
 {
     if (force) {
-        WebCore::Frame* frame = (WebCore::Frame *)&m_private->core()->mainFrame();
-        if (!frame) return;
-        WebCore::Document* document = frame->document();
-        if (!document) return;
-        WebCore::RenderView* renderView = document->renderView();
-        if (!renderView) return;
-        renderView->setNeedsLayout();
+        WebCore::Frame* mainFrame = (WebCore::Frame *)&m_private->core()->mainFrame();
+        for (WebCore::Frame* frame = mainFrame; frame; frame = frame->tree().traverseNext()) {
+            WebCore::RenderView* renderView = frame->contentRenderer();
+            if (!renderView)
+                continue;
+            renderView->setNeedsLayout();
+        }
     }
     m_private->notifyRelayout();
 }
@@ -1713,13 +1717,6 @@ WKCWebView::notifyMouseMoveTest(const WKCPoint& pos, WKC::MouseButton button, Mo
     if (!renderer || !targetNode)
         return notifyMouseMove(pos, button, modifiers);
 
-    for (WebCore::Node* n = linkNode; n && n != targetNode; n = n->parentNode()) {
-        if (n->hasEventListeners(WebCore::eventNames().mouseoverEvent) &&
-            n->hasEventListeners(WebCore::eventNames().mousemoveEvent)) {
-            contentChanged = true;
-            return notifyMouseMove(pos, button, modifiers);
-        }
-    }
     for (WebCore::Node* n = targetNode; n; n = n->parentNode()) {
         if (n == linkNode)
             return notifyMouseMove(pos, button, modifiers);
@@ -1754,14 +1751,6 @@ WKCWebView::notifyMouseMoveTest(const WKCPoint& pos, WKC::MouseButton button, Mo
     renderer->frame().document()->updateStyleIfNeeded();
 
     renderer = targetNode->renderer();
-
-    for (WebCore::Node* n = linkNode; n && n != targetNode; n = n->parentNode()) {
-        if (n->hasEventListeners(WebCore::eventNames().mouseoverEvent) &&
-            n->hasEventListeners(WebCore::eventNames().mousemoveEvent)) {
-            contentChanged = true;
-            goto exit;
-        }
-    }
 
     if (getRendererCount(renderer, linkNode) != rendererCount) {
         contentChanged = true;
@@ -2835,7 +2824,7 @@ WKCWebView::releaseMemory(ReleaseMemoryType type, bool is_synchronous)
 
 #if ENABLE(WKC_HTTPCACHE)
     if (type & EMemoryTypeNoncriticalHTTPCache) {
-        WebCore::ResourceHandleManager::sharedInstance()->clearHTTPCache();
+        WebCore::ResourceHandleManager::sharedInstance()->resetHTTPCache();
     }
 #endif
 
@@ -3058,14 +3047,16 @@ bool
 WKCWebView::clickableFromPoint(int x, int y)
 {
     WKC::Element* pelement = getElementFromPoint(x, y);
+    return isClickableElement(pelement);
+}
 
-    if (pelement) {
-        WebCore::Element* element = (WebCore::Element *)pelement->priv().webcore();
-        if (element->hasEventListeners(WebCore::eventNames().clickEvent)) {
-            return true;
-        }
+bool
+WKCWebView::isClickableElement(WKC::Element* element)
+{
+    if (!element) {
+        return false;
     }
-    return false;
+    return m_private->core()->focusController().isClickableElement((WebCore::Element *)element->priv().webcore());
 }
 
 bool
@@ -3462,7 +3453,8 @@ static void
 WKCWebkitPrepareRestart()
 {
     if (!wkcThreadCurrentIsMainThreadPeer()) {
-        if (WebCore::ResourceHandleManager::sharedInstance()->isNetworkThread()) {
+        if (WebCore::ResourceHandleManager::isExistSharedInstance() &&
+            WebCore::ResourceHandleManager::sharedInstance()->isNetworkThread()) {
             WebCore::ResourceHandleManager::sharedInstance()->notifyRequestRestartInNetworkThread();
         }
     }
@@ -3961,12 +3953,23 @@ WKCWebKitSetLayerCallbacks(const LayerCallbacks* callbacks)
                                     callbacks->fTextureUpdateProc,
                                     callbacks->fTextureChangeProc,
                                     callbacks->fDidChangeParentProc,
-                                    callbacks->fCanAllocateProc);
+                                    callbacks->fCanAllocateProc,
+                                    callbacks->fAttachedGlTexturesProc);
 #endif
 }
 
 void
-WKCWebKitGetLayerProperties(void* layer, void** opaque_texture, int* width, int* height, bool* need_yflip, void** out_offscreen, int* offscreenwidth, int* offscreenheight)
+WKCWebKitSetWebGLTextureCallbacks(const WebGLTextureCallbacks* callbacks)
+{
+#if ENABLE(WEBGL)
+    wkcGLRegisterTextureCallbacksPeer(callbacks->fTextureMakeProc,
+                                        callbacks->fTextureDeleteProc,
+                                        callbacks->fTextureChangeProc);
+#endif
+}
+
+void
+WKCWebKitGetLayerProperties(void* layer, void** opaque_texture, int* width, int* height, bool* need_yflip, void** out_offscreen, int* offscreenwidth, int* offscreenheight, bool* is_3dcanvas)
 {
 #if USE(ACCELERATED_COMPOSITING)
     if (opaque_texture)
@@ -3979,6 +3982,10 @@ WKCWebKitGetLayerProperties(void* layer, void** opaque_texture, int* width, int*
         *out_offscreen = wkcLayerGetOffscreenPeer(layer);
     if (offscreenwidth && offscreenheight)
         wkcLayerGetOriginalSizePeer(layer, offscreenwidth, offscreenheight);
+    if (is_3dcanvas) {
+        *is_3dcanvas = (wkcLayerGetTypePeer(layer) == WKC_LAYER_TYPE_3DCANVAS) ? true : false;
+    }
+
 #else
     if (opaque_texture)
         *opaque_texture = 0;
@@ -4253,6 +4260,12 @@ void WKCWebKitSetMediaPlayerProcs(const WKC::MediaPlayerProcs* procs)
 void WKCWebKitSetPasteboardProcs(const WKC::PasteboardProcs* procs)
 {
     wkcPasteboardCallbackSetPeer(static_cast<const WKCPasteboardProcs *>(procs));
+}
+
+// Thread
+void WKCWebKitSetThreadProcs(const WKC::ThreadProcs* procs)
+{
+    wkcThreadCallbackSetPeer(static_cast<const WKCThreadProcs *>(procs));
 }
 
 // glyph / image cache
@@ -5167,13 +5180,6 @@ void
 WKCWebView::recalcStyleSheet()
 {
     m_private->recalcStyleSheet();
-}
-
-// thread priority
-void
-WKCWebkitSetThreadPriorityCallback(WKC::SetThreadPriorityProc in_proc)
-{
-    wkcThreadSetThreadPriorityProcPeer(in_proc);
 }
 
 // cancel range input dragging mode.

@@ -290,6 +290,8 @@ public:
     virtual double mediaPlayerRequestedPlaybackRate() const { return 0; }
     virtual MediaPlayerEnums::VideoFullscreenMode mediaPlayerFullscreenMode() const { return MediaPlayerEnums::VideoFullscreenModeNone; }
     virtual Vector<String> mediaPlayerPreferredAudioCharacteristics() const { return Vector<String>(); }
+
+    virtual bool mediaPlayerShouldDisableSleep() const { return false; }
 };
 
 class MediaPlayerSupportsTypeClient {
@@ -627,6 +629,9 @@ public:
     void handlePlaybackCommand(PlatformMediaSession::RemoteControlCommandType);
     String sourceApplicationIdentifier() const;
     Vector<String> preferredAudioCharacteristics() const;
+
+    void setShouldDisableSleep(bool);
+    bool shouldDisableSleep() const;
 
 private:
     const MediaPlayerFactory* nextBestMediaEngine(const MediaPlayerFactory*) const;

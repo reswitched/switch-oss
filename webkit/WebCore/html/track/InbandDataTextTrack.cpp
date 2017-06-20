@@ -114,10 +114,9 @@ void InbandDataTextTrack::removeDataCue(InbandTextTrackPrivate*, const MediaTime
     if (iter == m_incompleteCueMap.end())
         return;
 
-    RefPtr<DataCue> cue = iter->value;
-    if (cue) {
+    if (auto cue = m_incompleteCueMap.take(platformValue.get())) {
         LOG(Media, "InbandDataTextTrack::removeDataCue removing cue: start=%s, end=%s\n", toString(cue->startTime()).utf8().data(), toString(cue->endTime()).utf8().data());
-        removeCue(cue.get(), IGNORE_EXCEPTION);
+        InbandTextTrack::removeCue(*cue);
     }
 }
 

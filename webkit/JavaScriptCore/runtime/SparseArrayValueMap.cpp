@@ -123,6 +123,9 @@ bool SparseArrayValueMap::putDirect(ExecState* exec, JSObject* array, unsigned i
         return reject(exec, mode == PutDirectIndexShouldThrow, "Attempting to define property on object that is not extensible.");
     }
 
+    if (entry.attributes & ReadOnly)
+        return reject(exec, mode == PutDirectIndexShouldThrow, StrictModeReadonlyPropertyWriteError);
+
     entry.attributes = attributes;
     entry.set(exec->vm(), this, value);
     return true;

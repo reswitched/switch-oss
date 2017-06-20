@@ -149,6 +149,8 @@ public:
     void unschedule(WTF::SchedulePair&);
 #endif
 
+    const Frame* frame() const { return m_frame.get(); }
+
 protected:
     ResourceLoader(Frame*, ResourceLoaderOptions);
 

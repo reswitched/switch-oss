@@ -279,8 +279,12 @@ Node::InsertionNotificationRequest HTMLLinkElement::insertedInto(ContainerNode& 
 
     document().styleSheetCollection().addStyleSheetCandidateNode(*this, m_createdByParser);
 
+    return InsertionShouldCallFinishedInsertingSubtree;
+}
+
+void HTMLLinkElement::finishedInsertingSubtree()
+{
     process();
-    return InsertionDone;
 }
 
 void HTMLLinkElement::removedFrom(ContainerNode& insertionPoint)

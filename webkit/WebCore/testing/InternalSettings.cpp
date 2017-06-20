@@ -89,7 +89,8 @@ InternalSettings::Backup::Backup(Settings& settings)
     , m_originalTimeWithoutMouseMovementBeforeHidingControls(settings.timeWithoutMouseMovementBeforeHidingControls())
     , m_useLegacyBackgroundSizeShorthandBehavior(settings.useLegacyBackgroundSizeShorthandBehavior())
     , m_autoscrollForDragAndDropEnabled(settings.autoscrollForDragAndDropEnabled())
-    , m_pluginReplacementEnabled(RuntimeEnabledFeatures::sharedFeatures().pluginReplacementEnabled())
+    , m_quickTimePluginReplacementEnabled(settings.quickTimePluginReplacementEnabled())
+    , m_youTubeFlashPluginReplacementEnabled(settings.youTubeFlashPluginReplacementEnabled())
     , m_shouldConvertPositionStyleOnCopy(settings.shouldConvertPositionStyleOnCopy())
     , m_fontFallbackPrefersPictographs(settings.fontFallbackPrefersPictographs())
     , m_backgroundShouldExtendBeyondPage(settings.backgroundShouldExtendBeyondPage())
@@ -165,7 +166,8 @@ void InternalSettings::Backup::restoreTo(Settings& settings)
 #if ENABLE(TOUCH_EVENTS)
     settings.setTouchEventEmulationEnabled(m_touchEventEmulationEnabled);
 #endif
-    RuntimeEnabledFeatures::sharedFeatures().setPluginReplacementEnabled(m_pluginReplacementEnabled);
+    settings.setQuickTimePluginReplacementEnabled(m_quickTimePluginReplacementEnabled);
+    settings.setYouTubeFlashPluginReplacementEnabled(m_youTubeFlashPluginReplacementEnabled);
 }
 
 class InternalSettingsWrapper : public Supplement<Page> {
@@ -501,9 +503,16 @@ void InternalSettings::setFontFallbackPrefersPictographs(bool preferPictographs,
     settings()->setFontFallbackPrefersPictographs(preferPictographs);
 }
 
-void InternalSettings::setPluginReplacementEnabled(bool enabled)
+void InternalSettings::setQuickTimePluginReplacementEnabled(bool enabled, ExceptionCode& ec)
 {
-    RuntimeEnabledFeatures::sharedFeatures().setPluginReplacementEnabled(enabled);
+    InternalSettingsGuardForSettings();
+    settings()->setQuickTimePluginReplacementEnabled(enabled);
+}
+
+void InternalSettings::setYouTubeFlashPluginReplacementEnabled(bool enabled, ExceptionCode& ec)
+{
+    InternalSettingsGuardForSettings();
+    settings()->setYouTubeFlashPluginReplacementEnabled(enabled);
 }
 
 void InternalSettings::setBackgroundShouldExtendBeyondPage(bool hasExtendedBackground, ExceptionCode& ec)

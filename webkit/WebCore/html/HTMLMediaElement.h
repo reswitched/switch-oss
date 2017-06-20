@@ -605,8 +605,9 @@ private:
 #endif
 
     virtual bool mediaPlayerShouldWaitForResponseToAuthenticationChallenge(const AuthenticationChallenge&) override;
-    virtual void mediaPlayerHandlePlaybackCommand(PlatformMediaSession::RemoteControlCommandType command) override { didReceiveRemoteControlCommand(command); }
-    virtual String mediaPlayerSourceApplicationIdentifier() const override;
+    void mediaPlayerHandlePlaybackCommand(PlatformMediaSession::RemoteControlCommandType command) override { didReceiveRemoteControlCommand(command, nullptr); }
+    String sourceApplicationIdentifier() const override;
+    String mediaPlayerSourceApplicationIdentifier() const override { return sourceApplicationIdentifier(); }
     virtual Vector<String> mediaPlayerPreferredAudioCharacteristics() const override;
 
 #if PLATFORM(IOS)
@@ -619,6 +620,7 @@ private:
 
     virtual double mediaPlayerRequestedPlaybackRate() const override final;
     virtual VideoFullscreenMode mediaPlayerFullscreenMode() const override final { return fullscreenMode(); }
+    virtual bool mediaPlayerShouldDisableSleep() const final { return shouldDisableSleep(); }
 
     void pendingActionTimerFired();
     void progressEventTimerFired();
@@ -748,7 +750,8 @@ private:
     virtual double mediaSessionDuration() const override { return duration(); }
     virtual double mediaSessionCurrentTime() const override { return currentTime(); }
     virtual bool canReceiveRemoteControlCommands() const override { return true; }
-    virtual void didReceiveRemoteControlCommand(PlatformMediaSession::RemoteControlCommandType) override;
+    void didReceiveRemoteControlCommand(PlatformMediaSession::RemoteControlCommandType, const PlatformMediaSession::RemoteCommandArgument*) override;
+    bool supportsSeeking() const override;
     virtual bool overrideBackgroundPlaybackRestriction() const override;
 
     virtual void pageMutedStateDidChange() override;
@@ -772,10 +775,14 @@ private:
     void updateMediaState(UpdateMediaState updateState = UpdateMediaState::Synchronously);
 #endif
 
+    void handleSeekToPlaybackPosition(double);
+    void seekToPlaybackPositionEndedTimerFired();
+
     Timer m_pendingActionTimer;
     Timer m_progressEventTimer;
     Timer m_playbackProgressTimer;
     Timer m_scanTimer;
+    Timer m_seekToPlaybackPositionEndedTimer;
     GenericTaskQueue<ScriptExecutionContext> m_seekTaskQueue;
     GenericTaskQueue<ScriptExecutionContext> m_resizeTaskQueue;
     GenericTaskQueue<ScriptExecutionContext> m_shadowDOMTaskQueue;
@@ -925,6 +932,8 @@ private:
     bool m_mediaControlsDependOnPageScaleFactor : 1;
     bool m_haveSetUpCaptionContainer : 1;
 #endif
+
+    bool m_isScrubbingRemotely : 1;
 
 #if ENABLE(VIDEO_TRACK)
     bool m_tracksAreReady : 1;

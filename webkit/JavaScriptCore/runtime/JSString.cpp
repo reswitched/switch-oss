@@ -67,6 +67,15 @@ void JSString::dumpToStream(const JSCell* cell, PrintStream& out)
     out.printf(">");
 }
 
+bool JSString::equalSlowCase(ExecState* exec, JSString* other) const
+{
+    String str1 = value(exec);
+    String str2 = other->value(exec);
+    if (exec->hadException())
+        return false;
+    return WTF::equal(*str1.impl(), *str2.impl());
+}
+
 void JSString::visitChildren(JSCell* cell, SlotVisitor& visitor)
 {
     JSString* thisObject = jsCast<JSString*>(cell);

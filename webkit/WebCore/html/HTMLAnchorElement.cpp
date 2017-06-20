@@ -554,6 +554,7 @@ void HTMLAnchorElement::handleClick(Event* event)
     appendServerMapMousePosition(url, event);
     URL kurl = document().completeURL(url.toString());
 
+    String downloadAttribute;
 #if ENABLE(DOWNLOAD_ATTRIBUTE)
     if (hasAttribute(downloadAttr)) {
         ResourceRequest request(kurl);

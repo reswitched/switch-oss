@@ -4,7 +4,7 @@
  *  Copyright (C) 2009 Diego Escalante Urrelo <diegoe@gnome.org>
  *  Copyright (C) 2006, 2007 Apple Inc.  All rights reserved.
  *  Copyright (C) 2009, Igalia S.L.
- *  Copyright (c) 2010-2016 ACCESS CO., LTD. All rights reserved.
+ *  Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -446,6 +446,12 @@ EditorClientWKC::discardedComposition(WebCore::Frame*)
 
 void
 EditorClientWKC::didChangeSelectionAndUpdateLayout()
+{
+    notImplemented();
+}
+
+void
+EditorClientWKC::updateEditorStateAfterLayoutIfEditabilityChanged()
 {
     notImplemented();
 }

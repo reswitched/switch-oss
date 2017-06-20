@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007 Kevin Ollivier <kevino@theolliviers.com>
- * Copyright (c) 2010-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -1220,16 +1220,52 @@ Color RenderThemeWKC::platformInactiveSelectionForegroundColor() const
 
 int RenderThemeWKC::popupInternalPaddingLeft(RenderStyle& style) const 
 { 
-    return cPopupInternalPaddingLeft;
+    int width = 0;
+
+    switch (style.appearance()) {
+    case MenulistPart: // default
+        width += 1;
+        // fall through
+    case MenulistButtonPart:
+        width += cPopupInternalPaddingLeft;
+        break;
+    case ButtonPart:
+        width = 1;
+        break;
+    default:
+        break;
+    }
+
+    return width;
 }
 
 int RenderThemeWKC::popupInternalPaddingRight(RenderStyle& style) const 
 {
-    unsigned int w=0, h=0;
-    float scale = wkcStockImageGetImageScalePeer();
-    wkcStockImageGetSizePeer(WKC_IMAGE_MENU_LIST_BUTTON, &w, &h);
-    w *= scale;
-    return w + cPopupInternalPaddingRight;
+    int width = 0;
+    
+    switch (style.appearance()) {
+    case MenulistPart: // default
+        width += 1;
+        // fall through
+    case MenulistButtonPart:
+        {
+            unsigned int w=0, h=0;
+            float scale = wkcStockImageGetImageScalePeer();
+            wkcStockImageGetSizePeer(WKC_IMAGE_MENU_LIST_BUTTON, &w, &h);
+            w *= scale;
+
+            width += cPopupInternalPaddingRight;
+            width += w;
+        }
+        break;
+    case ButtonPart:
+        width = 1;
+        break;
+    default:
+        break;
+    }
+
+    return width;
 }
 
 int RenderThemeWKC::popupInternalPaddingTop(RenderStyle& style) const 

@@ -2726,8 +2726,14 @@ void Internals::setMediaElementRestrictions(HTMLMediaElement* element, const Str
 
 void Internals::postRemoteControlCommand(const String& commandString, ExceptionCode& ec)
 {
+    postRemoteControlCommand(commandString, 0, ec);
+}
+
+void Internals::postRemoteControlCommand(const String& commandString, float argument, ExceptionCode& ec)
+{
     PlatformMediaSession::RemoteControlCommandType command;
-    
+    PlatformMediaSession::RemoteCommandArgument parameter { argument };
+
     if (equalIgnoringCase(commandString, "Play"))
         command = PlatformMediaSession::PlayCommand;
     else if (equalIgnoringCase(commandString, "Pause"))
@@ -2744,12 +2750,14 @@ void Internals::postRemoteControlCommand(const String& commandString, ExceptionC
         command = PlatformMediaSession::BeginSeekingForwardCommand;
     else if (equalIgnoringCase(commandString, "EndSeekingForward"))
         command = PlatformMediaSession::EndSeekingForwardCommand;
+    else if (equalLettersIgnoringASCIICase(commandString, "seektoplaybackposition"))
+        command = PlatformMediaSession::SeekToPlaybackPositionCommand;
     else {
         ec = INVALID_ACCESS_ERR;
         return;
     }
     
-    PlatformMediaSessionManager::sharedManager().didReceiveRemoteControlCommand(command);
+    PlatformMediaSessionManager::sharedManager().didReceiveRemoteControlCommand(command, &parameter);
 }
 
 bool Internals::elementIsBlockingDisplaySleep(Element* element) const

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2013-2017 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -22,12 +22,12 @@
 
 #include <wkc/wkcbase.h>
 
-#include "helpers/WKCHTMLElement.h"
+#include "helpers/WKCHTMLFormControlElement.h"
 
 namespace WKC {
 class HTMLSelectElementPrivate;
 
-class WKC_API HTMLSelectElement : public HTMLElement {
+class WKC_API HTMLSelectElement : public WKC::HTMLFormControlElement {
 public:
     HTMLSelectElement(HTMLSelectElementPrivate&);
 

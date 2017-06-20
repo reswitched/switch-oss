@@ -908,6 +908,11 @@ private:
             break;
         }
             
+        case NewArrayBuffer: {
+            watchHavingABadTime(node);
+            break;
+        }
+
         case ToThis: {
             ECMAMode ecmaMode = m_graph.executableFor(node->origin.semantic)->isStrictMode() ? StrictMode : NotStrictMode;
 
@@ -1293,7 +1298,6 @@ private:
         case NativeCall:
         case NativeConstruct:
         case NewObject:
-        case NewArrayBuffer:
         case NewRegexp:
         case Breakpoint:
         case ProfileWillCall:

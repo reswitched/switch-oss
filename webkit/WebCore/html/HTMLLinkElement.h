@@ -82,6 +82,7 @@ private:
     void clearSheet();
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode&) override;
+    virtual void finishedInsertingSubtree() final;
     virtual void removedFrom(ContainerNode&) override;
 
     // from CachedResourceClient

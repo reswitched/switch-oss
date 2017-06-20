@@ -73,6 +73,9 @@
     <CreateItem Include="$(ConfigurationBuildDir)\include\**\*.*">
       <Output TaskParameter="Include" ItemName="IncFiles" />
     </CreateItem>
+    <CreateItem Include="$(ConfigurationBuildDir)\build32\DerivedSources\JavaScriptCore\inspector\**\*.*">
+      <Output TaskParameter="Include" ItemName="InspectorFiles" />
+    </CreateItem>
     <CreateItem Include="$(ConfigurationBuildDir)\bin32\*">
       <Output TaskParameter="Include" ItemName="Bin32Files" />
     </CreateItem>
@@ -117,6 +120,7 @@
     </CreateItem>
 
     <Copy SourceFiles="@(IncFiles)" DestinationFiles="@(IncFiles->'$(DSTROOT)\AppleInternal\include\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(InspectorFiles)" DestinationFiles="@(InspectorFiles->'$(DSTROOT)\AppleInternal\include\private\JavaScriptCore\inspector\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(Lib32Files)" DestinationFolder="$(AppleInternalLib32)" />
     <Copy SourceFiles="@(Lib64Files)" DestinationFolder="$(AppleInternalLib64)" />
     <Copy SourceFiles="@(Bin32Files)" DestinationFolder="$(AppleInternalBin32)" />

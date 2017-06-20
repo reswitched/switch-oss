@@ -176,6 +176,13 @@ SourceBufferPrivateWKC::abort()
     (void)wkcMediaPlayerAbortSBPeer(m_peer, m_sourcebuffer);
 }
 
+void
+SourceBufferPrivateWKC::resetParserState()
+{
+    // TODO
+    abort();
+}
+
 bool
 SourceBufferPrivateWKC::setTimestampOffset(double timestamp_offset)
 {

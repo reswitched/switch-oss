@@ -392,10 +392,12 @@ std::unique_ptr<WebGLRenderingContextBase> WebGLRenderingContextBase::create(HTM
 
     attributes.noExtensions = true;
     attributes.shareResources = false;
-    attributes.preferDiscreteGPU = true;
 
     if (frame->settings().forceSoftwareWebGLRendering())
         attributes.forceSoftwareRenderer = true;
+
+    if (!attributes.preferLowPowerToHighPerformance && frame->settings().preferLowPowerWebGLRendering())
+        attributes.preferLowPowerToHighPerformance = true;
 
     if (page)
         attributes.devicePixelRatio = page->deviceScaleFactor();
@@ -405,10 +407,10 @@ std::unique_ptr<WebGLRenderingContextBase> WebGLRenderingContextBase::create(HTM
         std::unique_ptr<WebGLRenderingContextBase> renderingContext = nullptr;
 #if ENABLE(WEBGL2)
         if (type == "experimental-webgl2")
-            renderingContext = std::unique_ptr<WebGL2RenderingContext>(new WebGL2RenderingContext(canvas, attributes));
+            renderingContext = std::make_unique<WebGL2RenderingContext>(canvas, attributes);
         else
 #endif
-            renderingContext = std::unique_ptr<WebGLRenderingContext>(new WebGLRenderingContext(canvas, attributes));
+            renderingContext = std::make_unique<WebGLRenderingContext>(canvas, attributes);
         renderingContext->suspendIfNeeded();
         return renderingContext;
     }
@@ -428,10 +430,10 @@ std::unique_ptr<WebGLRenderingContextBase> WebGLRenderingContextBase::create(HTM
     std::unique_ptr<WebGLRenderingContextBase> renderingContext = nullptr;
 #if ENABLE(WEBGL2)
     if (type == "experimental-webgl2")
-        renderingContext = std::unique_ptr<WebGL2RenderingContext>(new WebGL2RenderingContext(canvas, context, attributes));
+        renderingContext = std::make_unique<WebGL2RenderingContext>(canvas, WTF::move(context), attributes);
     else
 #endif
-        renderingContext = std::unique_ptr<WebGLRenderingContext>(new WebGLRenderingContext(canvas, context, attributes));
+        renderingContext = std::make_unique<WebGLRenderingContext>(canvas, WTF::move(context), attributes);
     renderingContext->suspendIfNeeded();
 
     return renderingContext;
@@ -1708,7 +1710,7 @@ bool WebGLRenderingContextBase::validateVertexAttributes(unsigned elementCount, 
             return false;
     }
 
-    if (elementCount <= 0)
+    if (!elementCount)
         return true;
 
     // Look in each consumed vertex attrib (by the current program).
@@ -1746,13 +1748,23 @@ bool WebGLRenderingContextBase::validateVertexAttributes(unsigned elementCount, 
     if (!sawNonInstancedAttrib && sawEnabledAttrib)
         return false;
 
+    bool usingSimulatedArrayBuffer = m_currentProgram->isUsingVertexAttrib0();
+
     // Guard against access into non-existent buffers.
-    if (elementCount && !sawEnabledAttrib && !m_currentProgram->isUsingVertexAttrib0())
+    if (elementCount && !sawEnabledAttrib && !usingSimulatedArrayBuffer)
         return false;
 
     if (elementCount && sawEnabledAttrib) {
-        if (!m_boundArrayBuffer && !m_boundVertexArrayObject->getElementArrayBuffer())
+        if (!m_boundArrayBuffer && !m_boundVertexArrayObject->getElementArrayBuffer()) {
+            if (usingSimulatedArrayBuffer) {
+                auto& state = m_boundVertexArrayObject->getVertexAttribState(0);
+                if (state.enabled && state.isBound()) {
+                    if (state.bufferBinding->getTarget() == GraphicsContext3D::ARRAY_BUFFER || state.bufferBinding->getTarget() == GraphicsContext3D::ELEMENT_ARRAY_BUFFER)
+                        return !!state.bufferBinding->byteLength();
+                }
+            }
             return false;
+        }
     }
 
     return true;

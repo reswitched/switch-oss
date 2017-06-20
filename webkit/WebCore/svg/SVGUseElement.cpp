@@ -273,7 +273,7 @@ SVGElement* SVGUseElement::targetClone() const
     auto* root = userAgentShadowRoot();
     if (!root)
         return nullptr;
-    return downcast<SVGElement>(root->firstChild());
+    return childrenOfType<SVGElement>(*root).first();
 }
 
 RenderPtr<RenderElement> SVGUseElement::createElementRenderer(Ref<RenderStyle>&& style, const RenderTreePosition&)

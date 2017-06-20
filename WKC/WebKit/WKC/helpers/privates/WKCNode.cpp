@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -27,6 +27,7 @@
 #include "HTMLNames.h"
 #include "Element.h"
 #include "HTMLInputElement.h"
+#include "HTMLButtonElement.h"
 #include "HTMLTextAreaElement.h"
 #include "HTMLAreaElement.h"
 #include "HTMLFormControlElement.h"
@@ -106,6 +107,7 @@ NodePrivate::NodePrivate(WebCore::Node* parent)
     , m_traverseNextSibling(0)
     , m_shadowHost(0)
     , m_HTMLElement(0)
+    , m_parentOrShadowHostElement(0)
 {
 }
 
@@ -134,6 +136,8 @@ NodePrivate::~NodePrivate()
         delete m_parentNamedNodeMap;
     if (m_HTMLElement)
         delete m_HTMLElement;
+    if (m_parentOrShadowHostElement)
+        delete m_parentOrShadowHostElement;
 }
 
 WebCore::Node*
@@ -154,6 +158,8 @@ NodePrivate::hasTagName(int id) const
     switch (id) {
     case HTMLNames_inputTag:
         return webcore()->hasTagName(WebCore::HTMLNames::inputTag);
+    case HTMLNames_buttonTag:
+        return webcore()->hasTagName(WebCore::HTMLNames::buttonTag);
     case HTMLNames_textareaTag:
         return webcore()->hasTagName(WebCore::HTMLNames::textareaTag);
     case HTMLNames_selectTag:
@@ -168,6 +174,8 @@ NodePrivate::hasTagName(int id) const
         return m_webcore->hasTagName(WebCore::HTMLNames::videoTag);
     case HTMLNames_areaTag:
         return webcore()->hasTagName(WebCore::HTMLNames::areaTag);
+    case HTMLNames_aTag:
+        return webcore()->hasTagName(WebCore::HTMLNames::aTag);
     default:
         return false;
     }
@@ -475,6 +483,19 @@ NodePrivate::getNodeCompositeRect(WKCRect* rect, int tx, int ty)
     rect->fWidth = core_rect.width();
     rect->fHeight = core_rect.height();
 }
+
+Element*
+NodePrivate::parentOrShadowHostElement()
+{
+    WebCore::Element* elem = webcore()->parentOrShadowHostElement();
+    if (!elem)
+        return 0;
+    if (!m_parentOrShadowHostElement || m_parentOrShadowHostElement->webcore() != elem) {
+        delete m_parentOrShadowHostElement;
+        m_parentOrShadowHostElement = ElementPrivate::create(elem);
+    }
+    return &m_parentOrShadowHostElement->wkc();
+}
  
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -687,6 +708,12 @@ NodeList*
 Node::querySelectorAll(const String& selectors)
 {
     return m_private.querySelectorAll(selectors);
+}
+
+Element*
+Node::parentOrShadowHostElement()
+{
+    return priv().parentOrShadowHostElement();
 }
 
 } // namespace

@@ -91,6 +91,7 @@
 #include "TextIterator.h"
 #include "UserGestureIndicator.h"
 #include "UserTypingGestureIndicator.h"
+#include "ValidationMessageClient.h"
 #include "VisibleUnits.h"
 #include "WheelEvent.h"
 #include "WindowsKeyboardCodes.h"
@@ -1148,6 +1149,10 @@ HitTestResult EventHandler::hitTestResultAtPoint(const LayoutPoint& point, HitTe
         }
     }
 
+    // We should always start hit testing a clean tree.
+    if (auto* frameView = m_frame.view())
+        frameView->updateLayoutAndStyleIfNeededRecursive();
+
     HitTestResult result(point, padding.height(), padding.width(), padding.height(), padding.width());
 
     RenderView* renderView = m_frame.contentRenderer();
@@ -1663,6 +1668,13 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& platformMouse
         return true;
     }
 
+#if ENABLE(POINTER_LOCK)
+    if (m_frame.page()->pointerLockController().isLocked()) {
+        m_frame.page()->pointerLockController().dispatchLockedMouseEvent(platformMouseEvent, eventNames().mousedownEvent);
+        return true;
+    }
+#endif
+
     if (m_frame.mainFrame().pageOverlayController().handleMouseEvent(platformMouseEvent))
         return true;
 
@@ -1811,6 +1823,13 @@ bool EventHandler::handleMouseDoubleClickEvent(const PlatformMouseEvent& platfor
 
     UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture, m_frame.document());
 
+#if ENABLE(POINTER_LOCK)
+    if (m_frame.page()->pointerLockController().isLocked()) {
+        m_frame.page()->pointerLockController().dispatchLockedMouseEvent(platformMouseEvent, eventNames().mouseupEvent);
+        return true;
+    }
+#endif
+
     // We get this instead of a second mouse-up 
     m_mousePressed = false;
     setLastKnownMousePosition(platformMouseEvent);
@@ -1903,7 +1922,14 @@ bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& platformMouseE
         return true;
 
     RefPtr<FrameView> protector(m_frame.view());
-    
+
+#if ENABLE(POINTER_LOCK)
+    if (m_frame.page()->pointerLockController().isLocked()) {
+        m_frame.page()->pointerLockController().dispatchLockedMouseEvent(platformMouseEvent, eventNames().mousemoveEvent);
+        return true;
+    }
+#endif
+
     setLastKnownMousePosition(platformMouseEvent);
 
     if (m_hoverTimer.isActive())
@@ -2039,6 +2065,13 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& platformMou
 
     m_frame.selection().setCaretBlinkingSuspended(false);
 
+#if ENABLE(POINTER_LOCK)
+    if (m_frame.page()->pointerLockController().isLocked()) {
+        m_frame.page()->pointerLockController().dispatchLockedMouseEvent(platformMouseEvent, eventNames().mouseupEvent);
+        return true;
+    }
+#endif
+
     if (m_frame.mainFrame().pageOverlayController().handleMouseEvent(platformMouseEvent))
         return true;
 
@@ -2115,6 +2148,17 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& platformMou
 bool EventHandler::handleMouseForceEvent(const PlatformMouseEvent& event)
 {
     RefPtr<FrameView> protector(m_frame.view());
+
+#if ENABLE(POINTER_LOCK)
+    if (m_frame.page()->pointerLockController().isLocked()) {
+        m_frame.page()->pointerLockController().dispatchLockedMouseEvent(event, eventNames().webkitmouseforcechangedEvent);
+        if (event.type() == PlatformEvent::MouseForceDown)
+            m_frame.page()->pointerLockController().dispatchLockedMouseEvent(event, eventNames().webkitmouseforcedownEvent);
+        if (event.type() == PlatformEvent::MouseForceUp)
+            m_frame.page()->pointerLockController().dispatchLockedMouseEvent(event, eventNames().webkitmouseforceupEvent);
+        return true;
+    }
+#endif
 
     setLastKnownMousePosition(event);
 
@@ -2678,6 +2722,13 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
     if (!view)
         return false;
 
+#if ENABLE(POINTER_LOCK)
+    if (m_frame.page()->pointerLockController().isLocked()) {
+        m_frame.page()->pointerLockController().dispatchLockedWheelEvent(event);
+        return true;
+    }
+#endif
+
     m_isHandlingWheelEvent = true;
     setFrameWasScrolledByUser();
 
@@ -3045,6 +3096,13 @@ bool EventHandler::isKeyEventAllowedInFullScreen(const PlatformKeyboardEvent& ke
 bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
 {
     RefPtr<FrameView> protector(m_frame.view());
+
+    if (initialKeyEvent.type() == PlatformEvent::KeyDown && initialKeyEvent.windowsVirtualKeyCode() == VK_ESCAPE) {
+        if (auto* page = m_frame.page()) {
+            if (auto* validationMessageClient = page->validationMessageClient())
+                validationMessageClient->hideAnyValidationMessage();
+        }
+    }
 
 #if ENABLE(FULLSCREEN_API)
     if (m_frame.document()->webkitIsFullScreen() && !isKeyEventAllowedInFullScreen(initialKeyEvent))

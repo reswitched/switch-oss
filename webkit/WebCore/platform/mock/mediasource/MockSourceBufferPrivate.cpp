@@ -197,6 +197,10 @@ void MockSourceBufferPrivate::abort()
 {
 }
 
+void MockSourceBufferPrivate::resetParserState()
+{
+}
+
 #if !PLATFORM(WKC)
 void MockSourceBufferPrivate::removedFromMediaSource()
 {

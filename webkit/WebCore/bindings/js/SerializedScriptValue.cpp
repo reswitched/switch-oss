@@ -2250,7 +2250,7 @@ private:
             uint32_t length;
             if (!read(length))
                 return JSValue();
-            if (m_end < ((uint8_t*)0) + length || m_ptr > m_end - length) {
+            if (static_cast<uint32_t>(m_end - m_ptr) < length) {
                 fail();
                 return JSValue();
             }

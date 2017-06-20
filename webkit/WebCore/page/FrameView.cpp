@@ -581,6 +581,27 @@ PassRefPtr<Scrollbar> FrameView::createScrollbar(ScrollbarOrientation orientatio
     return ScrollView::createScrollbar(orientation);
 }
 
+void FrameView::willDestroyRenderTree()
+{
+    detachCustomScrollbars();
+    m_layoutRoot = nullptr;
+}
+
+void FrameView::didDestroyRenderTree()
+{
+    ASSERT(!m_layoutRoot);
+    ASSERT(m_widgetsInRenderTree.isEmpty());
+
+    // If the render tree is destroyed below FrameView::updateEmbeddedObjects(), there will still be a null sentinel in the set.
+    // Everything else should have removed itself as the tree was felled.
+    ASSERT(!m_embeddedObjectsToUpdate || m_embeddedObjectsToUpdate->isEmpty() || (m_embeddedObjectsToUpdate->size() == 1 && m_embeddedObjectsToUpdate->first() == nullptr));
+
+    ASSERT(!m_viewportConstrainedObjects || m_viewportConstrainedObjects->isEmpty());
+    ASSERT(!m_slowRepaintObjects || m_slowRepaintObjects->isEmpty());
+
+    ASSERT(!frame().animation().hasAnimations());
+}
+
 void FrameView::setContentsSize(const IntSize& size)
 {
     if (size == contentsSize())
@@ -1458,7 +1479,7 @@ void FrameView::layout(bool allowSubtree)
 #endif
 
 #if ENABLE(IOS_TOUCH_EVENTS)
-    document.dirtyTouchEventRects();
+    document.setTouchEventRegionsNeedUpdate();
 #endif
 
     updateCanBlitOnScrollRecursively();
@@ -2726,8 +2747,10 @@ void FrameView::setNeedsLayout()
         return;
     }
 
-    if (RenderView* renderView = this->renderView())
+    if (auto* renderView = this->renderView()) {
+        ASSERT(!renderView->inHitTesting());
         renderView->setNeedsLayout();
+    }
 }
 
 void FrameView::unscheduleRelayout()
@@ -4747,7 +4770,7 @@ void FrameView::fireLayoutRelatedMilestonesIfNeeded()
     }
 
     if (milestonesAchieved && frame().isMainFrame())
-        frame().loader().didLayout(milestonesAchieved);
+        frame().loader().didReachLayoutMilestone(milestonesAchieved);
 }
 
 void FrameView::firePaintRelatedMilestonesIfNeeded()
@@ -4772,7 +4795,7 @@ void FrameView::firePaintRelatedMilestonesIfNeeded()
     m_milestonesPendingPaint = 0;
 
     if (milestonesAchieved)
-        page->mainFrame().loader().didLayout(milestonesAchieved);
+        page->mainFrame().loader().didReachLayoutMilestone(milestonesAchieved);
 }
 
 void FrameView::setVisualUpdatesAllowedByClient(bool visualUpdatesAllowed)

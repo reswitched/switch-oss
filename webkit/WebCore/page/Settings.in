@@ -104,6 +104,7 @@ webGLEnabled initial=false
 webGLErrorsToConsoleEnabled initial=true
 openGLMultisamplingEnabled initial=true
 forceSoftwareWebGLRendering initial=false
+preferLowPowerWebGLRendering initial=true
 accelerated2dCanvasEnabled initial=false
 antialiased2dCanvasEnabled initial=true
 loadDeferringEnabled initial=true
@@ -248,3 +249,6 @@ httpEquivEnabled initial=true
 # enforces all frame sandbox flags (see enum SandboxFlag in SecurityContext.h), and also disables <meta http-equiv>
 # processing and subframe loading.
 contentDispositionAttachmentSandboxEnabled initial=false
+
+quickTimePluginReplacementEnabled initial=defaultQuickTimePluginReplacementEnabled
+youTubeFlashPluginReplacementEnabled initial=defaultYouTubeFlashPluginReplacementEnabled

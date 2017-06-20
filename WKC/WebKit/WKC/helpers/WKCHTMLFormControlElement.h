@@ -25,6 +25,7 @@
 #include "helpers/WKCHTMLElement.h"
 
 namespace WKC {
+class AtomicString;
 class HTMLFormControlElementPrivate;
 class HTMLFormElement;
 
@@ -33,6 +34,7 @@ public:
     void dispatchFormControlInputEvent();
     void dispatchFormControlChangeEvent();
     bool isSuccessfulSubmitButton() const;
+    const AtomicString& type() const;
 
     HTMLFormElement* form() const;
 

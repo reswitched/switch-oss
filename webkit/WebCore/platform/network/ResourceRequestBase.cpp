@@ -39,7 +39,7 @@ ResourceRequestBase::forceTerminate()
 {
     s_defaultTimeoutInterval = INT_MAX;
 }
-#elif !USE(SOUP) && (!PLATFORM(COCOA) || USE(CFNETWORK))
+#elif !USE(SOUP) && (!PLATFORM(MAC) || USE(CFNETWORK))
 double ResourceRequestBase::s_defaultTimeoutInterval = INT_MAX;
 #else
 // Will use NSURLRequest default timeout unless set to a non-zero value with setDefaultTimeoutInterval().

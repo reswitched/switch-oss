@@ -237,6 +237,13 @@ struct BasicBlock : RefCounted<BasicBlock> {
     unsigned innerMostLoopIndices[numberOfInnerMostLoopIndices];
 
     struct SSAData {
+        {
+            liveAtTail.clear();
+            liveAtHead.clear();
+            valuesAtHead.clear();
+            valuesAtTail.clear();
+        }
+
         AvailabilityMap availabilityAtHead;
         AvailabilityMap availabilityAtTail;
         

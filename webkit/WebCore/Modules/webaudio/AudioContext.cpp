@@ -47,11 +47,13 @@
 #include "EventNames.h"
 #include "ExceptionCode.h"
 #include "FFTFrame.h"
+#include "Frame.h"
 #include "GainNode.h"
 #include "GenericEventQueue.h"
 #include "HRTFDatabaseLoader.h"
 #include "HRTFPanner.h"
 #include "JSDOMPromise.h"
+#include "NetworkingContext.h"
 #include "OfflineAudioCompletionEvent.h"
 #include "OfflineAudioDestinationNode.h"
 #include "OscillatorNode.h"
@@ -372,10 +374,18 @@ void AudioContext::stop()
     // FIXME: see if there's a more direct way to handle this issue.
     // FIXME: This sounds very wrong. The whole idea of stop() is that it stops everything, and if we
     // schedule some observable work for later, the work likely happens at an inappropriate time.
+#if !PLATFORM(WKC)
     callOnMainThread([this] {
         uninitialize();
         clear();
     });
+#else
+    std::function<void()> p(std::allocator_arg, WTF::voidFuncAllocator(), [this] {
+        uninitialize();
+        clear();
+    });
+    callOnMainThread(p);
+#endif
 }
 
 bool AudioContext::canSuspendForPageCache() const
@@ -398,6 +408,16 @@ Document* AudioContext::document() const
 const Document* AudioContext::hostingDocument() const
 {
     return downcast<Document>(m_scriptExecutionContext);
+}
+
+String AudioContext::sourceApplicationIdentifier() const
+{
+    Document* document = this->document();
+    if (Frame* frame = document ? document->frame() : nullptr) {
+        if (NetworkingContext* networkingContext = frame->loader().networkingContext())
+            return networkingContext->sourceApplicationIdentifier();
+    }
+    return emptyString();
 }
 
 PassRefPtr<AudioBuffer> AudioContext::createBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionCode& ec)
@@ -892,9 +912,16 @@ void AudioContext::scheduleNodeDeletion()
         m_isDeletionScheduled = true;
 
         RefPtr<AudioContext> strongThis(this);
+#if !PLATFORM(WKC)
         callOnMainThread([strongThis] {
             strongThis->deleteMarkedNodes();
         });
+#else
+        std::function<void()> p(std::allocator_arg, WTF::voidFuncAllocator(), [strongThis] {
+            strongThis->deleteMarkedNodes();
+        });
+        callOnMainThread(p);
+#endif
     }
 }
 
@@ -1097,10 +1124,18 @@ void AudioContext::isPlayingAudioDidChange()
     // Make sure to call Document::updateIsPlayingMedia() on the main thread, since
     // we could be on the audio I/O thread here and the call into WebCore could block.
     RefPtr<AudioContext> strongThis(this);
+#if !PLATFORM(WKC)
     callOnMainThread([strongThis] {
         if (strongThis->document())
             strongThis->document()->updateIsPlayingMedia();
     });
+#else
+    std::function<void()> p(std::allocator_arg, WTF::voidFuncAllocator(), [strongThis] {
+        if (strongThis->document())
+            strongThis->document()->updateIsPlayingMedia();
+    });
+    callOnMainThread(p);
+#endif
 }
 
 void AudioContext::fireCompletionEvent()

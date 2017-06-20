@@ -1875,6 +1875,19 @@ const Vector<RefPtr<Attr>>& Element::attrNodeList()
     return *attrNodeListForElement(*this);
 }
 
+void Element::attachAttributeNodeIfNeeded(Attr& attrNode)
+{
+    ASSERT(!attrNode.ownerElement() || attrNode.ownerElement() == this);
+    if (attrNode.ownerElement() == this)
+        return;
+
+    NoEventDispatchAssertion assertNoEventDispatch;
+
+    attrNode.attachToElement(this);
+    treeScope().adoptIfNeeded(&attrNode);
+    ensureAttrNodeListForElement(*this).append(&attrNode);
+}
+
 RefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionCode& ec)
 {
     if (!attrNode) {
@@ -1893,33 +1906,39 @@ RefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionCode& ec)
         return nullptr;
     }
 
+    {
+    NoEventDispatchAssertion assertNoEventDispatch;
     synchronizeAllAttributes();
+    }
+
     UniqueElementData& elementData = ensureUniqueElementData();
 
     unsigned existingAttributeIndex = elementData.findAttributeIndexByName(attrNode->qualifiedName().localName(), shouldIgnoreAttributeCase(*this));
-    if (existingAttributeIndex != ElementData::attributeNotFound) {
+
+    // Attr::value() will return its 'm_standaloneValue' member any time its Element is set to nullptr. We need to cache this value
+    // before making changes to attrNode's Element connections.
+    auto attrNodeValue = attrNode->value();
+
+    if (existingAttributeIndex == ElementData::attributeNotFound) {
+        attachAttributeNodeIfNeeded(*attrNode);
+        setAttributeInternal(elementData.findAttributeIndexByName(attrNode->qualifiedName()), attrNode->qualifiedName(), attrNodeValue, NotInSynchronizationOfLazyAttribute);
+    } else {
         const Attribute& attribute = attributeAt(existingAttributeIndex);
         if (oldAttrNode)
             detachAttrNodeFromElementWithValue(oldAttrNode.get(), attribute.value());
         else
             oldAttrNode = Attr::create(document(), attrNode->qualifiedName(), attribute.value());
 
+        attachAttributeNodeIfNeeded(*attrNode);
+
         if (attribute.name().matches(attrNode->qualifiedName()))
-            setAttributeInternal(existingAttributeIndex, attrNode->qualifiedName(), attrNode->value(), NotInSynchronizationOfLazyAttribute);
+            setAttributeInternal(existingAttributeIndex, attrNode->qualifiedName(), attrNodeValue, NotInSynchronizationOfLazyAttribute);
         else {
             removeAttributeInternal(existingAttributeIndex, NotInSynchronizationOfLazyAttribute);
-            unsigned existingAttributeIndexForFullQualifiedName = elementData.findAttributeIndexByName(attrNode->qualifiedName());
-            setAttributeInternal(existingAttributeIndexForFullQualifiedName, attrNode->qualifiedName(), attrNode->value(), NotInSynchronizationOfLazyAttribute);
+            setAttributeInternal(ensureUniqueElementData().findAttributeIndexByName(attrNode->qualifiedName()), attrNode->qualifiedName(), attrNodeValue, NotInSynchronizationOfLazyAttribute);
         }
-    } else {
-        unsigned existingAttributeIndexForFullQualifiedName = elementData.findAttributeIndexByName(attrNode->qualifiedName());
-        setAttributeInternal(existingAttributeIndexForFullQualifiedName, attrNode->qualifiedName(), attrNode->value(), NotInSynchronizationOfLazyAttribute);
     }
-    if (attrNode->ownerElement() != this) {
-        attrNode->attachToElement(this);
-        treeScope().adoptIfNeeded(attrNode);
-        ensureAttrNodeListForElement(*this).append(attrNode);
-    }
+
     return oldAttrNode;
 }
 
@@ -1941,22 +1960,29 @@ RefPtr<Attr> Element::setAttributeNodeNS(Attr* attrNode, ExceptionCode& ec)
         return 0;
     }
 
+    unsigned index = 0;
+    
+    // Attr::value() will return its 'm_standaloneValue' member any time its Element is set to nullptr. We need to cache this value
+    // before making changes to attrNode's Element connections.
+    auto attrNodeValue = attrNode->value();
+
+    {
+    NoEventDispatchAssertion assertNoEventDispatch;
     synchronizeAllAttributes();
     UniqueElementData& elementData = ensureUniqueElementData();
 
-    unsigned index = elementData.findAttributeIndexByName(attrNode->qualifiedName());
+    index = elementData.findAttributeIndexByName(attrNode->qualifiedName());
+
     if (index != ElementData::attributeNotFound) {
         if (oldAttrNode)
             detachAttrNodeFromElementWithValue(oldAttrNode.get(), elementData.attributeAt(index).value());
         else
             oldAttrNode = Attr::create(document(), attrNode->qualifiedName(), elementData.attributeAt(index).value());
     }
+    }
 
-    setAttributeInternal(index, attrNode->qualifiedName(), attrNode->value(), NotInSynchronizationOfLazyAttribute);
-
-    attrNode->attachToElement(this);
-    treeScope().adoptIfNeeded(attrNode);
-    ensureAttrNodeListForElement(*this).append(attrNode);
+    attachAttributeNodeIfNeeded(*attrNode);
+    setAttributeInternal(index, attrNode->qualifiedName(), attrNodeValue, NotInSynchronizationOfLazyAttribute);
 
     return oldAttrNode.release();
 }

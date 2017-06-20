@@ -178,7 +178,9 @@ bool AudioBufferSourceNode::renderFromBuffer(AudioBus* bus, unsigned destination
     unsigned busNumberOfChannels = bus->numberOfChannels();
 
     bool channelCountGood = numberOfChannels && numberOfChannels == busNumberOfChannels;
+#if !PLATFORM(WKC)
     ASSERT(channelCountGood);
+#endif
     if (!channelCountGood)
         return false;
 

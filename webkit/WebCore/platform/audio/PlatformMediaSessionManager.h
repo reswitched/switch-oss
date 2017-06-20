@@ -47,9 +47,14 @@ public:
     WEBCORE_EXPORT static PlatformMediaSessionManager& sharedManager();
     virtual ~PlatformMediaSessionManager() { }
 
+    virtual void scheduleUpdateNowPlayingInfo() { }
     bool has(PlatformMediaSession::MediaType) const;
     int count(PlatformMediaSession::MediaType) const;
     bool activeAudioSessionRequired() const;
+
+    WEBCORE_EXPORT virtual String lastUpdatedNowPlayingTitle() const { return emptyString(); }
+    WEBCORE_EXPORT virtual double lastUpdatedNowPlayingDuration() const { return NAN; }
+    WEBCORE_EXPORT virtual double lastUpdatedNowPlayingElapsedTime() const { return NAN; }
 
     WEBCORE_EXPORT void beginInterruption(PlatformMediaSession::InterruptionType);
     WEBCORE_EXPORT void endInterruption(PlatformMediaSession::EndInterruptionFlags);
@@ -84,6 +89,7 @@ public:
     bool sessionRestrictsInlineVideoPlayback(const PlatformMediaSession&) const;
 
     virtual bool sessionCanLoadMedia(const PlatformMediaSession&) const;
+    virtual void sessionDidEndRemoteScrubbing(const PlatformMediaSession&) { };
 
 #if PLATFORM(IOS)
     virtual void configureWireLessTargetMonitoring() { }
@@ -91,7 +97,7 @@ public:
 #endif
 
     void setCurrentSession(PlatformMediaSession&);
-    PlatformMediaSession* currentSession();
+    PlatformMediaSession* currentSession() const;
 
 protected:
     friend class PlatformMediaSession;
@@ -108,7 +114,8 @@ private:
     void updateSessionState();
 
     // RemoteCommandListenerClient
-    WEBCORE_EXPORT virtual void didReceiveRemoteControlCommand(PlatformMediaSession::RemoteControlCommandType) override;
+    WEBCORE_EXPORT void didReceiveRemoteControlCommand(PlatformMediaSession::RemoteControlCommandType, const PlatformMediaSession::RemoteCommandArgument*) override;
+    WEBCORE_EXPORT bool supportsSeeking() const override;
 
     // AudioHardwareListenerClient
     virtual void audioHardwareDidBecomeActive() override { }

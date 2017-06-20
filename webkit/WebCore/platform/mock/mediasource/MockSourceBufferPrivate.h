@@ -65,6 +65,7 @@ private:
     virtual void setClient(SourceBufferPrivateClient*) override;
     virtual void append(const unsigned char* data, unsigned length) override;
     virtual void abort() override;
+    void resetParserState() override;
 #if !PLATFORM(WKC)
     virtual void removedFromMediaSource() override;
 #else

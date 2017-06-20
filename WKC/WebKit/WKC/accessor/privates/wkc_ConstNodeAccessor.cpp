@@ -1,7 +1,7 @@
 ﻿/*
  *  wkc_ConstNodeAccessor.cpp
  *
- *  Copyright (c) 2012-2014 ACCESS CO., LTD. All rights reserved.
+ *  Copyright (c) 2012-2017 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -162,6 +162,8 @@ ConstNodeAccessor::hasTagName(int id) const
     switch (id) {
     case HTMLNames_inputTag:
         return ptr()->hasTagName(WebCore::HTMLNames::inputTag);
+    case HTMLNames_buttonTag:
+        return ptr()->hasTagName(WebCore::HTMLNames::buttonTag);
     case HTMLNames_textareaTag:
         return ptr()->hasTagName(WebCore::HTMLNames::textareaTag);
     case HTMLNames_selectTag:
@@ -176,6 +178,8 @@ ConstNodeAccessor::hasTagName(int id) const
         return ptr()->hasTagName(WebCore::HTMLNames::videoTag);
     case HTMLNames_areaTag:
         return ptr()->hasTagName(WebCore::HTMLNames::areaTag);
+    case HTMLNames_aTag:
+        return ptr()->hasTagName(WebCore::HTMLNames::aTag);
     default:
         return false;
     }

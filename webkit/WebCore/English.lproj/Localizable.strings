@@ -124,6 +124,9 @@
 /* Undo action name */
 "Bold (Undo action name)" = "Bold";
 
+/* Option in segmented control for inserting a bulleted list in text editing */
+"Bulleted list" = "Bulleted list";
+
 /* menu item title for phone number */
 "Call Using iPhone:" = "Call Using iPhone:";
 
@@ -366,6 +369,9 @@
 
 /* WebKitErrorCannotUseRestrictedPort description */
 "Not allowed to use restricted network port" = "Not allowed to use restricted network port";
+
+/* Option in segmented control for inserting a numbered list in text editing */
+"Numbered list" = "Numbered list";
 
 /* OK button label in PDF password failure alert */
 "OK (PDF password failure alert)" = "OK";
@@ -679,6 +685,9 @@
 /* Undo action name */
 "Use Standard Ligatures (Undo action name)" = "Use Standard Ligatures";
 
+/* Validation message for form control elements with a value shorter than maximum allowed length */
+"Use no more than %d character(s)" = "Use no more than %d character(s)";
+
 /* Description of WebCrypto master keys in Keychain */
 "Used to encrypt WebCrypto keys in persistent storage, such as IndexedDB" = "Used to encrypt WebCrypto keys in persistent storage, such as IndexedDB";
 
@@ -771,6 +780,9 @@
 
 /* accessibility help text for elapsed time display */
 "current movie time in seconds" = "current movie time in seconds";
+
+/* accessibility role description for a date and time field. */
+"date and time field" = "date and time field";
 
 /* role description of ARIA definition role */
 "definition" = "definition";

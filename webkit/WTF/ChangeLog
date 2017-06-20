@@ -1,3 +1,176 @@
+2017-04-07  Ting-Wei Lan  <lantw44@gmail.com>
+
+        Include cstdio before using sscanf and stderr
+        https://bugs.webkit.org/show_bug.cgi?id=170098
+
+        Reviewed by Michael Catanzaro.
+
+        * wtf/NumberOfCores.cpp:
+
+2017-03-22  Jason Marcell  <jmarcell@apple.com>
+
+        Merge r214125. rdar://problem/30921831
+
+    2017-03-17  Said Abou-Hallawa  <sabouhallawa@apple.com>
+
+            Time channel attack on SVG Filters
+            https://bugs.webkit.org/show_bug.cgi?id=118689
+
+            Reviewed by Simon Fraser.
+
+            Performing arithmetic operations on subnormal floating-point numbers is
+            very expensive. Normalizing the floating-point number to the minimum normal
+            value should accelerate the calculations and there won't be a noticeable
+            difference in the result since all the subnormal values and the minimum
+            normal value are all very close to zero.
+
+            * wtf/MathExtras.h:
+            (normalizedFloat):
+
+2017-02-05  Matthew Hanson  <matthew_hanson@apple.com>
+
+        Merge r211482. rdar://problem/29711409
+
+    2017-02-01  Andreas Kling  <akling@apple.com>
+
+            Implement the alwaysRunsAtBackgroundPriority WK2 setting using thread QoS.
+            <https://webkit.org/b/167387>
+            <rdar://problem/29711409>
+
+            Reviewed by Antti Koivisto.
+
+            Add a new mechanism for overriding the max thread QoS level globally:
+
+                void setGlobalMaxQOSClass(qos_class_t)
+                qos_class_t adjustedQOSClass(qos_class_t)
+
+            The QoS cap applies to all newly created threads, threads that try to override
+            their QoS class manually, and also passed down to bmalloc.
+
+            * wtf/Threading.cpp:
+            (WTF::setCurrentThreadIsUserInteractive):
+            (WTF::setCurrentThreadIsUserInitiated):
+            (WTF::setGlobalMaxQOSClass):
+            (WTF::adjustedQOSClass):
+            * wtf/Threading.h:
+            * wtf/ThreadingPthreads.cpp:
+            (WTF::createThreadInternal):
+            * wtf/cocoa/WorkQueueCocoa.cpp:
+            (WTF::dispatchQOSClass):
+
+2017-01-26  Matthew Hanson  <matthew_hanson@apple.com>
+
+        Merge r211168. rdar://problem/30154148
+
+    2017-01-25  Chris Dumez  <cdumez@apple.com>
+
+            Disable Download attribute support on iOS
+            https://bugs.webkit.org/show_bug.cgi?id=167337
+            <rdar://problem/30154148>
+
+            Reviewed by Alexey Proskuryakov.
+
+            Disable Download attribute support on iOS as it currently does not work.
+
+            * wtf/FeatureDefines.h:
+
+2016-09-16  Babak Shafiei  <bshafiei@apple.com>
+
+        Merge r204916. rdar://problem/27991573
+
+    2016-08-23  Anders Carlsson  <andersca@apple.com>
+
+            Add enum traits and use them in the IPC::Decoder
+            https://bugs.webkit.org/show_bug.cgi?id=161103
+
+            Reviewed by Sam Weinig.
+
+            Add EnumTraits.h which provides a forward declaration for WTF::EnumTraits as well as
+            the WTF::isValidEnum function.
+
+            * WTF.xcodeproj/project.pbxproj:
+            * wtf/EnumTraits.h: Added.
+
+2016-09-13  Babak Shafiei  <bshafiei@apple.com>
+
+        Merge r205895. rdar://problem/28287070
+
+    2016-09-13  Michael Saboff  <msaboff@apple.com>
+
+            Promises aren't resolved properly when making a ObjC API callback
+            https://bugs.webkit.org/show_bug.cgi?id=161929
+
+            Reviewed by Geoffrey Garen.
+
+            Removed resetCurrentAtomicStringTable() which is no longer referenced.
+
+            * wtf/WTFThreadData.h:
+            (WTF::WTFThreadData::resetCurrentAtomicStringTable): Deleted.
+
+2016-09-09  Babak Shafiei  <bshafiei@apple.com>
+
+        Merge r203381. rdar://problem/27860536
+
+    2016-07-18  Anders Carlsson  <andersca@apple.com>
+
+            WebKit nightly fails to build on macOS Sierra
+            https://bugs.webkit.org/show_bug.cgi?id=159902
+            rdar://problem/27365672
+
+            Reviewed by Tim Horton.
+
+            * icu/unicode/ucurr.h: Added.
+            Add ucurr.h from ICU.
+
+2016-08-30  Babak Shafiei  <bshafiei@apple.com>
+
+        Merge r203834. rdar://problem/27991582
+
+    2016-07-28  Mark Lam  <mark.lam@apple.com>
+
+            StringView should have an explicit m_is8Bit field.
+            https://bugs.webkit.org/show_bug.cgi?id=160282
+            <rdar://problem/27327943>
+
+            Reviewed by Benjamin Poulain.
+
+            The current implementation reserves 1 bit in the 32-bit m_length field as an
+            is16Bit flag.  As a result, a StringView is incapable of handling strings that
+            have a length of 32-bit in size.  This results in a mismatch with the
+            expectations of String, StringImpl, and JavaScriptCore's JSString which all
+            support a 32-bit unsigned length.
+
+            This patch fixes this issue by introducing an explicit m_is8Bit field, thereby
+            allowing m_length to be a full 32-bit again.
+
+            We also introduced a clear() convenience method to set the fields of StringView
+            to empty values.  Previously, we were duplicating the code for clearing those
+            fields.  We now call clear() in all those places instead.
+
+            Note: in clear(), we set m_is8Bit to true because we want an empty StringView
+            to be 8-bit rather than 16-bit.  This is consistent with what the empty() method
+            returns.
+
+            * wtf/text/StringView.h:
+            (WTF::StringView::setUnderlyingString):
+            (WTF::StringView::StringView):
+            (WTF::StringView::operator=):
+            (WTF::StringView::initialize):
+            (WTF::StringView::clear):
+            (WTF::StringView::empty):
+            (WTF::StringView::length):
+            (WTF::StringView::operator bool):
+            (WTF::StringView::is8Bit):
+            (WTF::StringView::substring):
+            (WTF::StringView::getCharactersWithUpconvert):
+            (WTF::StringView::toString):
+            (WTF::StringView::toAtomicString):
+            (WTF::StringView::toFloat):
+            (WTF::StringView::toInt):
+            (WTF::StringView::toIntStrict):
+            (WTF::StringView::toStringWithoutCopying):
+            (WTF::StringView::find):
+
 2016-02-26  Tim Horton  <timothy_horton@apple.com>
 
         Fix the Mavericks build.
@@ -199,7 +372,7 @@
         Re-enable WebGL on WinCairo
         https://bugs.webkit.org/show_bug.cgi?id=146537
 
-        Reviewed by Csaba Osztrogoní@c.
+        Reviewed by Csaba OsztrogonÔøΩ@c.
 
         * wtf/FeatureDefines.h:
         Enable WebGL on WinCairo again.
@@ -343,7 +516,7 @@
         [WTF] Platform.h: use _ABI64 instead of _MIPS_SIM_ABI64 to determine MIPS N64
         https://bugs.webkit.org/show_bug.cgi?id=145113
 
-        Reviewed by Csaba Osztrogoní@c.
+        Reviewed by Csaba OsztrogonÔøΩ@c.
 
         * wtf/Platform.h:
 
@@ -461,7 +634,7 @@
 
         (WTF::Checked::operator UnspecifiedBoolType*): Deleted.
 
-2015-06-19  Csaba Osztrogoní@c  <ossy@webkit.org>
+2015-06-19  Csaba OsztrogonÔøΩ@c  <ossy@webkit.org>
 
         [WK2] Fix unused-private-field warning in WebProcess/Plugins/PluginView.<h|cpp>
         https://bugs.webkit.org/show_bug.cgi?id=145252
@@ -747,7 +920,7 @@
         * wtf/TinyPtrSet.h:
         (WTF::TinyPtrSet::iterator::operator*): s/at(index)/at(m_index)/
 
-2015-06-09  Csaba Osztrogoní@c  <ossy@webkit.org>
+2015-06-09  Csaba OsztrogonÔøΩ@c  <ossy@webkit.org>
 
         [cmake] Fix the style issues in cmake project files
         https://bugs.webkit.org/show_bug.cgi?id=145755
@@ -1073,7 +1246,7 @@
         [GTK] Move MainThreadGtk, RunLoopGtk, WorkQueueGtk under Source/WTF/wtf/glib/
         https://bugs.webkit.org/show_bug.cgi?id=145117
 
-        Reviewed by Csaba Osztrogoní@c.
+        Reviewed by Csaba OsztrogonÔøΩ@c.
 
         Move the MainThreadGtk, RunLoopGtk and WorkQueueGtk implementation files from
         Source/WTF/wtf/gtk/ to Source/WTF/wtf/glib/. These implementations are not
@@ -1264,7 +1437,7 @@
         [EFL] Remove unnecessary PLATFORM(EFL) macro in EFL specific files
         https://bugs.webkit.org/show_bug.cgi?id=145160
 
-        Reviewed by Csaba Osztrogoní@c.
+        Reviewed by Csaba OsztrogonÔøΩ@c.
 
         * wtf/efl/EflTypedefs.h: Remove PLATFORM(EFL).
         * wtf/efl/UniquePtrEfl.h: ditto.
@@ -1365,7 +1538,7 @@
         * wtf/text/WTFString.h:
         (WTF::equalIgnoringASCIICase): Delegate to StringImpl's implementation.
 
-2015-05-14  ì\an Doberì@ek  <zdobersek@igalia.com>
+2015-05-14  ÔøΩ\an DoberÔøΩ@ek  <zdobersek@igalia.com>
 
         [GTK] RunLoop constructor should properly retrieve or establish the thread-default GMainContext
         https://bugs.webkit.org/show_bug.cgi?id=144732
@@ -1470,7 +1643,7 @@
         [GTK] WorkQueue objects are not released
         https://bugs.webkit.org/show_bug.cgi?id=144824
 
-        Reviewed by ì\an Doberì@ek.
+        Reviewed by ÔøΩ\an DoberÔøΩ@ek.
 
         Do not keep a reference of the WorkQueue for the entire life of
         its worker thread, since every task scheduled on the WorkQueue
@@ -2209,7 +2382,7 @@
 
         * config.h:
 
-2015-04-15  –ÑIÑwÑqÑÖÑ|ÑpÑÑÑÄÑr  <lrn1986@gmail.com>
+2015-04-15  –ÑIÔøΩwÔøΩqÔøΩÔøΩÔøΩ|ÔøΩpÔøΩÔøΩÔøΩÔøΩÔøΩr  <lrn1986@gmail.com>
 
         Harmonize binary semaphore ifdefs
 
@@ -5239,7 +5412,7 @@
 
         Unreviewed, revert r176293 & r176275 changing the Vector API to use unsigned type
         instead of size_t. There is some disagreement regarding the long-term direction
-        of the API and we shouldnÅft leave the API partly transitioned to unsigned type
+        of the API and we shouldnÔøΩft leave the API partly transitioned to unsigned type
         while making a decision.
 
         * wtf/Forward.h:
@@ -6189,7 +6362,7 @@
 
 2014-10-18  Dan Bernstein  <mitz@apple.com>
 
-        WorkQueue dispatches functions but isnÅft a FunctionDispatcher
+        WorkQueue dispatches functions but isnÔøΩft a FunctionDispatcher
         https://bugs.webkit.org/show_bug.cgi?id=137853
 
         Reviewed by Anders Carlsson.
@@ -7462,7 +7635,7 @@
 
         Reviewed by Tim Horton.
 
-        * wtf/Platform.h: Moved the definition of HAVE_VOUCHERS from WebKit2Åfs config.h here.
+        * wtf/Platform.h: Moved the definition of HAVE_VOUCHERS from WebKit2ÔøΩfs config.h here.
 
 2014-09-08  Tim Horton  <timothy_horton@apple.com>
 
@@ -8954,7 +9127,7 @@
 
 2014-06-17  Dan Bernstein  <mitz@apple.com>
 
-        String::isolatedCopy doesnÅft return an isolated copy when used on an rvalue reference
+        String::isolatedCopy doesnÔøΩft return an isolated copy when used on an rvalue reference
         https://bugs.webkit.org/show_bug.cgi?id=133968
 
         Reviewed by Anders Carlsson.
@@ -11451,7 +11624,7 @@
         Stop using String::deprecatedCharacters to call WTF::Collator
         https://bugs.webkit.org/show_bug.cgi?id=128517
 
-        WTF passes ICUÅfs deprecated ULOC_REQUESTED_LOCALE to ucol_getLocaleByType()
+        WTF passes ICUÔøΩfs deprecated ULOC_REQUESTED_LOCALE to ucol_getLocaleByType()
         rdar://problem/15183390
 
         Reviewed by Alexey Proskuryakov.
@@ -11910,12 +12083,12 @@
 
 2014-02-02  Dan Bernstein  <mitz@apple.com>
 
-        Stop using PLATFORM(MAC) in WTF except where it means ÅgOS X but not iOSÅh
+        Stop using PLATFORM(MAC) in WTF except where it means ÔøΩgOS X but not iOSÔøΩh
         https://bugs.webkit.org/show_bug.cgi?id=128089
 
         Reviewed by Darin Adler.
 
-        Replaced all uses of PLATFORM(MAC) that werenÅft accompanied by !PLATFORM(IOS) with
+        Replaced all uses of PLATFORM(MAC) that werenÔøΩft accompanied by !PLATFORM(IOS) with
         equivalent(*) tests that are more idiomatic and will not change once PLATFORM(MAC) changes to
         be false when building for iOS.
 

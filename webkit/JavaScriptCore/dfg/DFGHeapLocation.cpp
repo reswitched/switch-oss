@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014, 2015 Apple Inc. All rights reserved.
+ * Copyright (C) 2014-2017 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -111,11 +111,19 @@ void printInternal(PrintStream& out, LocationKind kind)
     case HasIndexedPropertyLoc:
         out.print("HasIndexedPorpertyLoc");
         return;
-        
-    case IndexedPropertyLoc:
-        out.print("IndexedPorpertyLoc");
+
+    case IndexedPropertyDoubleLoc:
+        out.print("IndexedPropertyDoubleLoc");
         return;
-        
+
+    case IndexedPropertyInt52Loc:
+        out.print("IndexedPropertyInt52Loc");
+        return;
+
+    case IndexedPropertyJSLoc:
+        out.print("IndexedPropertyJSLoc");
+        return;
+
     case IndexedPropertyStorageLoc:
         out.print("IndexedPropertyStorageLoc");
         return;

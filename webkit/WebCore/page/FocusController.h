@@ -96,14 +96,19 @@ public:
     double timeSinceFocusWasSet() const;
 
 #if PLATFORM(WKC)
+    bool isClickableElement(Element* element);
     bool setFocusedNode(Node *node);
     Element* findNextFocusableElement(const FocusDirection& direction, const IntRect* scope = 0, Element* base = 0);
     Element* findNearestFocusableElementFromPoint(const IntPoint& point, const IntRect* scope = 0);
+    // get child element preferentially
+    Element* findNearestClickableElementFromPoint(const IntPoint& point, const IntRect* scope = 0);
 #endif
 
 private:
 #if PLATFORM(WKC)
     void findFocusableNodeInDirection(Node* container, Node* startingElement, const LayoutRect& startingRect, FocusDirection direction, KeyboardEvent* event, FocusCandidate& closest, const LayoutRect* scope);
+    // get child element preferentially
+    Element* findNearestClickableElementFromPoint(const Element* start, const LayoutPoint& point, const LayoutRect& scope);
 #endif
     void setActiveInternal(bool);
     void setFocusedInternal(bool);

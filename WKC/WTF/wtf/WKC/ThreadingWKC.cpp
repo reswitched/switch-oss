@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007, 2008 Apple Inc. All rights reserved.
  * Copyright (C) 2007 Justin Haygood (jhaygood@reaktix.com)
- * Copyright (c) 2010-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -159,6 +159,8 @@ removeThreadIdentifier(ThreadIdentifier id)
 int waitForThreadCompletion(ThreadIdentifier threadID)
 {
     void* instance = getThreadInstance(threadID);
+    if (!instance)
+        return 0;
     int ret = wkcThreadJoinPeer(instance, 0);
     removeThreadIdentifier(threadID);
     return ret;

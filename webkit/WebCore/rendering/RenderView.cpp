@@ -51,6 +51,7 @@
 #include "StyleInheritedData.h"
 #include "TransformState.h"
 #include <wtf/StackStats.h>
+#include <wtf/TemporaryChange.h>
 
 namespace WebCore {
 
@@ -129,6 +130,7 @@ private:
 RenderView::RenderView(Document& document, Ref<RenderStyle>&& style)
     : RenderBlockFlow(document, WTF::move(style))
     , m_frameView(*document.view())
+    , m_weakFactory(this)
     , m_selectionUnsplitStart(nullptr)
     , m_selectionUnsplitEnd(nullptr)
     , m_selectionUnsplitStartPos(-1)
@@ -144,6 +146,9 @@ RenderView::RenderView(Document& document, Ref<RenderStyle>&& style)
     , m_renderCounterCount(0)
     , m_selectionWasCaret(false)
     , m_hasSoftwareFilters(false)
+#if !ASSERT_DISABLED
+    , m_inHitTesting(false)
+#endif
 #if ENABLE(SERVICE_CONTROLS)
     , m_selectionRectGatherer(*this)
 #endif
@@ -208,6 +213,10 @@ bool RenderView::hitTest(const HitTestRequest& request, HitTestResult& result)
 bool RenderView::hitTest(const HitTestRequest& request, const HitTestLocation& location, HitTestResult& result)
 {
     document().updateLayout();
+    
+#if !ASSERT_DISABLED
+    TemporaryChange<bool> hitTestRestorer { m_inHitTesting, true };
+#endif
 
     FrameFlatteningLayoutDisallower disallower(frameView());
 
@@ -1430,10 +1439,15 @@ void RenderView::resumePausedImageAnimationsIfNeeded(IntRect visibleRect)
 }
 
 RenderView::RepaintRegionAccumulator::RepaintRegionAccumulator(RenderView* view)
-    : m_rootView(view ? view->document().topDocument().renderView() : nullptr)
 {
-    if (!m_rootView)
+    if (!view)
         return;
+
+    auto* rootRenderView = view->document().topDocument().renderView();
+    if (!rootRenderView)
+        return;
+
+    m_rootView = rootRenderView->createWeakPtr();
     m_wasAccumulatingRepaintRegion = !!m_rootView->m_accumulatedRepaintRegion;
     if (!m_wasAccumulatingRepaintRegion)
         m_rootView->m_accumulatedRepaintRegion = std::make_unique<Region>();

@@ -107,6 +107,8 @@ public:
     bool containsFiles() const;
     unsigned numberOfFiles() const;
     int modifierKeyState() const;
+    void setFileNames(Vector<String>& fileNames) { m_fileNames = WTF::move(fileNames); }
+    const Vector<String>& fileNames() const { return m_fileNames; }
 #if PLATFORM(MAC)
     const String& pasteboardName() const { return m_pasteboardName; }
 #endif
@@ -133,6 +135,7 @@ private:
     DragDataRef m_platformDragData;
     DragOperation m_draggingSourceOperationMask;
     DragApplicationFlags m_applicationFlags;
+    Vector<String> m_fileNames;
 #if PLATFORM(MAC)
     String m_pasteboardName;
 #endif

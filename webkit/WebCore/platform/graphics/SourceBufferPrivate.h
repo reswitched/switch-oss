@@ -57,6 +57,7 @@ public:
 
     virtual void append(const unsigned char* data, unsigned length) = 0;
     virtual void abort() = 0;
+    virtual void resetParserState() = 0;
 #if PLATFORM(WKC)
     virtual bool setTimestampOffset(double) = 0;
     virtual bool removedFromMediaSource() = 0;

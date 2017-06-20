@@ -141,8 +141,14 @@ private:
     SliderContainerElement(Document&);
     virtual RenderPtr<RenderElement> createElementRenderer(Ref<RenderStyle>&&, const RenderTreePosition&) override;
     virtual const AtomicString& shadowPseudoId() const override;
+    bool isSliderContainerElement() const override { return true; }
 };
 
-}
+} // namespace WebCore
+
+SPECIALIZE_TYPE_TRAITS_BEGIN(WebCore::SliderContainerElement)
+    static bool isType(const WebCore::Element& element) { return element.isSliderContainerElement(); }
+    static bool isType(const WebCore::Node& node) { return is<WebCore::Element>(node) && isType(downcast<WebCore::Element>(node)); }
+SPECIALIZE_TYPE_TRAITS_END()
 
 #endif

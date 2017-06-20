@@ -294,7 +294,7 @@ public:
     virtual void dispatchDidFailLoad(const ResourceError&) override { }
     virtual void dispatchDidFinishDocumentLoad() override { }
     virtual void dispatchDidFinishLoad() override { }
-    virtual void dispatchDidLayout(LayoutMilestones) override { }
+    void dispatchDidReachLayoutMilestone(LayoutMilestones) override { }
 
     virtual Frame* dispatchCreatePage(const NavigationAction&) override { return 0; }
     virtual void dispatchShow() override { }
@@ -386,7 +386,7 @@ public:
     virtual String overrideMediaType() const override { return String(); }
 
 #if ENABLE(NETSCAPE_PLUGIN_API)
-    virtual void redirectDataToPlugin(Widget*) override { }
+    void redirectDataToPlugin(Widget*) override { }
 #endif
     virtual void dispatchDidClearWindowObjectInWorld(DOMWrapperWorld&) override { }
 
@@ -458,6 +458,7 @@ public:
     virtual void respondToChangedContents() override { }
     virtual void respondToChangedSelection(Frame*) override { }
     virtual void didChangeSelectionAndUpdateLayout() override { }
+    void updateEditorStateAfterLayoutIfEditabilityChanged() override { }
     virtual void discardedComposition(Frame*) override { }
     virtual void didEndEditing() override { }
     virtual void willWriteSelectionToPasteboard(Range*) override { }

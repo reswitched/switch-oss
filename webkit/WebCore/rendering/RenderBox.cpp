@@ -402,13 +402,12 @@ void RenderBox::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle
     if (isRootRenderer || isBodyRenderer) {
         // Propagate the new writing mode and direction up to the RenderView.
         RenderStyle& viewStyle = view().style();
-        bool viewChangedWritingMode = false;
         bool rootStyleChanged = false;
-        bool viewStyleChanged = false;
+        bool viewDirectionOrWritingModeChanged = false;
         RenderObject* rootRenderer = isBodyRenderer ? document().documentElement()->renderer() : nullptr;
         if (viewStyle.direction() != newStyle.direction() && (isRootRenderer || !document().directionSetOnDocumentElement())) {
             viewStyle.setDirection(newStyle.direction());
-            viewStyleChanged = true;
+            viewDirectionOrWritingModeChanged = true;
             if (isBodyRenderer) {
                 rootRenderer->style().setDirection(newStyle.direction());
                 rootStyleChanged = true;
@@ -418,8 +417,7 @@ void RenderBox::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle
 
         if (viewStyle.writingMode() != newStyle.writingMode() && (isRootRenderer || !document().writingModeSetOnDocumentElement())) {
             viewStyle.setWritingMode(newStyle.writingMode());
-            viewChangedWritingMode = true;
-            viewStyleChanged = true;
+            viewDirectionOrWritingModeChanged = true;
             view().setHorizontalWritingMode(newStyle.isHorizontalWritingMode());
             view().markAllDescendantsWithFloatsForLayout();
             if (isBodyRenderer) {
@@ -433,13 +431,13 @@ void RenderBox::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle
         view().frameView().recalculateScrollbarOverlayStyle();
         
         const Pagination& pagination = view().frameView().pagination();
-        if (viewChangedWritingMode && pagination.mode != Pagination::Unpaginated) {
+        if (viewDirectionOrWritingModeChanged && pagination.mode != Pagination::Unpaginated) {
             viewStyle.setColumnStylesFromPaginationMode(pagination.mode);
             if (view().multiColumnFlowThread())
                 view().updateColumnProgressionFromStyle(viewStyle);
         }
         
-        if (viewStyleChanged && view().multiColumnFlowThread())
+        if (viewDirectionOrWritingModeChanged && view().multiColumnFlowThread())
             view().updateStylesForColumnChildren();
         
         if (rootStyleChanged && is<RenderBlockFlow>(rootRenderer) && downcast<RenderBlockFlow>(*rootRenderer).multiColumnFlowThread())

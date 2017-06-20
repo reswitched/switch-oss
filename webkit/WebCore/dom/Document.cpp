@@ -155,6 +155,7 @@
 #include "TextResourceDecoder.h"
 #include "TransformSource.h"
 #include "TreeWalker.h"
+#include "ValidationMessageClient.h"
 #include "VisitedLinkState.h"
 #include "XMLDocumentParser.h"
 #include "XMLNSNames.h"
@@ -324,19 +325,6 @@ static inline bool isValidNamePart(UChar32 c)
     return true;
 }
 
-static bool shouldInheritSecurityOriginFromOwner(const URL& url)
-{
-    // http://www.whatwg.org/specs/web-apps/current-work/#origin-0
-    //
-    // If a Document has the address "about:blank"
-    //     The origin of the Document is the origin it was assigned when its browsing context was created.
-    //
-    // Note: We generalize this to all "blank" URLs and invalid URLs because we
-    // treat all of these URLs as about:blank.
-    //
-    return url.isEmpty() || url.isBlankURL();
-}
-
 static Widget* widgetForElement(Element* focusedElement)
 {
     if (!focusedElement)
@@ -480,9 +468,6 @@ Document::Document(Frame* frame, const URL& url, unsigned documentClasses, unsig
     , m_xmlStandalone(StandaloneUnspecified)
     , m_hasXMLDeclaration(false)
     , m_designMode(inherit)
-#if !ASSERT_DISABLED
-    , m_inInvalidateNodeListAndCollectionCaches(false)
-#endif
 #if ENABLE(DASHBOARD_SUPPORT)
     , m_hasAnnotatedRegions(false)
     , m_annotatedRegionsDirty(false)
@@ -1223,7 +1208,7 @@ void Document::setVisualUpdatesAllowed(bool visualUpdatesAllowed)
         if (frame()->isMainFrame()) {
             frameView->addPaintPendingMilestones(DidFirstPaintAfterSuppressedIncrementalRendering);
             if (page->requestedLayoutMilestones() & DidFirstLayoutAfterSuppressedIncrementalRendering)
-                frame()->loader().didLayout(DidFirstLayoutAfterSuppressedIncrementalRendering);
+                frame()->loader().didReachLayoutMilestone(DidFirstLayoutAfterSuppressedIncrementalRendering);
         }
     }
 
@@ -1734,6 +1719,8 @@ void Document::scheduleForcedStyleRecalc()
 
 void Document::scheduleStyleRecalc()
 {
+    ASSERT(!m_renderView || !m_renderView->inHitTesting());
+
     if (m_styleRecalcTimer.isActive() || inPageCache())
         return;
 
@@ -2221,8 +2208,8 @@ void Document::destroyRenderTree()
 
     documentWillBecomeInactive();
 
-    if (FrameView* frameView = view())
-        frameView->detachCustomScrollbars();
+    if (auto* frameView = view())
+        frameView->willDestroyRenderTree();
 
 #if ENABLE(FULLSCREEN_API)
     if (m_fullScreenRenderer)
@@ -2247,6 +2234,9 @@ void Document::destroyRenderTree()
     // Do this before the arena is cleared, which is needed to deref the RenderStyle on TextAutoSizingKey.
     m_textAutoSizedNodes.clear();
 #endif
+
+    if (auto* frameView = view())
+        frameView->didDestroyRenderTree();
 }
 
 void Document::prepareForDestruction()
@@ -2280,6 +2270,11 @@ void Document::prepareForDestruction()
     if (page())
         page()->pointerLockController().documentDetached(this);
 #endif
+
+    if (auto* page = this->page()) {
+        if (auto* validationMessageClient = page->validationMessageClient())
+            validationMessageClient->documentDetached(*this);
+    }
 
     InspectorInstrumentation::documentDetached(*this);
 
@@ -2323,11 +2318,17 @@ void Document::removeAllEventListeners()
 
     if (m_domWindow)
         m_domWindow->removeAllEventListeners();
+
 #if ENABLE(IOS_TOUCH_EVENTS)
     clearTouchEventListeners();
 #endif
     for (Node* node = firstChild(); node; node = NodeTraversal::next(*node))
         node->removeAllEventListeners();
+
+#if ENABLE(TOUCH_EVENTS)
+    m_touchEventTargets = nullptr;
+#endif
+    m_wheelEventTargets = nullptr;
 }
 
 void Document::platformSuspendOrStopActiveDOMObjects()
@@ -2621,18 +2622,18 @@ void Document::implicitClose()
         ImageLoader::dispatchPendingErrorEvents();
         HTMLLinkElement::dispatchPendingLoadEvents();
         HTMLStyleElement::dispatchPendingLoadEvents();
+
+        // To align the HTML load event and the SVGLoad event for the outermost <svg> element, fire it from
+        // here, instead of doing it from SVGElement::finishedParsingChildren (if externalResourcesRequired="false",
+        // which is the default, for ='true' its fired at a later time, once all external resources finished loading).
+        if (svgExtensions())
+            accessSVGExtensions().dispatchSVGLoadEventToOutermostSVGElements();
     }
 
-    // To align the HTML load event and the SVGLoad event for the outermost <svg> element, fire it from
-    // here, instead of doing it from SVGElement::finishedParsingChildren (if externalResourcesRequired="false",
-    // which is the default, for ='true' its fired at a later time, once all external resources finished loading).
-    if (svgExtensions())
-        accessSVGExtensions().dispatchSVGLoadEventToOutermostSVGElements();
-
     dispatchWindowLoadEvent();
-    enqueuePageshowEvent(PageshowEventNotPersisted);
+    dispatchPageshowEvent(PageshowEventNotPersisted);
     if (m_pendingStateObject)
-        enqueuePopstateEvent(m_pendingStateObject.release());
+        dispatchPopstateEvent(WTF::move(m_pendingStateObject));
     
     if (f)
         f->loader().handledOnloadEvents();
@@ -3855,9 +3856,7 @@ void Document::unregisterNodeListForInvalidation(LiveNodeList& list)
         return;
 
     list.setRegisteredForInvalidationAtDocument(false);
-    ASSERT(m_inInvalidateNodeListAndCollectionCaches
-        ? m_listsInvalidatedAtDocument.isEmpty()
-        : m_listsInvalidatedAtDocument.contains(&list));
+    ASSERT(m_listsInvalidatedAtDocument.contains(&list));
     m_listsInvalidatedAtDocument.remove(&list);
 }
 
@@ -5019,7 +5018,7 @@ void Document::initSecurityContext()
         setBaseURLOverride(parentDocument->baseURL());
     }
 
-    if (!shouldInheritSecurityOriginFromOwner(m_url))
+    if (!m_url.shouldInheritSecurityOriginFromOwner())
         return;
 
     // If we do not obtain a meaningful origin from the URL, then we try to
@@ -5052,7 +5051,7 @@ void Document::initSecurityContext()
 
 void Document::initContentSecurityPolicy()
 {
-    if (!m_frame->tree().parent() || (!shouldInheritSecurityOriginFromOwner(m_url) && !isPluginDocument()))
+    if (!m_frame->tree().parent() || (!m_url.shouldInheritSecurityOriginFromOwner() && !isPluginDocument()))
         return;
 
     contentSecurityPolicy()->copyStateFrom(m_frame->tree().parent()->document()->contentSecurityPolicy());
@@ -5084,7 +5083,7 @@ void Document::statePopped(PassRefPtr<SerializedScriptValue> stateObject)
     // Per step 11 of section 6.5.9 (history traversal) of the HTML5 spec, we 
     // defer firing of popstate until we're in the complete state.
     if (m_readyState == Complete)
-        enqueuePopstateEvent(stateObject);
+        dispatchPopstateEvent(stateObject);
     else
         m_pendingStateObject = stateObject;
 }
@@ -5393,7 +5392,7 @@ void Document::displayBufferModifiedByEncodingInternal(CharacterType* buffer, un
 template void Document::displayBufferModifiedByEncodingInternal<LChar>(LChar*, unsigned) const;
 template void Document::displayBufferModifiedByEncodingInternal<UChar>(UChar*, unsigned) const;
 
-void Document::enqueuePageshowEvent(PageshowEventPersistence persisted)
+void Document::dispatchPageshowEvent(PageshowEventPersistence persisted)
 {
     // FIXME: https://bugs.webkit.org/show_bug.cgi?id=36334 Pageshow event needs to fire asynchronously.
     dispatchWindowEvent(PageTransitionEvent::create(eventNames().pageshowEvent, persisted), this);
@@ -5404,7 +5403,7 @@ void Document::enqueueHashchangeEvent(const String& oldURL, const String& newURL
     enqueueWindowEvent(HashChangeEvent::create(oldURL, newURL));
 }
 
-void Document::enqueuePopstateEvent(PassRefPtr<SerializedScriptValue> stateObject)
+void Document::dispatchPopstateEvent(RefPtr<SerializedScriptValue>&& stateObject)
 {
     dispatchWindowEvent(PopStateEvent::create(stateObject, m_domWindow ? m_domWindow->history() : nullptr));
 }

@@ -1,3 +1,33 @@
+2017-01-12  Matthew Hanson  <matthew_hanson@apple.com>
+
+        Merge r210623. rdar://problem/29980631
+
+    2017-01-11  Joseph Pecoraro  <pecoraro@apple.com>
+
+            Web Inspector: Add another Protocol Version
+            https://bugs.webkit.org/show_bug.cgi?id=166953
+            <rdar://problem/29980631>
+
+            Reviewed by Timothy Hatcher.
+
+            * UserInterface/Protocol/Legacy/10.3/InspectorBackendCommands.js: Added.
+            * Versions/Inspector-iOS-10.3.json: Added.
+
+2016-09-09  Babak Shafiei  <bshafiei@apple.com>
+
+        Merge r205192. rdar://problem/28097740
+
+    2016-08-30  Alex Christensen  <achristensen@webkit.org>
+
+            Fix WebInspectorUI in internal Windows build
+            https://bugs.webkit.org/show_bug.cgi?id=161221
+            rdar://problem/28019023
+
+            Reviewed by Brent Fulgham and Joseph Pecoraro.
+
+            * WebInspectorUI.vcxproj/WebInspectorUI.make:
+            * WebInspectorUI.vcxproj/WebInspectorUI.proj:
+
 2016-02-12  Matthew Hanson  <matthew_hanson@apple.com>
 
         Merge r196362. rdar://problem/24611811

@@ -46,7 +46,7 @@ public:
         Insert,
         InsertAlreadyParsedChild,
         Reparent,
-        TakeAllChildren,
+        TakeAllChildrenAndReparent,
     };
 
     explicit HTMLConstructionSiteTask(Operation op)
@@ -124,12 +124,11 @@ public:
     void insertHTMLBodyStartTagInBody(AtomicHTMLToken*);
 
     void reparent(HTMLElementStack::ElementRecord& newParent, HTMLElementStack::ElementRecord& child);
-    void reparent(HTMLElementStack::ElementRecord& newParent, HTMLStackItem& child);
     // insertAlreadyParsedChild assumes that |child| has already been parsed (i.e., we're just
     // moving it around in the tree rather than parsing it for the first time). That means
     // this function doesn't call beginParsingChildren / finishParsingChildren.
     void insertAlreadyParsedChild(HTMLStackItem& newParent, HTMLElementStack::ElementRecord& child);
-    void takeAllChildren(HTMLStackItem& newParent, HTMLElementStack::ElementRecord& oldParent);
+    void takeAllChildrenAndReparent(HTMLStackItem& newParent, HTMLElementStack::ElementRecord& oldParent);
 
     PassRefPtr<HTMLStackItem> createElementFromSavedToken(HTMLStackItem*);
 

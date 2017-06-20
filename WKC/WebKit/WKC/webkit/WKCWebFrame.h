@@ -1,7 +1,7 @@
 /*
  *  WKCWebFrame.h
  *
- *  Copyright (c) 2010-2015 ACCESS CO., LTD. All rights reserved.
+ *  Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -274,8 +274,8 @@ public:
     WKCCustomJSAPIList* getCustomJSStringAPIInternal(const char* api_name);
 
     void setForcedSandboxNavigation();
-    void executeScript(const char* script);
 #endif // WKC_ENABLE_CUSTOMJS
+    void executeScript(const char* script);
 
     /**
        @brief Pause or restart JavaScripts executions.

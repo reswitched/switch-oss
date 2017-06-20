@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2013 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -23,6 +23,7 @@
 #include "helpers/privates/WKCHTMLElementPrivate.h"
 #include "helpers/WKCString.h"
 #include "helpers/privates/WKCHTMLInputElementPrivate.h"
+#include "helpers/privates/WKCHTMLButtonElementPrivate.h"
 #include "helpers/privates/WKCHTMLTextAreaElementPrivate.h"
 #include "helpers/privates/WKCHTMLAreaElementPrivate.h"
 #include "helpers/privates/WKCHTMLFormElementPrivate.h"
@@ -33,6 +34,7 @@
 
 #include "HTMLElement.h"
 #include "HTMLInputElement.h"
+#include "HTMLButtonElement.h"
 #include "HTMLTextAreaElement.h"
 #include "HTMLAreaElement.h"
 #include "HTMLFormElement.h"
@@ -50,6 +52,8 @@ HTMLElementPrivate::create(WebCore::HTMLElement* parent)
 
     if (parent->hasTagName(WebCore::HTMLNames::inputTag)) {
         return new HTMLInputElementPrivate(static_cast<WebCore::HTMLInputElement*>(parent));
+    } else if (parent->hasTagName(WebCore::HTMLNames::buttonTag)) {
+        return new HTMLButtonElementPrivate(static_cast<WebCore::HTMLButtonElement*>(parent));
     } else if (parent->hasTagName(WebCore::HTMLNames::textareaTag)) {
         return new HTMLTextAreaElementPrivate(static_cast<WebCore::HTMLTextAreaElement*>(parent));
     } else if (parent->hasTagName(WebCore::HTMLNames::areaTag)) {

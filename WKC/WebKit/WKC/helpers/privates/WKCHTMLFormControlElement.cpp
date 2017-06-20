@@ -23,6 +23,7 @@
 #include "helpers/privates/WKCHTMLFormControlElementPrivate.h"
 
 #include "HTMLFormControlElement.h"
+#include "helpers/privates/WKCAtomicStringPrivate.h"
 #include "helpers/privates/WKCHTMLFormElementPrivate.h"
 
 namespace WKC {
@@ -31,12 +32,16 @@ HTMLFormControlElementPrivate::HTMLFormControlElementPrivate(WebCore::HTMLFormCo
     : HTMLElementPrivate(parent)
     , m_wkc(*this)
     , m_formElement(0)
+    , m_type()
+    , m_atomicstring_priv(0)
 {
 }
 
 HTMLFormControlElementPrivate::~HTMLFormControlElementPrivate()
 {
     delete m_formElement;
+    if (m_atomicstring_priv)
+        delete m_atomicstring_priv;
 }
 
 WebCore::HTMLFormControlElement*
@@ -76,6 +81,18 @@ HTMLFormControlElementPrivate::isSuccessfulSubmitButton() const
     return webcore()->isSuccessfulSubmitButton();
 }
 
+const AtomicString&
+HTMLFormControlElementPrivate::type()
+{
+    m_type = webcore()->type();
+
+    if (m_atomicstring_priv)
+        delete m_atomicstring_priv;
+
+    m_atomicstring_priv = new AtomicStringPrivate(&m_type);
+    return m_atomicstring_priv->wkc();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 HTMLFormControlElement::HTMLFormControlElement(HTMLFormControlElementPrivate& parent)
@@ -99,6 +116,12 @@ bool
 HTMLFormControlElement::isSuccessfulSubmitButton() const
 {
     return static_cast<HTMLFormControlElementPrivate&>(priv()).isSuccessfulSubmitButton();
+}
+
+const AtomicString&
+HTMLFormControlElement::type() const
+{
+    return static_cast<HTMLFormControlElementPrivate&>(priv()).type();
 }
 
 HTMLFormElement*

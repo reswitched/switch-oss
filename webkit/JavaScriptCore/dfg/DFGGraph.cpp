@@ -704,6 +704,8 @@ void Graph::computeRefCounts()
 
 void Graph::killBlockAndItsContents(BasicBlock* block)
 {
+    if (auto& ssaData = block->ssa)
+        ssaData->invalidate();
     for (unsigned phiIndex = block->phis.size(); phiIndex--;)
         m_allocator.free(block->phis[phiIndex]);
     for (unsigned nodeIndex = block->size(); nodeIndex--;)
@@ -714,6 +716,8 @@ void Graph::killBlockAndItsContents(BasicBlock* block)
 
 void Graph::killUnreachableBlocks()
 {
+    invalidateNodeLiveness();
+
     for (BlockIndex blockIndex = 0; blockIndex < numBlocks(); ++blockIndex) {
         BasicBlock* block = this->block(blockIndex);
         if (!block)
@@ -730,6 +734,15 @@ void Graph::invalidateCFG()
     m_dominators.invalidate();
     m_naturalLoops.invalidate();
     m_prePostNumbering.invalidate();
+}
+
+void Graph::invalidateNodeLiveness()
+{
+    if (m_form != SSA)
+        return;
+
+    for (BasicBlock* block : blocksInNaturalOrder())
+        block->ssa->invalidate();
 }
 
 void Graph::substituteGetLocal(BasicBlock& block, unsigned startIndexInBlock, VariableAccessData* variableAccessData, Node* newGetLocal)

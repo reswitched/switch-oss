@@ -334,6 +334,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_progressEventTimer(*this, &HTMLMediaElement::progressEventTimerFired)
     , m_playbackProgressTimer(*this, &HTMLMediaElement::playbackProgressTimerFired)
     , m_scanTimer(*this, &HTMLMediaElement::scanTimerFired)
+    , m_seekToPlaybackPositionEndedTimer(*this, &HTMLMediaElement::seekToPlaybackPositionEndedTimerFired)
     , m_seekTaskQueue(document)
     , m_resizeTaskQueue(document)
     , m_shadowDOMTaskQueue(document)
@@ -398,6 +399,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_mediaControlsDependOnPageScaleFactor(false)
     , m_haveSetUpCaptionContainer(false)
 #endif
+    , m_isScrubbingRemotely(false)
 #if ENABLE(VIDEO_TRACK)
     , m_tracksAreReady(true)
     , m_haveVisibleTextTrack(false)
@@ -535,6 +537,8 @@ HTMLMediaElement::~HTMLMediaElement()
     m_seekTaskQueue.close();
 
     m_completelyLoaded = true;
+
+    m_mediaSession = nullptr;
 }
 
 void HTMLMediaElement::registerWithDocument(Document& document)
@@ -4502,6 +4506,37 @@ void HTMLMediaElement::mediaPlayerTimeChanged(MediaPlayer*)
     endProcessingMediaPlayerCallback();
 }
 
+void HTMLMediaElement::handleSeekToPlaybackPosition(double position)
+{
+#if PLATFORM(MAC)
+    // FIXME: This should ideally use faskSeek, but this causes MediaRemote's playhead to flicker upon release.
+    // Please see <rdar://problem/28457219> for more details.
+    seek(MediaTime::createWithDouble(position));
+    m_seekToPlaybackPositionEndedTimer.stop();
+    m_seekToPlaybackPositionEndedTimer.startOneShot(0.5);
+
+    if (!m_isScrubbingRemotely) {
+        m_isScrubbingRemotely = true;
+        if (!paused())
+            pauseInternal();
+    }
+#else
+    fastSeek(position);
+#endif
+}
+
+void HTMLMediaElement::seekToPlaybackPositionEndedTimerFired()
+{
+#if PLATFORM(MAC)
+    if (!m_isScrubbingRemotely)
+        return;
+
+    PlatformMediaSessionManager::sharedManager().sessionDidEndRemoteScrubbing(*m_mediaSession);
+    m_isScrubbingRemotely = false;
+    m_seekToPlaybackPositionEndedTimer.stop();
+#endif
+}
+
 void HTMLMediaElement::mediaPlayerVolumeChanged(MediaPlayer*)
 {
     LOG(Media, "HTMLMediaElement::mediaPlayerVolumeChanged(%p)", this);
@@ -5777,9 +5812,13 @@ void HTMLMediaElement::privateBrowsingStateDidChange()
 MediaControls* HTMLMediaElement::mediaControls() const
 {
 #if ENABLE(MEDIA_CONTROLS_SCRIPT)
-    return 0;
+    return nullptr;
 #else
-    return toMediaControls(userAgentShadowRoot()->firstChild());
+    ShadowRoot* root = userAgentShadowRoot();
+    if (!root)
+        return nullptr;
+    
+    return childrenOfType<MediaControls>(*root).first();
 #endif
 }
 
@@ -5790,7 +5829,7 @@ bool HTMLMediaElement::hasMediaControls() const
 #else
 
     if (ShadowRoot* userAgent = userAgentShadowRoot()) {
-        Node* node = userAgent->firstChild();
+        Node* node = childrenOfType<MediaControls>(*root).first();
         ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isMediaControls());
         return node;
     }
@@ -6160,10 +6199,14 @@ void HTMLMediaElement::applyMediaFragmentURI()
 
 void HTMLMediaElement::updateSleepDisabling()
 {
-    if (!shouldDisableSleep() && m_sleepDisabler)
+    bool shouldDisableSleep = this->shouldDisableSleep();
+    if (!shouldDisableSleep && m_sleepDisabler)
         m_sleepDisabler = nullptr;
-    else if (shouldDisableSleep() && !m_sleepDisabler)
+    else if (shouldDisableSleep && !m_sleepDisabler)
         m_sleepDisabler = DisplaySleepDisabler::create("com.apple.WebCore: HTMLMediaElement playback");
+
+    if (m_player)
+        m_player->setShouldDisableSleep(shouldDisableSleep);
 }
 
 bool HTMLMediaElement::shouldDisableSleep() const
@@ -6353,7 +6396,7 @@ bool HTMLMediaElement::mediaPlayerShouldWaitForResponseToAuthenticationChallenge
     return true;
 }
 
-String HTMLMediaElement::mediaPlayerSourceApplicationIdentifier() const
+String HTMLMediaElement::sourceApplicationIdentifier() const
 {
     if (Frame* frame = document().frame()) {
         if (NetworkingContext* networkingContext = frame->loader().networkingContext())
@@ -6678,7 +6721,7 @@ String HTMLMediaElement::mediaSessionTitle() const
     return m_currentSrc;
 }
 
-void HTMLMediaElement::didReceiveRemoteControlCommand(PlatformMediaSession::RemoteControlCommandType command)
+void HTMLMediaElement::didReceiveRemoteControlCommand(PlatformMediaSession::RemoteControlCommandType command, const PlatformMediaSession::RemoteCommandArgument* argument)
 {
     LOG(Media, "HTMLMediaElement::didReceiveRemoteControlCommand(%p) - %i", this, static_cast<int>(command));
 
@@ -6686,6 +6729,7 @@ void HTMLMediaElement::didReceiveRemoteControlCommand(PlatformMediaSession::Remo
     case PlatformMediaSession::PlayCommand:
         play();
         break;
+    case PlatformMediaSession::StopCommand:
     case PlatformMediaSession::PauseCommand:
         pause();
         break;
@@ -6702,9 +6746,19 @@ void HTMLMediaElement::didReceiveRemoteControlCommand(PlatformMediaSession::Remo
     case PlatformMediaSession::EndSeekingForwardCommand:
         endScanning();
         break;
+    case PlatformMediaSession::SeekToPlaybackPositionCommand:
+        ASSERT(argument);
+        if (argument)
+            handleSeekToPlaybackPosition(argument->asDouble);
+        break;
     default:
         { } // Do nothing
     }
+}
+
+bool HTMLMediaElement::supportsSeeking() const 
+{
+    return !isLiveStream();
 }
 
 bool HTMLMediaElement::overrideBackgroundPlaybackRestriction() const

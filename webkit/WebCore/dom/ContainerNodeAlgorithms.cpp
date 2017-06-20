@@ -163,9 +163,12 @@ void disconnectSubframes(ContainerNode& root, SubframeDisconnectPolicy policy)
 
     collectFrameOwners(frameOwners, root);
 
+    if (auto* shadowRoot = root.shadowRoot())
+        collectFrameOwners(frameOwners, *shadowRoot);
+
     // Must disable frame loading in the subtree so an unload handler cannot
     // insert more frames and create loaded frames in detached subtrees.
-    SubframeLoadingDisabler disabler(root);
+    SubframeLoadingDisabler disabler(&root);
 
     bool isFirst = true;
     for (auto& owner : frameOwners) {

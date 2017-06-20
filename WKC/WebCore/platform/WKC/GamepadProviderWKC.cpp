@@ -116,7 +116,7 @@ GamepadProviderWKC::updateGamepadValue(unsigned int in_index, long long timestam
     gamepad->updateValue(timestamp, vaxes, vbuttons);
 
     for (auto& client : m_clients)
-        client->platformGamepadInputActivity();
+        client->platformGamepadInputActivity(true);
 }
 
 } // namespace WebCore

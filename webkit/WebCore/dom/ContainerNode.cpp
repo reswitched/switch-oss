@@ -622,20 +622,29 @@ void ContainerNode::removeBetween(Node* previousChild, Node* nextChild, Node& ol
 
 void ContainerNode::parserRemoveChild(Node& oldChild)
 {
-    ASSERT(oldChild.parentNode() == this);
-    ASSERT(!oldChild.isDocumentFragment());
+    disconnectSubframesIfNeeded(*this, DescendantsOnly);
+    if (oldChild.parentNode() != this)
+        return;
 
-    Node* prev = oldChild.previousSibling();
-    Node* next = oldChild.nextSibling();
+    {
+        NoEventDispatchAssertion assertNoEventDispatch;
 
-    oldChild.updateAncestorConnectedSubframeCountForRemoval();
+        document().nodeChildrenWillBeRemoved(*this);
 
-    ChildListMutationScope(*this).willRemoveChild(oldChild);
-    oldChild.notifyMutationObserversNodeWillDetach();
+        ASSERT(oldChild.parentNode() == this);
+        ASSERT(!oldChild.isDocumentFragment());
 
-    removeBetween(prev, next, oldChild);
+        Node* prev = oldChild.previousSibling();
+        Node* next = oldChild.nextSibling();
 
-    notifyChildRemoved(oldChild, prev, next, ChildChangeSourceParser);
+        ChildListMutationScope(*this).willRemoveChild(oldChild);
+        oldChild.notifyMutationObserversNodeWillDetach();
+
+        removeBetween(prev, next, oldChild);
+
+        notifyChildRemoved(oldChild, prev, next, ChildChangeSourceParser);
+    }
+    document().notifyRemovePendingSheetIfNeeded();
 }
 
 // this differs from other remove functions because it forcibly removes all the children,
@@ -746,11 +755,12 @@ void ContainerNode::parserAppendChild(PassRefPtr<Node> newChild)
     ASSERT(!hasTagName(HTMLNames::templateTag));
 #endif
 
-    if (&document() != &newChild->document())
-        document().adoptNode(newChild.get(), ASSERT_NO_EXCEPTION);
-
     {
         NoEventDispatchAssertion assertNoEventDispatch;
+
+        if (&document() != &newChild->document())
+        document().adoptNode(newChild.get(), ASSERT_NO_EXCEPTION);
+
         // FIXME: This method should take a PassRefPtr.
         appendChildToContainer(newChild.get(), *this);
         treeScope().adoptIfNeeded(newChild.get());

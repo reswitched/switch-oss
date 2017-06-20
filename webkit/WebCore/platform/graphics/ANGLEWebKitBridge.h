@@ -46,6 +46,9 @@
 #if !PLATFORM(GTK) && !PLATFORM(EFL) && !PLATFORM(WIN)  && !PLATFORM(WKC) && !defined(BUILDING_WITH_CMAKE)
 #include "ANGLE/ShaderLang.h"
 #elif (PLATFORM(WIN) || PLATFORM(WKC)) && !defined(BUILDING_WITH_CMAKE)
+#if PLATFORM(WKC)
+#define __WKC__
+#endif
 #include "GLSLANG/ShaderLang.h"
 #else
 #include <ANGLE/ShaderLang.h>

@@ -672,7 +672,9 @@ void HTMLTreeBuilder::processStartTagForInBody(AtomicHTMLToken& token)
         m_tree.openElements().bodyElement().remove(ASSERT_NO_EXCEPTION);
         m_tree.openElements().popUntil(&m_tree.openElements().bodyElement());
         m_tree.openElements().popHTMLBodyElement();
-        ASSERT(&m_tree.openElements().top() == &m_tree.openElements().htmlElement());
+        // Note: in the fragment case the root is a DocumentFragment instead of a proper html element which is a quirk / optimization in WebKit.
+        ASSERT(!isParsingFragment() || is<DocumentFragment>(m_tree.openElements().topNode()));
+        ASSERT(isParsingFragment() || &m_tree.openElements().top() == &m_tree.openElements().htmlElement());
         m_tree.insertHTMLElement(&token);
         m_insertionMode = InsertionMode::InFrameset;
         return;
@@ -1587,10 +1589,8 @@ void HTMLTreeBuilder::callTheAdoptionAgency(AtomicHTMLToken& token)
         m_tree.insertAlreadyParsedChild(commonAncestor.get(), *lastNode);
         // 11.
         RefPtr<HTMLStackItem> newItem = m_tree.createElementFromSavedToken(&formattingElementRecord->stackItem());
-        // 12.
-        m_tree.takeAllChildren(*newItem, *furthestBlock);
-        // 13.
-        m_tree.reparent(*furthestBlock, *newItem);
+        // 12. & 13.
+        m_tree.takeAllChildrenAndReparent(*newItem, *furthestBlock);
         // 14.
         m_tree.activeFormattingElements().swapTo(formattingElement, newItem, bookmark);
         // 15.

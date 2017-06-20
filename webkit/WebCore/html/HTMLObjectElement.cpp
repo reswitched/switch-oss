@@ -326,7 +326,7 @@ void HTMLObjectElement::updateWidget(PluginCreationOption pluginCreationOption)
     if (!renderer()) // Do not load the plugin if beforeload removed this element or its renderer.
         return;
 
-    bool success = beforeLoadAllowedLoad && hasValidClassId();
+    bool success = beforeLoadAllowedLoad && hasValidClassId() && allowedToLoadFrameURL(url);
     if (success)
         success = requestObject(url, serviceType, paramNames, paramValues);
     if (!success && hasFallbackContent())
@@ -511,7 +511,9 @@ bool HTMLObjectElement::appendFormData(FormDataList& encoding, bool)
     if (name().isEmpty())
         return false;
 
-    Widget* widget = pluginWidget();
+    // Use PluginLoadingPolicy::DoNotLoad here or it would fire JS events synchronously
+    // which would not be safe here.
+    auto* widget = pluginWidget(PluginLoadingPolicy::DoNotLoad);
     if (!is<PluginViewBase>(widget))
         return false;
     String value;

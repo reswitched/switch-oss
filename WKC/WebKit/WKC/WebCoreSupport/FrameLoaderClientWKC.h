@@ -102,7 +102,7 @@ public:
     virtual void dispatchDidFinishDocumentLoad() override;
     virtual void dispatchDidFinishLoad() override;
     virtual void dispatchDidLayout() override;
-    virtual void dispatchDidLayout(WebCore::LayoutMilestones) override;
+    virtual void dispatchDidReachLayoutMilestone(WebCore::LayoutMilestones) override;
 
     virtual WebCore::Frame* dispatchCreatePage(const WebCore::NavigationAction&) override;
     virtual void dispatchShow() override;

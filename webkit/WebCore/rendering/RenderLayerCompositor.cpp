@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009, 2010 Apple Inc. All rights reserved.
- * Copyright (c) 2013 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2013-2017 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -298,7 +298,6 @@ RenderLayerCompositor::RenderLayerCompositor(RenderView& renderView)
     , m_layerFlushThrottlingEnabled(false)
     , m_layerFlushThrottlingTemporarilyDisabledForInteraction(false)
     , m_hasPendingLayerFlush(false)
-    , m_paintRelatedMilestonesTimer(*this, &RenderLayerCompositor::paintRelatedMilestonesTimerFired)
 {
 }
 
@@ -589,8 +588,8 @@ void RenderLayerCompositor::didPaintBacking(RenderLayerBacking*)
 {
     FrameView& frameView = m_renderView.frameView();
     frameView.setLastPaintTime(monotonicallyIncreasingTime());
-    if (frameView.milestonesPendingPaint() && !m_paintRelatedMilestonesTimer.isActive())
-        m_paintRelatedMilestonesTimer.startOneShot(0);
+    if (frameView.milestonesPendingPaint())
+        frameView.firePaintRelatedMilestonesIfNeeded();
 }
 
 void RenderLayerCompositor::didChangeVisibleRect()
@@ -863,7 +862,7 @@ void RenderLayerCompositor::logLayerInfo(const RenderLayer& layer, int depth)
     absoluteBounds.move(layer.offsetFromAncestor(m_renderView.layer()));
     
     StringBuilder logString;
-    logString.append(String::format("%*p (%.6f,%.6f-%.6f,%.6f) %.2fKB", 12 + depth * 2, &layer,
+    logString.append(String::format("%*p (%.3f,%.3f-%.3f,%.3f) %.2fKB", 12 + depth * 2, &layer,
         absoluteBounds.x().toFloat(), absoluteBounds.y().toFloat(), absoluteBounds.maxX().toFloat(), absoluteBounds.maxY().toFloat(),
         backing->backingStoreMemoryEstimate() / 1024));
     
@@ -2316,6 +2315,7 @@ bool RenderLayerCompositor::requiresCompositingLayer(const RenderLayer& layer, R
       || clipsCompositingDescendants(*renderer.layer())
       || requiresCompositingForAnimation(renderer)
       || requiresCompositingForFilters(renderer)
+      || requiresCompositingForWillChange(renderer)
       || requiresCompositingForPosition(renderer, *renderer.layer(), viewportConstrainedNotCompositedReason)
       || requiresCompositingForOverflowScrolling(*renderer.layer());
     if (ret)
@@ -2682,7 +2682,8 @@ bool RenderLayerCompositor::requiresCompositingForCanvas(RenderLayerModelObject&
         bool isCanvasLargeEnoughToForceCompositing = true;
 #else
         HTMLCanvasElement* canvas = downcast<HTMLCanvasElement>(renderer.element());
-        bool isCanvasLargeEnoughToForceCompositing = canvas->size().area() >= canvasAreaThresholdRequiringCompositing;
+        auto canvasArea = canvas->size().area<RecordOverflow>();
+        bool isCanvasLargeEnoughToForceCompositing = !canvasArea.hasOverflowed() && canvasArea.unsafeGet() >= canvasAreaThresholdRequiringCompositing;
 #endif
         CanvasCompositingStrategy compositingStrategy = canvasCompositingStrategy(renderer);
         return compositingStrategy == CanvasAsLayerContents || (compositingStrategy == CanvasPaintedToLayer && isCanvasLargeEnoughToForceCompositing);
@@ -4359,20 +4360,6 @@ void RenderLayerCompositor::layerFlushTimerFired()
     if (!m_hasPendingLayerFlush)
         return;
     scheduleLayerFlushNow();
-}
-
-void RenderLayerCompositor::paintRelatedMilestonesTimerFired()
-{
-    Frame& frame = m_renderView.frameView().frame();
-    Page* page = frame.page();
-    if (!page)
-        return;
-
-    // If the layer tree is frozen, we'll paint when it's unfrozen and schedule the timer again.
-    if (page->chrome().client().layerTreeStateIsFrozen())
-        return;
-
-    m_renderView.frameView().firePaintRelatedMilestonesIfNeeded();
 }
 
 #if USE(REQUEST_ANIMATION_FRAME_DISPLAY_MONITOR)

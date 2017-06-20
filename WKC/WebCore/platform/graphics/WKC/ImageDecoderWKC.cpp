@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2010-2015 ACCESS CO., LTD. All rights reserved.
+ *  Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -36,6 +36,10 @@ ImageFrame::ImageFrame()
     , m_duration(0)
     , m_disposalMethod(DisposeNotSpecified)
     , m_premultiplyAlpha(true)
+#if ENABLE(WKC_BLINK_AWEBP)
+    , m_alphaBlendSource(BlendAtopPreviousFrame)
+    , m_requiredPreviousFrameIndex(-1)
+#endif
 {
     m_image = ImageWKC::create();
 }

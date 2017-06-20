@@ -39,6 +39,25 @@
 
 namespace WebCore {
 
+#if !LOG_DISABLED
+static String validationPolicyAsString(TileGrid::TileValidationPolicy validationPolicy)
+{
+    StringBuilder builder;
+    builder.appendLiteral("[");
+    if (validationPolicy & TileGrid::PruneSecondaryTiles)
+        builder.appendLiteral("prune secondary");
+
+    if (validationPolicy & TileGrid::UnparentAllTiles) {
+        if (builder.isEmpty())
+            builder.appendLiteral(", ");
+        builder.appendLiteral("unparent all");
+    }
+    builder.appendLiteral("]");
+
+    return builder.toString();
+}
+#endif
+
 TileGrid::TileGrid(TileController& controller)
     : m_controller(controller)
     , m_containerLayer(*controller.rootLayer().createCompatibleLayer(PlatformCALayer::LayerTypeLayer, nullptr))
@@ -72,8 +91,7 @@ void TileGrid::setScale(float scale)
     transform.scale(1 / m_scale);
     m_containerLayer->setTransform(transform);
 
-    // FIXME: we may revalidateTiles twice in this commit.
-    revalidateTiles(PruneSecondaryTiles);
+    m_controller.setNeedsRevalidateTiles();
 
     for (auto& tile : m_tiles.values())
         tile.layer->setContentsScale(m_controller.deviceScaleFactor());
@@ -205,6 +223,8 @@ bool TileGrid::tilesWouldChangeForCoverageRect(const FloatRect& coverageRect) co
 
 bool TileGrid::prepopulateRect(const FloatRect& rect)
 {
+    LOG_WITH_STREAM(Tiling, stream << "TileGrid " << this << " prepopulateRect: " << rect);
+
     IntRect enclosingCoverageRect = enclosingIntRect(rect);
     if (m_primaryTileCoverageRect.contains(enclosingCoverageRect))
         return false;
@@ -306,8 +326,7 @@ void TileGrid::revalidateTiles(TileValidationPolicy validationPolicy)
     FloatRect coverageRect = m_controller.coverageRect();
     IntRect bounds = m_controller.bounds();
 
-    if (coverageRect.isEmpty() || bounds.isEmpty())
-        return;
+    LOG_WITH_STREAM(Tiling, stream << "TileGrid " << this << " (controller " << &m_controller << ") revalidateTiles: bounds " << bounds << " coverageRect" << coverageRect << " validation: " << validationPolicyAsString(validationPolicy));
 
     FloatRect scaledRect(coverageRect);
     scaledRect.scale(m_scale);
@@ -373,19 +392,9 @@ void TileGrid::revalidateTiles(TileValidationPolicy validationPolicy)
             removeTilesInCohort(currCohort);
     }
 
-    // Ensure primary tile coverage tiles.
-    m_primaryTileCoverageRect = ensureTilesForRect(coverageRect, CoverageType::PrimaryTiles);
-
     if (validationPolicy & PruneSecondaryTiles) {
         removeAllSecondaryTiles();
         m_cohortList.clear();
-    } else {
-        for (auto& secondaryCoverageRect : m_secondaryTileCoverageRects) {
-            FloatRect secondaryRectInLayerCoordinates(secondaryCoverageRect);
-            secondaryRectInLayerCoordinates.scale(1 / m_scale);
-            ensureTilesForRect(secondaryRectInLayerCoordinates, CoverageType::SecondaryTiles);
-        }
-        m_secondaryTileCoverageRects.clear();
     }
 
     if (m_controller.unparentsOffscreenTiles() && (validationPolicy & UnparentAllTiles)) {
@@ -430,6 +439,19 @@ void TileGrid::revalidateTiles(TileValidationPolicy validationPolicy)
                 tilesToRemove.append(index);
         }
         removeTiles(tilesToRemove);
+    }
+
+    // Ensure primary tile coverage tiles.
+    m_primaryTileCoverageRect = ensureTilesForRect(coverageRect, CoverageType::PrimaryTiles);
+
+    // Ensure secondary tiles (requested via prepopulateRect).
+    if (!(validationPolicy & PruneSecondaryTiles)) {
+        for (auto& secondaryCoverageRect : m_secondaryTileCoverageRects) {
+            FloatRect secondaryRectInLayerCoordinates(secondaryCoverageRect);
+            secondaryRectInLayerCoordinates.scale(1 / m_scale);
+            ensureTilesForRect(secondaryRectInLayerCoordinates, CoverageType::SecondaryTiles);
+        }
+        m_secondaryTileCoverageRects.clear();
     }
 
     m_controller.didRevalidateTiles();
@@ -497,6 +519,8 @@ IntRect TileGrid::ensureTilesForRect(const FloatRect& rect, CoverageType newTile
 {
     if (m_controller.unparentsOffscreenTiles() && !m_controller.isInWindow())
         return IntRect();
+
+    LOG_WITH_STREAM(Tiling, stream << "TileGrid " << this << " ensureTilesForRect: " << rect);
 
     FloatRect scaledRect(rect);
     scaledRect.scale(m_scale);

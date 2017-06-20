@@ -51,9 +51,11 @@
 #include "HitTestResult.h"
 #include "KeyboardEvent.h"
 #include "MainFrame.h"
+#include "MouseEventWithHitTestResults.h"
 #include "NodeRenderingTraversal.h"
 #include "Page.h"
 #include "Range.h"
+#include "RenderView.h"
 #include "RenderWidget.h"
 #include "ScrollAnimator.h"
 #include "Settings.h"
@@ -67,7 +69,7 @@
 
 #if PLATFORM(WKC)
 #include "ElementIterator.h"
-#include "HTMLLabelElement.h"
+#include "HTMLFormElement.h"
 #endif
 
 namespace WebCore {
@@ -725,6 +727,45 @@ void FocusController::setIsVisibleAndActiveInternal(bool contentIsVisible)
 }
 
 #if PLATFORM(WKC)
+static Element* hitTestAtPoint(Frame* mainFrame, IntPoint hitPoint)
+{
+    Node* hitNode = 0;
+    Frame* frame = mainFrame;
+    while (frame) {
+        RenderView* renderView = frame->contentRenderer();
+        if (!renderView)
+            break;
+
+        if (frame->view())
+            hitPoint = frame->view()->windowToContents(hitPoint);
+
+        HitTestRequest request(WebCore::HitTestRequest::ReadOnly | WebCore::HitTestRequest::Active | HitTestRequest::IgnoreClipping | HitTestRequest::DisallowShadowContent);
+        HitTestResult result(hitPoint);
+
+        renderView->hitTest(request, result);
+        result.setToNonShadowAncestor(); // if disallowsShadowContent
+        hitNode = result.innerNode();
+
+        MouseEventWithHitTestResults hr(PlatformMouseEvent(), result);
+        frame = EventHandler::subframeForHitTestResult(hr);
+    }
+
+    if (hitNode) {
+        if (hitNode->isTextNode())
+            hitNode = hitNode->parentElement();
+        else if (is<HTMLAreaElement>(*hitNode)) {
+            HTMLAreaElement& area = downcast<HTMLAreaElement>(*hitNode);
+            HTMLImageElement* image = area.imageElement();
+            if (!image || !image->renderer())
+                return 0;
+            hitNode = image;
+        }
+        if (hitNode->isElementNode())
+            return downcast<Element>(hitNode);
+    }
+    return 0;
+}
+
 static bool isFocusControlBannedElement(const FocusCandidate& candidate)
 {
     Document& document = candidate.visibleNode->document();
@@ -754,20 +795,13 @@ static bool isFocusControlBannedElement(const FocusCandidate& candidate)
         if (candidateRect.isEmpty())
             continue;
 
-        IntRect rect(candidateRect.x(), candidateRect.y(), candidateRect.width(), candidateRect.height());
+        IntRect rect = roundedIntRect(candidateRect);
         rect = mainView->contentsToWindow(rect);
         rect.intersect(frameRect);
         if (rect.isEmpty())
             continue;
 
-        candidateRect = mainView->windowToContents(rect);
-        HitTestResult result = mainFrame.eventHandler().hitTestResultAtPoint(candidateRect.center(), HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping | HitTestRequest::DisallowShadowContent);
-
-        Node* hitNode = result.innerNode();
-
-        if (hitNode && hitNode->isTextNode())
-            hitNode = hitNode->parentElement();
-
+        Node* hitNode = hitTestAtPoint(&mainFrame, rect.center());
         if (!hitNode)
             continue;
 
@@ -775,10 +809,12 @@ static bool isFocusControlBannedElement(const FocusCandidate& candidate)
         if (document != hitNode->document())
             continue;
 
-        // If the hit test result node is a label and belongs to the same form as the candidate element, then allows to be focused.
-        if (is<HTMLLabelElement>(*hitNode) && candidateElement.isFormControlElement())
-            if (downcast<HTMLLabelElement>(*hitNode).form() == downcast<HTMLFormControlElement>(candidateElement).form())
+        // If the hit test result node belongs to the same form as the candidate element, then allows to be focused.
+        if (candidateElement.isFormControlElement()) {
+            HTMLFormElement* form = downcast<HTMLFormControlElement>(candidateElement).form();
+            if (form && form->contains(hitNode))
                 return false;
+        }
 
         // hit test result node is not in other node.
         if (candidateElement.contains(hitNode))
@@ -1162,28 +1198,67 @@ double FocusController::timeSinceFocusWasSet() const
 }
 
 #if PLATFORM(WKC)
+bool FocusController::isClickableElement(Element* element)
+{
+    if (!element)
+        return false;
+    if (!element->parentElement())
+        return false;
+    if (element->isFrameOwnerElement())
+        return false;
+    if (!isInsideFocusableFrame(element))
+        return false;
+    if (is<HTMLBodyElement>(element))
+        return false;
+
+    if (is<HTMLLabelElement>(element) && element->willRespondToMouseClickEvents())
+        return true;
+    if (is<HTMLAreaElement>(element)) {
+        HTMLAreaElement* area = downcast<HTMLAreaElement>(element);
+        HTMLImageElement* image = area->imageElement();
+        if (!image || !image->renderer() || image->renderer()->style().visibility() != VISIBLE)
+            return false;
+
+        if (area->isLink())
+            return true;
+    } else if (!element->renderer())
+            return false;
+    if (element->isKeyboardFocusable(nullptr))
+        return true;
+    if (element->hasEventListeners(eventNames().clickEvent))
+        return true;
+
+    return false;
+}
+
+static LayoutRect getRectFromNode(Node* node)
+{
+    LayoutRect rect;
+    FrameView* frameView = node->document().view();
+    if (!frameView)
+        return rect;
+
+    if (node->hasTagName(HTMLNames::areaTag)) {
+        HTMLAreaElement* area = static_cast<HTMLAreaElement*>(node);
+        HTMLImageElement* image = area->imageElement();
+        if (!image || !image->renderer())
+            return rect;
+        rect = rectToAbsoluteCoordinates(area->document().frame(), area->computeRect(image->renderer()));
+    } else {
+        RenderObject* render = node->renderer();
+        if (!render)
+            return rect;
+        rect = nodeRectInAbsoluteCoordinates(node, true /* ignore border */);
+    }
+    return rect;
+}
+
 static bool isNodeInSpecificRect(Node* node, const LayoutRect* specificRect)
 {
     if (!specificRect || specificRect->isEmpty())
         return !hasOffscreenRect(node);
 
-    FrameView* frameView = node->document().view();
-    if (!frameView)
-        return false;
-
-    LayoutRect rect;
-    if (node->hasTagName(HTMLNames::areaTag)) {
-        HTMLAreaElement* area = static_cast<HTMLAreaElement*>(node);
-        HTMLImageElement* image = area->imageElement();
-        if (!image || !image->renderer())
-            return false;
-        rect = rectToAbsoluteCoordinates(area->document().frame(), area->computeRect(image->renderer()));
-    } else {
-        RenderObject* render = node->renderer();
-        if (!render)
-            return false;
-        rect = nodeRectInAbsoluteCoordinates(node, true /* ignore border */);
-    }
+    LayoutRect rect = getRectFromNode(node);
     if (rect.isEmpty())
         return false;
 
@@ -1245,6 +1320,9 @@ void FocusController::findFocusableNodeInDirection(Node* container, Node* starti
         if (!element->isKeyboardFocusable(event) && !element->isFrameOwnerElement() && !canScrollInDirection(element, direction))
             continue;
 
+        if (!isInsideFocusableFrame(element))
+            continue;
+
         FocusCandidate candidate = FocusCandidate(element, direction);
         if (candidate.isNull())
             continue;
@@ -1291,7 +1369,7 @@ findFirstFocusableElement(Frame& frame, const LayoutRect* scope)
             if (child)
                 element = child;
         }
-        if (element->isFocusable() && !element->isFrameOwnerElement())
+        if (element->isFocusable() && !element->isFrameOwnerElement() && isInsideFocusableFrame(element))
             break;
     }
 
@@ -1363,10 +1441,10 @@ Element* FocusController::findNextFocusableElement(const FocusDirection& directi
     }
 
     LayoutRect startingRect;
-    if (!hasOffscreenRect(static_cast<Node*>(base))) {
-        startingRect = nodeRectInAbsoluteCoordinates(base, true /* ignore border */);
-    } else if (base->hasTagName(areaTag)) {
+    if (base->hasTagName(areaTag)) {
         startingRect = virtualRectForAreaElementAndDirection(downcast<HTMLAreaElement>(base), direction);
+    } else {
+        startingRect = nodeRectInAbsoluteCoordinates(base, true /* ignore border */);
     }
 
     FocusCandidate focusCandidate;
@@ -1605,6 +1683,128 @@ FocusController::findNearestFocusableElementFromPoint(const IntPoint& point, con
     }
 
     return nearest;
+}
+
+Element*
+FocusController::findNearestClickableElementFromPoint(const Element* start, const LayoutPoint& point, const LayoutRect& scope)
+{
+    if (!start)
+        return 0;
+
+    Element* nearest = 0;
+    int nearDist = INT_MAX;
+
+    Element* element = ElementTraversal::firstChild(*start);
+    for (; element; element = ElementTraversal::nextSibling(*element)) {
+        Element* e = element;
+
+        // get child element preferentially
+        if (e->firstElementChild()) {
+            Element* child = findNearestClickableElementFromPoint(e, point, scope);
+            if (child)
+                e = child;
+        }
+
+        if (!isNodeInSpecificRect(e, &scope)) {
+            continue;
+        }
+
+        if (e->isFrameOwnerElement()) {
+            HTMLFrameOwnerElement* owner = downcast<HTMLFrameOwnerElement>(e);
+            if (owner->contentFrame()) {
+                ContainerNode* container = owner->contentFrame()->document();
+                e = findNearestClickableElementFromPoint(ElementTraversal::firstWithin(*container), point, scope);
+                if (!e)
+                    continue;
+            }
+        } else if (isScrollableContainerNode(e) && !e->renderer()->isTextArea()) {
+            Element* child = ElementTraversal::firstChild(*e);
+            if (child)
+                e = child;
+        }
+
+        FocusCandidate candidate = FocusCandidate(e, FocusDirectionDown);
+        if (candidate.isNull())
+            continue;
+        if (candidate.isOffscreen)
+            continue;
+        if (isFocusControlBannedElement(candidate))
+            continue;
+
+        if (!isClickableElement(e))
+            continue;
+
+        int dist = distanceBetweenElementAndPoint(e, point);
+        ASSERT(dist >= 0);
+        if (dist == 0) {
+            nearest = e;
+            break;
+        } else if (dist == INT_MAX)
+            continue;
+
+        if (dist < nearDist) {
+            nearest = e;
+            nearDist = dist;
+        } else if (dist == nearDist) {
+            LayoutRect rect = getRectFromNode(nearest);
+            if (rect.isEmpty())
+                continue;
+
+            rect.intersect(getRectFromNode(e));
+            if (rect.isEmpty())
+                continue;
+
+            IntRect windowRect = e->document().view()->contentsToWindow(IntRect(rect));
+            Element* hitElement = hitTestAtPoint(&e->document().page()->mainFrame(), windowRect.center());
+            if (hitElement && isClickableElement(hitElement)) {
+                nearest = hitElement;
+                nearDist = distanceBetweenElementAndPoint(hitElement, point);
+                ASSERT(nearDist >= 0);
+                if (nearDist == 0)
+                    break;
+            }
+        }
+    }
+
+    return nearest;
+}
+
+Element*
+FocusController::findNearestClickableElementFromPoint(const IntPoint& point, const IntRect* scope)
+{
+    Frame& fr = m_page.mainFrame();
+
+    Element* element = hitTestAtPoint(&fr, point);
+    if (element && isClickableElement(element)) {
+        return element;
+    }
+
+    LayoutRect scopeRect(0,0,0,0);
+    Document* doc = fr.document();
+    FrameView* frameView = fr.view();
+    if (!frameView)
+        return 0;
+
+    RefPtr<FrameView> protector(frameView);
+
+    LayoutPoint contentsPoint = frameView->windowToContents(point);
+    if (scope && !scope->isEmpty()) {
+        LayoutRect lr = frameView->windowToContents(*scope);
+        scopeRect = lr;
+    }
+
+    Element* root = ElementTraversal::firstWithin(*fr.document());
+    Element* e = findNearestClickableElementFromPoint(root, contentsPoint, scopeRect);
+
+    if (is<HTMLAreaElement>(e)) {
+        HTMLAreaElement* area = downcast<HTMLAreaElement>(e);
+        HTMLImageElement* image = area->imageElement();
+        if (!image || !image->renderer())
+            return 0;
+        e = image;
+    }
+
+    return e;
 }
 
 #endif // PLATFORM(WKC)

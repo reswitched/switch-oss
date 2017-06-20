@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2009 Antonio Gomes <tonikitoo@webkit.org>
- * Copyright (C) 2012-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (C) 2012-2017 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -178,6 +178,7 @@ LayoutRect rectToAbsoluteCoordinates(Frame* initialFrame, const LayoutRect& init
 void SpatialNavigation_SetEffectiveAngleForHorizontalNavigation(unsigned int angle);
 void SpatialNavigation_SetEffectiveAngleForVerticalNavigation(unsigned int angle);
 void SpatialNavigation_SetEffectiveAngleForDiagonalNavigation(unsigned int minAngle, unsigned int maxAngle);
+bool isInsideFocusableFrame(Element* element);
 #endif
 
 } // namspace WebCore

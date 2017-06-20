@@ -3,7 +3,7 @@
  * Copyright (C) 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
  * Copyright (C) 2007-2009 Torch Mobile, Inc.
  * Copyright (C) 2011 Torch Mobile, Inc.
- * Copyright (c) 2011-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -546,6 +546,13 @@ String::isEmpty() const
 {
     const WTF::String a(IMPL());
     return a.isEmpty();
+}
+
+bool
+String::endsWith(const String& str) const
+{
+    const WTF::String a(IMPL());
+    return a.endsWith(str);
 }
 
 TextDirection

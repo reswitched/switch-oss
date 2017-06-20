@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2013-2017 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -159,6 +159,7 @@ static id getInternalObjcObject(id object)
 
 - (void)addExternalRememberedObject:(id)object
 {
+    auto locker = holdLock(m_externalDataMutex);
     ASSERT([self isOldExternalObject:object]);
     [m_externalRememberedSet setObject:[NSNumber numberWithBool:true] forKey:object];
 }
@@ -178,6 +179,7 @@ static id getInternalObjcObject(id object)
     if ([self isOldExternalObject:owner] && ![self isOldExternalObject:object])
         [self addExternalRememberedObject:owner];
  
+    auto externalDataMutexLocker = holdLock(m_externalDataMutex);
     NSMapTable *ownedObjects = [m_externalObjectGraph objectForKey:owner];
     if (!ownedObjects) {
         NSPointerFunctionsOptions weakIDOptions = NSPointerFunctionsWeakMemory | NSPointerFunctionsObjectPersonality;
@@ -205,6 +207,7 @@ static id getInternalObjcObject(id object)
     
     JSC::JSLockHolder locker(toJS(m_group));
     
+    auto externalDataMutexLocker = holdLock(m_externalDataMutex);
     NSMapTable *ownedObjects = [m_externalObjectGraph objectForKey:owner];
     if (!ownedObjects)
         return;
@@ -251,6 +254,11 @@ JSContextGroupRef getGroupFromVirtualMachine(JSVirtualMachine *virtualMachine)
     NSMapInsert(m_contextCache, globalContext, wrapper);
 }
 
+- (Lock&)externalDataMutex
+{
+    return m_externalDataMutex;
+}
+
 - (NSMapTable *)externalObjectGraph
 {
     return m_externalObjectGraph;
@@ -263,13 +271,14 @@ JSContextGroupRef getGroupFromVirtualMachine(JSVirtualMachine *virtualMachine)
 
 @end
 
-void scanExternalObjectGraph(JSC::VM& vm, JSC::SlotVisitor& visitor, void* root)
+static void scanExternalObjectGraph(JSC::VM& vm, JSC::SlotVisitor& visitor, void* root, bool lockAcquired)
 {
     @autoreleasepool {
         JSVirtualMachine *virtualMachine = [JSVMWrapperCache wrapperForJSContextGroupRef:toRef(&vm)];
         if (!virtualMachine)
             return;
         NSMapTable *externalObjectGraph = [virtualMachine externalObjectGraph];
+        Lock& externalDataMutex = [virtualMachine externalDataMutex];
         Vector<void*> stack;
         stack.append(root);
         while (!stack.isEmpty()) {
@@ -278,12 +287,27 @@ void scanExternalObjectGraph(JSC::VM& vm, JSC::SlotVisitor& visitor, void* root)
             if (visitor.containsOpaqueRootTriState(nextRoot) == TrueTriState)
                 continue;
             visitor.addOpaqueRoot(nextRoot);
-            
-            NSMapTable *ownedObjects = [externalObjectGraph objectForKey:static_cast<id>(nextRoot)];
-            for (id ownedObject in ownedObjects)
-                stack.append(static_cast<void*>(ownedObject));
+
+            auto appendOwnedObjects = [&] {
+                NSMapTable *ownedObjects = [externalObjectGraph objectForKey:static_cast<id>(nextRoot)];
+                for (id ownedObject in ownedObjects)
+                    stack.append(static_cast<void*>(ownedObject));
+            };
+
+            if (lockAcquired)
+                appendOwnedObjects();
+            else {
+                auto locker = holdLock(externalDataMutex);
+                appendOwnedObjects();
+            }
         }
     }
+}
+
+void scanExternalObjectGraph(JSC::VM& vm, JSC::SlotVisitor& visitor, void* root)
+{
+    bool lockAcquired = false;
+    scanExternalObjectGraph(vm, visitor, root, lockAcquired);
 }
 
 void scanExternalRememberedSet(JSC::VM& vm, JSC::SlotVisitor& visitor)
@@ -292,12 +316,15 @@ void scanExternalRememberedSet(JSC::VM& vm, JSC::SlotVisitor& visitor)
         JSVirtualMachine *virtualMachine = [JSVMWrapperCache wrapperForJSContextGroupRef:toRef(&vm)];
         if (!virtualMachine)
             return;
+        Lock& externalDataMutex = [virtualMachine externalDataMutex];
+        auto locker = holdLock(externalDataMutex);
         NSMapTable *externalObjectGraph = [virtualMachine externalObjectGraph];
         NSMapTable *externalRememberedSet = [virtualMachine externalRememberedSet];
         for (id key in externalRememberedSet) {
             NSMapTable *ownedObjects = [externalObjectGraph objectForKey:key];
+            bool lockAcquired = true;
             for (id ownedObject in ownedObjects)
-                scanExternalObjectGraph(vm, visitor, ownedObject);
+                scanExternalObjectGraph(vm, visitor, ownedObject, lockAcquired);
         }
         [externalRememberedSet removeAllObjects];
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2012-2017 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -39,7 +39,6 @@
 namespace WebCore {
 
 static const unsigned int c_busFrameSize = 128; // 3ms window
-static const int c_drainBuffers = 3; // 9ms flush interval
 
 class AudioDestinationWKC : public AudioDestination, AudioSourceProviderClient
 {
@@ -75,10 +74,6 @@ private:
 
     ThreadIdentifier m_thread;
     bool m_quit;
-
-    float m_drainBuffer0[c_busFrameSize * c_drainBuffers];
-    float m_drainBuffer1[c_busFrameSize * c_drainBuffers];
-    int m_drainCount = 0;
 };
 
 AudioDestinationWKC::AudioDestinationWKC(AudioIOCallback& cb, float sampleRate)
@@ -118,9 +113,6 @@ AudioDestinationWKC::create(AudioIOCallback& cb, float sampleRate)
 bool
 AudioDestinationWKC::construct()
 {
-    m_peer = wkcAudioOpenPeer(wkcAudioPreferredSampleRatePeer(), 16, 2, 0);
-
-    //Prevents crashing, but audio won't play if m_peer==nullptr
     return true;
 }
 
@@ -134,8 +126,19 @@ AudioDestinationWKC::setFormat(size_t numberOfChannels, float sampleRate)
 void
 AudioDestinationWKC::start()
 {
+    m_peer = wkcAudioOpenPeer(wkcAudioPreferredSampleRatePeer(), 16, 2, 0);
+
+    if (!m_peer) {
+        return;
+    }
+
     m_quit = false;
     m_thread = createThread(threadProc, this, "WKC: AudioDestination");
+
+    if (!m_thread) {
+        wkcAudioClosePeer(m_peer);
+        m_peer = 0;
+    }
 }
 
 void
@@ -147,6 +150,11 @@ AudioDestinationWKC::stop()
         // Wait for the audio thread to quit
         waitForThreadCompletion(m_thread);
         m_thread = 0;
+    }
+
+    if (m_peer) {
+        wkcAudioClosePeer(m_peer);
+        m_peer = 0;
     }
 }
 
@@ -164,76 +172,35 @@ AudioDestinationWKC::sampleRate() const
 
 void AudioDestinationWKC::drain()
 {
-    if (m_quit)
+    if (m_quit || !m_peer)
         return;
 
-    float* sampleMatrix[2] = { m_drainBuffer0, m_drainBuffer1 };
-    const size_t sampleCount = c_busFrameSize * c_drainBuffers;
-    const size_t len = sampleCount * 2 * sizeof(int16_t);
-    int16_t* pcm = static_cast<int16_t*>(WTF::fastMalloc(len));
+    float** dataArray = static_cast<float**>(WTF::fastMalloc(m_channels * sizeof(float*)));
+    float* maxAbsValueArray = static_cast<float*>(WTF::fastMalloc(m_channels * sizeof(float)));
+
+    unsigned int channels = 0;
+    bool shouldDrainNextData = true;
 
     while (!m_quit) {
         wkcThreadCheckAlivePeer();
+        wkc_usleep(1000);
 
-        // Update on a 3ms window
-        m_audioIOCallback.render(0, m_bus.get(), c_busFrameSize);
+        if (shouldDrainNextData) {
+            // Update on a 3ms window
+            m_audioIOCallback.render(0, m_bus.get(), c_busFrameSize);
 
-        if (m_peer) {
-            int channels = 1;
-
-            // Copy the samples into the drainBuffer
-            float * sampleData0 = m_bus->channel(0)->mutableData();
-            float * sampleData1 = sampleData0;
             channels = m_bus->numberOfChannels();
-
-            if (channels > 1) {
-                sampleData1 = m_bus->channel(1)->mutableData();
-            }
-
-            for (int i = 0; i < m_bus->channel(0)->length(); i++) {
-                m_drainBuffer0[(m_drainCount*c_busFrameSize) + i] = sampleData0[i];
-                m_drainBuffer1[(m_drainCount*c_busFrameSize) + i] = sampleData1[i];
-            }
-
-            m_drainCount++;
-
-            // Flush on a 3ms * c_drainBuffers interval to compensate for HW flushing perf
-            if (m_drainCount >= c_drainBuffers) {
-                // Convert float to pcm16
-                int16_t scaler = std::numeric_limits<int16_t>::max();
-                float sample = 0.0f;
-                for (auto i = 0; i < sampleCount; ++i) {
-                    sample = sampleMatrix[0][i];
-
-#ifdef ENABLE_SOFTWARE_CLAMPING
-                    if (sample > 1.0f) {
-                        sample = 1.0f;
-                    } else if (sample < -1.0f) {
-                        sample = -1.0f;
-                    }
-#endif
-                    pcm[i * 2] = static_cast<int16_t>(scaler * sample);
-
-                    sample = sampleMatrix[1][i];
-#ifdef ENABLE_SOFTWARE_CLAMPING
-                    if (sample > 1.0f) {
-                        sample = 1.0f;
-                    } else if (sample < -1.0f) {
-                        sample = -1.0f;
-                    }
-#endif
-                    pcm[i * 2 + 1] = static_cast<int16_t>(scaler * sample);
-                }
-
-                wkcAudioWritePeer(m_peer, pcm, len);
-                m_drainCount = 0;
+            for (unsigned int i = 0; i < channels; ++i) {
+                dataArray[i] = m_bus->channel(i)->mutableData();
+                maxAbsValueArray[i] = m_bus->channel(i)->maxAbsValue();
             }
         }
 
-        wkc_usleep(1000);
+        shouldDrainNextData = wkcAudioWriteRawPeer(m_peer, dataArray, channels, c_busFrameSize, maxAbsValueArray);
     }
 
-    WTF::fastFree(pcm);
+    WTF::fastFree(maxAbsValueArray);
+    WTF::fastFree(dataArray);
 }
 
 std::unique_ptr<AudioDestination> AudioDestination::create(AudioIOCallback& cb, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate)

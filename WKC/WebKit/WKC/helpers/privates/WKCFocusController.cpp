@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -40,11 +40,13 @@ FocusControllerPrivate::FocusControllerPrivate(WebCore::FocusController* parent)
     , m_wkc(*this)
     , m_focusedFrame(0)
     , m_focusableElement(0)
+    , m_clickableElement(0)
 {
 }
 
 FocusControllerPrivate::~FocusControllerPrivate()
 {
+    delete m_clickableElement;
     delete m_focusableElement;
     delete m_focusedFrame;
 }
@@ -109,6 +111,29 @@ FocusControllerPrivate::findNearestFocusableElementFromPoint(const WKCPoint& poi
     return &m_focusableElement->wkc();
 }
 
+Element*
+FocusControllerPrivate::findNearestClickableElementFromPoint(const WKCPoint& point, const WKCRect* scope)
+{
+    WebCore::IntPoint p(point.fX, point.fY);
+    WebCore::Element* element;
+    if (scope) {
+        WebCore::IntRect r(scope->fX, scope->fY, scope->fWidth, scope->fHeight);
+        element = m_webcore->findNearestClickableElementFromPoint(p, &r);
+    } else {
+        element = m_webcore->findNearestClickableElementFromPoint(p, 0);
+    }
+    if (!element)
+        return 0;
+
+    if (m_clickableElement)
+        delete m_clickableElement;
+    m_clickableElement = ElementPrivate::create(element);
+    if (!m_clickableElement)
+        return 0;
+
+    return &m_clickableElement->wkc();
+}
+
 bool
 isScrollableContainerNode(Node* node)
 {
@@ -151,6 +176,12 @@ Element*
 FocusController::findNearestFocusableElementFromPoint(const WKCPoint& point, const WKCRect* scope)
 {
     return m_private.findNearestFocusableElementFromPoint(point, scope);
+}
+
+Element*
+FocusController::findNearestClickableElementFromPoint(const WKCPoint& point, const WKCRect* scope)
+{
+    return m_private.findNearestClickableElementFromPoint(point, scope);
 }
 
 } // namespace

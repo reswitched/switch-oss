@@ -281,6 +281,8 @@ public:
 #if ENABLE(AVF_CAPTIONS)
     virtual void notifyTrackModeChanged() { }
 #endif
+
+    virtual void setShouldDisableSleep(bool) { }
 };
 
 }

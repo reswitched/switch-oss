@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2006, 2015 Apple Inc.
+ * Copyright (C) 2006, 2015-2016 Apple Inc.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -235,9 +235,11 @@ public:
         ~RepaintRegionAccumulator();
 
     private:
-        RenderView* m_rootView;
+        WeakPtr<RenderView> m_rootView;
         bool m_wasAccumulatingRepaintRegion;
     };
+
+    WeakPtr<RenderView> createWeakPtr() { return m_weakFactory.createWeakPtr(); }
 
     void scheduleLazyRepaint(RenderBox&);
     void unscheduleLazyRepaint(RenderBox&);
@@ -249,6 +251,10 @@ public:
     void registerBoxWithScrollSnapCoordinates(const RenderBox&);
     void unregisterBoxWithScrollSnapCoordinates(const RenderBox&);
     const HashSet<const RenderBox*>& boxesWithScrollSnapCoordinates() { return m_boxesWithScrollSnapCoordinates; }
+#endif
+
+#if !ASSERT_DISABLED
+    bool inHitTesting() const { return m_inHitTesting; }
 #endif
 
 protected:
@@ -317,6 +323,7 @@ private:
 private:
     FrameView& m_frameView;
 
+    WeakPtrFactory<RenderView> m_weakFactory;
     RenderObject* m_selectionUnsplitStart;
     RenderObject* m_selectionUnsplitEnd;
     int m_selectionUnsplitStartPos;
@@ -366,6 +373,9 @@ private:
 
     bool m_selectionWasCaret;
     bool m_hasSoftwareFilters;
+#if !ASSERT_DISABLED
+    bool m_inHitTesting;
+#endif
 
     HashSet<RenderElement*> m_renderersWithPausedImageAnimation;
     Vector<RefPtr<RenderWidget>> m_protectedRenderWidgets;

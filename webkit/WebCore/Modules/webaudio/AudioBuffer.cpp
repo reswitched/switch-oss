@@ -69,6 +69,11 @@ AudioBuffer::AudioBuffer(unsigned numberOfChannels, size_t numberOfFrames, float
 
     for (unsigned i = 0; i < numberOfChannels; ++i) {
         RefPtr<Float32Array> channelDataArray = Float32Array::create(m_length);
+        if (!channelDataArray) {
+            invalidate();
+            break;
+        }
+
         channelDataArray->setNeuterable(false);
         m_channels.append(channelDataArray);
     }
@@ -84,10 +89,21 @@ AudioBuffer::AudioBuffer(AudioBus* bus)
     m_channels.reserveCapacity(numberOfChannels);
     for (unsigned i = 0; i < numberOfChannels; ++i) {
         RefPtr<Float32Array> channelDataArray = Float32Array::create(m_length);
+        if (!channelDataArray) {
+            invalidate();
+            break;
+        }
+
         channelDataArray->setNeuterable(false);
         channelDataArray->setRange(bus->channel(i)->data(), m_length, 0);
         m_channels.append(channelDataArray);
     }
+}
+
+void AudioBuffer::invalidate()
+{
+    releaseMemory();
+    m_length = 0;
 }
 
 void AudioBuffer::releaseMemory()

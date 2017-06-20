@@ -76,6 +76,8 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     , m_simpleRequest(true)
     , m_async(blockingBehavior == LoadAsynchronously)
 {
+    relaxAdoptionRequirement();
+
     // Setting an outgoing referer is only supported in the async code path.
     ASSERT(m_async || request.httpReferrer().isEmpty());
 
@@ -345,6 +347,8 @@ void DocumentThreadableLoader::preflightFailure(unsigned long identifier, const 
 
 void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, SecurityCheckPolicy securityCheck)
 {
+    Ref<DocumentThreadableLoader> protectedThis(*this);
+
     // Any credential should have been removed from the cross-site requests.
     const URL& requestURL = request.url();
     m_options.setSecurityCheck(securityCheck);
@@ -367,6 +371,11 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Secur
         newRequest.setInitiator(m_options.initiator);
 #endif
         ASSERT(!m_resource);
+        if (m_resource) {
+            CachedResourceHandle<CachedRawResource> resource = std::exchange(m_resource, nullptr);
+            resource->removeClient(this);
+        }
+
         m_resource = m_document.cachedResourceLoader().requestRawResource(newRequest);
         if (m_resource)
             m_resource->addClient(this);
@@ -379,8 +388,12 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Secur
     ResourceError error;
     ResourceResponse response;
     unsigned long identifier = std::numeric_limits<unsigned long>::max();
-    if (m_document.frame())
-        identifier = m_document.frame()->loader().loadResourceSynchronously(request, m_options.allowCredentials(), m_options.clientCredentialPolicy(), error, response, data);
+    if (m_document.frame()) {
+        auto& frameLoader = m_document.frame()->loader();
+        if (!frameLoader.mixedContentChecker().canRunInsecureContent(m_document.securityOrigin(), requestURL))
+            return;
+        identifier = frameLoader.loadResourceSynchronously(request, m_options.allowCredentials(), m_options.clientCredentialPolicy(), error, response, data);
+    }
 
     if (!error.isNull() && response.httpStatusCode() <= 0) {
         if (requestURL.isLocalFile()) {

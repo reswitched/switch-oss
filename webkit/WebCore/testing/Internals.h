@@ -388,6 +388,7 @@ public:
     void setMediaSessionRestrictions(const String& mediaType, const String& restrictions, ExceptionCode&);
     void setMediaElementRestrictions(HTMLMediaElement*, const String& restrictions, ExceptionCode&);
     void postRemoteControlCommand(const String&, ExceptionCode&);
+    void postRemoteControlCommand(const String&, float argument, ExceptionCode&);
     bool elementIsBlockingDisplaySleep(Element*) const;
 #endif
 

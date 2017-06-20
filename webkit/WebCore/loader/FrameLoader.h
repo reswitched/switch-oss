@@ -190,7 +190,7 @@ public:
 
     CachePolicy subresourceCachePolicy() const;
 
-    void didLayout(LayoutMilestones);
+    void didReachLayoutMilestone(LayoutMilestones);
     void didFirstLayout();
 
     void loadedResourceFromMemoryCache(CachedResource*, ResourceRequest& newRequest);
@@ -229,7 +229,7 @@ public:
 
     bool checkIfFormActionAllowedByCSP(const URL&) const;
 
-    Frame* opener();
+    WEBCORE_EXPORT Frame* opener();
     WEBCORE_EXPORT void setOpener(Frame*);
 
     void resetMultipleFormSubmissionProtection();
@@ -340,7 +340,7 @@ private:
     void setState(FrameState);
 
     void closeOldDataSources();
-    void prepareForCachedPageRestore();
+    void willRestoreFromCachedPage();
 
     bool shouldReloadToHandleUnreachableURL(DocumentLoader*);
 
@@ -381,6 +381,8 @@ private:
     void dispatchGlobalObjectAvailableInAllWorlds();
 
     void applyShouldOpenExternalURLsPolicyToNewDocumentLoader(DocumentLoader&, ShouldOpenExternalURLsPolicy propagatedPolicy);
+
+    bool isNavigationAllowed() const;
 
     Frame& m_frame;
     FrameLoaderClient& m_client;

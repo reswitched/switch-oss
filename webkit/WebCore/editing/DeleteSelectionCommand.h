@@ -74,6 +74,9 @@ private:
     // This function provides access to original string after the correction has been deleted.
     String originalStringForAutocorrectionAtBeginningOfSelection();
 
+    void removeNodeUpdatingStates(Node&, ShouldAssumeContentIsAlwaysEditable);
+    void insertBlockPlaceholderForTableCellIfNeeded(Element&);
+
     bool m_hasSelectionToDelete;
     bool m_smartDelete;
     bool m_mergeBlocksAfterDelete;

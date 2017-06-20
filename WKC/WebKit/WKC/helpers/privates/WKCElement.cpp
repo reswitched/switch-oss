@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2015 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -28,10 +28,13 @@
 #include "helpers/WKCNode.h"
 #include "helpers/WKCQualifiedName.h"
 #include "helpers/WKCString.h"
+#include "helpers/privates/WKCAtomicStringPrivate.h"
 #include "helpers/privates/WKCAttributePrivate.h"
 #include "helpers/privates/WKCHTMLElementPrivate.h"
 #include "helpers/privates/WKCNodePrivate.h"
 #include "helpers/privates/WKCQualifiedNamePrivate.h"
+
+#include "utils/nxDebugPrint.h"
 
 namespace WKC {
 
@@ -52,6 +55,8 @@ ElementPrivate::ElementPrivate(WebCore::Element* parent)
     , m_wkc(*this)
     , m_attr(0)
     , m_traverseChildAt(0)
+    , m_lang()
+    , m_atomicstring_priv(0)
 {
 }
 
@@ -59,6 +64,8 @@ ElementPrivate::~ElementPrivate()
 {
     delete m_traverseChildAt;
     delete m_attr;
+    if (m_atomicstring_priv)
+        delete m_atomicstring_priv;
 }
 
 WebCore::Element*
@@ -70,7 +77,27 @@ ElementPrivate::webcore() const
 bool
 ElementPrivate::isFormControlElement() const
 {
-    return webcore()->isFormControlElement();
+    if (!webcore()->isFormControlElement()) {
+        return false;
+    }
+
+    // Returns true only if WKC has a implementation for its element.
+    if (webcore()->hasTagName(WebCore::HTMLNames::inputTag)) {
+        return true;
+    }
+    if (webcore()->hasTagName(WebCore::HTMLNames::buttonTag)) {
+        return true;
+    }
+    if (webcore()->hasTagName(WebCore::HTMLNames::textareaTag)) {
+        return true;
+    }
+    if (webcore()->hasTagName(WebCore::HTMLNames::selectTag)) {
+        return true;
+    }
+
+    nxLog_e("\"%s\" has not yet been implemented as HTMLFormControlElement in WKC layer.", webcore()->tagName().utf8().data());
+
+    return false;
 }
 
 void
@@ -108,6 +135,18 @@ ElementPrivate::getAttributeItem(const QualifiedName* name)
         m_attr = new AttributePrivate(attr);
     }
     return &m_attr->wkc();
+}
+
+const AtomicString&
+ElementPrivate::computeInheritedLanguage()
+{
+    m_lang = webcore()->computeInheritedLanguage();
+
+    if (m_atomicstring_priv)
+        delete m_atomicstring_priv;
+
+    m_atomicstring_priv = new AtomicStringPrivate(&m_lang);
+    return m_atomicstring_priv->wkc();
 }
 
 bool
@@ -195,6 +234,12 @@ Attribute*
 Element::getAttributeItem(const QualifiedName& name) const
 {
     return static_cast<ElementPrivate&>(priv()).getAttributeItem(&name);
+}
+
+const AtomicString&
+Element::computeInheritedLanguage() const
+{
+    return static_cast<ElementPrivate&>(priv()).computeInheritedLanguage();
 }
 
 bool

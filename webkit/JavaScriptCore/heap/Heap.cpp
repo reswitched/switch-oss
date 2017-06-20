@@ -1079,13 +1079,19 @@ NEVER_INLINE void Heap::collectImpl(HeapOperation collectionType, void* stackOri
     removeDeadCompilerWorklistEntries();
     deleteUnmarkedCompiledCode();
     deleteSourceProviderCaches();
+#if !PLATFORM(WKC)
     notifyIncrementalSweeper();
+#endif
     rememberCurrentlyExecutingCodeBlocks();
 
     resetAllocators();
     updateAllocationLimits();
     didFinishCollection(gcStartTime);
     resumeCompilerThreads();
+
+#if PLATFORM(WKC)
+    notifyIncrementalSweeper();
+#endif
 
     if (m_verifier) {
         m_verifier->trimDeadObjects();

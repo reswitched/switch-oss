@@ -1,7 +1,7 @@
 /*
  *  wkcgpeer.h
  *
- *  Copyright(c) 2009-2016 ACCESS CO., LTD. All rights reserved.
+ *  Copyright(c) 2009-2017 ACCESS CO., LTD. All rights reserved.
  */
 
 #ifndef _WKC_G_PEER_H_
@@ -1215,21 +1215,23 @@ enum {
     WKC_LAYER_BLENDMODE_PLUSLIGHTER
 };
 
-typedef bool (*wkcLayerTextureMakeProc)(void* in_layer, int in_width, int in_height, int in_bpp, void** out_bitmap, int* out_rowbytes, int* out_width, int* out_height, void** out_opaque_texture);
+typedef bool (*wkcLayerTextureMakeProc)(void* in_layer, int in_width, int in_height, int in_bpp, void** out_bitmap, int* out_rowbytes, int* out_width, int* out_height, void** out_opaque_texture, bool is_3dcanvas);
 typedef void (*wkcLayerTextureDeleteProc)(void *in_layer, void* in_bitmap);
-typedef void (*wkcLayerTextureUpdateProc)(void *in_opaque, int in_width, int in_height, void *in_bitmap);
+typedef void (*wkcLayerTextureUpdateProc)(void *in_opaque, int in_width, int in_height, void *in_bitmap, int in_texture);
 typedef void (*wkcLayerDidChangeParentProc)(void *in_layer);
 typedef bool (*wkcLayerCanAllocateProc)(int in_width, int in_height, int blendmode);
 typedef wkcLayerTextureMakeProc wkcLayerTextureChangeProc;
 typedef void (*wkcLayerDidChangeParentProc)(void *in_layer);
+typedef void (*wkcLayerAttachedGlTexturesProc)(void *in_layer, int* in_textures, int in_num);
 
 WKC_PEER_API void wkcLayerInitializePeer(void);
 WKC_PEER_API void wkcLayerFinalizePeer(void);
 WKC_PEER_API void wkcLayerForceTerminatePeer(void);
-WKC_PEER_API void wkcLayerInitializeCallbacksPeer(wkcLayerTextureMakeProc in_texture_maker_proc, wkcLayerTextureDeleteProc in_texture_deleter_proc, wkcLayerTextureUpdateProc in_texture_updater_proc, wkcLayerTextureChangeProc in_texture_changer_proc, wkcLayerDidChangeParentProc in_did_change_parent_proc, wkcLayerCanAllocateProc in_can_allocate_proc);
+WKC_PEER_API void wkcLayerInitializeCallbacksPeer(wkcLayerTextureMakeProc in_texture_maker_proc, wkcLayerTextureDeleteProc in_texture_deleter_proc, wkcLayerTextureUpdateProc in_texture_updater_proc, wkcLayerTextureChangeProc in_texture_changer_proc, wkcLayerDidChangeParentProc in_did_change_parent_proc, wkcLayerCanAllocateProc in_can_allocate_proc, wkcLayerAttachedGlTexturesProc in_attached_gl_textures_proc);
 
 WKC_PEER_API void* wkcLayerNewPeer(int in_type, const WKCSize* in_size, float in_opticalzoomlevel);
 WKC_PEER_API void wkcLayerDeletePeer(void* in_layer);
+WKC_PEER_API void wkcLayerAttachGLTexturesPeer(void* in_layer, int* in_textures, int in_num);
 WKC_PEER_API int wkcLayerGetTypePeer(void* in_layer);
 WKC_PEER_API int wkcLayerGetTexturePeer(void* in_layer);
 WKC_PEER_API void* wkcLayerGetOffscreenPeer(void* in_layer);

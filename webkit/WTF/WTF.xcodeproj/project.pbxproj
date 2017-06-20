@@ -63,6 +63,7 @@
 		1A6BB769162F300500DD16DB /* StreamBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A6BB768162F300500DD16DB /* StreamBuffer.h */; };
 		1A6EB1E0187D0BD30030126F /* StringView.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A6EB1DF187D0BD30030126F /* StringView.h */; };
 		1ACADD841884480100D8B71D /* DeprecatedSymbolsUsedBySafari.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1ACADD821884480100D8B71D /* DeprecatedSymbolsUsedBySafari.mm */; };
+		1AEA88E21D6BBCF400E5AD64 /* EnumTraits.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AEA88E11D6BBCF400E5AD64 /* EnumTraits.h */; };
 		1AFDE648195201C300C48FFA /* TypeCastsCF.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AFDE647195201C300C48FFA /* TypeCastsCF.h */; };
 		1AFDE6531953B23D00C48FFA /* Optional.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AFDE6521953B23D00C48FFA /* Optional.h */; };
 		1FA47C8A152502DA00568D1B /* WebCoreThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1FA47C88152502DA00568D1B /* WebCoreThread.cpp */; };
@@ -348,6 +349,7 @@
 		1A6BB768162F300500DD16DB /* StreamBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StreamBuffer.h; sourceTree = "<group>"; };
 		1A6EB1DF187D0BD30030126F /* StringView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringView.h; sourceTree = "<group>"; };
 		1ACADD821884480100D8B71D /* DeprecatedSymbolsUsedBySafari.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DeprecatedSymbolsUsedBySafari.mm; sourceTree = "<group>"; };
+		1AEA88E11D6BBCF400E5AD64 /* EnumTraits.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EnumTraits.h; sourceTree = "<group>"; };
 		1AFDE647195201C300C48FFA /* TypeCastsCF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TypeCastsCF.h; sourceTree = "<group>"; };
 		1AFDE6521953B23D00C48FFA /* Optional.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Optional.h; sourceTree = "<group>"; };
 		1FA47C88152502DA00568D1B /* WebCoreThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WebCoreThread.cpp; sourceTree = "<group>"; };
@@ -740,6 +742,7 @@
 				A8A47280151A825A004123FF /* DoublyLinkedList.h */,
 				A8A47297151A825A004123FF /* dtoa.cpp */,
 				A8A47298151A825A004123FF /* dtoa.h */,
+				1AEA88E11D6BBCF400E5AD64 /* EnumTraits.h */,
 				A8A4729F151A825A004123FF /* ExportMacros.h */,
 				0F885E0E1845AE9F00F1E3FA /* FastBitVector.cpp */,
 				0FD81AC4154FB22E00983E72 /* FastBitVector.h */,
@@ -1188,6 +1191,7 @@
 				FE8225311B2A1E5B00BA68FD /* NakedPtr.h in Headers */,
 				A748745417A0BDAE00FA04CB /* StringHashDumpContext.h in Headers */,
 				A8A4742D151A825B004123FF /* StringHasher.h in Headers */,
+				1AEA88E21D6BBCF400E5AD64 /* EnumTraits.h in Headers */,
 				A8A47441151A825B004123FF /* StringImpl.h in Headers */,
 				A8A47442151A825B004123FF /* StringOperators.h in Headers */,
 				0FDDBFA81666DFA300C55FEF /* StringPrintStream.h in Headers */,

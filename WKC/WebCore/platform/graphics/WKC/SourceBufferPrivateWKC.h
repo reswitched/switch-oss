@@ -42,6 +42,7 @@ public:
     virtual void setClient(SourceBufferPrivateClient*);
     virtual void append(const unsigned char* data, unsigned length);
     virtual void abort();
+    virtual void resetParserState();
     virtual bool setTimestampOffset(double);
 #if PLATFORM(WKC)
     virtual bool removedFromMediaSource();

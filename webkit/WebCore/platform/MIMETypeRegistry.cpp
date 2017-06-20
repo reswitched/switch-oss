@@ -499,7 +499,11 @@ String MIMETypeRegistry::getMIMETypeForPath(const String& path)
     size_t pos = path.reverseFind('.');
     if (pos != notFound) {
         String extension = path.substring(pos + 1);
+#if PLATFORM(WKC)
+        String result = getMediaMIMETypeForExtension(extension);
+#else
         String result = getMIMETypeForExtension(extension);
+#endif
         if (result.length())
             return result;
     }

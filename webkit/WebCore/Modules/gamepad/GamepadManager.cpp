@@ -121,8 +121,11 @@ void GamepadManager::platformGamepadDisconnected(PlatformGamepad& platformGamepa
     }
 }
 
-void GamepadManager::platformGamepadInputActivity()
+void GamepadManager::platformGamepadInputActivity(bool shouldMakeGamepadVisible)
 {
+    if (!shouldMakeGamepadVisible)
+        return;
+
     if (m_gamepadBlindNavigators.isEmpty() && m_gamepadBlindDOMWindows.isEmpty())
         return;
 
