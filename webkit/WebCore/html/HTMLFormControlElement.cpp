@@ -31,6 +31,7 @@
 #include "EventHandler.h"
 #include "EventNames.h"
 #include "Frame.h"
+#include "FrameView.h"
 #include "HTMLFieldSetElement.h"
 #include "HTMLFormElement.h"
 #include "HTMLInputElement.h"
@@ -221,9 +222,16 @@ void HTMLFormControlElement::didAttachRenderers()
 
         RefPtr<HTMLFormControlElement> element = this;
 #if !PLATFORM(WKC)
-        Style::queuePostResolutionCallback([element] {
-            element->focus();
-        });
+        auto* frameView = document().view();
+        if (frameView && frameView->isInLayout()) {
+            frameView->queuePostLayoutCallback([element] {
+                element->focus();
+            });
+        } else {
+            Style::queuePostResolutionCallback([element] {
+                element->focus();
+            });
+        }
 #else
         std::function<void()> p(std::allocator_arg, WTF::voidFuncAllocator(), [element] {
             element->focus();
@@ -479,6 +487,11 @@ bool HTMLFormControlElement::checkValidity(Vector<RefPtr<FormAssociatedElement>>
     if (needsDefaultAction && unhandledInvalidControls && inDocument() && originalDocument.ptr() == &document())
         unhandledInvalidControls->append(this);
     return false;
+}
+
+bool HTMLFormControlElement::isShowingValidationMessage() const
+{
+    return m_validationMessage && m_validationMessage->isVisible();
 }
 
 inline bool HTMLFormControlElement::isValidFormControlElement() const

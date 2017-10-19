@@ -357,6 +357,7 @@ _cairo_pattern_init_copy (cairo_pattern_t	*pattern,
     /* The reference count and user_data array are unique to the copy. */
     CAIRO_REFERENCE_COUNT_INIT (&pattern->ref_count, 0);
     _cairo_user_data_array_init (&pattern->user_data);
+    cairo_list_init (&pattern->observers);
 
     return CAIRO_STATUS_SUCCESS;
 }
@@ -396,6 +397,7 @@ _cairo_pattern_init_static_copy (cairo_pattern_t	*pattern,
 
     CAIRO_REFERENCE_COUNT_INIT (&pattern->ref_count, 0);
     _cairo_user_data_array_init (&pattern->user_data);
+    cairo_list_init (&pattern->observers);
 }
 
 cairo_status_t
@@ -464,19 +466,19 @@ _cairo_pattern_fini (cairo_pattern_t *pattern)
 #if HAVE_VALGRIND
     switch (pattern->type) {
     case CAIRO_PATTERN_TYPE_SOLID:
-	VALGRIND_MAKE_MEM_NOACCESS (pattern, sizeof (cairo_solid_pattern_t));
+	VALGRIND_MAKE_MEM_UNDEFINED (pattern, sizeof (cairo_solid_pattern_t));
 	break;
     case CAIRO_PATTERN_TYPE_SURFACE:
-	VALGRIND_MAKE_MEM_NOACCESS (pattern, sizeof (cairo_surface_pattern_t));
+	VALGRIND_MAKE_MEM_UNDEFINED (pattern, sizeof (cairo_surface_pattern_t));
 	break;
     case CAIRO_PATTERN_TYPE_LINEAR:
-	VALGRIND_MAKE_MEM_NOACCESS (pattern, sizeof (cairo_linear_pattern_t));
+	VALGRIND_MAKE_MEM_UNDEFINED (pattern, sizeof (cairo_linear_pattern_t));
 	break;
     case CAIRO_PATTERN_TYPE_RADIAL:
-	VALGRIND_MAKE_MEM_NOACCESS (pattern, sizeof (cairo_radial_pattern_t));
+	VALGRIND_MAKE_MEM_UNDEFINED (pattern, sizeof (cairo_radial_pattern_t));
 	break;
     case CAIRO_PATTERN_TYPE_MESH:
-	VALGRIND_MAKE_MEM_NOACCESS (pattern, sizeof (cairo_mesh_pattern_t));
+	VALGRIND_MAKE_MEM_UNDEFINED (pattern, sizeof (cairo_mesh_pattern_t));
 	break;
     case CAIRO_PATTERN_TYPE_RASTER_SOURCE:
 	break;
@@ -1045,8 +1047,8 @@ cairo_pattern_create_mesh (void)
  * @pattern from being destroyed until a matching call to
  * cairo_pattern_destroy() is made.
  *
- * The number of references to a #cairo_pattern_t can be get using
- * cairo_pattern_get_reference_count().
+ * Use cairo_pattern_get_reference_count() to get the number of
+ * references to a #cairo_pattern_t.
  *
  * Return value: the referenced #cairo_pattern_t.
  *
@@ -1071,8 +1073,8 @@ slim_hidden_def (cairo_pattern_reference);
  * cairo_pattern_get_type:
  * @pattern: a #cairo_pattern_t
  *
- * This function returns the type a pattern.
- * See #cairo_pattern_type_t for available types.
+ * Get the pattern's type.  See #cairo_pattern_type_t for available
+ * types.
  *
  * Return value: The type of @pattern.
  *
@@ -3522,13 +3524,17 @@ _cairo_pattern_sampled_area (const cairo_pattern_t *pattern,
  * For unbounded patterns, the @extents will be initialized with
  * "infinite" extents, (minimum and maximum fixed-point values).
  *
+ * When is_vector is TRUE, avoid rounding to zero widths or heights that
+ * are less than 1 unit.
+ *
  * XXX: Currently, bounded gradient patterns will also return
  * "infinite" extents, though it would be possible to optimize these
  * with a little more work.
  **/
 void
 _cairo_pattern_get_extents (const cairo_pattern_t         *pattern,
-			    cairo_rectangle_int_t         *extents)
+			    cairo_rectangle_int_t         *extents,
+			    cairo_bool_t                   is_vector)
 {
     double x1, y1, x2, y2;
     int ix1, ix2, iy1, iy2;
@@ -3731,6 +3737,8 @@ _cairo_pattern_get_extents (const cairo_pattern_t         *pattern,
     else
 	ix2 = _cairo_lround (x2);
     extents->x = ix1; extents->width  = ix2 - ix1;
+    if (is_vector && extents->width == 0 && x1 != x2)
+	extents->width += 1;
 
     if (!round_y) {
 	y1 -= 0.5;
@@ -3745,6 +3753,8 @@ _cairo_pattern_get_extents (const cairo_pattern_t         *pattern,
     else
 	iy2 = _cairo_lround (y2);
     extents->y = iy1; extents->height = iy2 - iy1;
+    if (is_vector && extents->height == 0 && y1 != y2)
+	extents->height += 1;
 
     return;
 
@@ -3796,7 +3806,7 @@ _cairo_pattern_get_ink_extents (const cairo_pattern_t         *pattern,
 	}
     }
 
-    _cairo_pattern_get_extents (pattern, extents);
+    _cairo_pattern_get_extents (pattern, extents, TRUE);
     return CAIRO_STATUS_SUCCESS;
 }
 
@@ -4607,14 +4617,43 @@ static void
 _cairo_debug_print_surface_pattern (FILE *file,
 				    const cairo_surface_pattern_t *pattern)
 {
-    printf ("  surface type: %d\n", pattern->surface->type);
+    const char *s;
+    switch (pattern->surface->type) {
+    case CAIRO_SURFACE_TYPE_IMAGE: s = "image"; break;
+    case CAIRO_SURFACE_TYPE_PDF: s = "pdf"; break;
+    case CAIRO_SURFACE_TYPE_PS: s = "ps"; break;
+    case CAIRO_SURFACE_TYPE_XLIB: s = "xlib"; break;
+    case CAIRO_SURFACE_TYPE_XCB: s = "xcb"; break;
+    case CAIRO_SURFACE_TYPE_GLITZ: s = "glitz"; break;
+    case CAIRO_SURFACE_TYPE_QUARTZ: s = "quartz"; break;
+    case CAIRO_SURFACE_TYPE_WIN32: s = "win32"; break;
+    case CAIRO_SURFACE_TYPE_BEOS: s = "beos"; break;
+    case CAIRO_SURFACE_TYPE_DIRECTFB: s = "directfb"; break;
+    case CAIRO_SURFACE_TYPE_SVG: s = "svg"; break;
+    case CAIRO_SURFACE_TYPE_OS2: s = "os2"; break;
+    case CAIRO_SURFACE_TYPE_WIN32_PRINTING: s = "win32_printing"; break;
+    case CAIRO_SURFACE_TYPE_QUARTZ_IMAGE: s = "quartz_image"; break;
+    case CAIRO_SURFACE_TYPE_SCRIPT: s = "script"; break;
+    case CAIRO_SURFACE_TYPE_QT: s = "qt"; break;
+    case CAIRO_SURFACE_TYPE_RECORDING: s = "recording"; break;
+    case CAIRO_SURFACE_TYPE_VG: s = "vg"; break;
+    case CAIRO_SURFACE_TYPE_GL: s = "gl"; break;
+    case CAIRO_SURFACE_TYPE_DRM: s = "drm"; break;
+    case CAIRO_SURFACE_TYPE_TEE: s = "tee"; break;
+    case CAIRO_SURFACE_TYPE_XML: s = "xml"; break;
+    case CAIRO_SURFACE_TYPE_SKIA: s = "skia"; break;
+    case CAIRO_SURFACE_TYPE_SUBSURFACE: s = "subsurface"; break;
+    case CAIRO_SURFACE_TYPE_COGL: s = "cogl"; break;
+    default: s = "invalid"; ASSERT_NOT_REACHED; break;
+    }
+    fprintf (file, "  surface type: %s\n", s);
 }
 
 static void
 _cairo_debug_print_raster_source_pattern (FILE *file,
 					  const cairo_raster_source_pattern_t *raster)
 {
-    printf ("  content: %x, size %dx%d\n", raster->content, raster->extents.width, raster->extents.height);
+    fprintf (file, "  content: %x, size %dx%d\n", raster->content, raster->extents.width, raster->extents.height);
 }
 
 static void
@@ -4638,7 +4677,6 @@ _cairo_debug_print_mesh_pattern (FILE *file,
 void
 _cairo_debug_print_pattern (FILE *file, const cairo_pattern_t *pattern)
 {
-#ifndef __WKC__
     const char *s;
     switch (pattern->type) {
     case CAIRO_PATTERN_TYPE_SOLID: s = "solid"; break;
@@ -4697,5 +4735,4 @@ _cairo_debug_print_pattern (FILE *file, const cairo_pattern_t *pattern)
 	_cairo_debug_print_mesh_pattern (file, (cairo_mesh_pattern_t *)pattern);
 	break;
     }
-#endif
 }

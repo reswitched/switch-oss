@@ -296,7 +296,8 @@ _cairo_pattern_sampled_area (const cairo_pattern_t *pattern,
 
 cairo_private void
 _cairo_pattern_get_extents (const cairo_pattern_t	    *pattern,
-			    cairo_rectangle_int_t           *extents);
+			    cairo_rectangle_int_t           *extents,
+			    cairo_bool_t                   is_vector);
 
 cairo_private cairo_int_status_t
 _cairo_pattern_get_ink_extents (const cairo_pattern_t	    *pattern,

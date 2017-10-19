@@ -549,6 +549,9 @@ void HTMLAnchorElement::handleClick(Event* event)
     if (!frame)
         return;
 
+    if (document().pageCacheState() != Document::NotInPageCache)
+        return;
+
     StringBuilder url;
     url.append(stripLeadingAndTrailingHTMLSpaces(fastGetAttribute(hrefAttr)));
     appendServerMapMousePosition(url, event);

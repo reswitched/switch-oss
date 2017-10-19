@@ -463,12 +463,14 @@ public:
     
     typedef unsigned PaintLayerFlags;
 
+    enum class SecurityOriginPaintPolicy { AnyOrigin, AccessibleOriginOnly };
+
     // The two main functions that use the layer system.  The paint method
     // paints the layers that intersect the damage rect from back to
     // front.  The hitTest method looks for mouse events by walking
     // layers that intersect the point from front to back.
     void paint(GraphicsContext*, const LayoutRect& damageRect, const LayoutSize& subpixelAccumulation = LayoutSize(), PaintBehavior = PaintBehaviorNormal,
-        RenderObject* subtreePaintRoot = nullptr, PaintLayerFlags = 0);
+        RenderObject* subtreePaintRoot = nullptr, PaintLayerFlags = 0, SecurityOriginPaintPolicy = SecurityOriginPaintPolicy::AnyOrigin);
     bool hitTest(const HitTestRequest&, HitTestResult&);
     bool hitTest(const HitTestRequest&, const HitTestLocation&, HitTestResult&);
     void paintOverlayScrollbars(GraphicsContext*, const LayoutRect& damageRect, PaintBehavior, RenderObject* subtreePaintRoot = nullptr);
@@ -679,22 +681,23 @@ private:
     enum CollectLayersBehavior { StopAtStackingContexts, StopAtStackingContainers };
 
     struct LayerPaintingInfo {
-        LayerPaintingInfo(RenderLayer* inRootLayer, const LayoutRect& inDirtyRect, PaintBehavior inPaintBehavior, const LayoutSize& inSubpixelAccumulation, RenderObject* inSubtreePaintRoot = nullptr, OverlapTestRequestMap* inOverlapTestRequests = nullptr)
+        LayerPaintingInfo(RenderLayer* inRootLayer, const LayoutRect& inDirtyRect, PaintBehavior inPaintBehavior, const LayoutSize& inSubpixelAccumulation, RenderObject* inSubtreePaintRoot = nullptr, OverlapTestRequestMap* inOverlapTestRequests = nullptr, bool inRequireSecurityOriginAccessForWidgets = false)
             : rootLayer(inRootLayer)
             , subtreePaintRoot(inSubtreePaintRoot)
             , paintDirtyRect(inDirtyRect)
             , subpixelAccumulation(inSubpixelAccumulation)
             , overlapTestRequests(inOverlapTestRequests)
             , paintBehavior(inPaintBehavior)
-            , clipToDirtyRect(true)
+            , requireSecurityOriginAccessForWidgets(inRequireSecurityOriginAccessForWidgets)
         { }
         RenderLayer* rootLayer;
-        RenderObject* subtreePaintRoot; // only paint descendants of this object
-        LayoutRect paintDirtyRect; // relative to rootLayer;
+        RenderObject* subtreePaintRoot; // Only paint descendants of this object.
+        LayoutRect paintDirtyRect; // Relative to rootLayer;
         LayoutSize subpixelAccumulation;
         OverlapTestRequestMap* overlapTestRequests; // May be null.
         PaintBehavior paintBehavior;
-        bool clipToDirtyRect;
+        bool requireSecurityOriginAccessForWidgets;
+        bool clipToDirtyRect { true };
     };
 
     // Compute and cache clip rects computed with the given layer as the root

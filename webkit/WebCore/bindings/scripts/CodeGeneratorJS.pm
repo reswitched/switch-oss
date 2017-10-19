@@ -346,10 +346,6 @@ sub AddClassForwardIfNeeded
     # SVGAnimatedLength/Number/etc. are typedefs to SVGAnimatedTemplate, so don't use class forwards for them!
     unless ($codeGenerator->IsSVGAnimatedType($interfaceName) or IsScriptProfileType($interfaceName) or $codeGenerator->IsTypedArrayType($interfaceName)) {
         push(@headerContent, "class $interfaceName;\n\n");
-    # ScriptProfile and ScriptProfileNode are typedefs to JSC::Profile and JSC::ProfileNode.
-    } elsif (IsScriptProfileType($interfaceName)) {
-        $headerIncludes{"<profiler/ProfileNode.h>"} = 1;
-        AddTypedefForScriptProfileType($interfaceName);
     }
 }
 

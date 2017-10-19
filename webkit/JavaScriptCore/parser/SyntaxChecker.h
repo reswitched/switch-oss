@@ -69,7 +69,6 @@ public:
     {
     }
 
-    typedef SyntaxChecker FunctionBodyBuilder;
     enum { NoneExpr = 0,
         ResolveEvalExpr, ResolveExpr, IntegerExpr, DoubleExpr, StringExpr,
         ThisExpr, NullExpr, BoolExpr, RegExpExpr, ObjectLiteralExpr,
@@ -156,7 +155,7 @@ public:
     ExpressionType createVoid(const JSTokenLocation&, ExpressionType) { return UnaryExpr; }
     ExpressionType thisExpr(const JSTokenLocation&, ThisTDZMode) { return ThisExpr; }
     ExpressionType superExpr(const JSTokenLocation&) { return SuperExpr; }
-    ExpressionType createResolve(const JSTokenLocation&, const Identifier*, int) { return ResolveExpr; }
+    ExpressionType createResolve(const JSTokenLocation&, const Identifier&, int, int) { return ResolveExpr; }
     ExpressionType createObjectLiteral(const JSTokenLocation&) { return ObjectLiteralExpr; }
     ExpressionType createObjectLiteral(const JSTokenLocation&, int) { return ObjectLiteralExpr; }
     ExpressionType createArray(const JSTokenLocation&, int) { return ArrayLiteralExpr; }
@@ -178,10 +177,8 @@ public:
     ClassExpression createClassExpr(const JSTokenLocation&, const Identifier&, ExpressionType, ExpressionType, PropertyList, PropertyList) { return ClassExpr; }
 #endif
     ExpressionType createFunctionExpr(const JSTokenLocation&, const ParserFunctionInfo<SyntaxChecker>&) { return FunctionExpr; }
-    int createFunctionBody(const JSTokenLocation&, const JSTokenLocation&, int, int, bool, int, int, int, ConstructorKind) { return FunctionBodyResult; }
-#if ENABLE(ES6_ARROWFUNCTION_SYNTAX)
+    int createFunctionBody(const JSTokenLocation&, const JSTokenLocation&, int, int, bool, int, int, int, ConstructorKind, unsigned, int, bool) { return FunctionBodyResult; }
     ExpressionType createArrowFunctionExpr(const JSTokenLocation&, const ParserFunctionInfo<SyntaxChecker>&) { return FunctionExpr; }
-#endif 
     void setFunctionNameStart(int, int) { }
     int createArguments() { return ArgumentsResult; }
     int createArguments(int) { return ArgumentsResult; }
@@ -220,8 +217,8 @@ public:
     int createPropertyList(const JSTokenLocation&, Property, int) { return PropertyListResult; }
     int createElementList(int, int) { return ElementsListResult; }
     int createElementList(int, int, int) { return ElementsListResult; }
-    int createFormalParameterList(DestructuringPattern) { return FormalParameterListResult; }
-    int createFormalParameterList(int, DestructuringPattern) { return FormalParameterListResult; }
+    int createFormalParameterList() { return FormalParameterListResult; }
+    void appendParameter(int, DestructuringPattern) { }
     int createClause(int, int) { return ClauseResult; }
     int createClauseList(int) { return ClauseListResult; }
     int createClauseList(int, int) { return ClauseListResult; }

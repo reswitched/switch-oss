@@ -38,6 +38,25 @@ using WTF::ThreadSpecific;
 
 namespace JSC {
 
+#if PLATFORM(WKC)
+template <typename T>
+Ref<StringImpl> Identifier::add(VM* vm, const T* s, int length)
+{
+    if (length == 1) {
+        T c = s[0];
+        if (canUseSingleCharacterString(c))
+            return *vm->smallStrings.singleCharacterStringRep(c);
+    }
+    if (!length)
+        return *StringImpl::empty();
+
+    return *AtomicStringImpl::add(s, length);
+}
+
+template Ref<StringImpl> Identifier::add(VM* vm, const unsigned short* s, int length);
+template Ref<StringImpl> Identifier::add(VM* vm, const unsigned char* s, int length);
+#endif
+
 Ref<StringImpl> Identifier::add(VM* vm, const char* c)
 {
     ASSERT(c);

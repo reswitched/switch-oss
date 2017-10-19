@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
+ * Copyright (c) 2017 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -68,7 +69,7 @@ WebInspector.DOMTreeContentView = class DOMTreeContentView extends WebInspector.
 
     get navigationItems()
     {
-        return [this._showsShadowDOMButtonNavigationItem, this._compositingBordersButtonNavigationItem, this._paintFlashingButtonNavigationItem];
+        return [];
     }
 
     get domTreeOutline()

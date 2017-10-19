@@ -1780,7 +1780,7 @@ cairo_cff_font_subset_charstrings_and_subroutines (cairo_cff_font_t  *font)
 
     font->subset_subroutines = TRUE;
     for (i = 0; i < font->scaled_font_subset->num_glyphs; i++) {
-	if (font->is_cid) {
+	if (font->is_cid && !font->is_opentype) {
 	    cid = font->scaled_font_subset->glyphs[i];
 	    status = cairo_cff_font_get_gid_for_cid (font, cid, &glyph);
 	    if (unlikely (status))
@@ -1847,11 +1847,15 @@ cairo_cff_font_subset_fontdict (cairo_cff_font_t  *font)
 
     font->num_subset_fontdicts = 0;
     for (i = 0; i < font->scaled_font_subset->num_glyphs; i++) {
-	cid = font->scaled_font_subset->glyphs[i];
-	status = cairo_cff_font_get_gid_for_cid (font, cid, &gid);
-	if (unlikely (status)) {
-	    free (reverse_map);
-	    return status;
+	if (font->is_opentype) {
+	    gid = font->scaled_font_subset->glyphs[i];
+	} else {
+	    cid = font->scaled_font_subset->glyphs[i];
+	    status = cairo_cff_font_get_gid_for_cid (font, cid, &gid);
+	    if (unlikely (status)) {
+		free (reverse_map);
+		return status;
+	    }
 	}
 
         fd = font->fdselect[gid];
@@ -2784,13 +2788,20 @@ _cairo_cff_font_create (cairo_scaled_font_subset_t  *scaled_font_subset,
 {
     const cairo_scaled_font_backend_t *backend;
     cairo_int_status_t status;
+    cairo_bool_t is_synthetic;
     cairo_cff_font_t *font;
 
     backend = scaled_font_subset->scaled_font->backend;
 
-    /* We need to use a fallback font generated from the synthesized outlines. */
-    if (backend->is_synthetic && backend->is_synthetic (scaled_font_subset->scaled_font))
-	return CAIRO_INT_STATUS_UNSUPPORTED;
+    /* We need to use a fallback font if this font differs from the CFF outlines. */
+    if (backend->is_synthetic) {
+	status = backend->is_synthetic (scaled_font_subset->scaled_font, &is_synthetic);
+	if (unlikely (status))
+	    return status;
+
+	if (is_synthetic)
+	    return CAIRO_INT_STATUS_UNSUPPORTED;
+    }
 
     font = calloc (1, sizeof (cairo_cff_font_t));
     if (unlikely (font == NULL))

@@ -42,7 +42,9 @@ class Document;
 class HTMLAreaElement;
 class Node;
 class Page;
+class RenderBlock;
 class RenderObject;
+class RenderText;
 class ScrollView;
 class VisiblePosition;
 class Widget;
@@ -229,6 +231,9 @@ public:
 #if PLATFORM(MAC)
     static void setShouldRepostNotificationsForTests(bool value);
 #endif
+    void deferRecomputeIsIgnored(Element*);
+    void deferTextChangedIfNeeded(Node*);
+    void performDeferredCacheUpdate();
 
 protected:
     void postPlatformNotification(AccessibilityObject*, AXNotification);
@@ -295,7 +300,10 @@ private:
     ListHashSet<RefPtr<AccessibilityObject>> m_liveRegionObjectsSet;
 
     AXTextStateChangeIntent m_textSelectionIntent;
+    ListHashSet<Element*> m_deferredRecomputeIsIgnoredList;
+    ListHashSet<Node*> m_deferredTextChangedList;
     bool m_isSynchronizingSelection { false };
+    bool m_performingDeferredCacheUpdate { false };
 };
 
 class AXAttributeCacheEnabler
@@ -375,6 +383,9 @@ inline void AXObjectCache::remove(Node*) { }
 inline void AXObjectCache::remove(Widget*) { }
 inline void AXObjectCache::selectedChildrenChanged(RenderObject*) { }
 inline void AXObjectCache::selectedChildrenChanged(Node*) { }
+inline void AXObjectCache::deferRecomputeIsIgnored(Element*) { }
+inline void AXObjectCache::deferTextChangedIfNeeded(Node*) { }
+inline void AXObjectCache::performDeferredCacheUpdate() { }
 #if PLATFORM(COCOA)
 inline void AXObjectCache::postTextStateChangePlatformNotification(AccessibilityObject*, const AXTextStateChangeIntent&, const VisibleSelection&) { }
 inline void AXObjectCache::postTextStateChangePlatformNotification(AccessibilityObject*, AXTextEditType, const String&, const VisiblePosition&) { }

@@ -518,15 +518,15 @@ void CachedResource::setDecodedSize(unsigned size)
     if (size == m_decodedSize)
         return;
 
-    int delta = size - m_decodedSize;
+    long long delta = static_cast<long long>(size) - m_decodedSize;
 
     // The object must be moved to a different queue, since its size has been changed.
     // Remove before updating m_decodedSize, so we find the resource in the correct LRU list.
     if (inCache())
         MemoryCache::singleton().removeFromLRUList(*this);
-    
+
     m_decodedSize = size;
-   
+
     if (inCache()) {
         auto& memoryCache = MemoryCache::singleton();
         // Now insert into the new LRU list.
@@ -555,7 +555,7 @@ void CachedResource::setEncodedSize(unsigned size)
     if (size == m_encodedSize)
         return;
 
-    int delta = size - m_encodedSize;
+    long long delta = static_cast<long long>(size) - m_encodedSize;
 
     // The object must be moved to a different queue, since its size has been changed.
     // Remove before updating m_encodedSize, so we find the resource in the correct LRU list.

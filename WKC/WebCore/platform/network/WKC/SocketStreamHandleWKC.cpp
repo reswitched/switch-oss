@@ -77,6 +77,7 @@ SocketStreamHandle::SocketStreamHandle(const URL& url, SocketStreamHandleClient*
     , m_handle(0)
     , m_multiHandle(0)
     , m_networkingContext(networkingContext)
+    , m_sendAgainTimeout(20)
 {
     LOG(Network, "SocketStreamHandle %p new client %p", this, m_client);
     construct();
@@ -414,6 +415,14 @@ SocketStreamHandle::progressTimerFired()
             ret = curl_easy_recv((CURL*)m_handle, m_recvData, m_recvDataLen, &inoutLen);
             RefPtr<SocketStreamHandle> protect(static_cast<SocketStreamHandle*>(this)); // platformClose calls the client, which may make the handle get deallocated immediately.
             if (CURLE_OK == ret) {
+                if (inoutLen == 0) {
+                    // FIN recv
+                    _LOG(Network, "SocketStreamHandle::progressTimerFired() Recv FIN");
+                    m_state = Closed;
+                    if (m_client)
+                        m_client->didCloseSocketStream(this);
+                    break;
+                }
                 _LOG(Network, "SocketStreamHandle::progressTimerFired() Recved(%d)", inoutLen);
                 if (0 < inoutLen && m_client) {
                     m_clientCallingFromTimer = true;
@@ -469,11 +478,29 @@ int SocketStreamHandle::platformSend(const char* data, int len)
 
     // Here m_state must be Open
 
-    size_t curl_out_len = 0;
-    CURLcode ret = curl_easy_send((CURL*)m_handle, data, len, &curl_out_len);
-    int recverror = wkcNetGetLastErrorPeer();
-    int outLen = (int)curl_out_len;
+    CURLcode ret;
+    int outLen = 0;
+    do {
+        size_t curl_out_len = 0;
+        ret = curl_easy_send((CURL*)m_handle, data + outLen, len - outLen, &curl_out_len);
+        outLen += (int)curl_out_len;
+        if (CURLE_AGAIN == ret) {
+            fd_set wd;
+            FD_ZERO(&wd);
+            FD_SET(m_socket, &wd);
+            struct timeval tv;
+            tv.tv_sec = m_sendAgainTimeout;
+            tv.tv_usec = 0;
+
+            int ret = wkcNetSelectPeer(m_socket + 1, NULL, &wd, NULL, &tv);
+            if (ret == 0) {
+                return -1;
+            }
+        }
+    } while (CURLE_AGAIN == ret);
+
     if (CURLE_UNSUPPORTED_PROTOCOL == ret) {
+        int recverror;
         do {
             // for check receiveing FIN
             // Expect m_socket is non-blocking socket.

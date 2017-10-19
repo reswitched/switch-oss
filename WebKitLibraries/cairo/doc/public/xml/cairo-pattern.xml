@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-cairo-pattern-t.top_of_page">cairo_pattern_t</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>cairo_pattern_t</refname>
@@ -122,11 +120,6 @@
 </tgroup>
 </informaltable>
 </refsect1>
-<refsect1 id="cairo-cairo-pattern-t.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
-</refsect1>
 
 
 <refsect1 id="cairo-cairo-pattern-t.description" role="desc">
@@ -168,7 +161,7 @@ transitions instead of the typical blend.</para>
 <para>Note: If the pattern is not a gradient pattern, (eg. a linear or
 radial pattern), then the pattern will be put into an error status
 with a status of <link linkend="CAIRO-STATUS-PATTERN-TYPE-MISMATCH:CAPS"><literal>CAIRO_STATUS_PATTERN_TYPE_MISMATCH</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-add-color-stop-rgb.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -192,7 +185,7 @@ with a status of <link linkend="CAIRO-STATUS-PATTERN-TYPE-MISMATCH:CAPS"><litera
 <entry role="parameter_description"><para>blue component of color</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-pattern-add-color-stop-rgba" role="function" condition="since:1.0">
 <title>cairo_pattern_add_color_stop_rgba&#160;()</title>
 <indexterm zone="cairo-pattern-add-color-stop-rgba" role="1.0"><primary sortas="pattern_add_color_stop_rgba">cairo_pattern_add_color_stop_rgba</primary></indexterm>
@@ -217,7 +210,7 @@ transitions instead of the typical blend.</para>
 <para>Note: If the pattern is not a gradient pattern, (eg. a linear or
 radial pattern), then the pattern will be put into an error status
 with a status of <link linkend="CAIRO-STATUS-PATTERN-TYPE-MISMATCH:CAPS"><literal>CAIRO_STATUS_PATTERN_TYPE_MISMATCH</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-add-color-stop-rgba.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -244,7 +237,7 @@ with a status of <link linkend="CAIRO-STATUS-PATTERN-TYPE-MISMATCH:CAPS"><litera
 <entry role="parameter_description"><para>alpha component of color</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-pattern-get-color-stop-count" role="function" condition="since:1.4">
 <title>cairo_pattern_get_color_stop_count&#160;()</title>
 <indexterm zone="cairo-pattern-get-color-stop-count" role="1.4"><primary sortas="pattern_get_color_stop_count">cairo_pattern_get_color_stop_count</primary></indexterm>
@@ -253,7 +246,7 @@ cairo_pattern_get_color_stop_count (<parameter><link linkend="cairo-pattern-t"><
                                     <parameter><link linkend="int"><type>int</type></link> *count</parameter>);</programlisting>
 <para>Gets the number of color stops specified in the given gradient
 pattern.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-get-color-stop-count.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -268,14 +261,13 @@ pattern.</para>
 <entry role="parameter_description"><para>return value for the number of color stops, or <link linkend="NULL:CAPS"><literal>NULL</literal></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-pattern-get-color-stop-count.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link>, or
 <link linkend="CAIRO-STATUS-PATTERN-TYPE-MISMATCH:CAPS"><literal>CAIRO_STATUS_PATTERN_TYPE_MISMATCH</literal></link> if <parameter>pattern</parameter>
 is not a gradient
 pattern.</para>
-<para></para>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 <refsect2 id="cairo-pattern-get-color-stop-rgba" role="function" condition="since:1.4">
 <title>cairo_pattern_get_color_stop_rgba&#160;()</title>
 <indexterm zone="cairo-pattern-get-color-stop-rgba" role="1.4"><primary sortas="pattern_get_color_stop_rgba">cairo_pattern_get_color_stop_rgba</primary></indexterm>
@@ -293,7 +285,7 @@ gradient pattern.  Values of <parameter>index</parameter>
  range from 0 to n-1
 where n is the number returned
 by <link linkend="cairo-pattern-get-color-stop-count"><function>cairo_pattern_get_color_stop_count()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-get-color-stop-rgba.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -323,15 +315,14 @@ by <link linkend="cairo-pattern-get-color-stop-count"><function>cairo_pattern_ge
 <entry role="parameter_description"><para>return value for alpha component of color, or <link linkend="NULL:CAPS"><literal>NULL</literal></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-pattern-get-color-stop-rgba.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link>, or <link linkend="CAIRO-STATUS-INVALID-INDEX:CAPS"><literal>CAIRO_STATUS_INVALID_INDEX</literal></link>
 if <parameter>index</parameter>
 is not valid for the given pattern.  If the pattern is
 not a gradient pattern, <link linkend="CAIRO-STATUS-PATTERN-TYPE-MISMATCH:CAPS"><literal>CAIRO_STATUS_PATTERN_TYPE_MISMATCH</literal></link> is
 returned.</para>
-<para></para>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 <refsect2 id="cairo-pattern-create-rgb" role="function" condition="since:1.0">
 <title>cairo_pattern_create_rgb&#160;()</title>
 <indexterm zone="cairo-pattern-create-rgb" role="1.0"><primary sortas="pattern_create_rgb">cairo_pattern_create_rgb</primary></indexterm>
@@ -343,7 +334,7 @@ cairo_pattern_create_rgb (<parameter><link linkend="double"><type>double</type><
 color components are floating point numbers in the range 0 to 1.
 If the values passed in are outside that range, they will be
 clamped.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-create-rgb.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -361,7 +352,7 @@ clamped.</para>
 <entry role="parameter_description"><para>blue component of the color</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-pattern-create-rgb.returns" role="returns">
 <title>Returns</title>
 <para> the newly created <link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link> if successful, or
 an error pattern in case of no memory.  The caller owns the
@@ -370,8 +361,7 @@ finished with it.</para>
 <para>This function will always return a valid pointer, but if an error
 occurred the pattern status will be set to an error.  To inspect
 the status of a pattern use <link linkend="cairo-pattern-status"><function>cairo_pattern_status()</function></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-pattern-create-rgba" role="function" condition="since:1.0">
 <title>cairo_pattern_create_rgba&#160;()</title>
 <indexterm zone="cairo-pattern-create-rgba" role="1.0"><primary sortas="pattern_create_rgba">cairo_pattern_create_rgba</primary></indexterm>
@@ -386,7 +376,7 @@ The color components are floating point numbers in the range 0 to</para>
 <listitem><para>If the values passed in are outside that range, they will be
 clamped.</para></listitem>
 </orderedlist>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-create-rgba.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -407,7 +397,7 @@ clamped.</para></listitem>
 <entry role="parameter_description"><para>alpha component of the color</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-pattern-create-rgba.returns" role="returns">
 <title>Returns</title>
 <para> the newly created <link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link> if successful, or
 an error pattern in case of no memory.  The caller owns the
@@ -416,8 +406,7 @@ finished with it.</para>
 <para>This function will always return a valid pointer, but if an error
 occurred the pattern status will be set to an error.  To inspect
 the status of a pattern use <link linkend="cairo-pattern-status"><function>cairo_pattern_status()</function></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-pattern-get-rgba" role="function" condition="since:1.4">
 <title>cairo_pattern_get_rgba&#160;()</title>
 <indexterm zone="cairo-pattern-get-rgba" role="1.4"><primary sortas="pattern_get_rgba">cairo_pattern_get_rgba</primary></indexterm>
@@ -428,7 +417,7 @@ cairo_pattern_get_rgba (<parameter><link linkend="cairo-pattern-t"><type>cairo_p
                         <parameter><link linkend="double"><type>double</type></link> *blue</parameter>,
                         <parameter><link linkend="double"><type>double</type></link> *alpha</parameter>);</programlisting>
 <para>Gets the solid color for a solid color pattern.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-get-rgba.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -452,20 +441,19 @@ cairo_pattern_get_rgba (<parameter><link linkend="cairo-pattern-t"><type>cairo_p
 <entry role="parameter_description"><para>return value for alpha component of color, or <link linkend="NULL:CAPS"><literal>NULL</literal></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-pattern-get-rgba.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link>, or
 <link linkend="CAIRO-STATUS-PATTERN-TYPE-MISMATCH:CAPS"><literal>CAIRO_STATUS_PATTERN_TYPE_MISMATCH</literal></link> if the pattern is not a solid
 color pattern.</para>
-<para></para>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 <refsect2 id="cairo-pattern-create-for-surface" role="function" condition="since:1.0">
 <title>cairo_pattern_create_for_surface&#160;()</title>
 <indexterm zone="cairo-pattern-create-for-surface" role="1.0"><primary sortas="pattern_create_for_surface">cairo_pattern_create_for_surface</primary></indexterm>
 <programlisting language="C"><link linkend="cairo-pattern-t"><returnvalue>cairo_pattern_t</returnvalue></link>&#160;*
 cairo_pattern_create_for_surface (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *surface</parameter>);</programlisting>
 <para>Create a new <link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link> for the given surface.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-create-for-surface.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -477,7 +465,7 @@ cairo_pattern_create_for_surface (<parameter><link linkend="cairo-surface-t"><ty
 <entry role="parameter_description"><para>the surface</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-pattern-create-for-surface.returns" role="returns">
 <title>Returns</title>
 <para> the newly created <link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link> if successful, or
 an error pattern in case of no memory.  The caller owns the
@@ -486,8 +474,7 @@ finished with it.</para>
 <para>This function will always return a valid pointer, but if an error
 occurred the pattern status will be set to an error.  To inspect
 the status of a pattern use <link linkend="cairo-pattern-status"><function>cairo_pattern_status()</function></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-pattern-get-surface" role="function" condition="since:1.4">
 <title>cairo_pattern_get_surface&#160;()</title>
 <indexterm zone="cairo-pattern-get-surface" role="1.4"><primary sortas="pattern_get_surface">cairo_pattern_get_surface</primary></indexterm>
@@ -498,7 +485,7 @@ cairo_pattern_get_surface (<parameter><link linkend="cairo-pattern-t"><type>cair
 <parameter>surface</parameter>
  is owned by the pattern; the caller should call
 <link linkend="cairo-surface-reference"><function>cairo_surface_reference()</function></link> if the surface is to be retained.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-get-surface.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -513,13 +500,12 @@ cairo_pattern_get_surface (<parameter><link linkend="cairo-pattern-t"><type>cair
 <entry role="parameter_description"><para>return value for surface of pattern, or <link linkend="NULL:CAPS"><literal>NULL</literal></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-pattern-get-surface.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link>, or
 <link linkend="CAIRO-STATUS-PATTERN-TYPE-MISMATCH:CAPS"><literal>CAIRO_STATUS_PATTERN_TYPE_MISMATCH</literal></link> if the pattern is not a surface
 pattern.</para>
-<para></para>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 <refsect2 id="cairo-pattern-create-linear" role="function" condition="since:1.0">
 <title>cairo_pattern_create_linear&#160;()</title>
 <indexterm zone="cairo-pattern-create-linear" role="1.0"><primary sortas="pattern_create_linear">cairo_pattern_create_linear</primary></indexterm>
@@ -536,7 +522,7 @@ number of color stops should be defined using
 <para>Note: The coordinates here are in pattern space. For a new pattern,
 pattern space is identical to user space, but the relationship
 between the spaces can be changed with <link linkend="cairo-pattern-set-matrix"><function>cairo_pattern_set_matrix()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-create-linear.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -557,7 +543,7 @@ between the spaces can be changed with <link linkend="cairo-pattern-set-matrix">
 <entry role="parameter_description"><para>y coordinate of the end point</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-pattern-create-linear.returns" role="returns">
 <title>Returns</title>
 <para> the newly created <link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link> if successful, or
 an error pattern in case of no memory.  The caller owns the
@@ -566,8 +552,7 @@ finished with it.</para>
 <para>This function will always return a valid pointer, but if an error
 occurred the pattern status will be set to an error.  To inspect
 the status of a pattern use <link linkend="cairo-pattern-status"><function>cairo_pattern_status()</function></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-pattern-get-linear-points" role="function" condition="since:1.4">
 <title>cairo_pattern_get_linear_points&#160;()</title>
 <indexterm zone="cairo-pattern-get-linear-points" role="1.4"><primary sortas="pattern_get_linear_points">cairo_pattern_get_linear_points</primary></indexterm>
@@ -578,7 +563,7 @@ cairo_pattern_get_linear_points (<parameter><link linkend="cairo-pattern-t"><typ
                                  <parameter><link linkend="double"><type>double</type></link> *x1</parameter>,
                                  <parameter><link linkend="double"><type>double</type></link> *y1</parameter>);</programlisting>
 <para>Gets the gradient endpoints for a linear gradient.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-get-linear-points.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -602,14 +587,13 @@ cairo_pattern_get_linear_points (<parameter><link linkend="cairo-pattern-t"><typ
 <entry role="parameter_description"><para>return value for the y coordinate of the second point, or <link linkend="NULL:CAPS"><literal>NULL</literal></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-pattern-get-linear-points.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link>, or
 <link linkend="CAIRO-STATUS-PATTERN-TYPE-MISMATCH:CAPS"><literal>CAIRO_STATUS_PATTERN_TYPE_MISMATCH</literal></link> if <parameter>pattern</parameter>
 is not a linear
 gradient pattern.</para>
-<para></para>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 <refsect2 id="cairo-pattern-create-radial" role="function" condition="since:1.0">
 <title>cairo_pattern_create_radial&#160;()</title>
 <indexterm zone="cairo-pattern-create-radial" role="1.0"><primary sortas="pattern_create_radial">cairo_pattern_create_radial</primary></indexterm>
@@ -628,7 +612,7 @@ gradient pattern, a number of color stops should be defined using
 <para>Note: The coordinates here are in pattern space. For a new pattern,
 pattern space is identical to user space, but the relationship
 between the spaces can be changed with <link linkend="cairo-pattern-set-matrix"><function>cairo_pattern_set_matrix()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-create-radial.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -655,7 +639,7 @@ between the spaces can be changed with <link linkend="cairo-pattern-set-matrix">
 <entry role="parameter_description"><para>radius of the end circle</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-pattern-create-radial.returns" role="returns">
 <title>Returns</title>
 <para> the newly created <link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link> if successful, or
 an error pattern in case of no memory.  The caller owns the
@@ -664,8 +648,7 @@ finished with it.</para>
 <para>This function will always return a valid pointer, but if an error
 occurred the pattern status will be set to an error.  To inspect
 the status of a pattern use <link linkend="cairo-pattern-status"><function>cairo_pattern_status()</function></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-pattern-get-radial-circles" role="function" condition="since:1.4">
 <title>cairo_pattern_get_radial_circles&#160;()</title>
 <indexterm zone="cairo-pattern-get-radial-circles" role="1.4"><primary sortas="pattern_get_radial_circles">cairo_pattern_get_radial_circles</primary></indexterm>
@@ -679,7 +662,7 @@ cairo_pattern_get_radial_circles (<parameter><link linkend="cairo-pattern-t"><ty
                                   <parameter><link linkend="double"><type>double</type></link> *r1</parameter>);</programlisting>
 <para>Gets the gradient endpoint circles for a radial gradient, each
 specified as a center coordinate and a radius.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-get-radial-circles.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -709,14 +692,13 @@ specified as a center coordinate and a radius.</para>
 <entry role="parameter_description"><para>return value for the radius of the second circle, or <link linkend="NULL:CAPS"><literal>NULL</literal></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-pattern-get-radial-circles.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link>, or
 <link linkend="CAIRO-STATUS-PATTERN-TYPE-MISMATCH:CAPS"><literal>CAIRO_STATUS_PATTERN_TYPE_MISMATCH</literal></link> if <parameter>pattern</parameter>
 is not a radial
 gradient pattern.</para>
-<para></para>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 <refsect2 id="cairo-pattern-create-mesh" role="function" condition="since:1.12">
 <title>cairo_pattern_create_mesh&#160;()</title>
 <indexterm zone="cairo-pattern-create-mesh" role="1.12"><primary sortas="pattern_create_mesh">cairo_pattern_create_mesh</primary></indexterm>
@@ -841,7 +823,7 @@ detail.</para>
 pattern, pattern space is identical to user space, but the
 relationship between the spaces can be changed with
 <link linkend="cairo-pattern-set-matrix"><function>cairo_pattern_set_matrix()</function></link>.</para>
-<refsect3 role="returns">
+<refsect3 id="cairo-pattern-create-mesh.returns" role="returns">
 <title>Returns</title>
 <para> the newly created <link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link> if successful, or
 an error pattern in case of no memory. The caller owns the returned
@@ -850,8 +832,7 @@ it.</para>
 <para>This function will always return a valid pointer, but if an error
 occurred the pattern status will be set to an error. To inspect the
 status of a pattern use <link linkend="cairo-pattern-status"><function>cairo_pattern_status()</function></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-mesh-pattern-begin-patch" role="function" condition="since:1.12">
 <title>cairo_mesh_pattern_begin_patch&#160;()</title>
 <indexterm zone="cairo-mesh-pattern-begin-patch" role="1.12"><primary sortas="mesh_pattern_begin_patch">cairo_mesh_pattern_begin_patch</primary></indexterm>
@@ -872,7 +853,7 @@ into an error status with a status of
  already has a
 current patch, it will be put into an error status with a status of
 <link linkend="CAIRO-STATUS-INVALID-MESH-CONSTRUCTION:CAPS"><literal>CAIRO_STATUS_INVALID_MESH_CONSTRUCTION</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-mesh-pattern-begin-patch.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -884,7 +865,7 @@ current patch, it will be put into an error status with a status of
 <entry role="parameter_description"><para>a <link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-mesh-pattern-end-patch" role="function" condition="since:1.12">
 <title>cairo_mesh_pattern_end_patch&#160;()</title>
 <indexterm zone="cairo-mesh-pattern-end-patch" role="1.12"><primary sortas="mesh_pattern_end_patch">cairo_mesh_pattern_end_patch</primary></indexterm>
@@ -904,7 +885,7 @@ patch or the current patch has no current point, <parameter>pattern</parameter>
  will be
 put into an error status with a status of
 <link linkend="CAIRO-STATUS-INVALID-MESH-CONSTRUCTION:CAPS"><literal>CAIRO_STATUS_INVALID_MESH_CONSTRUCTION</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-mesh-pattern-end-patch.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -916,7 +897,7 @@ put into an error status with a status of
 <entry role="parameter_description"><para>a <link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-mesh-pattern-move-to" role="function" condition="since:1.12">
 <title>cairo_mesh_pattern_move_to&#160;()</title>
 <indexterm zone="cairo-mesh-pattern-move-to" role="1.12"><primary sortas="mesh_pattern_move_to">cairo_mesh_pattern_move_to</primary></indexterm>
@@ -938,7 +919,7 @@ patch or the current patch already has at least one side, <parameter>pattern</pa
 
 will be put into an error status with a status of
 <link linkend="CAIRO-STATUS-INVALID-MESH-CONSTRUCTION:CAPS"><literal>CAIRO_STATUS_INVALID_MESH_CONSTRUCTION</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-mesh-pattern-move-to.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -956,7 +937,7 @@ will be put into an error status with a status of
 <entry role="parameter_description"><para>the Y coordinate of the new position</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-mesh-pattern-line-to" role="function" condition="since:1.12">
 <title>cairo_mesh_pattern_line_to&#160;()</title>
 <indexterm zone="cairo-mesh-pattern-line-to" role="1.12"><primary sortas="mesh_pattern_line_to">cairo_mesh_pattern_line_to</primary></indexterm>
@@ -987,7 +968,7 @@ patch or the current patch already has 4 sides, <parameter>pattern</parameter>
  will be
 put into an error status with a status of
 <link linkend="CAIRO-STATUS-INVALID-MESH-CONSTRUCTION:CAPS"><literal>CAIRO_STATUS_INVALID_MESH_CONSTRUCTION</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-mesh-pattern-line-to.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1005,7 +986,7 @@ put into an error status with a status of
 <entry role="parameter_description"><para>the Y coordinate of the end of the new line</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-mesh-pattern-curve-to" role="function" condition="since:1.12">
 <title>cairo_mesh_pattern_curve_to&#160;()</title>
 <indexterm zone="cairo-mesh-pattern-curve-to" role="1.12"><primary sortas="mesh_pattern_curve_to">cairo_mesh_pattern_curve_to</primary></indexterm>
@@ -1046,7 +1027,7 @@ patch or the current patch already has 4 sides, <parameter>pattern</parameter>
  will be
 put into an error status with a status of
 <link linkend="CAIRO-STATUS-INVALID-MESH-CONSTRUCTION:CAPS"><literal>CAIRO_STATUS_INVALID_MESH_CONSTRUCTION</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-mesh-pattern-curve-to.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1076,7 +1057,7 @@ put into an error status with a status of
 <entry role="parameter_description"><para>the Y coordinate of the end of the curve</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-mesh-pattern-set-control-point" role="function" condition="since:1.12">
 <title>cairo_mesh_pattern_set_control_point&#160;()</title>
 <indexterm zone="cairo-mesh-pattern-set-control-point" role="1.12"><primary sortas="mesh_pattern_set_control_point">cairo_mesh_pattern_set_control_point</primary></indexterm>
@@ -1102,7 +1083,7 @@ into an error status with a status of
 <parameter>pattern</parameter>
  will be put into an error status with a status of
 <link linkend="CAIRO-STATUS-INVALID-MESH-CONSTRUCTION:CAPS"><literal>CAIRO_STATUS_INVALID_MESH_CONSTRUCTION</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-mesh-pattern-set-control-point.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1123,7 +1104,7 @@ into an error status with a status of
 <entry role="parameter_description"><para>the Y coordinate of the control point</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-mesh-pattern-set-corner-color-rgb" role="function" condition="since:1.12">
 <title>cairo_mesh_pattern_set_corner_color_rgb&#160;()</title>
 <indexterm zone="cairo-mesh-pattern-set-corner-color-rgb" role="1.12"><primary sortas="mesh_pattern_set_corner_color_rgb">cairo_mesh_pattern_set_corner_color_rgb</primary></indexterm>
@@ -1152,7 +1133,7 @@ into an error status with a status of
 <parameter>pattern</parameter>
  will be put into an error status with a status of
 <link linkend="CAIRO-STATUS-INVALID-MESH-CONSTRUCTION:CAPS"><literal>CAIRO_STATUS_INVALID_MESH_CONSTRUCTION</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-mesh-pattern-set-corner-color-rgb.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1176,7 +1157,7 @@ into an error status with a status of
 <entry role="parameter_description"><para>blue component of color</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-mesh-pattern-set-corner-color-rgba" role="function" condition="since:1.12">
 <title>cairo_mesh_pattern_set_corner_color_rgba&#160;()</title>
 <indexterm zone="cairo-mesh-pattern-set-corner-color-rgba" role="1.12"><primary sortas="mesh_pattern_set_corner_color_rgba">cairo_mesh_pattern_set_corner_color_rgba</primary></indexterm>
@@ -1206,7 +1187,7 @@ into an error status with a status of
 <parameter>pattern</parameter>
  will be put into an error status with a status of
 <link linkend="CAIRO-STATUS-INVALID-MESH-CONSTRUCTION:CAPS"><literal>CAIRO_STATUS_INVALID_MESH_CONSTRUCTION</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-mesh-pattern-set-corner-color-rgba.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1233,7 +1214,7 @@ into an error status with a status of
 <entry role="parameter_description"><para>alpha component of color</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-mesh-pattern-get-patch-count" role="function" condition="since:1.12">
 <title>cairo_mesh_pattern_get_patch_count&#160;()</title>
 <indexterm zone="cairo-mesh-pattern-get-patch-count" role="1.12"><primary sortas="mesh_pattern_get_patch_count">cairo_mesh_pattern_get_patch_count</primary></indexterm>
@@ -1244,7 +1225,7 @@ cairo_mesh_pattern_get_patch_count (<parameter><link linkend="cairo-pattern-t"><
 <para>The number only includes patches which have been finished by
 calling <link linkend="cairo-mesh-pattern-end-patch"><function>cairo_mesh_pattern_end_patch()</function></link>. For example it will be 0
 during the definition of the first patch.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-mesh-pattern-get-patch-count.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1259,14 +1240,13 @@ during the definition of the first patch.</para>
 <entry role="parameter_description"><para>return value for the number patches, or <link linkend="NULL:CAPS"><literal>NULL</literal></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-mesh-pattern-get-patch-count.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link>, or
 <link linkend="CAIRO-STATUS-PATTERN-TYPE-MISMATCH:CAPS"><literal>CAIRO_STATUS_PATTERN_TYPE_MISMATCH</literal></link> if <parameter>pattern</parameter>
 is not a mesh
 pattern.</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-mesh-pattern-get-path" role="function" condition="since:1.12">
 <title>cairo_mesh_pattern_get_path&#160;()</title>
 <indexterm zone="cairo-mesh-pattern-get-path" role="1.12"><primary sortas="mesh_pattern_get_path">cairo_mesh_pattern_get_path</primary></indexterm>
@@ -1279,7 +1259,7 @@ pattern.</para>
 <para><parameter>patch_num</parameter>
  can range from 0 to n-1 where n is the number returned by
 <link linkend="cairo-mesh-pattern-get-patch-count"><function>cairo_mesh_pattern_get_patch_count()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-mesh-pattern-get-path.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1294,7 +1274,7 @@ pattern.</para>
 <entry role="parameter_description"><para>the patch number to return data for</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-mesh-pattern-get-path.returns" role="returns">
 <title>Returns</title>
 <para> the path defining the patch, or a path with status
 <link linkend="CAIRO-STATUS-INVALID-INDEX:CAPS"><literal>CAIRO_STATUS_INVALID_INDEX</literal></link> if <parameter>patch_num</parameter>
@@ -1304,8 +1284,7 @@ valid for <parameter>pattern</parameter>
 . If <parameter>pattern</parameter>
 is not a mesh pattern, a path with
 status <link linkend="CAIRO-STATUS-PATTERN-TYPE-MISMATCH:CAPS"><literal>CAIRO_STATUS_PATTERN_TYPE_MISMATCH</literal></link> is returned.</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-mesh-pattern-get-control-point" role="function" condition="since:1.12">
 <title>cairo_mesh_pattern_get_control_point&#160;()</title>
 <indexterm zone="cairo-mesh-pattern-get-control-point" role="1.12"><primary sortas="mesh_pattern_get_control_point">cairo_mesh_pattern_get_control_point</primary></indexterm>
@@ -1325,7 +1304,7 @@ pattern.</para>
 <para>Valid values for <parameter>point_num</parameter>
  are from 0 to 3 and identify the
 control points as explained in <link linkend="cairo-pattern-create-mesh"><function>cairo_pattern_create_mesh()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-mesh-pattern-get-control-point.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1349,7 +1328,7 @@ control points as explained in <link linkend="cairo-pattern-create-mesh"><functi
 <entry role="parameter_description"><para>return value for the y coordinate of the control point, or <link linkend="NULL:CAPS"><literal>NULL</literal></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-mesh-pattern-get-control-point.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link>, or <link linkend="CAIRO-STATUS-INVALID-INDEX:CAPS"><literal>CAIRO_STATUS_INVALID_INDEX</literal></link>
 if <parameter>patch_num</parameter>
@@ -1358,8 +1337,7 @@ is not valid for <parameter>pattern</parameter>
 . If <parameter>pattern</parameter>
 is not a mesh pattern, <link linkend="CAIRO-STATUS-PATTERN-TYPE-MISMATCH:CAPS"><literal>CAIRO_STATUS_PATTERN_TYPE_MISMATCH</literal></link> is
 returned.</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-mesh-pattern-get-corner-color-rgba" role="function" condition="since:1.12">
 <title>cairo_mesh_pattern_get_corner_color_rgba&#160;()</title>
 <indexterm zone="cairo-mesh-pattern-get-corner-color-rgba" role="1.12"><primary sortas="mesh_pattern_get_corner_color_rgba">cairo_mesh_pattern_get_corner_color_rgba</primary></indexterm>
@@ -1382,7 +1360,7 @@ cairo_mesh_pattern_get_corner_color_rgba
 <para>Valid values for <parameter>corner_num</parameter>
  are from 0 to 3 and identify the
 corners as explained in <link linkend="cairo-pattern-create-mesh"><function>cairo_pattern_create_mesh()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-mesh-pattern-get-corner-color-rgba.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1412,7 +1390,7 @@ corners as explained in <link linkend="cairo-pattern-create-mesh"><function>cair
 <entry role="parameter_description"><para>return value for alpha component of color, or <link linkend="NULL:CAPS"><literal>NULL</literal></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-mesh-pattern-get-corner-color-rgba.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link>, or <link linkend="CAIRO-STATUS-INVALID-INDEX:CAPS"><literal>CAIRO_STATUS_INVALID_INDEX</literal></link>
 if <parameter>patch_num</parameter>
@@ -1422,8 +1400,7 @@ is not valid for <parameter>pattern</parameter>
 <parameter>pattern</parameter>
 is not a mesh pattern, <link linkend="CAIRO-STATUS-PATTERN-TYPE-MISMATCH:CAPS"><literal>CAIRO_STATUS_PATTERN_TYPE_MISMATCH</literal></link>
 is returned.</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-pattern-reference" role="function" condition="since:1.0">
 <title>cairo_pattern_reference&#160;()</title>
 <indexterm zone="cairo-pattern-reference" role="1.0"><primary sortas="pattern_reference">cairo_pattern_reference</primary></indexterm>
@@ -1434,9 +1411,9 @@ cairo_pattern_reference (<parameter><link linkend="cairo-pattern-t"><type>cairo_
 <parameter>pattern</parameter>
  from being destroyed until a matching call to
 <link linkend="cairo-pattern-destroy"><function>cairo_pattern_destroy()</function></link> is made.</para>
-<para>The number of references to a <link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link> can be get using
-<link linkend="cairo-pattern-get-reference-count"><function>cairo_pattern_get_reference_count()</function></link>.</para>
-<refsect3 role="parameters">
+<para>Use <link linkend="cairo-pattern-get-reference-count"><function>cairo_pattern_get_reference_count()</function></link> to get the number of
+references to a <link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link>.</para>
+<refsect3 id="cairo-pattern-reference.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1448,11 +1425,10 @@ cairo_pattern_reference (<parameter><link linkend="cairo-pattern-t"><type>cairo_
 <entry role="parameter_description"><para>a <link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-pattern-reference.returns" role="returns">
 <title>Returns</title>
 <para> the referenced <link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-pattern-destroy" role="function" condition="since:1.0">
 <title>cairo_pattern_destroy&#160;()</title>
 <indexterm zone="cairo-pattern-destroy" role="1.0"><primary sortas="pattern_destroy">cairo_pattern_destroy</primary></indexterm>
@@ -1463,7 +1439,7 @@ cairo_pattern_destroy (<parameter><link linkend="cairo-pattern-t"><type>cairo_pa
 zero, then <parameter>pattern</parameter>
  and all associated resources are freed.  See
 <link linkend="cairo-pattern-reference"><function>cairo_pattern_reference()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-destroy.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1475,7 +1451,7 @@ zero, then <parameter>pattern</parameter>
 <entry role="parameter_description"><para>a <link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-pattern-status" role="function" condition="since:1.0">
 <title>cairo_pattern_status&#160;()</title>
 <indexterm zone="cairo-pattern-status" role="1.0"><primary sortas="pattern_status">cairo_pattern_status</primary></indexterm>
@@ -1483,7 +1459,7 @@ zero, then <parameter>pattern</parameter>
 cairo_pattern_status (<parameter><link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link> *pattern</parameter>);</programlisting>
 <para>Checks whether an error has previously occurred for this
 pattern.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-status.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1495,13 +1471,12 @@ pattern.</para>
 <entry role="parameter_description"><para>a <link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-pattern-status.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link>, <link linkend="CAIRO-STATUS-NO-MEMORY:CAPS"><literal>CAIRO_STATUS_NO_MEMORY</literal></link>,
 <link linkend="CAIRO-STATUS-INVALID-MATRIX:CAPS"><literal>CAIRO_STATUS_INVALID_MATRIX</literal></link>, <link linkend="CAIRO-STATUS-PATTERN-TYPE-MISMATCH:CAPS"><literal>CAIRO_STATUS_PATTERN_TYPE_MISMATCH</literal></link>,
 or <link linkend="CAIRO-STATUS-INVALID-MESH-CONSTRUCTION:CAPS"><literal>CAIRO_STATUS_INVALID_MESH_CONSTRUCTION</literal></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-pattern-set-extend" role="function" condition="since:1.0">
 <title>cairo_pattern_set_extend&#160;()</title>
 <indexterm zone="cairo-pattern-set-extend" role="1.0"><primary sortas="pattern_set_extend">cairo_pattern_set_extend</primary></indexterm>
@@ -1513,7 +1488,7 @@ See <link linkend="cairo-extend-t"><type>cairo_extend_t</type></link> for detail
 strategy.</para>
 <para>The default extend mode is <link linkend="CAIRO-EXTEND-NONE:CAPS"><literal>CAIRO_EXTEND_NONE</literal></link> for surface patterns
 and <link linkend="CAIRO-EXTEND-PAD:CAPS"><literal>CAIRO_EXTEND_PAD</literal></link> for gradient patterns.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-set-extend.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1529,7 +1504,7 @@ and <link linkend="CAIRO-EXTEND-PAD:CAPS"><literal>CAIRO_EXTEND_PAD</literal></l
 pattern will be drawn</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-pattern-get-extend" role="function" condition="since:1.0">
 <title>cairo_pattern_get_extend&#160;()</title>
 <indexterm zone="cairo-pattern-get-extend" role="1.0"><primary sortas="pattern_get_extend">cairo_pattern_get_extend</primary></indexterm>
@@ -1537,7 +1512,7 @@ pattern will be drawn</para></entry>
 cairo_pattern_get_extend (<parameter><link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link> *pattern</parameter>);</programlisting>
 <para>Gets the current extend mode for a pattern.  See <link linkend="cairo-extend-t"><type>cairo_extend_t</type></link>
 for details on the semantics of each extend strategy.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-get-extend.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1549,12 +1524,11 @@ for details on the semantics of each extend strategy.</para>
 <entry role="parameter_description"><para>a <link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-pattern-get-extend.returns" role="returns">
 <title>Returns</title>
 <para> the current extend strategy used for drawing the
 pattern.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-pattern-set-filter" role="function" condition="since:1.0">
 <title>cairo_pattern_set_filter&#160;()</title>
 <indexterm zone="cairo-pattern-set-filter" role="1.0"><primary sortas="pattern_set_filter">cairo_pattern_set_filter</primary></indexterm>
@@ -1576,7 +1550,7 @@ creates implicitly. For example:</para>
 cairo_set_source_surface (cr, image, x, y);
 cairo_pattern_set_filter (cairo_get_source (cr), CAIRO_FILTER_NEAREST);
 </programlisting></informalexample>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-set-filter.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1592,7 +1566,7 @@ cairo_pattern_set_filter (cairo_get_source (cr), CAIRO_FILTER_NEAREST);
 the pattern</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-pattern-get-filter" role="function" condition="since:1.0">
 <title>cairo_pattern_get_filter&#160;()</title>
 <indexterm zone="cairo-pattern-get-filter" role="1.0"><primary sortas="pattern_get_filter">cairo_pattern_get_filter</primary></indexterm>
@@ -1600,7 +1574,7 @@ the pattern</para></entry>
 cairo_pattern_get_filter (<parameter><link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link> *pattern</parameter>);</programlisting>
 <para>Gets the current filter for a pattern.  See <link linkend="cairo-filter-t"><type>cairo_filter_t</type></link>
 for details on each filter.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-get-filter.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1612,11 +1586,10 @@ for details on each filter.</para>
 <entry role="parameter_description"><para>a <link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-pattern-get-filter.returns" role="returns">
 <title>Returns</title>
 <para> the current filter used for resizing the pattern.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-pattern-set-matrix" role="function" condition="since:1.0">
 <title>cairo_pattern_set_matrix&#160;()</title>
 <indexterm zone="cairo-pattern-set-matrix" role="1.0"><primary sortas="pattern_set_matrix">cairo_pattern_set_matrix</primary></indexterm>
@@ -1644,7 +1617,7 @@ cairo_pattern_set_matrix (pattern, &amp;matrix);
 would cause the pattern to appear at half of its default size.</para>
 <para>Also, please note the discussion of the user-space locking
 semantics of <link linkend="cairo-set-source"><function>cairo_set_source()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-set-matrix.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1659,7 +1632,7 @@ semantics of <link linkend="cairo-set-source"><function>cairo_set_source()</func
 <entry role="parameter_description"><para>a <link linkend="cairo-matrix-t"><type>cairo_matrix_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-pattern-get-matrix" role="function" condition="since:1.0">
 <title>cairo_pattern_get_matrix&#160;()</title>
 <indexterm zone="cairo-pattern-get-matrix" role="1.0"><primary sortas="pattern_get_matrix">cairo_pattern_get_matrix</primary></indexterm>
@@ -1668,7 +1641,7 @@ cairo_pattern_get_matrix (<parameter><link linkend="cairo-pattern-t"><type>cairo
                           <parameter><link linkend="cairo-matrix-t"><type>cairo_matrix_t</type></link> *matrix</parameter>);</programlisting>
 <para>Stores the pattern's transformation matrix into <parameter>matrix</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-get-matrix.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1683,15 +1656,15 @@ cairo_pattern_get_matrix (<parameter><link linkend="cairo-pattern-t"><type>cairo
 <entry role="parameter_description"><para>return value for the matrix</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-pattern-get-type" role="function" condition="since:1.2">
 <title>cairo_pattern_get_type&#160;()</title>
 <indexterm zone="cairo-pattern-get-type" role="1.2"><primary sortas="pattern_get_type">cairo_pattern_get_type</primary></indexterm>
 <programlisting language="C"><link linkend="cairo-pattern-type-t"><returnvalue>cairo_pattern_type_t</returnvalue></link>
 cairo_pattern_get_type (<parameter><link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link> *pattern</parameter>);</programlisting>
-<para>This function returns the type a pattern.
-See <link linkend="cairo-pattern-type-t"><type>cairo_pattern_type_t</type></link> for available types.</para>
-<refsect3 role="parameters">
+<para>Get the pattern's type.  See <link linkend="cairo-pattern-type-t"><type>cairo_pattern_type_t</type></link> for available
+types.</para>
+<refsect3 id="cairo-pattern-get-type.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1703,12 +1676,11 @@ See <link linkend="cairo-pattern-type-t"><type>cairo_pattern_type_t</type></link
 <entry role="parameter_description"><para>a <link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-pattern-get-type.returns" role="returns">
 <title>Returns</title>
 <para> The type of <parameter>pattern</parameter>
 .</para>
-<para></para>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-pattern-get-reference-count" role="function" condition="since:1.4">
 <title>cairo_pattern_get_reference_count&#160;()</title>
 <indexterm zone="cairo-pattern-get-reference-count" role="1.4"><primary sortas="pattern_get_reference_count">cairo_pattern_get_reference_count</primary></indexterm>
@@ -1716,7 +1688,7 @@ See <link linkend="cairo-pattern-type-t"><type>cairo_pattern_type_t</type></link
 cairo_pattern_get_reference_count (<parameter><link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link> *pattern</parameter>);</programlisting>
 <para>Returns the current reference count of <parameter>pattern</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-get-reference-count.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1728,13 +1700,12 @@ cairo_pattern_get_reference_count (<parameter><link linkend="cairo-pattern-t"><t
 <entry role="parameter_description"><para>a <link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-pattern-get-reference-count.returns" role="returns">
 <title>Returns</title>
 <para> the current reference count of <parameter>pattern</parameter>
 .  If the
 object is a nil object, 0 will be returned.</para>
-<para></para>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 <refsect2 id="cairo-pattern-set-user-data" role="function" condition="since:1.4">
 <title>cairo_pattern_set_user_data&#160;()</title>
 <indexterm zone="cairo-pattern-set-user-data" role="1.4"><primary sortas="pattern_set_user_data">cairo_pattern_set_user_data</primary></indexterm>
@@ -1748,7 +1719,7 @@ cairo_pattern_set_user_data (<parameter><link linkend="cairo-pattern-t"><type>ca
 call this function with the key that was used to set it and <link linkend="NULL:CAPS"><literal>NULL</literal></link>
 for <parameter>data</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-set-user-data.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1771,12 +1742,11 @@ for <parameter>data</parameter>
 same key.</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-pattern-set-user-data.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> or <link linkend="CAIRO-STATUS-NO-MEMORY:CAPS"><literal>CAIRO_STATUS_NO_MEMORY</literal></link> if a
 slot could not be allocated for the user data.</para>
-<para></para>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 <refsect2 id="cairo-pattern-get-user-data" role="function" condition="since:1.4">
 <title>cairo_pattern_get_user_data&#160;()</title>
 <indexterm zone="cairo-pattern-get-user-data" role="1.4"><primary sortas="pattern_get_user_data">cairo_pattern_get_user_data</primary></indexterm>
@@ -1787,7 +1757,7 @@ cairo_pattern_get_user_data (<parameter><link linkend="cairo-pattern-t"><type>ca
  using the
 specified key.  If no user data has been attached with the given
 key this function returns <link linkend="NULL:CAPS"><literal>NULL</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-get-user-data.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1803,11 +1773,10 @@ key this function returns <link linkend="NULL:CAPS"><literal>NULL</literal></lin
 attached to</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-pattern-get-user-data.returns" role="returns">
 <title>Returns</title>
 <para> the user data previously attached or <link linkend="NULL:CAPS"><literal>NULL</literal></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-cairo-pattern-t.other_details" role="details">
@@ -1830,7 +1799,7 @@ for example <link linkend="cairo-set-source-rgb"><function>cairo_set_source_rgb(
 <para>The type of a pattern can be queried with <link linkend="cairo-pattern-get-type"><function>cairo_pattern_get_type()</function></link>.</para>
 <para>Memory management of <link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link> is done with
 <link linkend="cairo-pattern-reference"><function>cairo_pattern_reference()</function></link> and <link linkend="cairo-pattern-destroy"><function>cairo_pattern_destroy()</function></link>.</para>
-<para role="since">Since 1.0</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-extend-t" role="enum" condition="since:1.0">
 <title>enum cairo_extend_t</title>
 <indexterm zone="cairo-extend-t" role="1.0"><primary sortas="extend_t">cairo_extend_t</primary></indexterm>
@@ -1842,7 +1811,7 @@ geometry).</para>
 <para>The default extend mode is <link linkend="CAIRO-EXTEND-NONE:CAPS"><literal>CAIRO_EXTEND_NONE</literal></link> for surface patterns
 and <link linkend="CAIRO-EXTEND-PAD:CAPS"><literal>CAIRO_EXTEND_PAD</literal></link> for gradient patterns.</para>
 <para>New entries may be added in future versions.</para>
-<refsect3 role="enum_members">
+<refsect3 id="cairo-extend-t.members" role="enum_members">
 <title>Members</title>
 <informaltable role="enum_members_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1875,7 +1844,7 @@ and <link linkend="CAIRO-EXTEND-PAD:CAPS"><literal>CAIRO_EXTEND_PAD</literal></l
 <entry role="enum_member_annotations"></entry>
 </row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-filter-t" role="enum" condition="since:1.0">
 <title>enum cairo_filter_t</title>
 <indexterm zone="cairo-filter-t" role="1.0"><primary sortas="filter_t">cairo_filter_t</primary></indexterm>
@@ -1883,7 +1852,7 @@ and <link linkend="CAIRO-EXTEND-PAD:CAPS"><literal>CAIRO_EXTEND_PAD</literal></l
 applied when reading pixel values from patterns. See
 <link linkend="cairo-pattern-set-filter"><function>cairo_pattern_set_filter()</function></link> for indicating the desired filter to be
 used with a particular pattern.</para>
-<refsect3 role="enum_members">
+<refsect3 id="cairo-filter-t.members" role="enum_members">
 <title>Members</title>
 <informaltable role="enum_members_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1926,7 +1895,7 @@ used with a particular pattern.</para>
 <entry role="enum_member_annotations"></entry>
 </row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-pattern-type-t" role="enum" condition="since:1.2">
 <title>enum cairo_pattern_type_t</title>
 <indexterm zone="cairo-pattern-type-t" role="1.2"><primary sortas="pattern_type_t">cairo_pattern_type_t</primary></indexterm>
@@ -1945,7 +1914,7 @@ pattern will have no effect). A notable exception is
 gradient patterns (either LINEAR or RADIAL). Otherwise the pattern
 will be shutdown and put into an error state.</para>
 <para>New entries may be added in future versions.</para>
-<refsect3 role="enum_members">
+<refsect3 id="cairo-pattern-type-t.members" role="enum_members">
 <title>Members</title>
 <informaltable role="enum_members_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1985,7 +1954,7 @@ color. It may be opaque or translucent, since 1.2.</para>
 <entry role="enum_member_annotations"></entry>
 </row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-cairo-pattern-t.see-also">

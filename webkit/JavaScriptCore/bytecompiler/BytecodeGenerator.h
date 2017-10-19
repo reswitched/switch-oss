@@ -39,6 +39,7 @@
 #include "Interpreter.h"
 #include "ParserError.h"
 #include "RegisterID.h"
+#include "SetForScope.h"
 #include "SymbolTable.h"
 #include "Debugger.h"
 #include "Nodes.h"
@@ -75,11 +76,9 @@ namespace JSC {
         RegisterID* argumentRegister(unsigned i) { return m_argv[i + 1].get(); }
         unsigned stackOffset() { return -m_argv[0]->index() + JSStack::CallFrameHeaderSize; }
         unsigned argumentCountIncludingThis() { return m_argv.size() - m_padding; }
-        RegisterID* profileHookRegister() { return m_profileHookRegister.get(); }
         ArgumentsNode* argumentsNode() { return m_argumentsNode; }
 
     private:
-        RefPtr<RegisterID> m_profileHookRegister;
         ArgumentsNode* m_argumentsNode;
         Vector<RefPtr<RegisterID>, 8, UnsafeVectorOverflow> m_argv;
         unsigned m_padding;
@@ -161,10 +160,18 @@ namespace JSC {
         RegisterID* property() const { return m_propertyRegister.get(); }
         RegisterID* enumerator() const { return m_enumeratorRegister.get(); }
 
+        void addGetInst(unsigned instIndex, int propertyRegIndex, UnlinkedValueProfile valueProfile)
+        {
+            m_getInsts.append(std::make_tuple(instIndex, propertyRegIndex, valueProfile));
+        }
+
+        void finalize(BytecodeGenerator&);
+
     private:
         RefPtr<RegisterID> m_indexRegister;
         RefPtr<RegisterID> m_propertyRegister;
         RefPtr<RegisterID> m_enumeratorRegister;
+        Vector<std::tuple<unsigned, int, UnlinkedValueProfile>> m_getInsts;
     };
 
     class IndexedForInContext : public ForInContext {
@@ -182,8 +189,12 @@ namespace JSC {
 
         RegisterID* index() const { return m_indexRegister.get(); }
 
+        void finalize(BytecodeGenerator&);
+        void addGetInst(unsigned instIndex, int propertyIndex) { m_getInsts.append({ instIndex, propertyIndex }); }
+
     private:
         RefPtr<RegisterID> m_indexRegister;
+        Vector<std::pair<unsigned, int>> m_getInsts;
     };
 
     struct TryData {
@@ -287,9 +298,9 @@ namespace JSC {
         typedef DeclarationStacks::VarStack VarStack;
         typedef DeclarationStacks::FunctionStack FunctionStack;
 
-        BytecodeGenerator(VM&, ProgramNode*, UnlinkedProgramCodeBlock*, DebuggerMode, ProfilerMode);
-        BytecodeGenerator(VM&, FunctionNode*, UnlinkedFunctionCodeBlock*, DebuggerMode, ProfilerMode);
-        BytecodeGenerator(VM&, EvalNode*, UnlinkedEvalCodeBlock*, DebuggerMode, ProfilerMode);
+        BytecodeGenerator(VM&, ProgramNode*, UnlinkedProgramCodeBlock*, DebuggerMode);
+        BytecodeGenerator(VM&, FunctionNode*, UnlinkedFunctionCodeBlock*, DebuggerMode);
+        BytecodeGenerator(VM&, EvalNode*, UnlinkedEvalCodeBlock*, DebuggerMode);
 
         ~BytecodeGenerator();
         
@@ -375,6 +386,12 @@ namespace JSC {
 
         void emitNode(RegisterID* dst, StatementNode* n)
         {
+            SetForScope<bool> tailPositionPoisoner(m_inTailPosition, false);
+            return emitNodeInTailPosition(dst, n);
+        }
+
+        void emitNodeInTailPosition(RegisterID* dst, StatementNode* n)
+        {
             // Node::emitCode assumes that dst, if provided, is either a local or a referenced temporary.
             ASSERT(!dst || dst == ignoredResult() || !dst->isTemporary() || dst->refCount());
             if (!m_vm->isSafeToRecurse()) {
@@ -386,10 +403,21 @@ namespace JSC {
 
         void emitNode(StatementNode* n)
         {
-            emitNode(0, n);
+            emitNode(nullptr, n);
+        }
+
+        void emitNodeInTailPosition(StatementNode* n)
+        {
+            emitNodeInTailPosition(nullptr, n);
         }
 
         RegisterID* emitNode(RegisterID* dst, ExpressionNode* n)
+        {
+            SetForScope<bool> tailPositionPoisoner(m_inTailPosition, false);
+            return emitNodeInTailPosition(dst, n);
+        }
+
+        RegisterID* emitNodeInTailPosition(RegisterID* dst, ExpressionNode* n)
         {
             // Node::emitCode assumes that dst, if provided, is either a local or a referenced temporary.
             ASSERT(!dst || dst == ignoredResult() || !dst->isTemporary() || dst->refCount());
@@ -400,7 +428,12 @@ namespace JSC {
 
         RegisterID* emitNode(ExpressionNode* n)
         {
-            return emitNode(0, n);
+            return emitNode(nullptr, n);
+        }
+
+        RegisterID* emitNodeInTailPosition(ExpressionNode* n)
+        {
+            return emitNodeInTailPosition(nullptr, n);
         }
 
         void emitNodeInConditionContext(ExpressionNode* n, Label* trueTarget, Label* falseTarget, FallThroughMode fallThroughMode)
@@ -486,6 +519,8 @@ namespace JSC {
         RegisterID* emitNewFunctionInternal(RegisterID* dst, unsigned index);
         RegisterID* emitNewFunctionExpression(RegisterID* dst, FuncExprNode* func);
         RegisterID* emitNewDefaultConstructor(RegisterID* dst, ConstructorKind, const Identifier& name);
+        void emitNewFunctionCommon(RegisterID*, BaseFuncExprNode*, OpcodeID);
+        RegisterID* emitNewArrowFunctionExpression(RegisterID*, ArrowFuncExprNode*);
         RegisterID* emitNewRegExp(RegisterID* dst, RegExp*);
 
         RegisterID* emitMoveLinkTimeConstant(RegisterID* dst, LinkTimeConstant);
@@ -521,8 +556,11 @@ namespace JSC {
         
         ExpectedFunction expectedFunctionForIdentifier(const Identifier&);
         RegisterID* emitCall(RegisterID* dst, RegisterID* func, ExpectedFunction, CallArguments&, const JSTextPosition& divot, const JSTextPosition& divotStart, const JSTextPosition& divotEnd);
+        RegisterID* emitCallInTailPosition(RegisterID* dst, RegisterID* func, ExpectedFunction, CallArguments&, const JSTextPosition& divot, const JSTextPosition& divotStart, const JSTextPosition& divotEnd);
         RegisterID* emitCallEval(RegisterID* dst, RegisterID* func, CallArguments&, const JSTextPosition& divot, const JSTextPosition& divotStart, const JSTextPosition& divotEnd);
-        RegisterID* emitCallVarargs(RegisterID* dst, RegisterID* func, RegisterID* thisRegister, RegisterID* arguments, RegisterID* firstFreeRegister, int32_t firstVarArgOffset, RegisterID* profileHookRegister, const JSTextPosition& divot, const JSTextPosition& divotStart, const JSTextPosition& divotEnd);
+        RegisterID* emitCallVarargs(RegisterID* dst, RegisterID* func, RegisterID* thisRegister, RegisterID* arguments, RegisterID* firstFreeRegister, int32_t firstVarArgOffset, const JSTextPosition& divot, const JSTextPosition& divotStart, const JSTextPosition& divotEnd);
+        RegisterID* emitCallVarargsInTailPosition(RegisterID* dst, RegisterID* func, RegisterID* thisRegister, RegisterID* arguments, RegisterID* firstFreeRegister, int32_t firstVarArgOffset, const JSTextPosition& divot, const JSTextPosition& divotStart, const JSTextPosition& divotEnd);
+        RegisterID* emitCallForwardArgumentsInTailPosition(RegisterID* dst, RegisterID* func, RegisterID* thisRegister, RegisterID* firstFreeRegister, int32_t firstVarArgOffset, const JSTextPosition& divot, const JSTextPosition& divotStart, const JSTextPosition& divotEnd);
 
         enum PropertyDescriptorOption {
             PropertyConfigurable = 1,
@@ -572,6 +610,7 @@ namespace JSC {
         RegisterID* emitEnumeratorGenericPropertyName(RegisterID* dst, RegisterID* enumerator, RegisterID* index);
         RegisterID* emitToIndexString(RegisterID* dst, RegisterID* index);
 
+        RegisterID* emitIsJSArray(RegisterID* dst, RegisterID* src) { return emitUnaryOp(op_is_jsarray, dst, src); }
         RegisterID* emitIsObject(RegisterID* dst, RegisterID* src);
         RegisterID* emitIsUndefined(RegisterID* dst, RegisterID* src);
 
@@ -625,7 +664,6 @@ namespace JSC {
 
         CodeType codeType() const { return m_codeType; }
 
-        bool shouldEmitProfileHooks() { return m_shouldEmitProfileHooks; }
         bool shouldEmitDebugHooks() { return m_shouldEmitDebugHooks; }
         
         bool isStrictMode() const { return m_codeBlock->isStrictMode(); }
@@ -640,7 +678,6 @@ namespace JSC {
         void emitOpcode(OpcodeID);
         UnlinkedArrayAllocationProfile newArrayAllocationProfile();
         UnlinkedObjectAllocationProfile newObjectAllocationProfile();
-        UnlinkedArrayProfile newArrayProfile();
         UnlinkedValueProfile emitProfiledOpcode(OpcodeID);
         int kill(RegisterID* dst)
         {
@@ -654,7 +691,9 @@ namespace JSC {
         ALWAYS_INLINE void rewindBinaryOp();
         ALWAYS_INLINE void rewindUnaryOp();
 
+        void allocateCalleeSaveSpace();
         void allocateAndEmitScope();
+        RegisterID* emitLoadArrowFunctionThis(RegisterID*);
         void emitComplexPopScopes(RegisterID*, ControlFlowContext* topScope, ControlFlowContext* bottomScope);
 
         typedef HashMap<double, JSValue> NumberMap;
@@ -709,8 +748,8 @@ namespace JSC {
             return UnlinkedFunctionExecutable::create(m_vm, m_scopeNode->source(), body, isBuiltinFunction() ? UnlinkedBuiltinFunction : UnlinkedNormalFunction);
         }
 
-        RegisterID* emitConstructVarargs(RegisterID* dst, RegisterID* func, RegisterID* thisRegister, RegisterID* arguments, RegisterID* firstFreeRegister, int32_t firstVarArgOffset, RegisterID* profileHookRegister, const JSTextPosition& divot, const JSTextPosition& divotStart, const JSTextPosition& divotEnd);
-        RegisterID* emitCallVarargs(OpcodeID, RegisterID* dst, RegisterID* func, RegisterID* thisRegister, RegisterID* arguments, RegisterID* firstFreeRegister, int32_t firstVarArgOffset, RegisterID* profileHookRegister, const JSTextPosition& divot, const JSTextPosition& divotStart, const JSTextPosition& divotEnd);
+        RegisterID* emitConstructVarargs(RegisterID* dst, RegisterID* func, RegisterID* thisRegister, RegisterID* arguments, RegisterID* firstFreeRegister, int32_t firstVarArgOffset, const JSTextPosition& divot, const JSTextPosition& divotStart, const JSTextPosition& divotEnd);
+        RegisterID* emitCallVarargs(OpcodeID, RegisterID* dst, RegisterID* func, RegisterID* thisRegister, RegisterID* arguments, RegisterID* firstFreeRegister, int32_t firstVarArgOffset, const JSTextPosition& divot, const JSTextPosition& divotStart, const JSTextPosition& divotEnd);
 
     public:
         JSString* addStringConstant(const Identifier&);
@@ -746,12 +785,12 @@ namespace JSC {
         }
 
         RegisterID* emitThrowExpressionTooDeepException();
+        UnlinkedArrayProfile newArrayProfile();
 
     private:
         Vector<UnlinkedInstruction, 0, UnsafeVectorOverflow> m_instructions;
 
         bool m_shouldEmitDebugHooks;
-        bool m_shouldEmitProfileHooks;
 
         SymbolTable* m_symbolTable { nullptr };
 
@@ -772,6 +811,7 @@ namespace JSC {
         RegisterID* m_newTargetRegister { nullptr };
         RegisterID* m_linkTimeConstantRegisters[LinkTimeConstantCount];
 
+        SegmentedVector<RegisterID*, 16> m_localRegistersForCalleeSaveRegisters;
         SegmentedVector<RegisterID, 32> m_constantPoolRegisters;
         SegmentedVector<RegisterID, 32> m_calleeRegisters;
         SegmentedVector<RegisterID, 32> m_parameters;
@@ -819,6 +859,7 @@ namespace JSC {
         bool m_usesExceptions { false };
         bool m_expressionTooDeep { false };
         bool m_isBuiltinFunction { false };
+        bool m_inTailPosition { false };
     };
 
 }

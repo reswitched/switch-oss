@@ -289,7 +289,7 @@ public:
     virtual void dispatchDidStartProvisionalLoad() override { }
     virtual void dispatchDidReceiveTitle(const StringWithDirection&) override { }
     virtual void dispatchDidChangeIcons(IconType) override { }
-    virtual void dispatchDidCommitLoad() override { }
+    virtual void dispatchDidCommitLoad(Optional<HasInsecureContent>) override { }
     virtual void dispatchDidFailProvisionalLoad(const ResourceError&) override { }
     virtual void dispatchDidFailLoad(const ResourceError&) override { }
     virtual void dispatchDidFinishDocumentLoad() override { }

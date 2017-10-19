@@ -26,7 +26,7 @@
 #ifndef HysteresisActivity_h
 #define HysteresisActivity_h
 
-#include "Timer.h"
+#include <wtf/RunLoop.h>
 
 namespace WebCore {
 
@@ -46,7 +46,7 @@ public:
         : m_callback(callback)
         , m_hysteresisSeconds(hysteresisSeconds)
         , m_active(false)
-        , m_timer(*this, &HysteresisActivity::hysteresisTimerFired)
+        , m_timer(RunLoop::main(), this, &HysteresisActivity::hysteresisTimerFired)
     {
     }
 
@@ -94,7 +94,7 @@ private:
     std::function<void(HysteresisState)> m_callback;
     double m_hysteresisSeconds;
     bool m_active;
-    Timer m_timer;
+    RunLoop::Timer<HysteresisActivity> m_timer;
 };
 
 } // namespace WebCore

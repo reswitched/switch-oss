@@ -33,8 +33,11 @@
 #if ENABLE(JIT)
 namespace JSC {
 
+class CCallHelpers;
+
 MacroAssemblerCodeRef throwExceptionFromCallSlowPathGenerator(VM*);
 
+MacroAssemblerCodeRef linkCallThunk(VM*, CallLinkInfo&, CodeSpecializationKind, RegisterPreservationMode);
 MacroAssemblerCodeRef linkCallThunkGenerator(VM*);
 MacroAssemblerCodeRef linkConstructThunkGenerator(VM*);
 MacroAssemblerCodeRef linkCallThatPreservesRegsThunkGenerator(VM*);
@@ -114,6 +117,7 @@ MacroAssemblerCodeRef nativeCallGenerator(VM*);
 MacroAssemblerCodeRef nativeConstructGenerator(VM*);
 MacroAssemblerCodeRef nativeTailCallGenerator(VM*);
 MacroAssemblerCodeRef arityFixupGenerator(VM*);
+MacroAssemblerCodeRef unreachableGenerator(VM*);
 
 MacroAssemblerCodeRef baselineGetterReturnThunkGenerator(VM* vm);
 MacroAssemblerCodeRef baselineSetterReturnThunkGenerator(VM* vm);

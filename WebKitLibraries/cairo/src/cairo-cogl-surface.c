@@ -2544,7 +2544,8 @@ _cairo_cogl_surface_create_full (cairo_cogl_device_t *dev,
     _cairo_surface_init (&surface->base,
                          &_cairo_cogl_surface_backend,
                          &dev->base,
-                         CAIRO_CONTENT_COLOR_ALPHA);
+                         CAIRO_CONTENT_COLOR_ALPHA,
+			 FALSE); /* is_vector */
 
     return &surface->base;
 }

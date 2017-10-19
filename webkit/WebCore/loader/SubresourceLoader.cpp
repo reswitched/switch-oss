@@ -487,4 +487,21 @@ void SubresourceLoader::releaseResources()
     ResourceLoader::releaseResources();
 }
 
+#if PLATFORM(WKC)
+bool SubresourceLoader::shouldFailOnPartialFile()
+{
+    bool result = false;
+    switch (m_resource->type()) {
+    case CachedResource::FontResource:
+#if ENABLE(SVG_FONTS)
+    case CachedResource::SVGFontResource:
+#endif
+        result = true;
+        break;
+    default:
+        break;
+    }
+    return result;
+}
+#endif
 }

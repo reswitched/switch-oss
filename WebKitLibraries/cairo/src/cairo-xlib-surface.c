@@ -189,12 +189,6 @@ _cairo_surface_is_xlib (cairo_surface_t *surface);
 
 #define CAIRO_ASSUME_PIXMAP	20
 
-static const XTransform identity = { {
-    { 1 << 16, 0x00000, 0x00000 },
-    { 0x00000, 1 << 16, 0x00000 },
-    { 0x00000, 0x00000, 1 << 16 },
-} };
-
 static Visual *
 _visual_for_xrender_format(Screen *screen,
 			   XRenderPictFormat *xrender_format)
@@ -793,6 +787,7 @@ _get_image_surface (cairo_xlib_surface_t    *surface,
 
 	    _cairo_xlib_shm_surface_get_ximage (&image->base, &shm_image);
 
+	    XSync (display->display, False);
 	    old_handler = XSetErrorHandler (_noop_error_handler);
 	    success = XShmGetImage (display->display,
 				    surface->drawable,
@@ -807,12 +802,14 @@ _get_image_surface (cairo_xlib_surface_t    *surface,
 	    }
 
 	    cairo_surface_destroy (&image->base);
+	    image = NULL;
 	}
     }
 
     if (surface->use_pixmap == 0) {
 	cairo_xlib_error_func_t old_handler;
 
+	XSync (display->display, False);
 	old_handler = XSetErrorHandler (_noop_error_handler);
 
 	ximage = XGetImage (display->display,
@@ -1011,7 +1008,8 @@ _get_image_surface (cairo_xlib_surface_t    *surface,
     cairo_device_release (&display->base);
 
     if (unlikely (status)) {
-	cairo_surface_destroy (&image->base);
+	if (image)
+	    cairo_surface_destroy (&image->base);
 	return _cairo_surface_create_in_error (status);
     }
 
@@ -1796,7 +1794,8 @@ found:
     _cairo_surface_init (&surface->base,
 			 &cairo_xlib_surface_backend,
 			 screen->device,
-			 _xrender_format_to_content (xrender_format));
+			 _xrender_format_to_content (xrender_format),
+			 FALSE); /* is_vector */
 
     surface->screen = screen;
     surface->compositor = display->compositor;

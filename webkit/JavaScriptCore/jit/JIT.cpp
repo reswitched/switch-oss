@@ -29,7 +29,6 @@
 
 #include "JIT.h"
 
-#include "ArityCheckFailReturnThunks.h"
 #include "CodeBlock.h"
 #include "CodeBlockWithJITType.h"
 #include "DFGCapabilities.h"
@@ -97,6 +96,9 @@ void JIT::emitEnterOptimizationCheck()
     
     skipOptimize.append(branchAdd32(Signed, TrustedImm32(Options::executionCounterIncrementForEntry()), AbsoluteAddress(m_codeBlock->addressOfJITExecuteCounter())));
     ASSERT(!m_bytecodeOffset);
+
+    copyCalleeSavesFromFrameOrRegisterToVMCalleeSavesBuffer();
+
     callOperation(operationOptimize, m_bytecodeOffset);
     skipOptimize.append(branchTestPtr(Zero, returnValueGPR));
     move(returnValueGPR2, stackPointerRegister);
@@ -202,8 +204,11 @@ void JIT::privateCompileMainPass()
         DEFINE_OP(op_bitor)
         DEFINE_OP(op_bitxor)
         DEFINE_OP(op_call)
+        DEFINE_OP(op_tail_call)
         DEFINE_OP(op_call_eval)
         DEFINE_OP(op_call_varargs)
+        DEFINE_OP(op_tail_call_varargs)
+        DEFINE_OP(op_tail_call_forward_arguments)
         DEFINE_OP(op_construct_varargs)
         DEFINE_OP(op_catch)
         DEFINE_OP(op_construct)
@@ -220,6 +225,7 @@ void JIT::privateCompileMainPass()
         DEFINE_OP(op_enter)
         DEFINE_OP(op_create_lexical_environment)
         DEFINE_OP(op_get_scope)
+        DEFINE_OP(op_load_arrowfunction_this)
         DEFINE_OP(op_eq)
         DEFINE_OP(op_eq_null)
         case op_get_by_id_out_of_line:
@@ -232,6 +238,7 @@ void JIT::privateCompileMainPass()
         DEFINE_OP(op_is_boolean)
         DEFINE_OP(op_is_number)
         DEFINE_OP(op_is_string)
+        DEFINE_OP(op_is_jsarray)
         DEFINE_OP(op_is_object)
         DEFINE_OP(op_jeq_null)
         DEFINE_OP(op_jfalse)
@@ -260,6 +267,7 @@ void JIT::privateCompileMainPass()
         DEFINE_OP(op_new_array_buffer)
         DEFINE_OP(op_new_func)
         DEFINE_OP(op_new_func_exp)
+        DEFINE_OP(op_new_arrow_func_exp) 
         DEFINE_OP(op_new_object)
         DEFINE_OP(op_new_regexp)
         DEFINE_OP(op_not)
@@ -267,8 +275,6 @@ void JIT::privateCompileMainPass()
         DEFINE_OP(op_pop_scope)
         DEFINE_OP(op_dec)
         DEFINE_OP(op_inc)
-        DEFINE_OP(op_profile_did_call)
-        DEFINE_OP(op_profile_will_call)
         DEFINE_OP(op_profile_type)
         DEFINE_OP(op_profile_control_flow)
         DEFINE_OP(op_push_name_scope)
@@ -327,6 +333,7 @@ void JIT::privateCompileMainPass()
 
     RELEASE_ASSERT(m_callLinkInfoIndex == m_callCompilationInfo.size());
 
+        DEFINE_OP(op_nop)
 #ifndef NDEBUG
     // Reset this, in order to guard its use with ASSERTs.
     m_bytecodeOffset = std::numeric_limits<unsigned>::max();
@@ -382,8 +389,11 @@ void JIT::privateCompileSlowCases()
         DEFINE_SLOWCASE_OP(op_bitor)
         DEFINE_SLOWCASE_OP(op_bitxor)
         DEFINE_SLOWCASE_OP(op_call)
+        DEFINE_SLOWCASE_OP(op_tail_call)
         DEFINE_SLOWCASE_OP(op_call_eval)
         DEFINE_SLOWCASE_OP(op_call_varargs)
+        DEFINE_SLOWCASE_OP(op_tail_call_varargs)
+        DEFINE_SLOWCASE_OP(op_tail_call_forward_arguments)
         DEFINE_SLOWCASE_OP(op_construct_varargs)
         DEFINE_SLOWCASE_OP(op_construct)
         DEFINE_SLOWCASE_OP(op_to_this)
@@ -498,11 +508,13 @@ CompilationResult JIT::privateCompile(JITCompilationEffort effort)
         break;
     }
 
+    m_codeBlock->setCalleeSaveRegisters(RegisterSet::llintBaselineCalleeSaveRegisters()); // Might be able to remove as this is probably already set to this value.
+
     // This ensures that we have the most up to date type information when performing typecheck optimizations for op_profile_type.
     if (m_vm->typeProfiler())
         m_vm->typeProfilerLog()->processLogEntries(ASCIILiteral("Preparing for JIT compilation."));
     
-    if (Options::showDisassembly() || m_vm->m_perBytecodeProfiler)
+    if (Options::dumpDisassembly() || m_vm->m_perBytecodeProfiler)
         m_disassembler = std::make_unique<JITDisassembler>(m_codeBlock);
     if (m_vm->m_perBytecodeProfiler) {
         m_compilation = adoptRef(
@@ -555,6 +567,9 @@ CompilationResult JIT::privateCompile(JITCompilationEffort effort)
     move(regT1, stackPointerRegister);
     checkStackPointerAlignment();
 
+    emitSaveCalleeSaves();
+    emitMaterializeTagCheckRegisters();
+
     privateCompileMainPass();
     privateCompileLinkPass();
     privateCompileSlowCases();
@@ -585,19 +600,8 @@ CompilationResult JIT::privateCompile(JITCompilationEffort effort)
         callOperationWithCallFrameRollbackOnException(m_codeBlock->m_isConstructor ? operationConstructArityCheck : operationCallArityCheck);
         if (maxFrameExtentForSlowPathCall)
             addPtr(TrustedImm32(maxFrameExtentForSlowPathCall), stackPointerRegister);
-        if (returnValueGPR != regT0)
-            move(returnValueGPR, regT0);
-        branchTest32(Zero, regT0).linkTo(beginLabel, this);
-        GPRReg thunkReg;
-#if USE(JSVALUE64)
-        thunkReg = GPRInfo::regT7;
-#else
-        thunkReg = GPRInfo::regT5;
-#endif
-        CodeLocationLabel* failThunkLabels =
-            m_vm->arityCheckFailReturnThunks->returnPCsFor(*m_vm, m_codeBlock->numParameters());
-        move(TrustedImmPtr(failThunkLabels), thunkReg);
-        loadPtr(BaseIndex(thunkReg, regT0, timesPtr()), thunkReg);
+        branchTest32(Zero, returnValueGPR).linkTo(beginLabel, this);
+        move(returnValueGPR, GPRInfo::argumentGPR0);
         emitNakedCall(m_vm->getCTIStub(arityFixupGenerator).code());
 
 #if !ASSERT_DISABLED
@@ -708,7 +712,7 @@ CompilationResult JIT::privateCompile(JITCompilationEffort effort)
     if (m_codeBlock->codeType() == FunctionCode)
         withArityCheck = patchBuffer.locationOf(arityCheck);
 
-    if (Options::showDisassembly()) {
+    if (Options::dumpDisassembly()) {
         m_disassembler->dump(patchBuffer);
         patchBuffer.didAlreadyDisassemble();
     }
@@ -741,6 +745,8 @@ void JIT::privateCompileExceptionHandlers()
     if (!m_exceptionChecksWithCallFrameRollback.empty()) {
         m_exceptionChecksWithCallFrameRollback.link(this);
 
+        copyCalleeSavesToVMCalleeSavesBuffer();
+
         // lookupExceptionHandlerFromCallerFrame is passed two arguments, the VM and the exec (the CallFrame*).
 
         move(TrustedImmPtr(vm()), GPRInfo::argumentGPR0);
@@ -758,6 +764,8 @@ void JIT::privateCompileExceptionHandlers()
     if (!m_exceptionChecks.empty() || m_byValCompilationInfo.size()) {
         m_exceptionHandler = label();
         m_exceptionChecks.link(this);
+
+        copyCalleeSavesToVMCalleeSavesBuffer();
 
         // lookupExceptionHandler is passed two arguments, the VM and the exec (the CallFrame*).
         move(TrustedImmPtr(vm()), GPRInfo::argumentGPR0);

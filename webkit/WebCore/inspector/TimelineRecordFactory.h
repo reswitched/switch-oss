@@ -37,10 +37,6 @@
 #include <wtf/Forward.h>
 #include <wtf/text/WTFString.h>
 
-namespace JSC {
-class Profile;
-}
-
 namespace Inspector {
 struct ScriptBreakpointAction;
 }
@@ -88,8 +84,6 @@ namespace WebCore {
         static Ref<Inspector::InspectorObject> createPaintData(const FloatQuad&);
 
         static void appendLayoutRoot(Inspector::InspectorObject* data, const FloatQuad&);
-
-        static void appendProfile(Inspector::InspectorObject*, RefPtr<JSC::Profile>&&);
 
 #if ENABLE(WEB_SOCKETS)
         static inline Ref<Inspector::InspectorObject> createWebSocketCreateData(unsigned long identifier, const URL& url, const String& protocol)

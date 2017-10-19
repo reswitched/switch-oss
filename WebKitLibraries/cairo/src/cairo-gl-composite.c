@@ -174,7 +174,7 @@ _cairo_gl_texture_set_extend (cairo_gl_context_t *ctx,
 
     switch (extend) {
     case CAIRO_EXTEND_NONE:
-	if (ctx->gl_flavor == CAIRO_GL_FLAVOR_ES)
+	if (ctx->gl_flavor == CAIRO_GL_FLAVOR_ES2)
 	    wrap_mode = GL_CLAMP_TO_EDGE;
 	else
 	    wrap_mode = GL_CLAMP_TO_BORDER;

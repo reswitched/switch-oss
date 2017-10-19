@@ -136,15 +136,16 @@ preamble (cairo_test_context_t *ctx)
     }
     surface1 = cairo_image_surface_create_from_png (filename);
     status = cairo_surface_status (surface1);
-    free (filename);
     if (status) {
 	cairo_test_log (ctx, "Error reading '%s': %s\n",
 			filename, cairo_status_to_string (status));
+	free (filename);
 
 	cairo_surface_destroy (surface1);
 	cairo_surface_destroy (surface0);
 	return cairo_test_status_from_status (ctx, status);
     }
+    free (filename);
 
     if (! image_surface_equals (surface0, surface1)) {
 	cairo_test_log (ctx, "Error surface mismatch.\n");

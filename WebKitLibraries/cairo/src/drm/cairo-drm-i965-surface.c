@@ -48,7 +48,6 @@
 #include "cairoint.h"
 
 #include "cairo-drm-private.h"
-#include "cairo-drm-ioctl-private.h"
 #include "cairo-drm-intel-private.h"
 #include "cairo-drm-intel-command-private.h"
 #include "cairo-drm-intel-ioctl-private.h"

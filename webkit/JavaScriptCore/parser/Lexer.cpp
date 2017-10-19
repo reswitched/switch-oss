@@ -499,7 +499,7 @@ static const LChar singleCharacterEscapeValuesForASCII[128] = {
 
 template <typename T>
 Lexer<T>::Lexer(VM* vm, JSParserBuiltinMode builtinMode)
-    : m_isReparsing(false)
+    : m_isReparsingFunction(false)
     , m_vm(vm)
     , m_parsingBuiltinFunction(builtinMode == JSParserBuiltinMode::Builtin)
 {
@@ -594,7 +594,7 @@ void Lexer<T>::setCode(const SourceCode& source, ParserArena* arena)
     m_sourceMappingURLDirective = String();
     
     m_buffer8.reserveInitialCapacity(initialReadBufferCapacity);
-    m_buffer16.reserveInitialCapacity((m_codeEnd - m_code) / 2);
+    m_buffer16.reserveInitialCapacity(initialReadBufferCapacity);
     m_bufferForRawTemplateString16.reserveInitialCapacity(initialReadBufferCapacity);
     
     if (LIKELY(m_code < m_codeEnd))
@@ -1802,7 +1802,6 @@ bool Lexer<T>::nextTokenIsColon()
     return code < m_codeEnd && *code == ':';
 }
 
-#if ENABLE(ES6_ARROWFUNCTION_SYNTAX)
 template <typename T>
 void Lexer<T>::setTokenPosition(JSToken* tokenRecord)
 {
@@ -1812,7 +1811,6 @@ void Lexer<T>::setTokenPosition(JSToken* tokenRecord)
     tokenData->lineStartOffset = currentLineStartOffset();
     ASSERT(tokenData->offset >= tokenData->lineStartOffset);
 }
-#endif
 
 template <typename T>
 JSTokenType Lexer<T>::lex(JSToken* tokenRecord, unsigned lexerFlags, bool strictMode)
@@ -2506,7 +2504,7 @@ void Lexer<T>::clear()
     Vector<UChar> newBufferForRawTemplateString16;
     m_bufferForRawTemplateString16.swap(newBufferForRawTemplateString16);
 
-    m_isReparsing = false;
+    m_isReparsingFunction = false;
 }
 
 // Instantiate the two flavors of Lexer we need instead of putting most of this file in Lexer.h

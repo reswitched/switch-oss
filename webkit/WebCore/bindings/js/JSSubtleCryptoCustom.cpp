@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
+ * Copyright (c) 2017 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -606,6 +607,17 @@ JSValue JSSubtleCrypto::importKey(ExecState* exec)
         }
     }
 
+#if PLATFORM(WKC)
+    // If data has been already freed, return undefined.
+    // This is a workaround instead of https://trac.webkit.org/changeset/216992/webkit.
+    if (!cryptoOperationDataFromJSValue(exec, exec->uncheckedArgument(1), data)) {
+        ASSERT(exec->hadException());
+        return jsUndefined();
+    }
+    if (!data.first)
+        return jsUndefined();
+#endif
+
     JSPromiseDeferred* promiseDeferred = JSPromiseDeferred::create(exec, globalObject());
     DeferredWrapper wrapper(exec, globalObject(), promiseDeferred);
 #if !PLATFORM(WKC)
@@ -928,7 +940,7 @@ JSValue JSSubtleCrypto::unwrapKey(ExecState* exec)
             wrapper.reject(nullptr);
         }
     });
-    std::function<void()> decryptFailureCallback(std::allocator_arg, WTF::voidFuncAllocator(), [wrapper, unwrappedKeyAlgorithmPtr, unwrappedKeyAlgorithmParametersPtr]() mutable {
+    std::function<void()> decryptFailureCallback(std::allocator_arg, WTF::voidFuncAllocator(), [wrapper, &unwrappedKeyAlgorithmPtr, &unwrappedKeyAlgorithmParametersPtr]() mutable {
         delete unwrappedKeyAlgorithmPtr;
         delete unwrappedKeyAlgorithmParametersPtr;
         unwrappedKeyAlgorithmPtr = nullptr;

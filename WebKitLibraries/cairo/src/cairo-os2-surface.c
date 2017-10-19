@@ -780,7 +780,8 @@ cairo_os2_surface_create (HPS hps_client_window,
     _cairo_surface_init (&local_os2_surface->base,
                          &cairo_os2_surface_backend,
                          NULL, /* device */
-                         _cairo_content_from_format (CAIRO_FORMAT_ARGB32));
+                         _cairo_content_from_format (CAIRO_FORMAT_ARGB32),
+			 FALSE); /* is_vector */
 
     /* Successful exit */
     return (cairo_surface_t *)local_os2_surface;

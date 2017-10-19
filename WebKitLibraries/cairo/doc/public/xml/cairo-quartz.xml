@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-Quartz-Surfaces.top_of_page">Quartz Surfaces</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>Quartz Surfaces</refname>
@@ -47,11 +45,6 @@
 </tgroup>
 </informaltable>
 </refsect1>
-<refsect1 id="cairo-Quartz-Surfaces.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
-</refsect1>
 
 
 <refsect1 id="cairo-Quartz-Surfaces.description" role="desc">
@@ -73,7 +66,7 @@ cairo_quartz_surface_create (<parameter><link linkend="cairo-format-t"><type>cai
 created using the Device RGB (or Device Gray, for A8) color space.
 All Cairo operations, including those that require software
 rendering, will succeed on this surface.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-quartz-surface-create.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -91,11 +84,10 @@ rendering, will succeed on this surface.</para>
 <entry role="parameter_description"><para>height of the surface, in pixels</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-quartz-surface-create.returns" role="returns">
 <title>Returns</title>
 <para> the newly created surface.</para>
-<para></para>
-</refsect3><para role="since">Since 1.6</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.6">1.6</link></para></refsect2>
 <refsect2 id="cairo-quartz-surface-create-for-cg-context" role="function" condition="since:1.6">
 <title>cairo_quartz_surface_create_for_cg_context&#160;()</title>
 <indexterm zone="cairo-quartz-surface-create-for-cg-context" role="1.6"><primary sortas="quartz_surface_create_for_cg_context">cairo_quartz_surface_create_for_cg_context</primary></indexterm>
@@ -117,7 +109,7 @@ CGContextScaleCTM (cgContext, 1.0, -1.0);
 </programlisting></informalexample>
 <para>All Cairo operations are implemented in terms of Quartz operations,
 as long as Quartz-compatible elements are used (such as Quartz fonts).</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-quartz-surface-create-for-cg-context.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -135,11 +127,10 @@ as long as Quartz-compatible elements are used (such as Quartz fonts).</para>
 <entry role="parameter_description"><para>height of the surface, in pixels</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-quartz-surface-create-for-cg-context.returns" role="returns">
 <title>Returns</title>
 <para> the newly created Cairo surface.</para>
-<para></para>
-</refsect3><para role="since">Since 1.6</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.6">1.6</link></para></refsect2>
 <refsect2 id="cairo-quartz-surface-get-cg-context" role="function" condition="since:1.6">
 <title>cairo_quartz_surface_get_cg_context&#160;()</title>
 <indexterm zone="cairo-quartz-surface-get-cg-context" role="1.6"><primary sortas="quartz_surface_get_cg_context">cairo_quartz_surface_get_cg_context</primary></indexterm>
@@ -153,7 +144,7 @@ finished and to restore any temporary modification cairo has made
 to its state. A call to <link linkend="cairo-surface-mark-dirty"><function>cairo_surface_mark_dirty()</function></link> is required
 after the state or the content of the CGContextRef has been
 modified.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-quartz-surface-get-cg-context.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -165,11 +156,10 @@ modified.</para>
 <entry role="parameter_description"><para>the Cairo Quartz surface</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-quartz-surface-get-cg-context.returns" role="returns">
 <title>Returns</title>
 <para> the CGContextRef for the given surface.</para>
-<para></para>
-</refsect3><para role="since">Since 1.6</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.6">1.6</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-Quartz-Surfaces.other_details" role="details">
@@ -181,7 +171,7 @@ modified.</para>
 </programlisting>
 <para>Defined if the Quartz surface backend is available.
 This macro can be used to conditionally compile backend-specific code.</para>
-<para role="since">Since 1.6</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.6">1.6</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-Quartz-Surfaces.see-also">

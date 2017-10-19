@@ -49,7 +49,7 @@ COMPILE_TIME_ASSERT (CAIRO_INT_STATUS_LAST_STATUS <= 127);
  * @Title: Error handling
  * @Short_Description: Decoding cairo's status
  * @See_Also: cairo_status(), cairo_surface_status(), cairo_pattern_status(),
- *            cairo_font_face_status(), cairo_scaled_font_status(), 
+ *            cairo_font_face_status(), cairo_scaled_font_status(),
  *            cairo_region_status()
  *
  * Cairo uses a single status type to represent all kinds of errors.  A status
@@ -158,6 +158,14 @@ cairo_status_to_string (cairo_status_t status)
 	return "the target device has been finished";
     case CAIRO_STATUS_JBIG2_GLOBAL_MISSING:
 	return "CAIRO_MIME_TYPE_JBIG2_GLOBAL_ID used but no CAIRO_MIME_TYPE_JBIG2_GLOBAL data provided";
+    case CAIRO_STATUS_PNG_ERROR:
+	return "error occurred in libpng while reading from or writing to a PNG file";
+    case CAIRO_STATUS_FREETYPE_ERROR:
+	return "error occurred in libfreetype";
+    case CAIRO_STATUS_WIN32_GDI_ERROR:
+	return "error occurred in the Windows Graphics Device Interface";
+    case CAIRO_STATUS_TAG_ERROR:
+	return "invalid tag name, attributes, or nesting";
     default:
     case CAIRO_STATUS_LAST_STATUS:
 	return "<unknown error status>";

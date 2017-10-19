@@ -479,11 +479,12 @@ void CachedImage::destroyDecodedData()
         m_image->destroyDecodedData();
 }
 
-void CachedImage::decodedSizeChanged(const Image* image, int delta)
+void CachedImage::decodedSizeChanged(const Image* image, long long delta)
 {
     if (!image || image != m_image)
         return;
-    
+
+    ASSERT(delta >= 0 || decodedSize() + delta >= 0);
     setDecodedSize(static_cast<unsigned>(decodedSize() + delta));
 }
 

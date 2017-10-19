@@ -188,6 +188,10 @@ public:
     bool hasShapeOutside() const { return false; }
 #endif
 
+    void registerForVisibleInViewportCallback();
+    void unregisterForVisibleInViewportCallback();
+    void visibleInViewportStateChanged(VisibleInViewportState);
+
     bool repaintForPausedImageAnimationsIfNeeded(const IntRect& visibleRect);
     bool hasPausedImageAnimations() const { return m_hasPausedImageAnimations; }
     void setHasPausedImageAnimations(bool b) { m_hasPausedImageAnimations = b; }
@@ -204,6 +208,10 @@ public:
     void setIsCSSAnimating(bool b) { m_isCSSAnimating = b; }
     
     const RenderElement* enclosingRendererWithTextDecoration(TextDecoration, bool firstLine) const;
+
+    // NOTE: hasContinuation() is moved from protected to apply Webkit r207926 patch.
+    bool hasContinuation() const { return m_hasContinuation; }
+
 
 protected:
     enum BaseTypeFlags {
@@ -241,7 +249,6 @@ protected:
     bool renderInlineAlwaysCreatesLineBoxes() const { return m_renderInlineAlwaysCreatesLineBoxes; }
 
     void setHasContinuation(bool b) { m_hasContinuation = b; }
-    bool hasContinuation() const { return m_hasContinuation; }
 
     static bool hasControlStatesForRenderer(const RenderObject*);
     static ControlStates* controlStatesForRenderer(const RenderObject*);
@@ -314,6 +321,8 @@ private:
     unsigned m_renderBlockHasBorderOrPaddingLogicalWidthChanged : 1;
     unsigned m_renderBlockFlowHasMarkupTruncation : 1;
     unsigned m_renderBlockFlowLineLayoutPath : 2;
+
+    VisibleInViewportState m_visibleInViewportState { VisibilityUnknown };
 
     RenderObject* m_firstChild;
     RenderObject* m_lastChild;

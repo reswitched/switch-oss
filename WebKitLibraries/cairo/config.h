@@ -76,6 +76,9 @@
 /* Define to 1 if you have the `ctime_r' function. */
 #undef HAVE_CTIME_R
 
+/* Enable if your compiler supports the GCC __atomic_* atomic primitives */
+#undef HAVE_CXX11_ATOMIC_PRIMITIVES
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
@@ -108,6 +111,9 @@
 
 /* Define to 1 if you have the `fork' function. */
 #undef HAVE_FORK
+
+/* Define to 1 if you have the `FT_Get_X11_Font_Format' function. */
+#undef HAVE_FT_GET_X11_FONT_FORMAT
 
 /* Define to 1 if you have the `FT_GlyphSlot_Embolden' function. */
 #undef HAVE_FT_GLYPHSLOT_EMBOLDEN
@@ -195,7 +201,7 @@
 #undef HAVE_SIGNAL_H
 
 /* Define to 1 if you have the <stdint.h> header file. */
-/* #undef HAVE_STDINT_H */
+// #undef HAVE_STDINT_H
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #define HAVE_STDLIB_H 1
@@ -211,6 +217,9 @@
 
 /* Define to 1 if you have the <sys/int_types.h> header file. */
 #undef HAVE_SYS_INT_TYPES_H
+
+/* Define to 1 if you have the <sys/ioctl.h> header file. */
+#undef HAVE_SYS_IOCTL_H
 
 /* Define to 1 if you have the <sys/mman.h> header file. */
 #undef HAVE_SYS_MMAN_H
@@ -260,6 +269,15 @@
 /* Define to 1 if you have the <windows.h> header file. */
 #undef HAVE_WINDOWS_H
 
+/* Define to 1 if you have the <X11/extensions/shmproto.h> header file. */
+#undef HAVE_X11_EXTENSIONS_SHMPROTO_H
+
+/* Define to 1 if you have the <X11/extensions/shmstr.h> header file. */
+#undef HAVE_X11_EXTENSIONS_SHMSTR_H
+
+/* Define to 1 if you have the <X11/extensions/XShm.h> header file. */
+#undef HAVE_X11_EXTENSIONS_XSHM_H
+
 /* Define to 1 if you have the `XRenderCreateConicalGradient' function. */
 #undef HAVE_XRENDERCREATECONICALGRADIENT
 
@@ -269,14 +287,19 @@
 /* Define to 1 if you have the `XRenderCreateRadialGradient' function. */
 #undef HAVE_XRENDERCREATERADIALGRADIENT
 
+/* Define to 1 if you have the `XRenderCreateSolidFill' function. */
+#undef HAVE_XRENDERCREATESOLIDFILL
+
 /* Define to 1 if you have zlib available */
 #define HAVE_ZLIB 1
 
 /* Define to 1 if the system has the type `__uint128_t'. */
 #undef HAVE___UINT128_T
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to 1 if shared memory segments are released deferred. */
+#undef IPC_RMID_DEFERRED_RELEASE
+
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #undef LT_OBJDIR
 
 /* Define to 1 if your C compiler doesn't accept -c and -o together. */
@@ -298,7 +321,7 @@
 #define PACKAGE_URL
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION ""
+#define PACKAGE_VERSION "1.15.6"
 
 /* Shared library file extension */
 #define SHARED_LIB_EXT ".so"

@@ -207,7 +207,7 @@ InspectorClientWKC::inspectorWindowObjectCleared()
 {
 }
 
-WebCore::InspectorFrontendChannel*
+Inspector::FrontendChannel*
 InspectorClientWKC::openInspectorFrontend(WebCore::InspectorController *)
 {
     return 0;

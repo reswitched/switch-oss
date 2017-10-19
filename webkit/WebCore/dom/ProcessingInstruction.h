@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2000 Peter Kelly (pmk@post.com)
- * Copyright (C) 2006 Apple Inc. All rights reserved.
+ * Copyright (C) 2006-2017 Apple Inc. All rights reserved.
  * Copyright (C) 2013 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -58,7 +58,7 @@ private:
 
     virtual String nodeName() const override;
     virtual NodeType nodeType() const override;
-    virtual RefPtr<Node> cloneNodeInternal(Document&, CloningOperation) override;
+    virtual Ref<Node> cloneNodeInternal(Document&, CloningOperation) override;
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode&) override;
     virtual void removedFrom(ContainerNode&) override;
@@ -89,6 +89,7 @@ private:
 #if ENABLE(XSLT)
     bool m_isXSL;
 #endif
+    bool m_isHandlingBeforeLoad { false };
 };
 
 } // namespace WebCore

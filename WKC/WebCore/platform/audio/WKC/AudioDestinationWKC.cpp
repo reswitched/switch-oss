@@ -126,6 +126,10 @@ AudioDestinationWKC::setFormat(size_t numberOfChannels, float sampleRate)
 void
 AudioDestinationWKC::start()
 {
+    if (m_peer) {
+        return;
+    }
+
     m_peer = wkcAudioOpenPeer(wkcAudioPreferredSampleRatePeer(), 16, 2, 0);
 
     if (!m_peer) {

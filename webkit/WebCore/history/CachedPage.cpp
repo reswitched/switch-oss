@@ -38,6 +38,7 @@
 #include "PageTransitionEvent.h"
 #include "Settings.h"
 #include "VisitedLinkState.h"
+#include "NoEventDispatchAssertion.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/RefCountedLeakCounter.h>
 #include <wtf/StdLibExtras.h>

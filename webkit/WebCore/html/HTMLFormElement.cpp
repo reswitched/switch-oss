@@ -77,7 +77,7 @@ HTMLFormElement::~HTMLFormElement()
 {
     document().formController().willDeleteForm(this);
     if (!shouldAutocomplete())
-        document().unregisterForPageCacheSuspensionCallbacks(this);
+        document().unregisterForDocumentSuspensionCallbacks(this);
 
     for (unsigned i = 0; i < m_associatedElements.size(); ++i)
         m_associatedElements[i]->formWillBeDestroyed();
@@ -506,9 +506,9 @@ void HTMLFormElement::parseAttribute(const QualifiedName& name, const AtomicStri
         m_attributes.setAcceptCharset(value);
     else if (name == autocompleteAttr) {
         if (!shouldAutocomplete())
-            document().registerForPageCacheSuspensionCallbacks(this);
+            document().registerForDocumentSuspensionCallbacks(this);
         else
-            document().unregisterForPageCacheSuspensionCallbacks(this);
+            document().unregisterForDocumentSuspensionCallbacks(this);
     } else
         HTMLElement::parseAttribute(name, value);
 }
@@ -554,8 +554,9 @@ unsigned HTMLFormElement::formElementIndex(FormAssociatedElement* associatedElem
 
     // Treats separately the case where this element has the form attribute
     // for performance consideration.
-    if (associatedHTMLElement.fastHasAttribute(formAttr)) {
+    if (associatedHTMLElement.fastHasAttribute(formAttr) && associatedHTMLElement.inDocument()) {
         unsigned short position = compareDocumentPosition(&associatedHTMLElement);
+        ASSERT_WITH_SECURITY_IMPLICATION(!(position & DOCUMENT_POSITION_DISCONNECTED));
         if (position & DOCUMENT_POSITION_PRECEDING) {
             ++m_associatedElementsBeforeIndex;
             ++m_associatedElementsAfterIndex;
@@ -824,7 +825,7 @@ Vector<Ref<Element>> HTMLFormElement::namedElements(const AtomicString& name)
     return namedItems;
 }
 
-void HTMLFormElement::documentDidResumeFromPageCache()
+void HTMLFormElement::resumeFromDocumentSuspension()
 {
     ASSERT(!shouldAutocomplete());
 
@@ -837,8 +838,8 @@ void HTMLFormElement::didMoveToNewDocument(Document* oldDocument)
 {
     if (!shouldAutocomplete()) {
         if (oldDocument)
-            oldDocument->unregisterForPageCacheSuspensionCallbacks(this);
-        document().registerForPageCacheSuspensionCallbacks(this);
+            oldDocument->unregisterForDocumentSuspensionCallbacks(this);
+        document().registerForDocumentSuspensionCallbacks(this);
     }
 
     HTMLElement::didMoveToNewDocument(oldDocument);

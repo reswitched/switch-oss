@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007, 2008, 2009, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2007-2017 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -195,12 +195,18 @@ template<typename CharType> inline bool isASCIIAlphaCaselessEqual(CharType cssCh
     return LIKELY(toASCIILowerUnchecked(cssCharacter) == character);
 }
 
+template<typename CharacterType> inline bool isASCIIDigitOrPunctuation(CharacterType charCode)
+{
+    return (charCode >= '!' && charCode <= '@') || (charCode >= '[' && charCode <= '`') || (charCode >= '{' && charCode <= '~');
+}
+
 }
 
 using WTF::isASCII;
 using WTF::isASCIIAlpha;
 using WTF::isASCIIAlphanumeric;
 using WTF::isASCIIDigit;
+using WTF::isASCIIDigitOrPunctuation;
 using WTF::isASCIIHexDigit;
 using WTF::isASCIILower;
 using WTF::isASCIIBinaryDigit;

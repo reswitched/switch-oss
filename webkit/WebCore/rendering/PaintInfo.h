@@ -55,7 +55,8 @@ public:
 #endif
     PaintInfo(GraphicsContext* newContext, const LayoutRect& newRect, PaintPhase newPhase, PaintBehavior newPaintBehavior,
         RenderObject* newSubtreePaintRoot = nullptr, ListHashSet<RenderInline*>* newOutlineObjects = nullptr,
-        OverlapTestRequestMap* overlapTestRequests = nullptr, const RenderLayerModelObject* newPaintContainer = nullptr)
+        OverlapTestRequestMap* overlapTestRequests = nullptr, const RenderLayerModelObject* newPaintContainer = nullptr,
+        bool newRequireSecurityOriginAccessForWidgets = false)
             : context(newContext)
             , rect(newRect)
             , phase(newPhase)
@@ -63,6 +64,7 @@ public:
             , subtreePaintRoot(newSubtreePaintRoot)
             , outlineObjects(newOutlineObjects)
             , overlapTestRequests(overlapTestRequests)
+            , requireSecurityOriginAccessForWidgets(newRequireSecurityOriginAccessForWidgets)
             , paintContainer(newPaintContainer)
     {
     }
@@ -115,6 +117,7 @@ public:
     ListHashSet<RenderInline*>* outlineObjects; // used to list outlines that should be painted by a block with inline children
     OverlapTestRequestMap* overlapTestRequests;
     const RenderLayerModelObject* paintContainer; // the layer object that originates the current painting
+    bool requireSecurityOriginAccessForWidgets{ false };
 };
 
 } // namespace WebCore

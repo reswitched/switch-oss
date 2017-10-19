@@ -60,7 +60,7 @@ static bool shouldAllowAccessFrom(const JSGlobalObject* thisObject, ExecState* e
 
 const ClassInfo JSDOMWindowBase::s_info = { "Window", &JSDOMGlobalObject::s_info, 0, CREATE_METHOD_TABLE(JSDOMWindowBase) };
 
-const GlobalObjectMethodTable JSDOMWindowBase::s_globalObjectMethodTable = { &shouldAllowAccessFrom, &supportsProfiling, &supportsRichSourceInfo, &shouldInterruptScript, &javaScriptRuntimeFlags, &queueTaskToEventLoop, &shouldInterruptScriptBeforeTimeout };
+const GlobalObjectMethodTable JSDOMWindowBase::s_globalObjectMethodTable = { &shouldAllowAccessFrom, &supportsRichSourceInfo, &shouldInterruptScript, &javaScriptRuntimeFlags, &queueTaskToEventLoop, &shouldInterruptScriptBeforeTimeout };
 
 JSDOMWindowBase::JSDOMWindowBase(VM& vm, Structure* structure, PassRefPtr<DOMWindow> window, JSDOMWindowShell* shell)
     : JSDOMGlobalObject(vm, structure, &shell->world(), &s_globalObjectMethodTable)
@@ -105,20 +105,6 @@ void JSDOMWindowBase::printErrorMessage(const String& message) const
     printErrorMessageForFrame(impl().frame(), message);
 }
 
-bool JSDOMWindowBase::supportsProfiling(const JSGlobalObject* object)
-{
-    const JSDOMWindowBase* thisObject = static_cast<const JSDOMWindowBase*>(object);
-    Frame* frame = thisObject->impl().frame();
-    if (!frame)
-        return false;
-
-    Page* page = frame->page();
-    if (!page)
-        return false;
-
-    return page->inspectorController().profilerEnabled();
-}
-
 bool JSDOMWindowBase::supportsRichSourceInfo(const JSGlobalObject* object)
 {
     const JSDOMWindowBase* thisObject = static_cast<const JSDOMWindowBase*>(object);
@@ -132,7 +118,6 @@ bool JSDOMWindowBase::supportsRichSourceInfo(const JSGlobalObject* object)
 
     bool enabled = page->inspectorController().enabled();
     ASSERT(enabled || !thisObject->debugger());
-    ASSERT(enabled || !supportsProfiling(thisObject));
     return enabled;
 }
 
@@ -260,11 +245,15 @@ JSDOMWindow* toJSDOMWindow(JSValue value)
 {
     if (!value.isObject())
         return 0;
-    const ClassInfo* classInfo = asObject(value)->classInfo();
-    if (classInfo == JSDOMWindow::info())
-        return jsCast<JSDOMWindow*>(asObject(value));
-    if (classInfo == JSDOMWindowShell::info())
-        return jsCast<JSDOMWindowShell*>(asObject(value))->window();
+    while (!value.isNull()) {
+        JSObject* object = asObject(value);
+        const ClassInfo* classInfo = object->classInfo();
+        if (classInfo == JSDOMWindow::info())
+            return jsCast<JSDOMWindow*>(object);
+        if (classInfo == JSDOMWindowShell::info())
+            return jsCast<JSDOMWindowShell*>(object)->window();
+        value = object->prototype();
+    }
     return 0;
 }
 

@@ -152,6 +152,8 @@ RenderElement::~RenderElement()
     }
     if (m_hasPausedImageAnimations)
         view().removeRendererWithPausedImageAnimations(*this);
+    if (isRegisteredForVisibleInViewportCallback())
+        view().unregisterForVisibleInViewportCallback(*this);
 }
 
 RenderPtr<RenderElement> RenderElement::createFor(Element& element, Ref<RenderStyle>&& style)
@@ -1078,6 +1080,9 @@ void RenderElement::willBeDestroyed()
 
     destroyLeftoverChildren();
 
+    if (isRegisteredForVisibleInViewportCallback())
+        unregisterForVisibleInViewportCallback();
+
     if (hasCounterNodeMap())
         RenderCounter::destroyCounterNodes(*this);
 
@@ -1431,6 +1436,35 @@ static bool shouldRepaintForImageAnimation(const RenderElement& renderer, const 
         return false;
 
     return true;
+}
+
+void RenderElement::registerForVisibleInViewportCallback()
+{
+    if (isRegisteredForVisibleInViewportCallback())
+        return;
+    setIsRegisteredForVisibleInViewportCallback(true);
+
+    view().registerForVisibleInViewportCallback(*this);
+}
+
+void RenderElement::unregisterForVisibleInViewportCallback()
+{
+    if (!isRegisteredForVisibleInViewportCallback())
+        return;
+    setIsRegisteredForVisibleInViewportCallback(false);
+
+    view().unregisterForVisibleInViewportCallback(*this);
+    m_visibleInViewportState = VisibilityUnknown;
+}
+
+void RenderElement::visibleInViewportStateChanged(VisibleInViewportState state)
+{
+    if (state == visibleInViewportState())
+        return;
+    setVisibleInViewportState(state);
+
+    if (element())
+        element()->isVisibleInViewportChanged();
 }
 
 void RenderElement::newImageAnimationFrameAvailable(CachedImage& image)

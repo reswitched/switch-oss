@@ -39,6 +39,7 @@
 #include "RenderLineBreak.h"
 #include "RenderListMarker.h"
 #include "RenderNamedFlowThread.h"
+#include "RenderTable.h"
 #include "RenderTheme.h"
 #include "RenderView.h"
 #include "Settings.h"
@@ -409,8 +410,6 @@ void RenderInline::splitInlines(RenderBlock* fromBlock, RenderBlock* toBlock,
 {
     // Create a clone of this inline.
     RenderPtr<RenderInline> cloneInline = clone();
-    cloneInline->setContinuation(oldCont);
-
 #if ENABLE(FULLSCREEN_API)
     // If we're splitting the inline containing the fullscreened element,
     // |beforeChild| may be the renderer for the fullscreened element. However,
@@ -421,18 +420,43 @@ void RenderInline::splitInlines(RenderBlock* fromBlock, RenderBlock* toBlock,
     if (fullScreenElement && beforeChild && beforeChild->node() == fullScreenElement)
         beforeChild = document().fullScreenRenderer();
 #endif
-
     // Now take all of the children from beforeChild to the end and remove
     // them from |this| and place them in the clone.
-    RenderObject* renderer = beforeChild;
-    while (renderer) {
-        RenderObject* tmp = renderer;
-        renderer = tmp->nextSibling();
-        removeChildInternal(*tmp, NotifyChildren);
-        cloneInline->addChildIgnoringContinuation(tmp);
-        tmp->setNeedsLayoutAndPrefWidthsRecalc();
+    for (RenderObject* rendererToMove = beforeChild; rendererToMove;) {
+        RenderObject* nextSibling = rendererToMove->nextSibling();
+        // When anonymous wrapper is present, we might need to move the whole subtree instead.
+        if (rendererToMove->parent() != this) {
+            auto* anonymousParent = rendererToMove->parent();
+            while (anonymousParent && anonymousParent->parent() != this) {
+                ASSERT(anonymousParent->isAnonymous());
+                anonymousParent = anonymousParent->parent();
+            }
+            if (!anonymousParent) {
+                ASSERT_NOT_REACHED();
+                break;
+            }
+            // If beforeChild is the first child in the subtree, we could just move the whole subtree.
+            if (!rendererToMove->previousSibling()) {
+                // Reparent the whole anonymous wrapper tree.
+                rendererToMove = anonymousParent;
+                // Skip to the next sibling that is not in this subtree.
+                nextSibling = anonymousParent->nextSibling();
+            } else if (!rendererToMove->nextSibling()) {
+                // This is the last renderer in the subtree. We need to jump out of the wrapper subtree, so that
+                // the siblings are getting reparented too.
+                nextSibling = anonymousParent->nextSibling();
+            }
+            // Otherwise just move the renderer to the inline clone. Should the renderer need an anon
+            // wrapper, the addChild() will generate one for it.
+            // FIXME: When the anonymous wrapper has multiple children, we end up traversing up to the topmost wrapper
+            // every time, which is a bit wasteful.
+        }
+        rendererToMove->parent()->removeChildInternal(*rendererToMove, NotifyChildren);
+        cloneInline->addChildIgnoringContinuation(rendererToMove);
+        rendererToMove->setNeedsLayoutAndPrefWidthsRecalc();
+        rendererToMove = nextSibling;
     }
-
+    cloneInline->setContinuation(oldCont);
     // Hook |clone| up as the continuation of the middle block.
     middleBlock->setContinuation(cloneInline.get());
 
@@ -465,13 +489,12 @@ void RenderInline::splitInlines(RenderBlock* fromBlock, RenderBlock* toBlock,
 
             // Now we need to take all of the children starting from the first child
             // *after* currentChild and append them all to the clone.
-            renderer = currentChild->nextSibling();
-            while (renderer) {
-                RenderObject* tmp = renderer;
-                renderer = tmp->nextSibling();
-                currentInline.removeChildInternal(*tmp, NotifyChildren);
-                cloneInline->addChildIgnoringContinuation(tmp);
-                tmp->setNeedsLayoutAndPrefWidthsRecalc();
+            for (auto* current = currentChild->nextSibling(); current;) {
+                auto* next = current->nextSibling();
+                currentInline.removeChildInternal(*current, NotifyChildren);
+                cloneInline->addChildIgnoringContinuation(current);
+                current->setNeedsLayoutAndPrefWidthsRecalc();
+                current = next;
             }
         }
         
@@ -489,12 +512,11 @@ void RenderInline::splitInlines(RenderBlock* fromBlock, RenderBlock* toBlock,
 
     // Now take all the children after currentChild and remove them from the fromBlock
     // and put them in the toBlock.
-    renderer = currentChild->nextSibling();
-    while (renderer) {
-        RenderObject* tmp = renderer;
-        renderer = tmp->nextSibling();
-        fromBlock->removeChildInternal(*tmp, NotifyChildren);
-        toBlock->insertChildInternal(tmp, nullptr, NotifyChildren);
+    for (auto* current = currentChild->nextSibling(); current;) {
+        auto* next = current->nextSibling();
+        fromBlock->removeChildInternal(*current, NotifyChildren);
+        toBlock->insertChildInternal(current, nullptr, NotifyChildren);
+        current = next;
     }
 }
 
@@ -563,41 +585,58 @@ void RenderInline::splitFlow(RenderObject* beforeChild, RenderBlock* newBlockBox
     post.setNeedsLayoutAndPrefWidthsRecalc();
 }
 
+static bool canUseAsParentForContinuation(const RenderObject* renderer)
+{
+    if (!renderer)
+        return false;
+    if (!is<RenderBlock>(renderer) && renderer->isAnonymous())
+        return false;
+    if (is<RenderTable>(renderer))
+        return false;
+    return true;
+}
+
 void RenderInline::addChildToContinuation(RenderObject* newChild, RenderObject* beforeChild)
 {
-    RenderBoxModelObject* flow = continuationBefore(beforeChild);
-    ASSERT(!beforeChild || is<RenderBlock>(*beforeChild->parent()) || is<RenderInline>(*beforeChild->parent()));
-    RenderBoxModelObject* beforeChildParent = nullptr;
-    if (beforeChild)
-        beforeChildParent = downcast<RenderBoxModelObject>(beforeChild->parent());
-    else {
-        if (RenderBoxModelObject* continuation = nextContinuation(flow))
-            beforeChildParent = continuation;
-        else
-            beforeChildParent = flow;
+    auto* flow = continuationBefore(beforeChild);
+    // It may or may not be the direct parent of the beforeChild.
+    RenderBoxModelObject* beforeChildAncestor = nullptr;
+    if (!beforeChild) {
+        auto* continuation = nextContinuation(flow);
+        beforeChildAncestor = continuation ? continuation : flow;
     }
+    else if (canUseAsParentForContinuation(beforeChild->parent()))
+        beforeChildAncestor = downcast<RenderBoxModelObject>(beforeChild->parent());
+    else if (beforeChild->parent()) {
+        // In case of anonymous wrappers, the parent of the beforeChild is mostly irrelevant. What we need is the topmost wrapper.
+        auto* parent = beforeChild->parent();
+        while (parent && parent->parent() && parent->parent()->isAnonymous()) {
+            // The ancestor candidate needs to be inside the continuation.
+            if (parent->hasContinuation())
+                break;
+            parent = parent->parent();
+        }
+        ASSERT(parent && parent->parent());
+        beforeChildAncestor = downcast<RenderBoxModelObject>(parent->parent());
+    }
+    else
+        ASSERT_NOT_REACHED();
 
     if (newChild->isFloatingOrOutOfFlowPositioned())
-        return beforeChildParent->addChildIgnoringContinuation(newChild, beforeChild);
+        return beforeChildAncestor->addChildIgnoringContinuation(newChild, beforeChild);
 
+    if (flow == beforeChildAncestor)
+        return flow->addChildIgnoringContinuation(newChild, beforeChild);
     // A continuation always consists of two potential candidates: an inline or an anonymous
     // block box holding block children.
     bool childInline = newChild->isInline();
-    bool bcpInline = beforeChildParent->isInline();
-    bool flowInline = flow->isInline();
-
-    if (flow == beforeChildParent)
-        return flow->addChildIgnoringContinuation(newChild, beforeChild);
-    else {
-        // The goal here is to match up if we can, so that we can coalesce and create the
-        // minimal # of continuations needed for the inline.
-        if (childInline == bcpInline)
-            return beforeChildParent->addChildIgnoringContinuation(newChild, beforeChild);
-        else if (flowInline == childInline)
-            return flow->addChildIgnoringContinuation(newChild); // Just treat like an append.
-        else
-            return beforeChildParent->addChildIgnoringContinuation(newChild, beforeChild);
-    }
+    // The goal here is to match up if we can, so that we can coalesce and create the
+    // minimal # of continuations needed for the inline.
+    if (childInline == beforeChildAncestor->isInline())
+        return beforeChildAncestor->addChildIgnoringContinuation(newChild, beforeChild);
+    if (flow->isInline() == childInline)
+        return flow->addChildIgnoringContinuation(newChild); // Just treat like an append.
+    return beforeChildAncestor->addChildIgnoringContinuation(newChild, beforeChild);
 }
 
 void RenderInline::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)

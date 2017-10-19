@@ -34,6 +34,7 @@
 #include "InsertionPoint.h"
 #include "InspectorInstrumentation.h"
 #include "MouseEvent.h"
+#include "NoEventDispatchAssertion.h"
 #include "PseudoElement.h"
 #include "ScopedEventQueue.h"
 #include "ShadowRoot.h"
@@ -329,7 +330,7 @@ static void dispatchEventInDOM(Event& event, const EventPath& path, WindowEventC
 
 bool EventDispatcher::dispatchEvent(Node* origin, PassRefPtr<Event> prpEvent)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!NoEventDispatchAssertion::isEventDispatchForbidden());
+    ASSERT_WITH_SECURITY_IMPLICATION(NoEventDispatchAssertion::isEventAllowedInMainThread());
     if (!prpEvent)
         return true;
 
@@ -355,7 +356,7 @@ bool EventDispatcher::dispatchEvent(Node* origin, PassRefPtr<Event> prpEvent)
     if (!event->target())
         return true;
 
-    ASSERT_WITH_SECURITY_IMPLICATION(!NoEventDispatchAssertion::isEventDispatchForbidden());
+    ASSERT_WITH_SECURITY_IMPLICATION(NoEventDispatchAssertion::isEventAllowedInMainThread());
 
     WindowEventContext windowEventContext(node.get(), eventPath.lastContextIfExists());
 

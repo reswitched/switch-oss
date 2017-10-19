@@ -115,8 +115,6 @@ CapabilityLevel capabilityLevel(OpcodeID opcodeID, CodeBlock* codeBlock, Instruc
     case op_mod:
     case op_div:
     case op_debug:
-    case op_profile_will_call:
-    case op_profile_did_call:
     case op_profile_type:
     case op_profile_control_flow:
     case op_mov:
@@ -126,6 +124,7 @@ CapabilityLevel capabilityLevel(OpcodeID opcodeID, CodeBlock* codeBlock, Instruc
     case op_is_boolean:
     case op_is_number:
     case op_is_string:
+    case op_is_jsarray:
     case op_is_object:
     case op_is_object_or_null:
     case op_is_function:
@@ -179,8 +178,11 @@ CapabilityLevel capabilityLevel(OpcodeID opcodeID, CodeBlock* codeBlock, Instruc
     case op_throw:
     case op_throw_static_error:
     case op_call:
+    case op_tail_call:
     case op_construct:
     case op_call_varargs:
+    case op_tail_call_varargs:
+    case op_tail_call_forward_arguments:
     case op_construct_varargs:
     case op_create_direct_arguments:
     case op_create_scoped_arguments:
@@ -188,6 +190,7 @@ CapabilityLevel capabilityLevel(OpcodeID opcodeID, CodeBlock* codeBlock, Instruc
     case op_get_from_arguments:
     case op_put_to_arguments:
     case op_jneq_ptr:
+    case op_nop:
     case op_typeof:
     case op_to_number:
     case op_to_string:
@@ -195,6 +198,7 @@ CapabilityLevel capabilityLevel(OpcodeID opcodeID, CodeBlock* codeBlock, Instruc
     case op_switch_char:
     case op_in:
     case op_get_scope:
+    case op_load_arrowfunction_this:
     case op_get_from_scope:
     case op_get_enumerable_length:
     case op_has_generic_property:
@@ -207,6 +211,7 @@ CapabilityLevel capabilityLevel(OpcodeID opcodeID, CodeBlock* codeBlock, Instruc
     case op_to_index_string:
     case op_new_func:
     case op_new_func_exp:
+    case op_new_arrow_func_exp:
     case op_create_lexical_environment:
         return CanCompileAndInline;
 

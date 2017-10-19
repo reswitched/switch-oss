@@ -76,11 +76,11 @@ template <> struct CacheTypes<UnlinkedEvalCodeBlock> {
 
 template <class UnlinkedCodeBlockType, class ExecutableType>
 UnlinkedCodeBlockType* CodeCache::getGlobalCodeBlock(VM& vm, ExecutableType* executable, const SourceCode& source, JSParserBuiltinMode builtinMode,
-    JSParserStrictMode strictMode, ThisTDZMode thisTDZMode, DebuggerMode debuggerMode, ProfilerMode profilerMode, ParserError& error)
+    JSParserStrictMode strictMode, ThisTDZMode thisTDZMode, DebuggerMode debuggerMode, ParserError& error)
 {
     SourceCodeKey key = SourceCodeKey(source, String(), CacheTypes<UnlinkedCodeBlockType>::codeType, builtinMode, strictMode, thisTDZMode);
     SourceCodeValue* cache = m_sourceCode.findCacheAndUpdateAge(key);
-    bool canCache = debuggerMode == DebuggerOff && profilerMode == ProfilerOff && !vm.typeProfiler() && !vm.controlFlowProfiler();
+    bool canCache = debuggerMode == DebuggerOff && !vm.typeProfiler() && !vm.controlFlowProfiler();
     if (cache && canCache) {
         UnlinkedCodeBlockType* unlinkedCodeBlock = jsCast<UnlinkedCodeBlockType*>(cache->cell.get());
         unsigned firstLine = source.firstLine() + unlinkedCodeBlock->firstLine();
@@ -94,8 +94,8 @@ UnlinkedCodeBlockType* CodeCache::getGlobalCodeBlock(VM& vm, ExecutableType* exe
 
     typedef typename CacheTypes<UnlinkedCodeBlockType>::RootNode RootNode;
     std::unique_ptr<RootNode> rootNode = parse<RootNode>(
-        &vm, source, 0, Identifier(), builtinMode, strictMode, 
-        JSParserCodeType::Program, error, 0, ConstructorKind::None, thisTDZMode);
+        &vm, source, Identifier(), builtinMode, strictMode, 
+        JSParserCodeType::Program, error, nullptr, FunctionParseMode::NotAFunctionMode, ConstructorKind::None, thisTDZMode);
     if (!rootNode)
         return nullptr;
 
@@ -109,7 +109,7 @@ UnlinkedCodeBlockType* CodeCache::getGlobalCodeBlock(VM& vm, ExecutableType* exe
     UnlinkedCodeBlockType* unlinkedCodeBlock = UnlinkedCodeBlockType::create(&vm, executable->executableInfo());
     unlinkedCodeBlock->recordParse(rootNode->features(), rootNode->hasCapturedVariables(), rootNode->firstLine() - source.firstLine(), lineCount, unlinkedEndColumn);
 
-    auto generator = std::make_unique<BytecodeGenerator>(vm, rootNode.get(), unlinkedCodeBlock, debuggerMode, profilerMode);
+    auto generator = std::make_unique<BytecodeGenerator>(vm, rootNode.get(), unlinkedCodeBlock, debuggerMode);
     error = generator->generate();
     if (error.isValid())
         return nullptr;
@@ -121,14 +121,14 @@ UnlinkedCodeBlockType* CodeCache::getGlobalCodeBlock(VM& vm, ExecutableType* exe
     return unlinkedCodeBlock;
 }
 
-UnlinkedProgramCodeBlock* CodeCache::getProgramCodeBlock(VM& vm, ProgramExecutable* executable, const SourceCode& source, JSParserBuiltinMode builtinMode, JSParserStrictMode strictMode, DebuggerMode debuggerMode, ProfilerMode profilerMode, ParserError& error)
+UnlinkedProgramCodeBlock* CodeCache::getProgramCodeBlock(VM& vm, ProgramExecutable* executable, const SourceCode& source, JSParserBuiltinMode builtinMode, JSParserStrictMode strictMode, DebuggerMode debuggerMode, ParserError& error)
 {
-    return getGlobalCodeBlock<UnlinkedProgramCodeBlock>(vm, executable, source, builtinMode, strictMode, ThisTDZMode::CheckIfNeeded, debuggerMode, profilerMode, error);
+    return getGlobalCodeBlock<UnlinkedProgramCodeBlock>(vm, executable, source, builtinMode, strictMode, ThisTDZMode::CheckIfNeeded, debuggerMode, error);
 }
 
-UnlinkedEvalCodeBlock* CodeCache::getEvalCodeBlock(VM& vm, EvalExecutable* executable, const SourceCode& source, JSParserBuiltinMode builtinMode, JSParserStrictMode strictMode, ThisTDZMode thisTDZMode, DebuggerMode debuggerMode, ProfilerMode profilerMode, ParserError& error)
+UnlinkedEvalCodeBlock* CodeCache::getEvalCodeBlock(VM& vm, EvalExecutable* executable, const SourceCode& source, JSParserBuiltinMode builtinMode, JSParserStrictMode strictMode, ThisTDZMode thisTDZMode, DebuggerMode debuggerMode, ParserError& error)
 {
-    return getGlobalCodeBlock<UnlinkedEvalCodeBlock>(vm, executable, source, builtinMode, strictMode, thisTDZMode, debuggerMode, profilerMode, error);
+    return getGlobalCodeBlock<UnlinkedEvalCodeBlock>(vm, executable, source, builtinMode, strictMode, thisTDZMode, debuggerMode, error);
 }
 
 // FIXME: There's no need to add the function's name to the key here. It's already in the source code.
@@ -144,7 +144,7 @@ UnlinkedFunctionExecutable* CodeCache::getFunctionExecutableFromGlobalCode(VM& v
 
     JSTextPosition positionBeforeLastNewline;
     std::unique_ptr<ProgramNode> program = parse<ProgramNode>(
-        &vm, source, 0, Identifier(), JSParserBuiltinMode::NotBuiltin, 
+        &vm, source, Identifier(), JSParserBuiltinMode::NotBuiltin, 
         JSParserStrictMode::NotStrict, JSParserCodeType::Program, 
         error, &positionBeforeLastNewline);
     if (!program) {

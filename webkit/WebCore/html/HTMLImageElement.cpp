@@ -595,7 +595,7 @@ void HTMLImageElement::createImageControls()
     if (!imageControls)
         return;
 
-    ensureUserAgentShadowRoot().appendChild(imageControls);
+    ensureUserAgentShadowRoot().appendChild(imageControls.releaseNonNull());
 
     auto* renderObject = renderer();
     if (!renderObject)
@@ -612,7 +612,7 @@ void HTMLImageElement::destroyImageControls()
 
     if (Node* node = shadowRoot->firstChild()) {
         ASSERT_WITH_SECURITY_IMPLICATION(node->isImageControlsRootElement());
-        shadowRoot->removeChild(node);
+        shadowRoot->removeChild(*node);
     }
 
     auto* renderObject = renderer();

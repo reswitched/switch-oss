@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-cairo-device-t.top_of_page">cairo_device_t</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>cairo_device_t</refname>
@@ -78,11 +76,6 @@
 </tgroup>
 </informaltable>
 </refsect1>
-<refsect1 id="cairo-cairo-device-t.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
-</refsect1>
 
 
 <refsect1 id="cairo-cairo-device-t.description" role="desc">
@@ -145,9 +138,9 @@ cairo_device_reference (<parameter><link linkend="cairo-device-t"><type>cairo_de
 <parameter>device</parameter>
  from being destroyed until a matching call to
 <link linkend="cairo-device-destroy"><function>cairo_device_destroy()</function></link> is made.</para>
-<para>The number of references to a <link linkend="cairo-device-t"><type>cairo_device_t</type></link> can be get using
-<link linkend="cairo-device-get-reference-count"><function>cairo_device_get_reference_count()</function></link>.</para>
-<refsect3 role="parameters">
+<para>Use <link linkend="cairo-device-get-reference-count"><function>cairo_device_get_reference_count()</function></link> to get the number of references
+to a <link linkend="cairo-device-t"><type>cairo_device_t</type></link>.</para>
+<refsect3 id="cairo-device-reference.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -159,11 +152,10 @@ cairo_device_reference (<parameter><link linkend="cairo-device-t"><type>cairo_de
 <entry role="parameter_description"><para>a <link linkend="cairo-device-t"><type>cairo_device_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-device-reference.returns" role="returns">
 <title>Returns</title>
 <para> the referenced <link linkend="cairo-device-t"><type>cairo_device_t</type></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-device-destroy" role="function" condition="since:1.10">
 <title>cairo_device_destroy&#160;()</title>
 <indexterm zone="cairo-device-destroy" role="1.10"><primary sortas="device_destroy">cairo_device_destroy</primary></indexterm>
@@ -175,7 +167,7 @@ zero, then <parameter>device</parameter>
  and all associated resources are freed.  See
 <link linkend="cairo-device-reference"><function>cairo_device_reference()</function></link>.</para>
 <para>This function may acquire devices if the last reference was dropped.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-device-destroy.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -187,7 +179,7 @@ zero, then <parameter>device</parameter>
 <entry role="parameter_description"><para>a <link linkend="cairo-device-t"><type>cairo_device_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-device-status" role="function" condition="since:1.10">
 <title>cairo_device_status&#160;()</title>
 <indexterm zone="cairo-device-status" role="1.10"><primary sortas="device_status">cairo_device_status</primary></indexterm>
@@ -195,7 +187,7 @@ zero, then <parameter>device</parameter>
 cairo_device_status (<parameter><link linkend="cairo-device-t"><type>cairo_device_t</type></link> *device</parameter>);</programlisting>
 <para>Checks whether an error has previously occurred for this
 device.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-device-status.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -207,12 +199,11 @@ device.</para>
 <entry role="parameter_description"><para>a <link linkend="cairo-device-t"><type>cairo_device_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-device-status.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> on success or an error code if
 the device is in an error state.</para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-device-finish" role="function" condition="since:1.10">
 <title>cairo_device_finish&#160;()</title>
 <indexterm zone="cairo-device-finish" role="1.10"><primary sortas="device_finish">cairo_device_finish</primary></indexterm>
@@ -231,7 +222,7 @@ reference count to zero, cairo will call <link linkend="cairo-device-finish"><fu
 it hasn't been called already, before freeing the resources
 associated with the device.</para>
 <para>This function may acquire devices.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-device-finish.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -243,7 +234,7 @@ associated with the device.</para>
 <entry role="parameter_description"><para>the <link linkend="cairo-device-t"><type>cairo_device_t</type></link> to finish</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-device-flush" role="function" condition="since:1.10">
 <title>cairo_device_flush&#160;()</title>
 <indexterm zone="cairo-device-flush" role="1.10"><primary sortas="device_flush">cairo_device_flush</primary></indexterm>
@@ -256,7 +247,7 @@ device with Cairo to operating on it directly with native APIs.
 If the device doesn't support direct access, then this function
 does nothing.</para>
 <para>This function may acquire devices.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-device-flush.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -268,7 +259,7 @@ does nothing.</para>
 <entry role="parameter_description"><para>a <link linkend="cairo-device-t"><type>cairo_device_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-device-get-type" role="function" condition="since:1.10">
 <title>cairo_device_get_type&#160;()</title>
 <indexterm zone="cairo-device-get-type" role="1.10"><primary sortas="device_get_type">cairo_device_get_type</primary></indexterm>
@@ -276,7 +267,7 @@ does nothing.</para>
 cairo_device_get_type (<parameter><link linkend="cairo-device-t"><type>cairo_device_t</type></link> *device</parameter>);</programlisting>
 <para>This function returns the type of the device. See <link linkend="cairo-device-type-t"><type>cairo_device_type_t</type></link>
 for available types.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-device-get-type.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -288,12 +279,11 @@ for available types.</para>
 <entry role="parameter_description"><para>a <link linkend="cairo-device-t"><type>cairo_device_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-device-get-type.returns" role="returns">
 <title>Returns</title>
 <para> The type of <parameter>device</parameter>
 .</para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-device-get-reference-count" role="function" condition="since:1.10">
 <title>cairo_device_get_reference_count&#160;()</title>
 <indexterm zone="cairo-device-get-reference-count" role="1.10"><primary sortas="device_get_reference_count">cairo_device_get_reference_count</primary></indexterm>
@@ -301,7 +291,7 @@ for available types.</para>
 cairo_device_get_reference_count (<parameter><link linkend="cairo-device-t"><type>cairo_device_t</type></link> *device</parameter>);</programlisting>
 <para>Returns the current reference count of <parameter>device</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-device-get-reference-count.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -313,13 +303,12 @@ cairo_device_get_reference_count (<parameter><link linkend="cairo-device-t"><typ
 <entry role="parameter_description"><para>a <link linkend="cairo-device-t"><type>cairo_device_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-device-get-reference-count.returns" role="returns">
 <title>Returns</title>
 <para> the current reference count of <parameter>device</parameter>
 .  If the
 object is a nil object, 0 will be returned.</para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-device-set-user-data" role="function" condition="since:1.10">
 <title>cairo_device_set_user_data&#160;()</title>
 <indexterm zone="cairo-device-set-user-data" role="1.10"><primary sortas="device_set_user_data">cairo_device_set_user_data</primary></indexterm>
@@ -333,7 +322,7 @@ cairo_device_set_user_data (<parameter><link linkend="cairo-device-t"><type>cair
 call this function with the key that was used to set it and <link linkend="NULL:CAPS"><literal>NULL</literal></link>
 for <parameter>data</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-device-set-user-data.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -356,12 +345,11 @@ for <parameter>data</parameter>
 same key.</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-device-set-user-data.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> or <link linkend="CAIRO-STATUS-NO-MEMORY:CAPS"><literal>CAIRO_STATUS_NO_MEMORY</literal></link> if a
 slot could not be allocated for the user data.</para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-device-get-user-data" role="function" condition="since:1.10">
 <title>cairo_device_get_user_data&#160;()</title>
 <indexterm zone="cairo-device-get-user-data" role="1.10"><primary sortas="device_get_user_data">cairo_device_get_user_data</primary></indexterm>
@@ -372,7 +360,7 @@ cairo_device_get_user_data (<parameter><link linkend="cairo-device-t"><type>cair
  using the
 specified key.  If no user data has been attached with the given
 key this function returns <link linkend="NULL:CAPS"><literal>NULL</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-device-get-user-data.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -388,11 +376,10 @@ key this function returns <link linkend="NULL:CAPS"><literal>NULL</literal></lin
 attached to</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-device-get-user-data.returns" role="returns">
 <title>Returns</title>
 <para> the user data previously attached or <link linkend="NULL:CAPS"><literal>NULL</literal></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-device-acquire" role="function" condition="since:1.10">
 <title>cairo_device_acquire&#160;()</title>
 <indexterm zone="cairo-device-acquire" role="1.10"><primary sortas="device_acquire">cairo_device_acquire</primary></indexterm>
@@ -415,7 +402,7 @@ may also cause deadlocks when you call them with an acquired device. So you
 must not have a device acquired when calling them. These functions are
 marked in the documentation.
 </para></note>
-<refsect3 role="parameters">
+<refsect3 id="cairo-device-acquire.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -427,14 +414,13 @@ marked in the documentation.
 <entry role="parameter_description"><para>a <link linkend="cairo-device-t"><type>cairo_device_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-device-acquire.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> on success or an error code if
 the device is in an error state and could not be
 acquired. After a successful call to <link linkend="cairo-device-acquire"><function>cairo_device_acquire()</function></link>,
 a matching call to <link linkend="cairo-device-release"><function>cairo_device_release()</function></link> is required.</para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-device-release" role="function" condition="since:1.10">
 <title>cairo_device_release&#160;()</title>
 <indexterm zone="cairo-device-release" role="1.10"><primary sortas="device_release">cairo_device_release</primary></indexterm>
@@ -443,7 +429,7 @@ cairo_device_release (<parameter><link linkend="cairo-device-t"><type>cairo_devi
 <para>Releases a <parameter>device</parameter>
  previously acquired using <link linkend="cairo-device-acquire"><function>cairo_device_acquire()</function></link>. See
 that function for details.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-device-release.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -455,7 +441,7 @@ that function for details.</para>
 <entry role="parameter_description"><para>a <link linkend="cairo-device-t"><type>cairo_device_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-device-observer-elapsed" role="function">
 <title>cairo_device_observer_elapsed&#160;()</title>
 <indexterm zone="cairo-device-observer-elapsed"><primary sortas="device_observer_elapsed">cairo_device_observer_elapsed</primary></indexterm>
@@ -463,11 +449,7 @@ that function for details.</para>
 cairo_device_observer_elapsed (<parameter><link linkend="cairo-device-t"><type>cairo_device_t</type></link> *device</parameter>);</programlisting>
 <para>
 </para>
-<refsect3 role="returns">
-<title>Returns</title>
-
-<para></para>
-</refsect3></refsect2>
+</refsect2>
 <refsect2 id="cairo-device-observer-fill-elapsed" role="function">
 <title>cairo_device_observer_fill_elapsed&#160;()</title>
 <indexterm zone="cairo-device-observer-fill-elapsed"><primary sortas="device_observer_fill_elapsed">cairo_device_observer_fill_elapsed</primary></indexterm>
@@ -475,11 +457,7 @@ cairo_device_observer_elapsed (<parameter><link linkend="cairo-device-t"><type>c
 cairo_device_observer_fill_elapsed (<parameter><link linkend="cairo-device-t"><type>cairo_device_t</type></link> *device</parameter>);</programlisting>
 <para>
 </para>
-<refsect3 role="returns">
-<title>Returns</title>
-
-<para></para>
-</refsect3></refsect2>
+</refsect2>
 <refsect2 id="cairo-device-observer-glyphs-elapsed" role="function">
 <title>cairo_device_observer_glyphs_elapsed&#160;()</title>
 <indexterm zone="cairo-device-observer-glyphs-elapsed"><primary sortas="device_observer_glyphs_elapsed">cairo_device_observer_glyphs_elapsed</primary></indexterm>
@@ -487,11 +465,7 @@ cairo_device_observer_fill_elapsed (<parameter><link linkend="cairo-device-t"><t
 cairo_device_observer_glyphs_elapsed (<parameter><link linkend="cairo-device-t"><type>cairo_device_t</type></link> *device</parameter>);</programlisting>
 <para>
 </para>
-<refsect3 role="returns">
-<title>Returns</title>
-
-<para></para>
-</refsect3></refsect2>
+</refsect2>
 <refsect2 id="cairo-device-observer-mask-elapsed" role="function">
 <title>cairo_device_observer_mask_elapsed&#160;()</title>
 <indexterm zone="cairo-device-observer-mask-elapsed"><primary sortas="device_observer_mask_elapsed">cairo_device_observer_mask_elapsed</primary></indexterm>
@@ -499,11 +473,7 @@ cairo_device_observer_glyphs_elapsed (<parameter><link linkend="cairo-device-t">
 cairo_device_observer_mask_elapsed (<parameter><link linkend="cairo-device-t"><type>cairo_device_t</type></link> *device</parameter>);</programlisting>
 <para>
 </para>
-<refsect3 role="returns">
-<title>Returns</title>
-
-<para></para>
-</refsect3></refsect2>
+</refsect2>
 <refsect2 id="cairo-device-observer-paint-elapsed" role="function">
 <title>cairo_device_observer_paint_elapsed&#160;()</title>
 <indexterm zone="cairo-device-observer-paint-elapsed"><primary sortas="device_observer_paint_elapsed">cairo_device_observer_paint_elapsed</primary></indexterm>
@@ -511,11 +481,7 @@ cairo_device_observer_mask_elapsed (<parameter><link linkend="cairo-device-t"><t
 cairo_device_observer_paint_elapsed (<parameter><link linkend="cairo-device-t"><type>cairo_device_t</type></link> *device</parameter>);</programlisting>
 <para>
 </para>
-<refsect3 role="returns">
-<title>Returns</title>
-
-<para></para>
-</refsect3></refsect2>
+</refsect2>
 <refsect2 id="cairo-device-observer-print" role="function">
 <title>cairo_device_observer_print&#160;()</title>
 <indexterm zone="cairo-device-observer-print"><primary sortas="device_observer_print">cairo_device_observer_print</primary></indexterm>
@@ -525,11 +491,7 @@ cairo_device_observer_print (<parameter><link linkend="cairo-device-t"><type>cai
                              <parameter><link linkend="void"><type>void</type></link> *closure</parameter>);</programlisting>
 <para>
 </para>
-<refsect3 role="returns">
-<title>Returns</title>
-
-<para></para>
-</refsect3></refsect2>
+</refsect2>
 <refsect2 id="cairo-device-observer-stroke-elapsed" role="function">
 <title>cairo_device_observer_stroke_elapsed&#160;()</title>
 <indexterm zone="cairo-device-observer-stroke-elapsed"><primary sortas="device_observer_stroke_elapsed">cairo_device_observer_stroke_elapsed</primary></indexterm>
@@ -537,11 +499,7 @@ cairo_device_observer_print (<parameter><link linkend="cairo-device-t"><type>cai
 cairo_device_observer_stroke_elapsed (<parameter><link linkend="cairo-device-t"><type>cairo_device_t</type></link> *device</parameter>);</programlisting>
 <para>
 </para>
-<refsect3 role="returns">
-<title>Returns</title>
-
-<para></para>
-</refsect3></refsect2>
+</refsect2>
 
 </refsect1>
 <refsect1 id="cairo-cairo-device-t.other_details" role="details">
@@ -559,7 +517,7 @@ context.</para>
 <para>The type of a device can be queried with <link linkend="cairo-device-get-type"><function>cairo_device_get_type()</function></link>.</para>
 <para>Memory management of <link linkend="cairo-device-t"><type>cairo_device_t</type></link> is done with
 <link linkend="cairo-device-reference"><function>cairo_device_reference()</function></link> and <link linkend="cairo-device-destroy"><function>cairo_device_destroy()</function></link>.</para>
-<para role="since">Since 1.10</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-device-type-t" role="enum" condition="since:1.10">
 <title>enum cairo_device_type_t</title>
 <indexterm zone="cairo-device-type-t" role="1.10"><primary sortas="device_type_t">cairo_device_type_t</primary></indexterm>
@@ -575,7 +533,7 @@ type. These functions have names that begin with
 <para>The behavior of calling a type-specific function with a device of
 the wrong type is undefined.</para>
 <para>New entries may be added in future versions.</para>
-<refsect3 role="enum_members">
+<refsect3 id="cairo-device-type-t.members" role="enum_members">
 <title>Members</title>
 <informaltable role="enum_members_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -629,7 +587,7 @@ the wrong type is undefined.</para>
 <entry role="enum_member_annotations"></entry>
 </row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-cairo-device-t.see-also">

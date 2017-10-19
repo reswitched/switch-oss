@@ -54,26 +54,26 @@ const ClassInfo UnlinkedFunctionCodeBlock::s_info = { "UnlinkedFunctionCodeBlock
 
 static UnlinkedFunctionCodeBlock* generateFunctionCodeBlock(
     VM& vm, UnlinkedFunctionExecutable* executable, const SourceCode& source,
-    CodeSpecializationKind kind, DebuggerMode debuggerMode, ProfilerMode profilerMode,
-    UnlinkedFunctionKind functionKind, ParserError& error)
+    CodeSpecializationKind kind, DebuggerMode debuggerMode,
+    UnlinkedFunctionKind functionKind, ParserError& error, bool isArrowFunction)
 {
     JSParserBuiltinMode builtinMode = executable->isBuiltinFunction() ? JSParserBuiltinMode::Builtin : JSParserBuiltinMode::NotBuiltin;
     JSParserStrictMode strictMode = executable->isInStrictContext() ? JSParserStrictMode::Strict : JSParserStrictMode::NotStrict;
     std::unique_ptr<FunctionNode> function = parse<FunctionNode>(
-        &vm, source, executable->parameters(), executable->name(), builtinMode,
-        strictMode, JSParserCodeType::Function, error, 0);
+        &vm, source, executable->name(), builtinMode, strictMode, 
+        JSParserCodeType::Function, error, nullptr, executable->parseMode());
 
     if (!function) {
         ASSERT(error.isValid());
         return nullptr;
     }
 
-    function->finishParsing(executable->parameters(), executable->name(), executable->functionMode());
+    function->finishParsing(executable->name(), executable->functionMode());
     executable->recordParse(function->features(), function->hasCapturedVariables());
     
     UnlinkedFunctionCodeBlock* result = UnlinkedFunctionCodeBlock::create(&vm, FunctionCode,
-        ExecutableInfo(function->needsActivation(), function->usesEval(), function->isStrictMode(), kind == CodeForConstruct, functionKind == UnlinkedBuiltinFunction, executable->constructorKind()));
-    auto generator(std::make_unique<BytecodeGenerator>(vm, function.get(), result, debuggerMode, profilerMode));
+        ExecutableInfo(function->needsActivation(), function->usesEval(), function->isStrictMode(), kind == CodeForConstruct, functionKind == UnlinkedBuiltinFunction, executable->constructorKind(), isArrowFunction));
+    auto generator(std::make_unique<BytecodeGenerator>(vm, function.get(), result, debuggerMode));
     error = generator->generate();
     if (error.isValid())
         return nullptr;
@@ -84,7 +84,6 @@ UnlinkedFunctionExecutable::UnlinkedFunctionExecutable(VM* vm, Structure* struct
     : Base(*vm, structure)
     , m_name(node->ident())
     , m_inferredName(node->inferredName())
-    , m_parameters(node->parameters())
     , m_sourceOverride(WTF::move(sourceOverride))
     , m_firstLineOffset(node->firstLine() - source.firstLine())
     , m_lineCount(node->lastLine() - node->firstLine())
@@ -96,19 +95,17 @@ UnlinkedFunctionExecutable::UnlinkedFunctionExecutable(VM* vm, Structure* struct
     , m_parametersStartOffset(node->parametersStart())
     , m_typeProfilingStartOffset(node->functionKeywordStart())
     , m_typeProfilingEndOffset(node->startStartOffset() + node->source().length() - 1)
+    , m_parameterCount(node->parameterCount())
+    , m_parseMode(node->parseMode())
     , m_features(0)
     , m_isInStrictContext(node->isInStrictContext())
     , m_hasCapturedVariables(false)
     , m_isBuiltinFunction(kind == UnlinkedBuiltinFunction)
     , m_constructorKind(static_cast<unsigned>(node->constructorKind()))
     , m_functionMode(node->functionMode())
+    , m_isArrowFunction(node->isArrowFunction())
 {
     ASSERT(m_constructorKind == static_cast<unsigned>(node->constructorKind()));
-}
-
-size_t UnlinkedFunctionExecutable::parameterCount() const
-{
-    return m_parameters->size();
 }
 
 void UnlinkedFunctionExecutable::visitChildren(JSCell* cell, SlotVisitor& visitor)
@@ -188,7 +185,7 @@ UnlinkedFunctionExecutable* UnlinkedFunctionExecutable::fromGlobalCode(
 
 UnlinkedFunctionCodeBlock* UnlinkedFunctionExecutable::codeBlockFor(
     VM& vm, const SourceCode& source, CodeSpecializationKind specializationKind, 
-    DebuggerMode debuggerMode, ProfilerMode profilerMode, ParserError& error)
+    DebuggerMode debuggerMode, ParserError& error, bool isArrowFunction)
 {
     switch (specializationKind) {
     case CodeForCall:
@@ -202,9 +199,9 @@ UnlinkedFunctionCodeBlock* UnlinkedFunctionExecutable::codeBlockFor(
     }
 
     UnlinkedFunctionCodeBlock* result = generateFunctionCodeBlock(
-        vm, this, source, specializationKind, debuggerMode, profilerMode, 
+        vm, this, source, specializationKind, debuggerMode, 
         isBuiltinFunction() ? UnlinkedBuiltinFunction : UnlinkedNormalFunction, 
-        error);
+        error, isArrowFunction);
     
     if (error.isValid())
         return nullptr;
@@ -236,6 +233,7 @@ UnlinkedCodeBlock::UnlinkedCodeBlock(VM* vm, Structure* structure, CodeType code
     , m_hasCapturedVariables(false)
     , m_isBuiltinFunction(info.isBuiltinFunction())
     , m_constructorKind(static_cast<unsigned>(info.constructorKind()))
+    , m_isArrowFunction(info.isArrowFunction())
     , m_firstLine(0)
     , m_lineCount(0)
     , m_endColumn(UINT_MAX)

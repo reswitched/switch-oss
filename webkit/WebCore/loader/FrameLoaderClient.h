@@ -38,6 +38,7 @@
 #include <wtf/Forward.h>
 #include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Optional.h>
 
 #if ENABLE(CONTENT_FILTERING)
 #include "ContentFilterUnblockHandler.h"
@@ -157,6 +158,7 @@ namespace WebCore {
         virtual void dispatchDidChangeProvisionalURL() { }
         virtual void dispatchDidCancelClientRedirect() = 0;
         virtual void dispatchWillPerformClientRedirect(const URL&, double interval, double fireDate) = 0;
+        virtual void dispatchDidPerformClientRedirect() { }
         virtual void dispatchDidNavigateWithinPage() { }
         virtual void dispatchDidChangeLocationWithinPage() = 0;
         virtual void dispatchDidPushStateWithinPage() = 0;
@@ -167,7 +169,7 @@ namespace WebCore {
         virtual void dispatchDidStartProvisionalLoad() = 0;
         virtual void dispatchDidReceiveTitle(const StringWithDirection&) = 0;
         virtual void dispatchDidChangeIcons(IconType) = 0;
-        virtual void dispatchDidCommitLoad() = 0;
+        virtual void dispatchDidCommitLoad(Optional<HasInsecureContent>) = 0;
         virtual void dispatchDidFailProvisionalLoad(const ResourceError&) = 0;
         virtual void dispatchDidFailLoad(const ResourceError&) = 0;
         virtual void dispatchDidFinishDocumentLoad() = 0;

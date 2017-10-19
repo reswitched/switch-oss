@@ -99,6 +99,7 @@ bool doesGC(Graph& graph, Node* node)
     case GetButterfly:
     case CheckArray:
     case GetScope:
+    case LoadArrowFunctionThis:
     case SkipScope:
     case GetClosureVar:
     case PutClosureVar:
@@ -117,21 +118,24 @@ bool doesGC(Graph& graph, Node* node)
     case CompareEqConstant:
     case CompareStrictEq:
     case Call:
+    case TailCallInlinedCaller:
     case Construct:
     case CallVarargs:
+    case TailCallVarargsInlinedCaller:
     case ConstructVarargs:
     case LoadVarargs:
     case CallForwardVarargs:
     case ConstructForwardVarargs:
     case NativeCall:
     case NativeConstruct:
+    case TailCallForwardVarargs:
+    case TailCallForwardVarargsInlinedCaller:
     case Breakpoint:
-    case ProfileWillCall:
-    case ProfileDidCall:
     case ProfileType:
     case ProfileControlFlow:
     case CheckHasInstance:
     case InstanceOf:
+    case IsJSArray:
     case IsUndefined:
     case IsBoolean:
     case IsNumber:
@@ -149,6 +153,8 @@ bool doesGC(Graph& graph, Node* node)
     case Branch:
     case Switch:
     case Return:
+    case TailCall:
+    case TailCallVarargs:
     case Throw:
     case CountExecution:
     case ForceOSRExit:
@@ -230,6 +236,7 @@ bool doesGC(Graph& graph, Node* node)
     case NewRegexp:
     case NewStringObject:
     case MakeRope:
+    case NewArrowFunction:
     case NewFunction:
     case NewTypedArray:
     case ThrowReferenceError:

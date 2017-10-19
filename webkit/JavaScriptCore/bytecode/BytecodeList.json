@@ -53,6 +53,7 @@
             { "name" : "op_is_boolean", "length" : 3 },
             { "name" : "op_is_number", "length" : 3 },
             { "name" : "op_is_string", "length" : 3 },
+            { "name" : "op_is_jsarray", "length" : 3 },
             { "name" : "op_is_object", "length" : 3 },
             { "name" : "op_is_object_or_null", "length" : 3 },
             { "name" : "op_is_function", "length" : 3 },
@@ -97,9 +98,13 @@
             { "name" : "op_switch_string", "length" : 4 },
             { "name" : "op_new_func", "length" : 4 },
             { "name" : "op_new_func_exp", "length" : 4 },
+            { "name" : "op_new_arrow_func_exp", "length" : 5 },
             { "name" : "op_call", "length" : 9 },
+            { "name" : "op_tail_call", "length" : 9 },
             { "name" : "op_call_eval", "length" : 9 },
             { "name" : "op_call_varargs", "length" : 9 },
+            { "name" : "op_tail_call_varargs", "length" : 9 },
+            { "name" : "op_tail_call_forward_arguments", "length" : 9 },
             { "name" : "op_ret", "length" : 2 },
             { "name" : "op_construct", "length" : 9 },
             { "name" : "op_construct_varargs", "length" : 9 },
@@ -117,8 +122,6 @@
             { "name" : "op_throw", "length" : 2 },
             { "name" : "op_throw_static_error", "length" : 3 },
             { "name" : "op_debug", "length" : 3 },
-            { "name" : "op_profile_will_call", "length" : 2 },
-            { "name" : "op_profile_did_call", "length" : 2 },
             { "name" : "op_end", "length" : 2 },
             { "name" : "op_profile_type", "length" : 6 },
             { "name" : "op_profile_control_flow", "length" : 2 },
@@ -130,7 +133,9 @@
             { "name" : "op_get_property_enumerator", "length" : 3 },
             { "name" : "op_enumerator_structure_pname", "length" : 4 },
             { "name" : "op_enumerator_generic_pname", "length" : 4 },
-            { "name" : "op_to_index_string", "length" : 3 }
+            { "name" : "op_to_index_string", "length" : 3 },
+            { "name" : "op_load_arrowfunction_this", "length" : 2 },
+            { "name" : "op_nop", "length" : 1}
         ]
     },
     {
@@ -149,7 +154,11 @@
             { "name" : "llint_cloop_did_return_from_js_5" },
             { "name" : "llint_cloop_did_return_from_js_6" },
             { "name" : "llint_cloop_did_return_from_js_7" },
-            { "name" : "llint_cloop_did_return_from_js_8" }
+            { "name" : "llint_cloop_did_return_from_js_8" },
+            { "name" : "llint_cloop_did_return_from_js_9" },
+            { "name" : "llint_cloop_did_return_from_js_10" },
+            { "name" : "llint_cloop_did_return_from_js_11" },
+            { "name" : "llint_cloop_did_return_from_js_12" }
         ]
     },
     {

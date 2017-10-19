@@ -45,16 +45,16 @@ class SecurityOrigin;
 class SubstituteData;
 class URL;
 
-class NavigationDisablerForBeforeUnload {
+class NavigationDisabler {
 #if PLATFORM(WKC)
     WTF_MAKE_FAST_ALLOCATED;
 #endif
 public:
-    NavigationDisablerForBeforeUnload()
+    NavigationDisabler()
     {
         s_navigationDisableCount++;
     }
-    ~NavigationDisablerForBeforeUnload()
+    ~NavigationDisabler()
     {
         ASSERT(s_navigationDisableCount);
         s_navigationDisableCount--;

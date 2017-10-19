@@ -3,5 +3,5 @@
                 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
 <!ENTITY version SYSTEM "version.xml">
 ]>
-<indexdiv>
+<indexdiv id="api-index-1.14.3">
 </indexdiv>

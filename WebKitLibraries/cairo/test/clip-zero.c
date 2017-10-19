@@ -46,7 +46,7 @@ draw (cairo_t *cr, int width, int height)
     cairo_stroke_preserve (cr);
     cairo_paint (cr);
 
-    cairo_select_font_face (cr, "sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_select_font_face (cr, CAIRO_TEST_FONT_FAMILY " Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_show_text (cr, "ABC");
 
     cairo_mask (cr, cairo_get_source (cr));

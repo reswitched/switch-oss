@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-Paths.top_of_page">Paths</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>Paths</refname>
@@ -85,11 +83,6 @@
 </tgroup>
 </informaltable>
 </refsect1>
-<refsect1 id="cairo-Paths.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
-</refsect1>
 
 
 <refsect1 id="cairo-Paths.description" role="desc">
@@ -120,7 +113,7 @@ conditions hold:</para>
    <literal>path->status</literal> will contain the same status that
    would be returned by <link linkend="cairo-status"><function>cairo_status()</function></link>.</listitem>
 </orderedlist>
-<refsect3 role="parameters">
+<refsect3 id="cairo-copy-path.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -132,13 +125,12 @@ conditions hold:</para>
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-copy-path.returns" role="returns">
 <title>Returns</title>
 <para> the copy of the current path. The caller owns the
 returned object and should call <link linkend="cairo-path-destroy"><function>cairo_path_destroy()</function></link> when finished
 with it.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-copy-path-flat" role="function" condition="since:1.0">
 <title>cairo_copy_path_flat&#160;()</title>
 <indexterm zone="cairo-copy-path-flat" role="1.0"><primary sortas="copy_path_flat">cairo_copy_path_flat</primary></indexterm>
@@ -165,7 +157,7 @@ conditions hold:</para>
    <literal>path->status</literal> will contain the same status that
    would be returned by <link linkend="cairo-status"><function>cairo_status()</function></link>.</listitem>
 </orderedlist>
-<refsect3 role="parameters">
+<refsect3 id="cairo-copy-path-flat.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -177,13 +169,12 @@ conditions hold:</para>
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-copy-path-flat.returns" role="returns">
 <title>Returns</title>
 <para> the copy of the current path. The caller owns the
 returned object and should call <link linkend="cairo-path-destroy"><function>cairo_path_destroy()</function></link> when finished
 with it.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-path-destroy" role="function" condition="since:1.0">
 <title>cairo_path_destroy&#160;()</title>
 <indexterm zone="cairo-path-destroy" role="1.0"><primary sortas="path_destroy">cairo_path_destroy</primary></indexterm>
@@ -198,7 +189,7 @@ should not be used further.</para>
 pointer to a <link linkend="cairo-path-t"><type>cairo_path_t</type></link> returned by a cairo function. Any path
 that is created manually (ie. outside of cairo) should be destroyed
 manually as well.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-path-destroy.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -211,7 +202,7 @@ manually as well.</para>
 <link linkend="cairo-copy-path-flat"><function>cairo_copy_path_flat()</function></link>.</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-append-path" role="function" condition="since:1.0">
 <title>cairo_append_path&#160;()</title>
 <indexterm zone="cairo-append-path" role="1.0"><primary sortas="append_path">cairo_append_path</primary></indexterm>
@@ -226,7 +217,7 @@ return value from one of <link linkend="cairo-copy-path"><function>cairo_copy_pa
 <link linkend="cairo-path-t"><type>cairo_path_t</type></link> for details on how the path data structure should be
 initialized, and note that <literal>path->status</literal> must be
 initialized to <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-append-path.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -241,7 +232,7 @@ initialized to <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_S
 <entry role="parameter_description"><para>path to be appended</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-has-current-point" role="function" condition="since:1.6">
 <title>cairo_has_current_point&#160;()</title>
 <indexterm zone="cairo-has-current-point" role="1.6"><primary sortas="has_current_point">cairo_has_current_point</primary></indexterm>
@@ -249,7 +240,7 @@ initialized to <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_S
 cairo_has_current_point (<parameter><link linkend="cairo-t"><type>cairo_t</type></link> *cr</parameter>);</programlisting>
 <para>Returns whether a current point is defined on the current path.
 See <link linkend="cairo-get-current-point"><function>cairo_get_current_point()</function></link> for details on the current point.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-has-current-point.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -261,11 +252,10 @@ See <link linkend="cairo-get-current-point"><function>cairo_get_current_point()<
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-has-current-point.returns" role="returns">
 <title>Returns</title>
 <para> whether a current point is defined.</para>
-<para></para>
-</refsect3><para role="since">Since 1.6</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.6">1.6</link></para></refsect2>
 <refsect2 id="cairo-get-current-point" role="function" condition="since:1.0">
 <title>cairo_get_current_point&#160;()</title>
 <indexterm zone="cairo-get-current-point" role="1.0"><primary sortas="get_current_point">cairo_get_current_point</primary></indexterm>
@@ -295,7 +285,7 @@ otherwise change current path:
 <link linkend="cairo-show-text"><function>cairo_show_text()</function></link>.</para>
 <para>Some functions unset the current path and as a result, current point:
 <link linkend="cairo-fill"><function>cairo_fill()</function></link>, <link linkend="cairo-stroke"><function>cairo_stroke()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-get-current-point.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -313,7 +303,7 @@ otherwise change current path:
 <entry role="parameter_description"><para>return value for Y coordinate of the current point</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-new-path" role="function" condition="since:1.0">
 <title>cairo_new_path&#160;()</title>
 <indexterm zone="cairo-new-path" role="1.0"><primary sortas="new_path">cairo_new_path</primary></indexterm>
@@ -321,7 +311,7 @@ otherwise change current path:
 cairo_new_path (<parameter><link linkend="cairo-t"><type>cairo_t</type></link> *cr</parameter>);</programlisting>
 <para>Clears the current path. After this call there will be no path and
 no current point.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-new-path.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -333,7 +323,7 @@ no current point.</para>
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-new-sub-path" role="function" condition="since:1.2">
 <title>cairo_new_sub_path&#160;()</title>
 <indexterm zone="cairo-new-sub-path" role="1.2"><primary sortas="new_sub_path">cairo_new_sub_path</primary></indexterm>
@@ -348,7 +338,7 @@ beginning a new sub-path with one of the <link linkend="cairo-arc"><function>cai
 makes things easier as it is no longer necessary to manually
 compute the arc's initial coordinates for a call to
 <link linkend="cairo-move-to"><function>cairo_move_to()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-new-sub-path.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -360,7 +350,7 @@ compute the arc's initial coordinates for a call to
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-close-path" role="function" condition="since:1.0">
 <title>cairo_close_path&#160;()</title>
 <indexterm zone="cairo-close-path" role="1.0"><primary sortas="close_path">cairo_close_path</primary></indexterm>
@@ -384,7 +374,7 @@ example). This can simplify path processing in some cases as it may
 not be necessary to save the "last move_to point" during processing
 as the MOVE_TO immediately after the CLOSE_PATH will provide that
 point.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-close-path.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -396,7 +386,7 @@ point.</para>
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-arc" role="function" condition="since:1.0">
 <title>cairo_arc&#160;()</title>
 <indexterm zone="cairo-arc" role="1.0"><primary sortas="arc">cairo_arc</primary></indexterm>
@@ -451,7 +441,7 @@ cairo_scale (cr, width / 2., height / 2.);
 cairo_arc (cr, 0., 0., 1., 0., 2 * M_PI);
 cairo_restore (cr);
 </programlisting></informalexample>
-<refsect3 role="parameters">
+<refsect3 id="cairo-arc.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -478,7 +468,7 @@ cairo_restore (cr);
 <entry role="parameter_description"><para>the end angle, in radians</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-arc-negative" role="function" condition="since:1.0">
 <title>cairo_arc_negative&#160;()</title>
 <indexterm zone="cairo-arc-negative" role="1.0"><primary sortas="arc_negative">cairo_arc_negative</primary></indexterm>
@@ -504,7 +494,7 @@ greater than <parameter>angle1</parameter>
 .</para>
 <para>See <link linkend="cairo-arc"><function>cairo_arc()</function></link> for more details. This function differs only in the
 direction of the arc between the two angles.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-arc-negative.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -531,7 +521,7 @@ direction of the arc between the two angles.</para>
 <entry role="parameter_description"><para>the end angle, in radians</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-curve-to" role="function" condition="since:1.0">
 <title>cairo_curve_to&#160;()</title>
 <indexterm zone="cairo-curve-to" role="1.0"><primary sortas="curve_to">cairo_curve_to</primary></indexterm>
@@ -561,7 +551,7 @@ cairo_move_to(<parameter>cr</parameter>
 , <parameter>x1</parameter>
 , <parameter>y1</parameter>
 ).</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-curve-to.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -591,7 +581,7 @@ cairo_move_to(<parameter>cr</parameter>
 <entry role="parameter_description"><para>the Y coordinate of the end of the curve</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-line-to" role="function" condition="since:1.0">
 <title>cairo_line_to&#160;()</title>
 <indexterm zone="cairo-line-to" role="1.0"><primary sortas="line_to">cairo_line_to</primary></indexterm>
@@ -611,7 +601,7 @@ this function will behave as cairo_move_to(<parameter>cr</parameter>
 , <parameter>x</parameter>
 , <parameter>y</parameter>
 ).</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-line-to.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -629,7 +619,7 @@ this function will behave as cairo_move_to(<parameter>cr</parameter>
 <entry role="parameter_description"><para>the Y coordinate of the end of the new line</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-move-to" role="function" condition="since:1.0">
 <title>cairo_move_to&#160;()</title>
 <indexterm zone="cairo-move-to" role="1.0"><primary sortas="move_to">cairo_move_to</primary></indexterm>
@@ -641,7 +631,7 @@ cairo_move_to (<parameter><link linkend="cairo-t"><type>cairo_t</type></link> *c
 ,
 <parameter>y</parameter>
 ).</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-move-to.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -659,7 +649,7 @@ cairo_move_to (<parameter><link linkend="cairo-t"><type>cairo_t</type></link> *c
 <entry role="parameter_description"><para>the Y coordinate of the new position</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-rectangle" role="function" condition="since:1.0">
 <title>cairo_rectangle&#160;()</title>
 <indexterm zone="cairo-rectangle" role="1.0"><primary sortas="rectangle">cairo_rectangle</primary></indexterm>
@@ -681,7 +671,7 @@ cairo_rel_line_to (cr, 0, height);
 cairo_rel_line_to (cr, -width, 0);
 cairo_close_path (cr);
 </programlisting></informalexample>
-<refsect3 role="parameters">
+<refsect3 id="cairo-rectangle.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -705,7 +695,7 @@ cairo_close_path (cr);
 <entry role="parameter_description"><para>the height of the rectangle</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-glyph-path" role="function" condition="since:1.0">
 <title>cairo_glyph_path&#160;()</title>
 <indexterm zone="cairo-glyph-path" role="1.0"><primary sortas="glyph_path">cairo_glyph_path</primary></indexterm>
@@ -716,7 +706,7 @@ cairo_glyph_path (<parameter><link linkend="cairo-t"><type>cairo_t</type></link>
 <para>Adds closed paths for the glyphs to the current path.  The generated
 path if filled, achieves an effect similar to that of
 <link linkend="cairo-show-glyphs"><function>cairo_show_glyphs()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-glyph-path.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -734,7 +724,7 @@ path if filled, achieves an effect similar to that of
 <entry role="parameter_description"><para>number of glyphs to show</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-text-path" role="function" condition="since:1.0">
 <title>cairo_text_path&#160;()</title>
 <indexterm zone="cairo-text-path" role="1.0"><primary sortas="text_path">cairo_text_path</primary></indexterm>
@@ -756,7 +746,7 @@ designers call the "toy" text API. It is convenient for short demos
 and simple programs, but it is not expected to be adequate for
 serious text-using applications. See <link linkend="cairo-glyph-path"><function>cairo_glyph_path()</function></link> for the
 "real" text path API in cairo.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-text-path.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -771,7 +761,7 @@ serious text-using applications. See <link linkend="cairo-glyph-path"><function>
 <entry role="parameter_description"><para>a NUL-terminated string of text encoded in UTF-8, or <link linkend="NULL:CAPS"><literal>NULL</literal></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-rel-curve-to" role="function" condition="since:1.0">
 <title>cairo_rel_curve_to&#160;()</title>
 <indexterm zone="cairo-rel-curve-to" role="1.0"><primary sortas="rel_curve_to">cairo_rel_curve_to</primary></indexterm>
@@ -818,7 +808,7 @@ cairo_curve_to(<parameter>cr</parameter>
 so will cause <parameter>cr</parameter>
  to shutdown with a status of
 <link linkend="CAIRO-STATUS-NO-CURRENT-POINT:CAPS"><literal>CAIRO_STATUS_NO_CURRENT_POINT</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-rel-curve-to.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -848,7 +838,7 @@ so will cause <parameter>cr</parameter>
 <entry role="parameter_description"><para>the Y offset to the end of the curve</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-rel-line-to" role="function" condition="since:1.0">
 <title>cairo_rel_line_to&#160;()</title>
 <indexterm zone="cairo-rel-line-to" role="1.0"><primary sortas="rel_line_to">cairo_rel_line_to</primary></indexterm>
@@ -876,7 +866,7 @@ is logically equivalent to cairo_line_to(<parameter>cr</parameter>
 so will cause <parameter>cr</parameter>
  to shutdown with a status of
 <link linkend="CAIRO-STATUS-NO-CURRENT-POINT:CAPS"><literal>CAIRO_STATUS_NO_CURRENT_POINT</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-rel-line-to.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -894,7 +884,7 @@ so will cause <parameter>cr</parameter>
 <entry role="parameter_description"><para>the Y offset to the end of the new line</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-rel-move-to" role="function" condition="since:1.0">
 <title>cairo_rel_move_to&#160;()</title>
 <indexterm zone="cairo-rel-move-to" role="1.0"><primary sortas="rel_move_to">cairo_rel_move_to</primary></indexterm>
@@ -918,7 +908,7 @@ is logically equivalent to cairo_move_to(<parameter>cr</parameter>
 so will cause <parameter>cr</parameter>
  to shutdown with a status of
 <link linkend="CAIRO-STATUS-NO-CURRENT-POINT:CAPS"><literal>CAIRO_STATUS_NO_CURRENT_POINT</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-rel-move-to.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -936,7 +926,7 @@ so will cause <parameter>cr</parameter>
 <entry role="parameter_description"><para>the Y offset</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-path-extents" role="function" condition="since:1.6">
 <title>cairo_path_extents&#160;()</title>
 <indexterm zone="cairo-path-extents" role="1.6"><primary sortas="path_extents">cairo_path_extents</primary></indexterm>
@@ -963,7 +953,7 @@ where the coordinates to both calls are identical), will be
 considered as contributing to the extents. However, a lone
 <link linkend="cairo-move-to"><function>cairo_move_to()</function></link> will not contribute to the results of
 <link linkend="cairo-path-extents"><function>cairo_path_extents()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-path-extents.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -987,7 +977,7 @@ considered as contributing to the extents. However, a lone
 <entry role="parameter_description"><para>bottom of the resulting extents</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.6</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.6">1.6</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-Paths.other_details" role="details">
@@ -1011,7 +1001,7 @@ actual data within the path.</para>
 array. This number is larger than the number of independent path
 portions (defined in <link linkend="cairo-path-data-type-t"><type>cairo_path_data_type_t</type></link>), since the data
 includes both headers and coordinates for each portion.</para>
-<refsect3 role="struct_members">
+<refsect3 id="cairo-path-t.members" role="struct_members">
 <title>Members</title>
 <informaltable role="struct_members_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1019,24 +1009,21 @@ includes both headers and coordinates for each portion.</para>
 <colspec colname="struct_members_description"/>
 <colspec colname="struct_members_annotations" colwidth="200px"/>
 <tbody>
-<row><entry role="struct_member_name"><para><link linkend="cairo-status-t"><type>cairo_status_t</type></link>&#160;<structfield id="cairo-path-t.status">status</structfield>;</para></entry>
-<listitem><para>the current error status</para></listitem>
+<row role="member"><entry role="struct_member_name"><para><link linkend="cairo-status-t"><type>cairo_status_t</type></link>&#160;<structfield id="cairo-path-t.status">status</structfield>;</para></entry>
 <entry role="struct_member_description"><para>the current error status</para></entry>
 <entry role="struct_member_annotations"></entry>
 </row>
-<row><entry role="struct_member_name"><para><link linkend="cairo-path-data-t"><type>cairo_path_data_t</type></link>&#160;*<structfield id="cairo-path-t.data">data</structfield>;</para></entry>
-<listitem><para>the elements in the path</para></listitem>
+<row role="member"><entry role="struct_member_name"><para><link linkend="cairo-path-data-t"><type>cairo_path_data_t</type></link>&#160;*<structfield id="cairo-path-t.data">data</structfield>;</para></entry>
 <entry role="struct_member_description"><para>the elements in the path</para></entry>
 <entry role="struct_member_annotations"></entry>
 </row>
-<row><entry role="struct_member_name"><para><link linkend="int"><type>int</type></link>&#160;<structfield id="cairo-path-t.num-data">num_data</structfield>;</para></entry>
-<listitem><para>the number of elements in the data array</para></listitem>
+<row role="member"><entry role="struct_member_name"><para><link linkend="int"><type>int</type></link>&#160;<structfield id="cairo-path-t.num-data">num_data</structfield>;</para></entry>
 <entry role="struct_member_description"><para>the number of elements in the data array</para></entry>
 <entry role="struct_member_annotations"></entry>
 </row>
 </tbody></tgroup></informaltable>
 </refsect3>
-<para role="since">Since 1.0</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-path-data-t" role="union" condition="since:1.0">
 <title>union cairo_path_data_t</title>
 <indexterm zone="cairo-path-data-t" role="1.0"><primary sortas="path_data_t">cairo_path_data_t</primary></indexterm>
@@ -1095,14 +1082,14 @@ structure.  For this reason, it is recommended that applications
 always use <literal>data->header.length</literal> to
 iterate over the path data, instead of hardcoding the number of
 elements for each element type.</para>
-<para role="since">Since 1.0</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-path-data-type-t" role="enum" condition="since:1.0">
 <title>enum cairo_path_data_type_t</title>
 <indexterm zone="cairo-path-data-type-t" role="1.0"><primary sortas="path_data_type_t">cairo_path_data_type_t</primary></indexterm>
 <para><link linkend="cairo-path-data-t"><type>cairo_path_data_t</type></link> is used to describe the type of one portion
 of a path when represented as a <link linkend="cairo-path-t"><type>cairo_path_t</type></link>.
 See <link linkend="cairo-path-data-t"><type>cairo_path_data_t</type></link> for details.</para>
-<refsect3 role="enum_members">
+<refsect3 id="cairo-path-data-type-t.members" role="enum_members">
 <title>Members</title>
 <informaltable role="enum_members_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1131,7 +1118,7 @@ See <link linkend="cairo-path-data-t"><type>cairo_path_data_t</type></link> for 
 <entry role="enum_member_annotations"></entry>
 </row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 
 </refsect1>
 

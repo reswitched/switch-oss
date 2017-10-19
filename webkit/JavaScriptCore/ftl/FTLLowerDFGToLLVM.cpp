@@ -44,6 +44,7 @@
 #include "FTLOutput.h"
 #include "FTLThunks.h"
 #include "FTLWeightedTarget.h"
+#include "JSArrowFunction.h"
 #include "JSCInlines.h"
 #include "JSLexicalEnvironment.h"
 #include "OperandsInlines.h"
@@ -617,6 +618,7 @@ private:
             compileCreateActivation();
             break;
         case NewFunction:
+        case NewArrowFunction:
             compileNewFunction();
             break;
         case CreateDirectArguments:
@@ -701,6 +703,9 @@ private:
             break;
         case GetScope:
             compileGetScope();
+            break;
+        case LoadArrowFunctionThis:
+            compileLoadArrowFunctionThis();
             break;
         case SkipScope:
             compileSkipScope();
@@ -3100,38 +3105,55 @@ private:
     
     void compileNewFunction()
     {
+        ASSERT(m_node->op() == NewFunction || m_node->op() == NewArrowFunction);
+        
+        bool isArrowFunction = m_node->op() == NewArrowFunction;
+        
         LValue scope = lowCell(m_node->child1());
+        LValue thisValue = isArrowFunction ? lowCell(m_node->child2()) : nullptr;
+        
         FunctionExecutable* executable = m_node->castOperand<FunctionExecutable*>();
         if (executable->singletonFunction()->isStillValid()) {
-            LValue callResult = vmCall(
-                m_out.operation(operationNewFunction), m_callFrame, scope, weakPointer(executable));
+            LValue callResult = isArrowFunction
+                ? vmCall(m_out.operation(operationNewArrowFunction), m_callFrame, scope, weakPointer(executable), thisValue)
+                : vmCall(m_out.operation(operationNewFunction), m_callFrame, scope, weakPointer(executable));
             setJSValue(callResult);
             return;
         }
         
-        Structure* structure = m_graph.globalObjectFor(m_node->origin.semantic)->functionStructure();
+        Structure* structure = isArrowFunction
+            ? m_graph.globalObjectFor(m_node->origin.semantic)->arrowFunctionStructure()
+            : m_graph.globalObjectFor(m_node->origin.semantic)->functionStructure();
         
         LBasicBlock slowPath = FTL_NEW_BLOCK(m_out, ("NewFunction slow path"));
         LBasicBlock continuation = FTL_NEW_BLOCK(m_out, ("NewFunction continuation"));
         
         LBasicBlock lastNext = m_out.insertNewBlocksBefore(slowPath);
         
-        LValue fastObject = allocateObject<JSFunction>(
-            structure, m_out.intPtrZero, slowPath);
+        LValue fastObject = isArrowFunction
+            ? allocateObject<JSArrowFunction>(structure, m_out.intPtrZero, slowPath)
+            : allocateObject<JSFunction>(structure, m_out.intPtrZero, slowPath);
+        
         
         // We don't need memory barriers since we just fast-created the function, so it
         // must be young.
-        m_out.storePtr(scope, fastObject, m_heaps.JSFunction_scope);
-        m_out.storePtr(weakPointer(executable), fastObject, m_heaps.JSFunction_executable);
-        m_out.storePtr(m_out.intPtrZero, fastObject, m_heaps.JSFunction_rareData);
+        m_out.storePtr(scope, fastObject, isArrowFunction ? m_heaps.JSArrowFunction_scope : m_heaps.JSFunction_scope);
+        m_out.storePtr(weakPointer(executable), fastObject, isArrowFunction ?  m_heaps.JSArrowFunction_executable : m_heaps.JSFunction_executable);
+        
+        if (isArrowFunction)
+            m_out.storePtr(thisValue, fastObject, m_heaps.JSArrowFunction_this);
+        
+        m_out.storePtr(m_out.intPtrZero, fastObject, isArrowFunction ?  m_heaps.JSArrowFunction_rareData : m_heaps.JSFunction_rareData);
         
         ValueFromBlock fastResult = m_out.anchor(fastObject);
         m_out.jump(continuation);
         
         m_out.appendTo(slowPath, continuation);
-        LValue callResult = vmCall(
-            m_out.operation(operationNewFunctionWithInvalidatedReallocationWatchpoint),
-            m_callFrame, scope, weakPointer(executable));
+        
+        LValue callResult = isArrowFunction
+            ? vmCall(m_out.operation(operationNewArrowFunctionWithInvalidatedReallocationWatchpoint), m_callFrame, scope, weakPointer(executable), thisValue)
+            : vmCall(m_out.operation(operationNewFunctionWithInvalidatedReallocationWatchpoint), m_callFrame, scope, weakPointer(executable));
+        
         ValueFromBlock slowResult = m_out.anchor(callResult);
         m_out.jump(continuation);
         
@@ -3865,24 +3887,24 @@ private:
         
         MultiGetByOffsetData& data = m_node->multiGetByOffsetData();
 
-        if (data.variants.isEmpty()) {
+        if (data.cases.isEmpty()) {
             // Protect against creating a Phi function with zero inputs. LLVM doesn't like that.
             terminate(BadCache);
             return;
         }
         
-        Vector<LBasicBlock, 2> blocks(data.variants.size());
-        for (unsigned i = data.variants.size(); i--;)
+        Vector<LBasicBlock, 2> blocks(data.cases.size());
+        for (unsigned i = data.cases.size(); i--;)
             blocks[i] = FTL_NEW_BLOCK(m_out, ("MultiGetByOffset case ", i));
         LBasicBlock exit = FTL_NEW_BLOCK(m_out, ("MultiGetByOffset fail"));
         LBasicBlock continuation = FTL_NEW_BLOCK(m_out, ("MultiGetByOffset continuation"));
         
         Vector<SwitchCase, 2> cases;
         StructureSet baseSet;
-        for (unsigned i = data.variants.size(); i--;) {
-            GetByIdVariant variant = data.variants[i];
-            for (unsigned j = variant.structureSet().size(); j--;) {
-                Structure* structure = variant.structureSet()[j];
+        for (unsigned i = data.cases.size(); i--;) {
+            MultiGetByOffsetCase getCase = data.cases[i];
+            for (unsigned j = getCase.set().size(); j--;) {
+                Structure* structure = getCase.set()[j];
                 baseSet.add(structure);
                 cases.append(SwitchCase(weakStructureID(structure), blocks[i], Weight(1)));
             }
@@ -3893,29 +3915,36 @@ private:
         LBasicBlock lastNext = m_out.m_nextBlock;
         
         Vector<ValueFromBlock, 2> results;
-        for (unsigned i = data.variants.size(); i--;) {
-            m_out.appendTo(blocks[i], i + 1 < data.variants.size() ? blocks[i + 1] : exit);
+        for (unsigned i = data.cases.size(); i--;) {
+            MultiGetByOffsetCase getCase = data.cases[i];
+            GetByOffsetMethod method = getCase.method();
             
-            GetByIdVariant variant = data.variants[i];
-            baseSet.merge(variant.structureSet());
+            m_out.appendTo(blocks[i], i + 1 < data.cases.size() ? blocks[i + 1] : exit);
+            
             LValue result;
-            JSValue constantResult;
-            if (variant.alternateBase()) {
-                constantResult = m_graph.tryGetConstantProperty(
-                    variant.alternateBase(), variant.baseStructure(), variant.offset());
-            }
-            if (constantResult)
-                result = m_out.constInt64(JSValue::encode(constantResult));
-            else {
+            
+            switch (method.kind()) {
+            case GetByOffsetMethod::Invalid:
+                RELEASE_ASSERT_NOT_REACHED();
+                break;
+                
+            case GetByOffsetMethod::Constant:
+                result = m_out.constInt64(JSValue::encode(method.constant()->value()));
+                break;
+                
+            case GetByOffsetMethod::Load:
+            case GetByOffsetMethod::LoadFromPrototype: {
                 LValue propertyBase;
-                if (variant.alternateBase())
-                    propertyBase = weakPointer(variant.alternateBase());
-                else
+                if (method.kind() == GetByOffsetMethod::Load)
                     propertyBase = base;
-                if (!isInlineOffset(variant.offset()))
+                else
+                    propertyBase = weakPointer(method.prototype()->value().asCell());
+                if (!isInlineOffset(method.offset()))
                     propertyBase = m_out.loadPtr(propertyBase, m_heaps.JSObject_butterfly);
-                result = loadProperty(propertyBase, data.identifierNumber, variant.offset());
-            }
+                result = loadProperty(
+                    propertyBase, data.identifierNumber, method.offset());
+                break;
+            } }
             
             results.append(m_out.anchor(result));
             m_out.jump(continuation);
@@ -4050,6 +4079,11 @@ private:
     void compileGetScope()
     {
         setJSValue(m_out.loadPtr(lowCell(m_node->child1()), m_heaps.JSFunction_scope));
+    }
+    
+    void compileLoadArrowFunctionThis()
+    {
+        setJSValue(m_out.loadPtr(lowCell(m_node->child1()), m_heaps.JSArrowFunction_this));
     }
     
     void compileSkipScope()
@@ -4316,24 +4350,29 @@ private:
 
     void compileCallOrConstruct()
     {
-        int numPassedArgs = m_node->numChildren() - 1;
-        int numArgs = numPassedArgs;
+        int numArgs = m_node->numChildren() - 1;
 
         LValue jsCallee = lowJSValue(m_graph.varArgChild(m_node, 0));
 
         unsigned stackmapID = m_stackmapIDs++;
-        
+
+        unsigned frameSize = JSStack::CallFrameHeaderSize + numArgs;
+        unsigned alignedFrameSize = WTF::roundUpToMultipleOf(stackAlignmentRegisters(), frameSize);
+        unsigned padding = alignedFrameSize - frameSize;
+
         Vector<LValue> arguments;
         arguments.append(m_out.constInt64(stackmapID));
         arguments.append(m_out.constInt32(sizeOfCall()));
         arguments.append(constNull(m_out.ref8));
-        arguments.append(m_out.constInt32(1 + JSStack::CallFrameHeaderSize - JSStack::CallerFrameAndPCSize + numArgs));
+        arguments.append(m_out.constInt32(1 + alignedFrameSize - JSStack::CallerFrameAndPCSize));
         arguments.append(jsCallee); // callee -> %rax
         arguments.append(getUndef(m_out.int64)); // code block
         arguments.append(jsCallee); // callee -> stack
         arguments.append(m_out.constInt64(numArgs)); // argument count and zeros for the tag
-        for (int i = 0; i < numPassedArgs; ++i)
+        for (int i = 0; i < numArgs; ++i)
             arguments.append(lowJSValue(m_graph.varArgChild(m_node, 1 + i)));
+        for (unsigned i = 0; i < padding; ++i)
+            arguments.append(getUndef(m_out.int64));
         
         callPreflight();
         
@@ -8136,7 +8175,7 @@ private:
     
     void callCheck()
     {
-        if (Options::enableExceptionFuzz())
+        if (Options::useExceptionFuzz())
             m_out.call(m_out.operation(operationExceptionFuzz));
         
         LBasicBlock continuation = FTL_NEW_BLOCK(m_out, ("Exception check continuation"));

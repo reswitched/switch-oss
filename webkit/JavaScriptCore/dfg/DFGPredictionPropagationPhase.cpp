@@ -194,13 +194,16 @@ private:
         case MultiGetByOffset:
         case GetDirectPname:
         case Call:
+        case TailCallInlinedCaller:
         case Construct:
         case CallVarargs:
+        case TailCallVarargsInlinedCaller:
         case ConstructVarargs:
         case CallForwardVarargs:
         case ConstructForwardVarargs:
         case NativeCall:
         case NativeConstruct:
+        case TailCallForwardVarargsInlinedCaller:
         case GetGlobalVar:
         case GetClosureVar:
         case GetFromArguments: {
@@ -217,6 +220,7 @@ private:
         case GetGetter:
         case GetSetter:
         case GetCallee:
+        case NewArrowFunction:
         case NewFunction: {
             changed |= setPrediction(SpecFunction);
             break;
@@ -375,6 +379,7 @@ private:
         case CompareEqConstant:
         case CompareStrictEq:
         case InstanceOf:
+        case IsJSArray:
         case IsUndefined:
         case IsBoolean:
         case IsNumber:
@@ -562,7 +567,6 @@ private:
         case PhantomDirectArguments:
         case PhantomClonedArguments:
         case GetMyArgumentByVal:
-        case ForwardVarargs:
         case PutHint:
         case CheckStructureImmediate:
         case MaterializeNewObject:
@@ -587,11 +591,15 @@ private:
             // These don't get inserted until we go into SSA.
             RELEASE_ASSERT_NOT_REACHED();
             break;
-
+    
         case GetScope:
             changed |= setPrediction(SpecObjectOther);
             break;
-            
+
+        case LoadArrowFunctionThis:
+            changed |= setPrediction(SpecFinalObject);
+            break;
+
         case In:
             changed |= setPrediction(SpecBoolean);
             break;
@@ -630,6 +638,9 @@ private:
         case PutClosureVar:
         case PutToArguments:
         case Return:
+        case TailCall:
+        case TailCallVarargs:
+        case TailCallForwardVarargs:
         case Throw:
         case PutById:
         case PutByIdFlush:
@@ -640,8 +651,6 @@ private:
         case Branch:
         case Switch:
         case Breakpoint:
-        case ProfileWillCall:
-        case ProfileDidCall:
         case ProfileType:
         case ProfileControlFlow:
         case CheckHasInstance:
@@ -665,6 +674,7 @@ private:
         case MovHint:
         case ZombieHint:
         case LoadVarargs:
+        case ForwardVarargs:
             break;
             
         // This gets ignored because it only pretends to produce a value.

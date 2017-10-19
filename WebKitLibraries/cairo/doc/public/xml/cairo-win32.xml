@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-Win32-Surfaces.top_of_page">Win32 Surfaces</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>Win32 Surfaces</refname>
@@ -53,11 +51,6 @@
 </tgroup>
 </informaltable>
 </refsect1>
-<refsect1 id="cairo-Win32-Surfaces.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
-</refsect1>
 
 
 <refsect1 id="cairo-Win32-Surfaces.description" role="desc">
@@ -83,8 +76,9 @@ queried for its initial clip extents, and this will be used as the
 size of the cairo surface.  The resulting surface will always be of
 format <link linkend="CAIRO-FORMAT-RGB24:CAPS"><literal>CAIRO_FORMAT_RGB24</literal></link>; should you need another surface format,
 you will need to create one through
+<link linkend="cairo-win32-surface-create-with-format"><function>cairo_win32_surface_create_with_format()</function></link> or
 <link linkend="cairo-win32-surface-create-with-dib"><function>cairo_win32_surface_create_with_dib()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-win32-surface-create.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -96,11 +90,10 @@ you will need to create one through
 <entry role="parameter_description"><para>the DC to create a surface for</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-win32-surface-create.returns" role="returns">
 <title>Returns</title>
-<para> the newly created surface</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+<para> the newly created surface, NULL on failure</para>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-win32-surface-create-with-dib" role="function" condition="since:1.2">
 <title>cairo_win32_surface_create_with_dib&#160;()</title>
 <indexterm zone="cairo-win32-surface-create-with-dib" role="1.2"><primary sortas="win32_surface_create_with_dib">cairo_win32_surface_create_with_dib</primary></indexterm>
@@ -111,7 +104,7 @@ cairo_win32_surface_create_with_dib (<parameter><link linkend="cairo-format-t"><
 <para>Creates a device-independent-bitmap surface not associated with
 any particular existing surface or device context. The created
 bitmap will be uninitialized.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-win32-surface-create-with-dib.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -129,11 +122,10 @@ bitmap will be uninitialized.</para>
 <entry role="parameter_description"><para>height of the surface, in pixels</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-win32-surface-create-with-dib.returns" role="returns">
 <title>Returns</title>
 <para> the newly created surface</para>
-<para></para>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-win32-surface-create-with-ddb" role="function" condition="since:1.4">
 <title>cairo_win32_surface_create_with_ddb&#160;()</title>
 <indexterm zone="cairo-win32-surface-create-with-ddb" role="1.4"><primary sortas="win32_surface_create_with_ddb">cairo_win32_surface_create_with_ddb</primary></indexterm>
@@ -145,7 +137,7 @@ cairo_win32_surface_create_with_ddb (<parameter><link linkend="HDC:CAPS"><type>H
 <para>Creates a device-dependent-bitmap surface not associated with
 any particular existing surface or device context. The created
 bitmap will be uninitialized.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-win32-surface-create-with-ddb.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -166,11 +158,10 @@ bitmap will be uninitialized.</para>
 <entry role="parameter_description"><para>height of the surface, in pixels</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-win32-surface-create-with-ddb.returns" role="returns">
 <title>Returns</title>
 <para> the newly created surface</para>
-<para></para>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 <refsect2 id="cairo-win32-printing-surface-create" role="function" condition="since:1.6">
 <title>cairo_win32_printing_surface_create&#160;()</title>
 <indexterm zone="cairo-win32-printing-surface-create" role="1.6"><primary sortas="win32_printing_surface_create">cairo_win32_printing_surface_create</primary></indexterm>
@@ -184,7 +175,7 @@ possible to draw to the surface.</para>
 <para>The returned surface will be wrapped using the paginated surface to
 provide correct complex rendering behaviour; <link linkend="cairo-surface-show-page"><function>cairo_surface_show_page()</function></link> and
 associated methods must be used for correct output.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-win32-printing-surface-create.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -196,11 +187,10 @@ associated methods must be used for correct output.</para>
 <entry role="parameter_description"><para>the DC to create a surface for</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-win32-printing-surface-create.returns" role="returns">
 <title>Returns</title>
 <para> the newly created surface</para>
-<para></para>
-</refsect3><para role="since">Since 1.6</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.6">1.6</link></para></refsect2>
 <refsect2 id="cairo-win32-surface-get-dc" role="function" condition="since:1.2">
 <title>cairo_win32_surface_get_dc&#160;()</title>
 <indexterm zone="cairo-win32-surface-get-dc" role="1.2"><primary sortas="win32_surface_get_dc">cairo_win32_surface_get_dc</primary></indexterm>
@@ -213,7 +203,7 @@ ensure that all pending drawing operations are finished and to
 restore any temporary modification cairo has made to its state. A
 call to <link linkend="cairo-surface-mark-dirty"><function>cairo_surface_mark_dirty()</function></link> is required after the state or
 the content of the HDC has been modified.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-win32-surface-get-dc.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -225,11 +215,10 @@ the content of the HDC has been modified.</para>
 <entry role="parameter_description"><para>a <link linkend="cairo-surface-t"><type>cairo_surface_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-win32-surface-get-dc.returns" role="returns">
 <title>Returns</title>
 <para> HDC or <link linkend="NULL:CAPS"><literal>NULL</literal></link> if no HDC available.</para>
-<para></para>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-win32-surface-get-image" role="function" condition="since:1.4">
 <title>cairo_win32_surface_get_image&#160;()</title>
 <indexterm zone="cairo-win32-surface-get-image" role="1.4"><primary sortas="win32_surface_get_image">cairo_win32_surface_get_image</primary></indexterm>
@@ -238,7 +227,7 @@ cairo_win32_surface_get_image (<parameter><link linkend="cairo-surface-t"><type>
 <para>Returns a <link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> image surface that refers to the same bits
 as the DIB of the Win32 surface.  If the passed-in win32 surface
 is not a DIB surface, <link linkend="NULL:CAPS"><literal>NULL</literal></link> is returned.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-win32-surface-get-image.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -250,12 +239,11 @@ is not a DIB surface, <link linkend="NULL:CAPS"><literal>NULL</literal></link> i
 <entry role="parameter_description"><para>a <link linkend="cairo-surface-t"><type>cairo_surface_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-win32-surface-get-image.returns" role="returns">
 <title>Returns</title>
 <para> a <link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> (owned by the win32 <link linkend="cairo-surface-t"><type>cairo_surface_t</type></link>),
 or <link linkend="NULL:CAPS"><literal>NULL</literal></link> if the win32 surface is not a DIB.</para>
-<para></para>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-Win32-Surfaces.other_details" role="details">
@@ -267,7 +255,7 @@ or <link linkend="NULL:CAPS"><literal>NULL</literal></link> if the win32 surface
 </programlisting>
 <para>Defined if the Microsoft Windows surface backend is available.
 This macro can be used to conditionally compile backend-specific code.</para>
-<para role="since">Since 1.0</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-Win32-Surfaces.see-also">

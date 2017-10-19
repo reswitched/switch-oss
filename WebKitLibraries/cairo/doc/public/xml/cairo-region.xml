@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-Regions.top_of_page">Regions</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>Regions</refname>
@@ -88,11 +86,6 @@
 </tgroup>
 </informaltable>
 </refsect1>
-<refsect1 id="cairo-Regions.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
-</refsect1>
 
 
 <refsect1 id="cairo-Regions.description" role="desc">
@@ -110,15 +103,14 @@ to track areas of interest, such as change or clip areas.</para>
 <programlisting language="C"><link linkend="cairo-region-t"><returnvalue>cairo_region_t</returnvalue></link>&#160;*
 cairo_region_create (<parameter><type>void</type></parameter>);</programlisting>
 <para>Allocates a new empty region object.</para>
-<refsect3 role="returns">
+<refsect3 id="cairo-region-create.returns" role="returns">
 <title>Returns</title>
 <para> A newly allocated <link linkend="cairo-region-t"><type>cairo_region_t</type></link>. Free with
 <link linkend="cairo-region-destroy"><function>cairo_region_destroy()</function></link>. This function always returns a
 valid pointer; if memory cannot be allocated, then a special
 error object is returned where all operations on the object do nothing.
 You can check for this with <link linkend="cairo-region-status"><function>cairo_region_status()</function></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-region-create-rectangle" role="function" condition="since:1.10">
 <title>cairo_region_create_rectangle&#160;()</title>
 <indexterm zone="cairo-region-create-rectangle" role="1.10"><primary sortas="region_create_rectangle">cairo_region_create_rectangle</primary></indexterm>
@@ -126,7 +118,7 @@ You can check for this with <link linkend="cairo-region-status"><function>cairo_
 cairo_region_create_rectangle (<parameter>const <link linkend="cairo-rectangle-int-t"><type>cairo_rectangle_int_t</type></link> *rectangle</parameter>);</programlisting>
 <para>Allocates a new region object containing <parameter>rectangle</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-region-create-rectangle.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -138,15 +130,14 @@ cairo_region_create_rectangle (<parameter>const <link linkend="cairo-rectangle-i
 <entry role="parameter_description"><para>a <link linkend="cairo-rectangle-int-t"><type>cairo_rectangle_int_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-region-create-rectangle.returns" role="returns">
 <title>Returns</title>
 <para> A newly allocated <link linkend="cairo-region-t"><type>cairo_region_t</type></link>. Free with
 <link linkend="cairo-region-destroy"><function>cairo_region_destroy()</function></link>. This function always returns a
 valid pointer; if memory cannot be allocated, then a special
 error object is returned where all operations on the object do nothing.
 You can check for this with <link linkend="cairo-region-status"><function>cairo_region_status()</function></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-region-create-rectangles" role="function" condition="since:1.10">
 <title>cairo_region_create_rectangles&#160;()</title>
 <indexterm zone="cairo-region-create-rectangles" role="1.10"><primary sortas="region_create_rectangles">cairo_region_create_rectangles</primary></indexterm>
@@ -155,7 +146,7 @@ cairo_region_create_rectangles (<parameter>const <link linkend="cairo-rectangle-
                                 <parameter><link linkend="int"><type>int</type></link> count</parameter>);</programlisting>
 <para>Allocates a new region object containing the union of all given <parameter>rects</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-region-create-rectangles.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -171,15 +162,14 @@ rectangles</para></entry>
 <entry role="parameter_description"><para>number of rectangles</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-region-create-rectangles.returns" role="returns">
 <title>Returns</title>
 <para> A newly allocated <link linkend="cairo-region-t"><type>cairo_region_t</type></link>. Free with
 <link linkend="cairo-region-destroy"><function>cairo_region_destroy()</function></link>. This function always returns a
 valid pointer; if memory cannot be allocated, then a special
 error object is returned where all operations on the object do nothing.
 You can check for this with <link linkend="cairo-region-status"><function>cairo_region_status()</function></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-region-copy" role="function" condition="since:1.10">
 <title>cairo_region_copy&#160;()</title>
 <indexterm zone="cairo-region-copy" role="1.10"><primary sortas="region_copy">cairo_region_copy</primary></indexterm>
@@ -187,7 +177,7 @@ You can check for this with <link linkend="cairo-region-status"><function>cairo_
 cairo_region_copy (<parameter>const <link linkend="cairo-region-t"><type>cairo_region_t</type></link> *original</parameter>);</programlisting>
 <para>Allocates a new region object copying the area from <parameter>original</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-region-copy.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -199,15 +189,14 @@ cairo_region_copy (<parameter>const <link linkend="cairo-region-t"><type>cairo_r
 <entry role="parameter_description"><para>a <link linkend="cairo-region-t"><type>cairo_region_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-region-copy.returns" role="returns">
 <title>Returns</title>
 <para> A newly allocated <link linkend="cairo-region-t"><type>cairo_region_t</type></link>. Free with
 <link linkend="cairo-region-destroy"><function>cairo_region_destroy()</function></link>. This function always returns a
 valid pointer; if memory cannot be allocated, then a special
 error object is returned where all operations on the object do nothing.
 You can check for this with <link linkend="cairo-region-status"><function>cairo_region_status()</function></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-region-reference" role="function" condition="since:1.10">
 <title>cairo_region_reference&#160;()</title>
 <indexterm zone="cairo-region-reference" role="1.10"><primary sortas="region_reference">cairo_region_reference</primary></indexterm>
@@ -218,7 +207,7 @@ cairo_region_reference (<parameter><link linkend="cairo-region-t"><type>cairo_re
 <parameter>region</parameter>
  from being destroyed until a matching call to
 <link linkend="cairo-region-destroy"><function>cairo_region_destroy()</function></link> is made.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-region-reference.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -230,11 +219,10 @@ cairo_region_reference (<parameter><link linkend="cairo-region-t"><type>cairo_re
 <entry role="parameter_description"><para>a <link linkend="cairo-region-t"><type>cairo_region_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-region-reference.returns" role="returns">
 <title>Returns</title>
 <para> the referenced <link linkend="cairo-region-t"><type>cairo_region_t</type></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-region-destroy" role="function" condition="since:1.10">
 <title>cairo_region_destroy&#160;()</title>
 <indexterm zone="cairo-region-destroy" role="1.10"><primary sortas="region_destroy">cairo_region_destroy</primary></indexterm>
@@ -243,7 +231,7 @@ cairo_region_destroy (<parameter><link linkend="cairo-region-t"><type>cairo_regi
 <para>Destroys a <link linkend="cairo-region-t"><type>cairo_region_t</type></link> object created with
 <link linkend="cairo-region-create"><function>cairo_region_create()</function></link>, <link linkend="cairo-region-copy"><function>cairo_region_copy()</function></link>, or
 or <link linkend="cairo-region-create-rectangle"><function>cairo_region_create_rectangle()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-region-destroy.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -255,7 +243,7 @@ or <link linkend="cairo-region-create-rectangle"><function>cairo_region_create_r
 <entry role="parameter_description"><para>a <link linkend="cairo-region-t"><type>cairo_region_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-region-status" role="function" condition="since:1.10">
 <title>cairo_region_status&#160;()</title>
 <indexterm zone="cairo-region-status" role="1.10"><primary sortas="region_status">cairo_region_status</primary></indexterm>
@@ -263,7 +251,7 @@ or <link linkend="cairo-region-create-rectangle"><function>cairo_region_create_r
 cairo_region_status (<parameter>const <link linkend="cairo-region-t"><type>cairo_region_t</type></link> *region</parameter>);</programlisting>
 <para>Checks whether an error has previous occurred for this
 region object.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-region-status.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -275,11 +263,10 @@ region object.</para>
 <entry role="parameter_description"><para>a <link linkend="cairo-region-t"><type>cairo_region_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-region-status.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> or <link linkend="CAIRO-STATUS-NO-MEMORY:CAPS"><literal>CAIRO_STATUS_NO_MEMORY</literal></link></para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-region-get-extents" role="function" condition="since:1.10">
 <title>cairo_region_get_extents&#160;()</title>
 <indexterm zone="cairo-region-get-extents" role="1.10"><primary sortas="region_get_extents">cairo_region_get_extents</primary></indexterm>
@@ -288,7 +275,7 @@ cairo_region_get_extents (<parameter>const <link linkend="cairo-region-t"><type>
                           <parameter><link linkend="cairo-rectangle-int-t"><type>cairo_rectangle_int_t</type></link> *extents</parameter>);</programlisting>
 <para>Gets the bounding rectangle of <parameter>region</parameter>
  as a <link linkend="cairo-rectangle-int-t"><type>cairo_rectangle_int_t</type></link></para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-region-get-extents.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -303,7 +290,7 @@ cairo_region_get_extents (<parameter>const <link linkend="cairo-region-t"><type>
 <entry role="parameter_description"><para>rectangle into which to store the extents</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-region-num-rectangles" role="function" condition="since:1.10">
 <title>cairo_region_num_rectangles&#160;()</title>
 <indexterm zone="cairo-region-num-rectangles" role="1.10"><primary sortas="region_num_rectangles">cairo_region_num_rectangles</primary></indexterm>
@@ -311,7 +298,7 @@ cairo_region_get_extents (<parameter>const <link linkend="cairo-region-t"><type>
 cairo_region_num_rectangles (<parameter>const <link linkend="cairo-region-t"><type>cairo_region_t</type></link> *region</parameter>);</programlisting>
 <para>Returns the number of rectangles contained in <parameter>region</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-region-num-rectangles.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -323,12 +310,11 @@ cairo_region_num_rectangles (<parameter>const <link linkend="cairo-region-t"><ty
 <entry role="parameter_description"><para>a <link linkend="cairo-region-t"><type>cairo_region_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-region-num-rectangles.returns" role="returns">
 <title>Returns</title>
 <para> The number of rectangles contained in <parameter>region</parameter>
 .</para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-region-get-rectangle" role="function" condition="since:1.10">
 <title>cairo_region_get_rectangle&#160;()</title>
 <indexterm zone="cairo-region-get-rectangle" role="1.10"><primary sortas="region_get_rectangle">cairo_region_get_rectangle</primary></indexterm>
@@ -339,7 +325,7 @@ cairo_region_get_rectangle (<parameter>const <link linkend="cairo-region-t"><typ
 <para>Stores the <parameter>nth</parameter>
  rectangle from the region in <parameter>rectangle</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-region-get-rectangle.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -357,7 +343,7 @@ cairo_region_get_rectangle (<parameter>const <link linkend="cairo-region-t"><typ
 <entry role="parameter_description"><para>return location for a <link linkend="cairo-rectangle-int-t"><type>cairo_rectangle_int_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-region-is-empty" role="function" condition="since:1.10">
 <title>cairo_region_is_empty&#160;()</title>
 <indexterm zone="cairo-region-is-empty" role="1.10"><primary sortas="region_is_empty">cairo_region_is_empty</primary></indexterm>
@@ -365,7 +351,7 @@ cairo_region_get_rectangle (<parameter>const <link linkend="cairo-region-t"><typ
 cairo_region_is_empty (<parameter>const <link linkend="cairo-region-t"><type>cairo_region_t</type></link> *region</parameter>);</programlisting>
 <para>Checks whether <parameter>region</parameter>
  is empty.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-region-is-empty.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -377,12 +363,11 @@ cairo_region_is_empty (<parameter>const <link linkend="cairo-region-t"><type>cai
 <entry role="parameter_description"><para>a <link linkend="cairo-region-t"><type>cairo_region_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-region-is-empty.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="TRUE:CAPS"><literal>TRUE</literal></link> if <parameter>region</parameter>
 is empty, <link linkend="FALSE:CAPS"><literal>FALSE</literal></link> if it isn't.</para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-region-contains-point" role="function" condition="since:1.10">
 <title>cairo_region_contains_point&#160;()</title>
 <indexterm zone="cairo-region-contains-point" role="1.10"><primary sortas="region_contains_point">cairo_region_contains_point</primary></indexterm>
@@ -394,7 +379,7 @@ cairo_region_contains_point (<parameter>const <link linkend="cairo-region-t"><ty
 , <parameter>y</parameter>
 ) is contained in <parameter>region</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-region-contains-point.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -412,14 +397,13 @@ cairo_region_contains_point (<parameter>const <link linkend="cairo-region-t"><ty
 <entry role="parameter_description"><para>the y coordinate of a point</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-region-contains-point.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="TRUE:CAPS"><literal>TRUE</literal></link> if (<parameter>x</parameter>
 , <parameter>y</parameter>
 ) is contained in <parameter>region</parameter>
 , <link linkend="FALSE:CAPS"><literal>FALSE</literal></link> if it is not.</para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-region-contains-rectangle" role="function" condition="since:1.10">
 <title>cairo_region_contains_rectangle&#160;()</title>
 <indexterm zone="cairo-region-contains-rectangle" role="1.10"><primary sortas="region_contains_rectangle">cairo_region_contains_rectangle</primary></indexterm>
@@ -430,7 +414,7 @@ cairo_region_contains_rectangle (<parameter>const <link linkend="cairo-region-t"
  is inside, outside or partially contained
 in <parameter>region</parameter>
 </para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-region-contains-rectangle.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -445,7 +429,7 @@ in <parameter>region</parameter>
 <entry role="parameter_description"><para>a <link linkend="cairo-rectangle-int-t"><type>cairo_rectangle_int_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-region-contains-rectangle.returns" role="returns">
 <title>Returns</title>
 <para>  <link linkend="CAIRO-REGION-OVERLAP-IN:CAPS"><literal>CAIRO_REGION_OVERLAP_IN</literal></link> if <parameter>rectangle</parameter>
 is entirely inside <parameter>region</parameter>
@@ -456,8 +440,7 @@ is entirely outside <parameter>region</parameter>
 <link linkend="CAIRO-REGION-OVERLAP-PART:CAPS"><literal>CAIRO_REGION_OVERLAP_PART</literal></link> if <parameter>rectangle</parameter>
 is partially inside and partially outside <parameter>region</parameter>
 .</para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-region-equal" role="function" condition="since:1.10">
 <title>cairo_region_equal&#160;()</title>
 <indexterm zone="cairo-region-equal" role="1.10"><primary sortas="region_equal">cairo_region_equal</primary></indexterm>
@@ -466,7 +449,7 @@ cairo_region_equal (<parameter>const <link linkend="cairo-region-t"><type>cairo_
                     <parameter>const <link linkend="cairo-region-t"><type>cairo_region_t</type></link> *b</parameter>);</programlisting>
 <para>Compares whether region_a is equivalent to region_b. <link linkend="NULL:CAPS"><literal>NULL</literal></link> as an argument
 is equal to itself, but not to any non-<link linkend="NULL:CAPS"><literal>NULL</literal></link> region.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-region-equal.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -481,12 +464,11 @@ is equal to itself, but not to any non-<link linkend="NULL:CAPS"><literal>NULL</
 <entry role="parameter_description"><para>a <link linkend="cairo-region-t"><type>cairo_region_t</type></link> or <link linkend="NULL:CAPS"><literal>NULL</literal></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-region-equal.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="TRUE:CAPS"><literal>TRUE</literal></link> if both regions contained the same coverage,
 <link linkend="FALSE:CAPS"><literal>FALSE</literal></link> if it is not or any region is in an error status.</para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-region-translate" role="function" condition="since:1.10">
 <title>cairo_region_translate&#160;()</title>
 <indexterm zone="cairo-region-translate" role="1.10"><primary sortas="region_translate">cairo_region_translate</primary></indexterm>
@@ -498,7 +480,7 @@ cairo_region_translate (<parameter><link linkend="cairo-region-t"><type>cairo_re
  by (<parameter>dx</parameter>
 , <parameter>dy</parameter>
 ).</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-region-translate.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -516,7 +498,7 @@ cairo_region_translate (<parameter><link linkend="cairo-region-t"><type>cairo_re
 <entry role="parameter_description"><para>Amount to translate in the y direction</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-region-intersect" role="function" condition="since:1.10">
 <title>cairo_region_intersect&#160;()</title>
 <indexterm zone="cairo-region-intersect" role="1.10"><primary sortas="region_intersect">cairo_region_intersect</primary></indexterm>
@@ -527,7 +509,7 @@ cairo_region_intersect (<parameter><link linkend="cairo-region-t"><type>cairo_re
  with <parameter>other</parameter>
  and places the result in <parameter>dst</parameter>
 </para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-region-intersect.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -542,11 +524,10 @@ cairo_region_intersect (<parameter><link linkend="cairo-region-t"><type>cairo_re
 <entry role="parameter_description"><para>another <link linkend="cairo-region-t"><type>cairo_region_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-region-intersect.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> or <link linkend="CAIRO-STATUS-NO-MEMORY:CAPS"><literal>CAIRO_STATUS_NO_MEMORY</literal></link></para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-region-intersect-rectangle" role="function" condition="since:1.10">
 <title>cairo_region_intersect_rectangle&#160;()</title>
 <indexterm zone="cairo-region-intersect-rectangle" role="1.10"><primary sortas="region_intersect_rectangle">cairo_region_intersect_rectangle</primary></indexterm>
@@ -558,7 +539,7 @@ cairo_region_intersect_rectangle (<parameter><link linkend="cairo-region-t"><typ
  and places the
 result in <parameter>dst</parameter>
 </para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-region-intersect-rectangle.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -573,11 +554,10 @@ result in <parameter>dst</parameter>
 <entry role="parameter_description"><para>a <link linkend="cairo-rectangle-int-t"><type>cairo_rectangle_int_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-region-intersect-rectangle.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> or <link linkend="CAIRO-STATUS-NO-MEMORY:CAPS"><literal>CAIRO_STATUS_NO_MEMORY</literal></link></para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-region-subtract" role="function" condition="since:1.10">
 <title>cairo_region_subtract&#160;()</title>
 <indexterm zone="cairo-region-subtract" role="1.10"><primary sortas="region_subtract">cairo_region_subtract</primary></indexterm>
@@ -588,7 +568,7 @@ cairo_region_subtract (<parameter><link linkend="cairo-region-t"><type>cairo_reg
  from <parameter>dst</parameter>
  and places the result in <parameter>dst</parameter>
 </para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-region-subtract.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -603,11 +583,10 @@ cairo_region_subtract (<parameter><link linkend="cairo-region-t"><type>cairo_reg
 <entry role="parameter_description"><para>another <link linkend="cairo-region-t"><type>cairo_region_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-region-subtract.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> or <link linkend="CAIRO-STATUS-NO-MEMORY:CAPS"><literal>CAIRO_STATUS_NO_MEMORY</literal></link></para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-region-subtract-rectangle" role="function" condition="since:1.10">
 <title>cairo_region_subtract_rectangle&#160;()</title>
 <indexterm zone="cairo-region-subtract-rectangle" role="1.10"><primary sortas="region_subtract_rectangle">cairo_region_subtract_rectangle</primary></indexterm>
@@ -618,7 +597,7 @@ cairo_region_subtract_rectangle (<parameter><link linkend="cairo-region-t"><type
  from <parameter>dst</parameter>
  and places the result in <parameter>dst</parameter>
 </para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-region-subtract-rectangle.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -633,11 +612,10 @@ cairo_region_subtract_rectangle (<parameter><link linkend="cairo-region-t"><type
 <entry role="parameter_description"><para>a <link linkend="cairo-rectangle-int-t"><type>cairo_rectangle_int_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-region-subtract-rectangle.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> or <link linkend="CAIRO-STATUS-NO-MEMORY:CAPS"><literal>CAIRO_STATUS_NO_MEMORY</literal></link></para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-region-union" role="function" condition="since:1.10">
 <title>cairo_region_union&#160;()</title>
 <indexterm zone="cairo-region-union" role="1.10"><primary sortas="region_union">cairo_region_union</primary></indexterm>
@@ -648,7 +626,7 @@ cairo_region_union (<parameter><link linkend="cairo-region-t"><type>cairo_region
  with <parameter>other</parameter>
  and places the result in <parameter>dst</parameter>
 </para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-region-union.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -663,11 +641,10 @@ cairo_region_union (<parameter><link linkend="cairo-region-t"><type>cairo_region
 <entry role="parameter_description"><para>another <link linkend="cairo-region-t"><type>cairo_region_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-region-union.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> or <link linkend="CAIRO-STATUS-NO-MEMORY:CAPS"><literal>CAIRO_STATUS_NO_MEMORY</literal></link></para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-region-union-rectangle" role="function" condition="since:1.10">
 <title>cairo_region_union_rectangle&#160;()</title>
 <indexterm zone="cairo-region-union-rectangle" role="1.10"><primary sortas="region_union_rectangle">cairo_region_union_rectangle</primary></indexterm>
@@ -678,7 +655,7 @@ cairo_region_union_rectangle (<parameter><link linkend="cairo-region-t"><type>ca
  with <parameter>rectangle</parameter>
  and places the result in <parameter>dst</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-region-union-rectangle.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -693,11 +670,10 @@ cairo_region_union_rectangle (<parameter><link linkend="cairo-region-t"><type>ca
 <entry role="parameter_description"><para>a <link linkend="cairo-rectangle-int-t"><type>cairo_rectangle_int_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-region-union-rectangle.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> or <link linkend="CAIRO-STATUS-NO-MEMORY:CAPS"><literal>CAIRO_STATUS_NO_MEMORY</literal></link></para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-region-xor" role="function" condition="since:1.10">
 <title>cairo_region_xor&#160;()</title>
 <indexterm zone="cairo-region-xor" role="1.10"><primary sortas="region_xor">cairo_region_xor</primary></indexterm>
@@ -713,7 +689,7 @@ result in <parameter>dst</parameter>
 are either in <parameter>dst</parameter>
  or in <parameter>other</parameter>
 , but not in both.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-region-xor.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -728,11 +704,10 @@ are either in <parameter>dst</parameter>
 <entry role="parameter_description"><para>another <link linkend="cairo-region-t"><type>cairo_region_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-region-xor.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> or <link linkend="CAIRO-STATUS-NO-MEMORY:CAPS"><literal>CAIRO_STATUS_NO_MEMORY</literal></link></para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-region-xor-rectangle" role="function" condition="since:1.10">
 <title>cairo_region_xor_rectangle&#160;()</title>
 <indexterm zone="cairo-region-xor-rectangle" role="1.10"><primary sortas="region_xor_rectangle">cairo_region_xor_rectangle</primary></indexterm>
@@ -748,7 +723,7 @@ result in <parameter>dst</parameter>
 either in <parameter>dst</parameter>
  or in <parameter>rectangle</parameter>
 , but not in both.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-region-xor-rectangle.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -763,11 +738,10 @@ either in <parameter>dst</parameter>
 <entry role="parameter_description"><para>a <link linkend="cairo-rectangle-int-t"><type>cairo_rectangle_int_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-region-xor-rectangle.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> or <link linkend="CAIRO-STATUS-NO-MEMORY:CAPS"><literal>CAIRO_STATUS_NO_MEMORY</literal></link></para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-Regions.other_details" role="details">
@@ -782,12 +756,12 @@ either in <parameter>dst</parameter>
 <link linkend="cairo-region-intersect"><function>cairo_region_intersect()</function></link> to be performed on them.</para>
 <para>Memory management of <link linkend="cairo-region-t"><type>cairo_region_t</type></link> is done with
 <link linkend="cairo-region-reference"><function>cairo_region_reference()</function></link> and <link linkend="cairo-region-destroy"><function>cairo_region_destroy()</function></link>.</para>
-<para role="since">Since 1.10</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-region-overlap-t" role="enum" condition="since:1.10">
 <title>enum cairo_region_overlap_t</title>
 <indexterm zone="cairo-region-overlap-t" role="1.10"><primary sortas="region_overlap_t">cairo_region_overlap_t</primary></indexterm>
 <para>Used as the return value for <link linkend="cairo-region-contains-rectangle"><function>cairo_region_contains_rectangle()</function></link>.</para>
-<refsect3 role="enum_members">
+<refsect3 id="cairo-region-overlap-t.members" role="enum_members">
 <title>Members</title>
 <informaltable role="enum_members_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -812,7 +786,7 @@ either in <parameter>dst</parameter>
 <entry role="enum_member_annotations"></entry>
 </row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 
 </refsect1>
 

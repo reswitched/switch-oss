@@ -150,7 +150,18 @@ void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data, const Str
         return;
 
     URL fullURL = urlForState(urlString);
-    if (!fullURL.isValid() || !m_frame->document()->securityOrigin()->canRequest(fullURL)) {
+    if (!fullURL.isValid()) {
+        ec = SECURITY_ERR;
+        return;
+    }
+
+    const URL& documentURL = m_frame->document()->url();
+
+    if (!protocolHostAndPortAreEqual(fullURL, documentURL) || fullURL.user() != documentURL.user() || fullURL.pass() != documentURL.pass()) {
+        ec = SECURITY_ERR;
+        return;
+    }
+    if (!m_frame->document()->securityOrigin()->canRequest(fullURL) && (fullURL.path() != documentURL.path() || fullURL.query() != documentURL.query())) {
         ec = SECURITY_ERR;
         return;
     }

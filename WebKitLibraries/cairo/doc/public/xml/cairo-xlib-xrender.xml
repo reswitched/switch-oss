@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-XLib-XRender-Backend.top_of_page">XLib-XRender Backend</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>XLib-XRender Backend</refname>
@@ -45,11 +43,6 @@
 </tgroup>
 </informaltable>
 </refsect1>
-<refsect1 id="cairo-XLib-XRender-Backend.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
-</refsect1>
 
 
 <refsect1 id="cairo-XLib-XRender-Backend.description" role="desc">
@@ -80,7 +73,7 @@ by the provided picture format.</para>
  is a Window, then the function
 <link linkend="cairo-xlib-surface-set-size"><function>cairo_xlib_surface_set_size()</function></link> must be called whenever the size of the
 window changes.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xlib-surface-create-with-xrender-format.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -113,11 +106,10 @@ must match the depth of the drawable.</para></entry>
 .</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-xlib-surface-create-with-xrender-format.returns" role="returns">
 <title>Returns</title>
 <para> the newly created surface</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-xlib-surface-get-xrender-format" role="function" condition="since:1.6">
 <title>cairo_xlib_surface_get_xrender_format&#160;()</title>
 <indexterm zone="cairo-xlib-surface-get-xrender-format" role="1.6"><primary sortas="xlib_surface_get_xrender_format">cairo_xlib_surface_get_xrender_format</primary></indexterm>
@@ -128,7 +120,7 @@ cairo_xlib_surface_get_xrender_format (<parameter><link linkend="cairo-surface-t
 X Render extension. If the surface was created by
 <link linkend="cairo-xlib-surface-create-with-xrender-format"><function>cairo_xlib_surface_create_with_xrender_format()</function></link> originally, the return
 value is the format passed to that constructor.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xlib-surface-get-xrender-format.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -140,14 +132,13 @@ value is the format passed to that constructor.</para>
 <entry role="parameter_description"><para>an xlib surface</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-xlib-surface-get-xrender-format.returns" role="returns">
 <title>Returns</title>
 <para> the XRenderPictFormat* associated with <parameter>surface</parameter>
 ,
 or <link linkend="NULL:CAPS"><literal>NULL</literal></link> if the surface is not an xlib surface
 or if the X Render extension is not available.</para>
-<para></para>
-</refsect3><para role="since">Since 1.6</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.6">1.6</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-XLib-XRender-Backend.other_details" role="details">
@@ -159,7 +150,7 @@ or if the X Render extension is not available.</para>
 </programlisting>
 <para>Defined if the XLib/XRender surface functions are available.
 This macro can be used to conditionally compile backend-specific code.</para>
-<para role="since">Since 1.6</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.6">1.6</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-XLib-XRender-Backend.see-also">

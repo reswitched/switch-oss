@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2000 Peter Kelly (pmk@post.com)
- * Copyright (C) 2006, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2006-2017 Apple Inc. All rights reserved.
  * Copyright (C) 2013 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -35,6 +35,7 @@
 #include "XMLDocumentParser.h" // for parseAttributes()
 #include "MediaList.h"
 #include "StyleSheetContents.h"
+#include <wtf/TemporaryChange.h>
 
 namespace WebCore {
 
@@ -79,7 +80,7 @@ Node::NodeType ProcessingInstruction::nodeType() const
     return PROCESSING_INSTRUCTION_NODE;
 }
 
-RefPtr<Node> ProcessingInstruction::cloneNodeInternal(Document& targetDocument, CloningOperation)
+Ref<Node> ProcessingInstruction::cloneNodeInternal(Document& targetDocument, CloningOperation)
 {
     // FIXME: Is it a problem that this does not copy m_localHref?
     // What about other data members?
@@ -88,6 +89,10 @@ RefPtr<Node> ProcessingInstruction::cloneNodeInternal(Document& targetDocument, 
 
 void ProcessingInstruction::checkStyleSheet()
 {
+    // Prevent recursive loading of stylesheet.
+    if (m_isHandlingBeforeLoad)
+        return;
+
     if (m_target == "xml-stylesheet" && document().frame() && parentNode() == &document()) {
         // see http://www.w3.org/TR/xml-stylesheet/
         // ### support stylesheet included in a fragment of this (or another) document
@@ -138,9 +143,20 @@ void ProcessingInstruction::checkStyleSheet()
             }
             
             String url = document().completeURL(href).string();
-            if (!dispatchBeforeLoadEvent(url))
+
+            Ref<Document> originalDocument = document();
+            {
+                TemporaryChange<bool> change(m_isHandlingBeforeLoad, true);
+                if (!dispatchBeforeLoadEvent(url))
+                    return;
+            }
+
+            bool didEventListenerDisconnectThisElement = !inDocument() || &document() != originalDocument.ptr();
+            if (didEventListenerDisconnectThisElement)
                 return;
-            
+
+            ASSERT_WITH_SECURITY_IMPLICATION(!m_cachedSheet);
+
             m_loading = true;
             document().styleSheetCollection().addPendingSheet();
             
@@ -207,6 +223,7 @@ void ProcessingInstruction::setCSSStyleSheet(const String& href, const URL& base
     // We don't need the cross-origin security check here because we are
     // getting the sheet text in "strict" mode. This enforces a valid CSS MIME
     // type.
+    Ref<Document> protect(document());
     parseStyleSheet(sheet->sheetText());
 }
 

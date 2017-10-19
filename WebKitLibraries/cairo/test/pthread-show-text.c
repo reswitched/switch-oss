@@ -63,7 +63,7 @@ draw_thread (void *arg)
     cairo_paint (cr);
     cairo_set_source_rgb (cr, 0, 0, 0);
 
-    cairo_select_font_face (cr, "serif",
+    cairo_select_font_face (cr, CAIRO_TEST_FONT_FAMILY " Serif",
 			    CAIRO_FONT_SLANT_NORMAL,
 			    CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size (cr, NUM_ITERATIONS);
@@ -74,7 +74,7 @@ draw_thread (void *arg)
     for (i = 0; i < NUM_ITERATIONS; i++) {
 	char buf[2];
 
-        cairo_select_font_face (cr, "serif",
+	cairo_select_font_face (cr, CAIRO_TEST_FONT_FAMILY " Serif",
 				CAIRO_FONT_SLANT_NORMAL,
 				CAIRO_FONT_WEIGHT_NORMAL);
 	cairo_set_font_size (cr, i);

@@ -3,7 +3,7 @@
                 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
 <!ENTITY version SYSTEM "version.xml">
 ]>
-<indexdiv>
+<indexdiv id="api-index-full">
 <indexdiv><title>A</title>
 <indexentry><primaryie linkends="cairo-antialias-t"><link linkend="cairo-antialias-t">cairo_antialias_t</link>, enum in <link linkend="cairo-cairo-t">cairo_t</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-append-path"><link linkend="cairo-append-path">cairo_append_path</link>, function in <link linkend="cairo-Paths">Paths</link></primaryie></indexentry>
@@ -261,10 +261,17 @@
 <indexentry><primaryie linkends="cairo-pattern-t"><link linkend="cairo-pattern-t">cairo_pattern_t</link>, typedef in <link linkend="cairo-cairo-pattern-t">cairo_pattern_t</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-pattern-type-t"><link linkend="cairo-pattern-type-t">cairo_pattern_type_t</link>, enum in <link linkend="cairo-cairo-pattern-t">cairo_pattern_t</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-pdf-get-versions"><link linkend="cairo-pdf-get-versions">cairo_pdf_get_versions</link>, function in <link linkend="cairo-PDF-Surfaces">PDF Surfaces</link></primaryie></indexentry>
+<indexentry><primaryie linkends="cairo-pdf-metadata-t"><link linkend="cairo-pdf-metadata-t">cairo_pdf_metadata_t</link>, enum in <link linkend="cairo-PDF-Surfaces">PDF Surfaces</link></primaryie></indexentry>
+<indexentry><primaryie linkends="cairo-pdf-outline-flags-t"><link linkend="cairo-pdf-outline-flags-t">cairo_pdf_outline_flags_t</link>, enum in <link linkend="cairo-PDF-Surfaces">PDF Surfaces</link></primaryie></indexentry>
+<indexentry><primaryie linkends="CAIRO-PDF-OUTLINE-ROOT:CAPS"><link linkend="CAIRO-PDF-OUTLINE-ROOT:CAPS">CAIRO_PDF_OUTLINE_ROOT</link>, macro in <link linkend="cairo-PDF-Surfaces">PDF Surfaces</link></primaryie></indexentry>
+<indexentry><primaryie linkends="cairo-pdf-surface-add-outline"><link linkend="cairo-pdf-surface-add-outline">cairo_pdf_surface_add_outline</link>, function in <link linkend="cairo-PDF-Surfaces">PDF Surfaces</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-pdf-surface-create"><link linkend="cairo-pdf-surface-create">cairo_pdf_surface_create</link>, function in <link linkend="cairo-PDF-Surfaces">PDF Surfaces</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-pdf-surface-create-for-stream"><link linkend="cairo-pdf-surface-create-for-stream">cairo_pdf_surface_create_for_stream</link>, function in <link linkend="cairo-PDF-Surfaces">PDF Surfaces</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-pdf-surface-restrict-to-version"><link linkend="cairo-pdf-surface-restrict-to-version">cairo_pdf_surface_restrict_to_version</link>, function in <link linkend="cairo-PDF-Surfaces">PDF Surfaces</link></primaryie></indexentry>
+<indexentry><primaryie linkends="cairo-pdf-surface-set-metadata"><link linkend="cairo-pdf-surface-set-metadata">cairo_pdf_surface_set_metadata</link>, function in <link linkend="cairo-PDF-Surfaces">PDF Surfaces</link></primaryie></indexentry>
+<indexentry><primaryie linkends="cairo-pdf-surface-set-page-label"><link linkend="cairo-pdf-surface-set-page-label">cairo_pdf_surface_set_page_label</link>, function in <link linkend="cairo-PDF-Surfaces">PDF Surfaces</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-pdf-surface-set-size"><link linkend="cairo-pdf-surface-set-size">cairo_pdf_surface_set_size</link>, function in <link linkend="cairo-PDF-Surfaces">PDF Surfaces</link></primaryie></indexentry>
+<indexentry><primaryie linkends="cairo-pdf-surface-set-thumbnail-size"><link linkend="cairo-pdf-surface-set-thumbnail-size">cairo_pdf_surface_set_thumbnail_size</link>, function in <link linkend="cairo-PDF-Surfaces">PDF Surfaces</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-pdf-version-t"><link linkend="cairo-pdf-version-t">cairo_pdf_version_t</link>, enum in <link linkend="cairo-PDF-Surfaces">PDF Surfaces</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-pdf-version-to-string"><link linkend="cairo-pdf-version-to-string">cairo_pdf_version_to_string</link>, function in <link linkend="cairo-PDF-Surfaces">PDF Surfaces</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-pop-group"><link linkend="cairo-pop-group">cairo_pop_group</link>, function in <link linkend="cairo-cairo-t">cairo_t</link></primaryie></indexentry>
@@ -469,6 +476,10 @@
 </indexdiv>
 <indexdiv><title>T</title>
 <indexentry><primaryie linkends="cairo-t"><link linkend="cairo-t">cairo_t</link>, typedef in <link linkend="cairo-cairo-t">cairo_t</link></primaryie></indexentry>
+<indexentry><primaryie linkends="cairo-tag-begin"><link linkend="cairo-tag-begin">cairo_tag_begin</link>, function in <link linkend="cairo-Tags-and-Links">Tags and Links</link></primaryie></indexentry>
+<indexentry><primaryie linkends="CAIRO-TAG-DEST:CAPS"><link linkend="CAIRO-TAG-DEST:CAPS">CAIRO_TAG_DEST</link>, macro in <link linkend="cairo-Tags-and-Links">Tags and Links</link></primaryie></indexentry>
+<indexentry><primaryie linkends="cairo-tag-end"><link linkend="cairo-tag-end">cairo_tag_end</link>, function in <link linkend="cairo-Tags-and-Links">Tags and Links</link></primaryie></indexentry>
+<indexentry><primaryie linkends="CAIRO-TAG-LINK:CAPS"><link linkend="CAIRO-TAG-LINK:CAPS">CAIRO_TAG_LINK</link>, macro in <link linkend="cairo-Tags-and-Links">Tags and Links</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-text-cluster-allocate"><link linkend="cairo-text-cluster-allocate">cairo_text_cluster_allocate</link>, function in <link linkend="cairo-text">text</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-text-cluster-flags-t"><link linkend="cairo-text-cluster-flags-t">cairo_text_cluster_flags_t</link>, enum in <link linkend="cairo-text">text</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-text-cluster-free"><link linkend="cairo-text-cluster-free">cairo_text_cluster_free</link>, function in <link linkend="cairo-text">text</link></primaryie></indexentry>
@@ -502,14 +513,14 @@
 <indexentry><primaryie linkends="cairo-user-to-device-distance"><link linkend="cairo-user-to-device-distance">cairo_user_to_device_distance</link>, function in <link linkend="cairo-Transformations">Transformations</link></primaryie></indexentry>
 </indexdiv>
 <indexdiv><title>V</title>
-<indexentry><primaryie linkends="cairo-version"><link linkend="cairo-version">cairo_version</link>, function in <link linkend="cairo-Version-Information">Version Information</link></primaryie></indexentry>
 <indexentry><primaryie linkends="CAIRO-VERSION:CAPS"><link linkend="CAIRO-VERSION:CAPS">CAIRO_VERSION</link>, macro in <link linkend="cairo-Version-Information">Version Information</link></primaryie></indexentry>
+<indexentry><primaryie linkends="cairo-version"><link linkend="cairo-version">cairo_version</link>, function in <link linkend="cairo-Version-Information">Version Information</link></primaryie></indexentry>
 <indexentry><primaryie linkends="CAIRO-VERSION-ENCODE:CAPS"><link linkend="CAIRO-VERSION-ENCODE:CAPS">CAIRO_VERSION_ENCODE</link>, macro in <link linkend="cairo-Version-Information">Version Information</link></primaryie></indexentry>
 <indexentry><primaryie linkends="CAIRO-VERSION-MAJOR:CAPS"><link linkend="CAIRO-VERSION-MAJOR:CAPS">CAIRO_VERSION_MAJOR</link>, macro in <link linkend="cairo-Version-Information">Version Information</link></primaryie></indexentry>
 <indexentry><primaryie linkends="CAIRO-VERSION-MICRO:CAPS"><link linkend="CAIRO-VERSION-MICRO:CAPS">CAIRO_VERSION_MICRO</link>, macro in <link linkend="cairo-Version-Information">Version Information</link></primaryie></indexentry>
 <indexentry><primaryie linkends="CAIRO-VERSION-MINOR:CAPS"><link linkend="CAIRO-VERSION-MINOR:CAPS">CAIRO_VERSION_MINOR</link>, macro in <link linkend="cairo-Version-Information">Version Information</link></primaryie></indexentry>
-<indexentry><primaryie linkends="cairo-version-string"><link linkend="cairo-version-string">cairo_version_string</link>, function in <link linkend="cairo-Version-Information">Version Information</link></primaryie></indexentry>
 <indexentry><primaryie linkends="CAIRO-VERSION-STRING:CAPS"><link linkend="CAIRO-VERSION-STRING:CAPS">CAIRO_VERSION_STRING</link>, macro in <link linkend="cairo-Version-Information">Version Information</link></primaryie></indexentry>
+<indexentry><primaryie linkends="cairo-version-string"><link linkend="cairo-version-string">cairo_version_string</link>, function in <link linkend="cairo-Version-Information">Version Information</link></primaryie></indexentry>
 <indexentry><primaryie linkends="CAIRO-VERSION-STRINGIZE:CAPS"><link linkend="CAIRO-VERSION-STRINGIZE:CAPS">CAIRO_VERSION_STRINGIZE</link>, macro in <link linkend="cairo-Version-Information">Version Information</link></primaryie></indexentry>
 </indexdiv>
 <indexdiv><title>W</title>

@@ -385,7 +385,8 @@ _cairo_surface_create_observer_internal (cairo_device_t *device,
 
     _cairo_surface_init (&surface->base,
 			 &_cairo_surface_observer_backend, device,
-			 target->content);
+			 target->content,
+			 target->is_vector);
 
     status = log_init (&surface->log,
 		       ((cairo_device_observer_t *)device)->log.record != NULL);
@@ -1217,8 +1218,6 @@ _cairo_surface_observer_mark_dirty (void *abstract_surface,
 {
     cairo_surface_observer_t *surface = abstract_surface;
     cairo_status_t status;
-
-    printf ("mark-dirty (%d, %d) x (%d, %d)\n", x, y, width, height);
 
     status = CAIRO_STATUS_SUCCESS;
     if (surface->target->backend->mark_dirty_rectangle)

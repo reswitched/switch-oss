@@ -916,7 +916,7 @@ bool RenderBox::canBeScrolledAndHasScrollableArea() const
 #if PLATFORM(WKC)
     if (!canBeProgramaticallyScrolled())
         return false;
-    if (!isRenderBlock()) {
+    if (!is<RenderBlock>(*this)) {
         return (hasHorizontalOverflow() || hasVerticalOverflow());
     }
     const RenderBlock* block = downcast<RenderBlock>(this);
@@ -1726,7 +1726,7 @@ void RenderBox::imageChanged(WrappedImagePtr image, const IntRect*)
 
 #if ENABLE(CSS_SHAPES)
     ShapeValue* shapeOutsideValue = style().shapeOutside();
-    if (!view().frameView().isInLayout() && isFloating() && shapeOutsideValue && shapeOutsideValue->image() && shapeOutsideValue->image()->data() == image) {
+    if (!view().frameView().isInRenderTreeLayout() && isFloating() && shapeOutsideValue && shapeOutsideValue->image() && shapeOutsideValue->image()->data() == image) {
         ShapeOutsideInfo::ensureInfo(*this).markShapeAsDirty();
         markShapeOutsideDependentsForLayout();
     }

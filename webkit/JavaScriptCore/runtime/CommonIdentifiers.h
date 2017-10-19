@@ -233,32 +233,25 @@
 
 #define JSC_COMMON_PRIVATE_IDENTIFIERS_EACH_WELL_KNOWN_SYMBOL_NOT_IMPLEMENTED_YET(macro)\
     macro(hasInstance) \
-    macro(isConcatSpreadable) \
     macro(match) \
     macro(replace) \
     macro(search) \
-    macro(species) \
     macro(split) \
-    macro(toPrimitive) \
-    macro(toStringTag)
+    macro(toPrimitive)
 
 #define JSC_COMMON_PRIVATE_IDENTIFIERS_EACH_WELL_KNOWN_SYMBOL(macro) \
+    macro(isConcatSpreadable) \
     macro(iterator) \
-    macro(unscopables)
-
-#define JSC_COMMON_BYTECODE_INTRINSICS_EACH_NAME(macro) \
-    macro(putByValDirect) \
-    macro(toString)
+    macro(species) \
+    macro(unscopables) \
+    macro(toStringTag)
 
 #define JSC_COMMON_PRIVATE_IDENTIFIERS_EACH_PROPERTY_NAME(macro) \
-    JSC_COMMON_BYTECODE_INTRINSICS_EACH_NAME(macro) \
-    macro(symbolIterator) \
+    JSC_COMMON_BYTECODE_INTRINSIC_FUNCTIONS_EACH_NAME(macro) \
+    JSC_COMMON_BYTECODE_INTRINSIC_CONSTANTS_EACH_NAME(macro) \
     macro(iteratedObject) \
     macro(arrayIteratorNextIndex) \
     macro(arrayIterationKind) \
-    macro(arrayIterationKindKey) \
-    macro(arrayIterationKindValue) \
-    macro(arrayIterationKindKeyValue) \
     macro(charCodeAt) \
     macro(iteratedString) \
     macro(stringIteratorNextIndex) \
@@ -283,7 +276,6 @@
     macro(getPrototypeOf) \
     macro(getOwnPropertyNames) \
     macro(TypeError) \
-    macro(undefined) \
     macro(BuiltinLog) \
     macro(homeObject) \
     macro(getTemplateObject) \
@@ -297,6 +289,10 @@
     macro(promiseRejectReactions) \
     macro(promiseResult) \
     macro(capabilities) \
+    macro(isArray) \
+    macro(isArrayConstructor) \
+    macro(concatMemcpy) \
+    macro(appendMemcpy) \
 
 
 namespace JSC {
@@ -344,11 +340,6 @@ namespace JSC {
 
         const Identifier* getPrivateName(const Identifier&) const;
         Identifier getPublicName(const Identifier&) const;
-
-        const BytecodeIntrinsicRegistry& bytecodeIntrinsicRegistry() const { return m_bytecodeIntrinsicRegistry; }
-
-    private:
-        BytecodeIntrinsicRegistry m_bytecodeIntrinsicRegistry;
     };
 
 } // namespace JSC

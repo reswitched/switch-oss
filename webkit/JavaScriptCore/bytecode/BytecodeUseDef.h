@@ -55,11 +55,11 @@ void computeUsesForBytecodeOffset(
     case op_create_out_of_band_arguments:
         return;
     case op_get_scope:
+    case op_nop:
+    case op_load_arrowfunction_this:
     case op_to_this:
     case op_check_tdz:
     case op_pop_scope:
-    case op_profile_will_call:
-    case op_profile_did_call:
     case op_profile_type:
     case op_throw:
     case op_end:
@@ -117,6 +117,7 @@ void computeUsesForBytecodeOffset(
     case op_get_property_enumerator:
     case op_get_enumerable_length:
     case op_new_func_exp:
+    case op_new_arrow_func_exp:
     case op_to_index_string:
     case op_init_global_const_nop:
     case op_init_global_const:
@@ -133,6 +134,7 @@ void computeUsesForBytecodeOffset(
     case op_is_boolean:
     case op_is_number:
     case op_is_string:
+    case op_is_jsarray:
     case op_is_object:
     case op_is_object_or_null:
     case op_is_function:
@@ -180,14 +182,16 @@ void computeUsesForBytecodeOffset(
     case op_stricteq:
     case op_neq:
     case op_eq:
-    case op_del_by_val: {
+    case op_del_by_val:
+    case op_tail_call_forward_arguments: {
         functor(codeBlock, instruction, opcodeID, instruction[2].u.operand);
         functor(codeBlock, instruction, opcodeID, instruction[3].u.operand);
         return;
     }
     case op_has_structure_property:
     case op_construct_varargs:
-    case op_call_varargs: {
+    case op_call_varargs:
+    case op_tail_call_varargs: {
         functor(codeBlock, instruction, opcodeID, instruction[2].u.operand);
         functor(codeBlock, instruction, opcodeID, instruction[3].u.operand);
         functor(codeBlock, instruction, opcodeID, instruction[4].u.operand);
@@ -216,7 +220,8 @@ void computeUsesForBytecodeOffset(
     }
     case op_construct:
     case op_call_eval:
-    case op_call: {
+    case op_call:
+    case op_tail_call: {
         functor(codeBlock, instruction, opcodeID, instruction[2].u.operand);
         int argCount = instruction[3].u.operand;
         int registerOffset = -instruction[4].u.operand;
@@ -244,8 +249,6 @@ void computeDefsForBytecodeOffset(CodeBlock* codeBlock, unsigned bytecodeOffset,
     case op_init_global_const_nop:
     case op_put_to_scope:
     case op_end:
-    case op_profile_will_call:
-    case op_profile_did_call:
     case op_throw:
     case op_throw_static_error:
     case op_debug:
@@ -310,10 +313,14 @@ void computeDefsForBytecodeOffset(CodeBlock* codeBlock, unsigned bytecodeOffset,
     case op_new_regexp:
     case op_new_func:
     case op_new_func_exp:
+    case op_new_arrow_func_exp:
     case op_call_varargs:
+    case op_tail_call_varargs:
+    case op_tail_call_forward_arguments:
     case op_construct_varargs:
     case op_get_from_scope:
     case op_call:
+    case op_tail_call:
     case op_call_eval:
     case op_construct:
     case op_get_by_id:
@@ -327,6 +334,7 @@ void computeDefsForBytecodeOffset(CodeBlock* codeBlock, unsigned bytecodeOffset,
     case op_is_boolean:
     case op_is_number:
     case op_is_string:
+    case op_is_jsarray:
     case op_is_object:
     case op_is_object_or_null:
     case op_is_function:
@@ -360,9 +368,11 @@ void computeDefsForBytecodeOffset(CodeBlock* codeBlock, unsigned bytecodeOffset,
     case op_not:
     case op_mov:
     case op_new_object:
+    case op_nop:
     case op_to_this:
     case op_check_tdz:
     case op_get_scope:
+    case op_load_arrowfunction_this:
     case op_create_direct_arguments:
     case op_create_scoped_arguments:
     case op_create_out_of_band_arguments:

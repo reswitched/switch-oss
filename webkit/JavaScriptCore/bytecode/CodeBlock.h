@@ -80,6 +80,7 @@ namespace JSC {
 
 class ExecState;
 class LLIntOffsetsExtractor;
+class RegisterAtOffsetList;
 class RepatchBuffer;
 class TypeLocation;
 
@@ -732,6 +733,10 @@ public:
     JS_EXPORT_PRIVATE unsigned reoptimizationRetryCounter() const;
     void countReoptimization();
 #if ENABLE(JIT)
+    static unsigned numberOfLLIntBaselineCalleeSaveRegisters() { return RegisterSet::llintBaselineCalleeSaveRegisters().numberOfSetRegisters(); }
+    static size_t llintBaselineCalleeSaveSpaceAsVirtualRegisters();
+    size_t calleeSaveSpaceAsVirtualRegisters();
+
     unsigned numberOfDFGCompiles();
 
     int32_t codeTypeThresholdMultiplier() const;
@@ -817,7 +822,14 @@ public:
     uint32_t exitCountThresholdForReoptimizationFromLoop();
     bool shouldReoptimizeNow();
     bool shouldReoptimizeFromLoopNow();
+
+    void setCalleeSaveRegisters(RegisterSet);
+    void setCalleeSaveRegisters(std::unique_ptr<RegisterAtOffsetList>);
+    
+    RegisterAtOffsetList* calleeSaveRegisters() const { return m_calleeSaveRegisters.get(); }
 #else // No JIT
+    static unsigned numberOfLLIntBaselineCalleeSaveRegisters() { return 0; }
+    static size_t llintBaselineCalleeSaveSpaceAsVirtualRegisters() { return 0; };
     void optimizeAfterWarmUp() { }
     unsigned numberOfDFGCompiles() { return 0; }
 #endif
@@ -856,6 +868,7 @@ public:
     
     // FIXME: Make these remaining members private.
 
+    int m_numLocalRegistersForCalleeSaves;
     int m_numCalleeRegisters;
     int m_numVars;
     bool m_isConstructor : 1;
@@ -1013,6 +1026,7 @@ private:
     SentinelLinkedList<LLIntCallLinkInfo, BasicRawSentinelNode<LLIntCallLinkInfo>> m_incomingLLIntCalls;
     RefPtr<JITCode> m_jitCode;
 #if ENABLE(JIT)
+    std::unique_ptr<RegisterAtOffsetList> m_calleeSaveRegisters;
     Bag<StructureStubInfo> m_stubInfos;
     Vector<ByValInfo> m_byValInfos;
     Bag<CallLinkInfo> m_callLinkInfos;
@@ -1141,21 +1155,6 @@ protected:
     virtual DFG::CapabilityLevel capabilityLevelInternal() override;
 #endif
 };
-
-inline CodeBlock* baselineCodeBlockForInlineCallFrame(InlineCallFrame* inlineCallFrame)
-{
-    RELEASE_ASSERT(inlineCallFrame);
-    ExecutableBase* executable = inlineCallFrame->executable.get();
-    RELEASE_ASSERT(executable->structure()->classInfo() == FunctionExecutable::info());
-    return static_cast<FunctionExecutable*>(executable)->baselineCodeBlockFor(inlineCallFrame->specializationKind());
-}
-
-inline CodeBlock* baselineCodeBlockForOriginAndBaselineCodeBlock(const CodeOrigin& codeOrigin, CodeBlock* baselineCodeBlock)
-{
-    if (codeOrigin.inlineCallFrame)
-        return baselineCodeBlockForInlineCallFrame(codeOrigin.inlineCallFrame);
-    return baselineCodeBlock;
-}
 
 inline Register& ExecState::r(int index)
 {

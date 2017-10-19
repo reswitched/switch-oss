@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-Transformations.top_of_page">Transformations</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>Transformations</refname>
@@ -50,11 +48,6 @@
 </tgroup>
 </informaltable>
 </refsect1>
-<refsect1 id="cairo-Transformations.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
-</refsect1>
 
 
 <refsect1 id="cairo-Transformations.description" role="desc">
@@ -82,7 +75,7 @@ user-space origin by (<parameter>tx</parameter>
 user-space coordinate according to the CTM in place before the new
 call to <link linkend="cairo-translate"><function>cairo_translate()</function></link>. In other words, the translation of the
 user-space origin takes place after any existing transformation.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-translate.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -100,7 +93,7 @@ user-space origin takes place after any existing transformation.</para>
 <entry role="parameter_description"><para>amount to translate in the Y direction</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-scale" role="function" condition="since:1.0">
 <title>cairo_scale&#160;()</title>
 <indexterm zone="cairo-scale" role="1.0"><primary sortas="scale">cairo_scale</primary></indexterm>
@@ -114,7 +107,7 @@ and Y user-space axes by <parameter>sx</parameter>
  respectively. The scaling of
 the axes takes place after any existing transformation of user
 space.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-scale.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -132,7 +125,7 @@ space.</para>
 <entry role="parameter_description"><para>scale factor for the Y dimension</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-rotate" role="function" condition="since:1.0">
 <title>cairo_rotate&#160;()</title>
 <indexterm zone="cairo-rotate" role="1.0"><primary sortas="rotate">cairo_rotate</primary></indexterm>
@@ -145,7 +138,7 @@ user-space axes by <parameter>angle</parameter>
 places after any existing transformation of user space. The
 rotation direction for positive angles is from the positive X axis
 toward the positive Y axis.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-rotate.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -161,7 +154,7 @@ toward the positive Y axis.</para>
 rotated</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-transform" role="function" condition="since:1.0">
 <title>cairo_transform&#160;()</title>
 <indexterm zone="cairo-transform" role="1.0"><primary sortas="transform">cairo_transform</primary></indexterm>
@@ -172,7 +165,7 @@ cairo_transform (<parameter><link linkend="cairo-t"><type>cairo_t</type></link> 
 <parameter>matrix</parameter>
  as an additional transformation. The new transformation of
 user space takes place after any existing transformation.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-transform.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -187,7 +180,7 @@ user space takes place after any existing transformation.</para>
 <entry role="parameter_description"><para>a transformation to be applied to the user-space axes</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-set-matrix" role="function" condition="since:1.0">
 <title>cairo_set_matrix&#160;()</title>
 <indexterm zone="cairo-set-matrix" role="1.0"><primary sortas="set_matrix">cairo_set_matrix</primary></indexterm>
@@ -197,7 +190,7 @@ cairo_set_matrix (<parameter><link linkend="cairo-t"><type>cairo_t</type></link>
 <para>Modifies the current transformation matrix (CTM) by setting it
 equal to <parameter>matrix</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-set-matrix.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -212,7 +205,7 @@ equal to <parameter>matrix</parameter>
 <entry role="parameter_description"><para>a transformation matrix from user space to device space</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-get-matrix" role="function" condition="since:1.0">
 <title>cairo_get_matrix&#160;()</title>
 <indexterm zone="cairo-get-matrix" role="1.0"><primary sortas="get_matrix">cairo_get_matrix</primary></indexterm>
@@ -221,7 +214,7 @@ cairo_get_matrix (<parameter><link linkend="cairo-t"><type>cairo_t</type></link>
                   <parameter><link linkend="cairo-matrix-t"><type>cairo_matrix_t</type></link> *matrix</parameter>);</programlisting>
 <para>Stores the current transformation matrix (CTM) into <parameter>matrix</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-get-matrix.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -236,7 +229,7 @@ cairo_get_matrix (<parameter><link linkend="cairo-t"><type>cairo_t</type></link>
 <entry role="parameter_description"><para>return value for the matrix</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-identity-matrix" role="function" condition="since:1.0">
 <title>cairo_identity_matrix&#160;()</title>
 <indexterm zone="cairo-identity-matrix" role="1.0"><primary sortas="identity_matrix">cairo_identity_matrix</primary></indexterm>
@@ -246,7 +239,7 @@ cairo_identity_matrix (<parameter><link linkend="cairo-t"><type>cairo_t</type></
 to the identity matrix. That is, the user-space and device-space
 axes will be aligned and one user-space unit will transform to one
 device-space unit.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-identity-matrix.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -258,7 +251,7 @@ device-space unit.</para>
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-user-to-device" role="function" condition="since:1.0">
 <title>cairo_user_to_device&#160;()</title>
 <indexterm zone="cairo-user-to-device" role="1.0"><primary sortas="user_to_device">cairo_user_to_device</primary></indexterm>
@@ -269,7 +262,7 @@ cairo_user_to_device (<parameter><link linkend="cairo-t"><type>cairo_t</type></l
 <para>Transform a coordinate from user space to device space by
 multiplying the given point by the current transformation matrix
 (CTM).</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-user-to-device.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -287,7 +280,7 @@ multiplying the given point by the current transformation matrix
 <entry role="parameter_description"><para>Y value of coordinate (in/out parameter)</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-user-to-device-distance" role="function" condition="since:1.0">
 <title>cairo_user_to_device_distance&#160;()</title>
 <indexterm zone="cairo-user-to-device-distance" role="1.0"><primary sortas="user_to_device_distance">cairo_user_to_device_distance</primary></indexterm>
@@ -301,7 +294,7 @@ translation components of the CTM will be ignored when transforming
 (<parameter>dx</parameter>
 ,<parameter>dy</parameter>
 ).</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-user-to-device-distance.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -319,7 +312,7 @@ translation components of the CTM will be ignored when transforming
 <entry role="parameter_description"><para>Y component of a distance vector (in/out parameter)</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-device-to-user" role="function" condition="since:1.0">
 <title>cairo_device_to_user&#160;()</title>
 <indexterm zone="cairo-device-to-user" role="1.0"><primary sortas="device_to_user">cairo_device_to_user</primary></indexterm>
@@ -330,7 +323,7 @@ cairo_device_to_user (<parameter><link linkend="cairo-t"><type>cairo_t</type></l
 <para>Transform a coordinate from device space to user space by
 multiplying the given point by the inverse of the current
 transformation matrix (CTM).</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-device-to-user.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -348,7 +341,7 @@ transformation matrix (CTM).</para>
 <entry role="parameter_description"><para>Y value of coordinate (in/out parameter)</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-device-to-user-distance" role="function" condition="since:1.0">
 <title>cairo_device_to_user_distance&#160;()</title>
 <indexterm zone="cairo-device-to-user-distance" role="1.0"><primary sortas="device_to_user_distance">cairo_device_to_user_distance</primary></indexterm>
@@ -362,7 +355,7 @@ translation components of the inverse CTM will be ignored when
 transforming (<parameter>dx</parameter>
 ,<parameter>dy</parameter>
 ).</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-device-to-user-distance.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -380,7 +373,7 @@ transforming (<parameter>dx</parameter>
 <entry role="parameter_description"><para>Y component of a distance vector (in/out parameter)</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-Transformations.other_details" role="details">

@@ -1,0 +1,57 @@
+<!-- ##### SECTION Title ##### -->
+cairo-tag
+
+<!-- ##### SECTION Short_Description ##### -->
+
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO CAIRO_TAG_DEST ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### MACRO CAIRO_TAG_LINK ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION cairo_tag_begin ##### -->
+<para>
+
+</para>
+
+@cr: 
+@tag_name: 
+@attributes: 
+
+
+<!-- ##### FUNCTION cairo_tag_end ##### -->
+<para>
+
+</para>
+
+@cr: 
+@tag_name: 
+
+

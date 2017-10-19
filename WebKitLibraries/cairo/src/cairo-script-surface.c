@@ -1111,7 +1111,8 @@ attach_snapshot (cairo_script_context_t *ctx,
     _cairo_surface_init (&surface->base,
 			 &script_snapshot_backend,
 			 &ctx->base,
-			 source->content);
+			 source->content,
+			 source->is_vector);
 
     _cairo_output_stream_printf (ctx->stream,
 				 "dup /s%d exch def ",
@@ -3648,7 +3649,8 @@ _cairo_script_surface_create_internal (cairo_script_context_t *ctx,
     _cairo_surface_init (&surface->base,
 			 &_cairo_script_surface_backend,
 			 &ctx->base,
-			 content);
+			 content,
+			 TRUE); /* is_vector */
 
     _cairo_surface_wrapper_init (&surface->wrapper, passthrough);
 

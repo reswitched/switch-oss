@@ -21,9 +21,10 @@ The test suite needs to be run before any code is committed and before
 any release. See below for hints and rules governing the use of the suite.
 
 The test suite is built as a single binary, which allows you to choose
-individual or categories of tests to run. For example, if you want to
-run all text related tests you can use:
-    ./cairo-test-suite text
+individual or categories of tests to run. For example, to run specific tests:
+    ./cairo-test-suite record-neg-extents-unbounded record-neg-extents-bounded
+Or if you want to run all paint.* related tests you can use:
+    ./cairo-test-suite paint
 Or if you want to check the current status of known failures:
     ./cairo-test-suite XFAIL
 Or to run a subset of tests, use the -k option to run only the tests
@@ -109,10 +110,10 @@ Here are some of the relevant details:
 
   * Your system must have a copy of the DejaVu font, the sha1sum of
     the version used are listed in [...].  These are
-      "DejaVu Sans" (DejaVuSans.ttf) [1cd336329f45f241002ded61893d91e3acd04436];
-      "DejaVu Sans Mono" (DejaVuSansMono.ttf) [0458c0f0fb57f3eb8ced62f26fe7c5ed4e6a9a68];
-      "DejaVu Serif" (DejaVuSerif.ttf) [93502d0d0445d1fe1c9f51e51b3e0169266346ce];
-      [the DejaVu fonts can be installed from the ttf-dejavu 2.33-2 Debian package]
+      "DejaVu Sans" (DejaVuSans.ttf) [e9831ee4fd2e1d0ac54508a548c6a449545eba3f];
+      "DejaVu Sans Mono" (DejaVuSansMono.ttf) [25d854fbd0450a372615a26a8ef9a1024bd3efc6];
+      "DejaVu Serif" (DejaVuSerif.ttf) [78a81850dc7883969042cf3d6dfd18eea7e43e2f];
+      [the DejaVu fonts can be installed from the fonts-dejavu-core 2.34-1 Debian package]
     and also
       "Nimbus Sans L" (n019003l.pfb)
       [which can be found in the gsfonts Debian package].
@@ -130,7 +131,7 @@ Here are some of the relevant details:
     the fixes you will need to avoid false negatives from the test
     suite.
 
-  * To test the ps backend, you will need ghostscript version 9.04.
+  * To test the ps backend, you will need ghostscript version 9.06.
 
   * Testing the xlib backend is problematic since many X server
     drivers have bugs that are exercised by the test suite. (Or, if
@@ -278,42 +279,4 @@ the pdf-specific reference image.
 
 Here are the reported poppler bugs and the tests they affect:
 
-Poppler doesn't correctly handle gradients with transparency
-https://bugs.freedesktop.org/show_bug.cgi?id=12144
---------------------------------------------------
-fill-alpha-pattern
-gradient-alpha
-gradient-constant-alpha
-linear-gradient
-linear-gradient-reflect
-radial-gradient
-trap-clip
-
-Poppler should paint images with CAIRO_EXTEND_PAD
-https://bugs.freedesktop.org/show_bug.cgi?id=14578
---------------------------------------------------
-paint-source-alpha
-paint-with-alpha
-rotate-image-surface-paint
-scale-source-surface-paint
-
-Incorrect clipping of group object (regression?)
-https://bugs.freedesktop.org/show_bug.cgi?id=14580
---------------------------------------------------
-push-group
-
-spurious horizontal stripes in color gradients
-https://bugs.freedesktop.org/show_bug.cgi?id=10942
---------------------------------------------------
-smask 
-smask-fill 
-smask-image-mask 
-smask-mask 
-smask-paint 
-smask-stroke 
-smask-text
-
-Ghostscript does not correctly render small miters
-http://bugs.ghostscript.com/show_bug.cgi?id=690098
---------------------------------------------------
-miter-precision
+[Newest was closed in 2009.]

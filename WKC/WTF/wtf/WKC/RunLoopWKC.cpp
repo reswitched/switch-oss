@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015 ACCESS CO., LTD. All rights reserved.
+* Copyright (C) 2015-2017 ACCESS CO., LTD. All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are
@@ -77,10 +77,15 @@ RunLoop::TimerBase::TimerBase(RunLoop& runLoop)
     , m_nextFireInterval(0)
 {
     m_timer = wkcTimerNewPeer();
+    if (!m_timer)
+        CRASH();
 }
 
 RunLoop::TimerBase::~TimerBase()
 {
+    if (!m_timer)
+        return;
+
     stop();
     wkcTimerDeletePeer(m_timer);
 }

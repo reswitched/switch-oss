@@ -3,7 +3,7 @@
                 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
 <!ENTITY version SYSTEM "version.xml">
 ]>
-<indexdiv>
+<indexdiv id="api-index-1.10">
 <indexdiv><title>D</title>
 <indexentry><primaryie linkends="cairo-device-acquire"><link linkend="cairo-device-acquire">cairo_device_acquire</link>, function in <link linkend="cairo-cairo-device-t">cairo_device_t</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-device-destroy"><link linkend="cairo-device-destroy">cairo_device_destroy</link>, function in <link linkend="cairo-cairo-device-t">cairo_device_t</link></primaryie></indexentry>

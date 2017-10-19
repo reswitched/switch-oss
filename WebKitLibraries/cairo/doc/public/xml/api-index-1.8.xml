@@ -3,7 +3,7 @@
                 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
 <!ENTITY version SYSTEM "version.xml">
 ]>
-<indexdiv>
+<indexdiv id="api-index-1.8">
 <indexdiv><title>G</title>
 <indexentry><primaryie linkends="cairo-glyph-allocate"><link linkend="cairo-glyph-allocate">cairo_glyph_allocate</link>, function in <link linkend="cairo-text">text</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-glyph-free"><link linkend="cairo-glyph-free">cairo_glyph_free</link>, function in <link linkend="cairo-text">text</link></primaryie></indexentry>

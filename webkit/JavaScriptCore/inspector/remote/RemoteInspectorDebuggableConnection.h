@@ -92,6 +92,8 @@ public:
     virtual bool sendMessageToFrontend(const String&) override;
 
     std::mutex& queueMutex() { return m_queueMutex; }
+    virtual ConnectionType connectionType() const override { return ConnectionType::Remote; }
+
     RemoteInspectorQueue queue() const { return m_queue; }
     void clearQueue() { m_queue.clear(); }
 

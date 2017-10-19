@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-Raster-Sources.top_of_page">Raster Sources</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>Raster Sources</refname>
@@ -60,11 +58,6 @@
 </tgroup>
 </informaltable>
 </refsect1>
-<refsect1 id="cairo-Raster-Sources.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
-</refsect1>
 
 
 <refsect1 id="cairo-Raster-Sources.description" role="desc">
@@ -96,7 +89,7 @@ cairo_pattern_create_raster_source (<parameter><link linkend="void"><type>void</
 <para>Creates a new user pattern for providing pixel data.</para>
 <para>Use the setter functions to associate callbacks with the returned
 pattern.  The only mandatory callback is acquire.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pattern-create-raster-source.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -119,12 +112,11 @@ picking the appropriate rendering path.</para></entry>
 <entry role="parameter_description"><para>maximum size of the sample area</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-pattern-create-raster-source.returns" role="returns">
 <title>Returns</title>
 <para> a newly created <link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link>. Free with
 <link linkend="cairo-pattern-destroy"><function>cairo_pattern_destroy()</function></link> when you are done using it.</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-raster-source-pattern-set-callback-data" role="function" condition="since:1.12">
 <title>cairo_raster_source_pattern_set_callback_data&#160;()</title>
 <indexterm zone="cairo-raster-source-pattern-set-callback-data" role="1.12"><primary sortas="raster_source_pattern_set_callback_data">cairo_raster_source_pattern_set_callback_data</primary></indexterm>
@@ -133,7 +125,7 @@ cairo_raster_source_pattern_set_callback_data
                                (<parameter><link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link> *pattern</parameter>,
                                 <parameter><link linkend="void"><type>void</type></link> *data</parameter>);</programlisting>
 <para>Updates the user data that is provided to all callbacks.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-raster-source-pattern-set-callback-data.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -148,7 +140,7 @@ cairo_raster_source_pattern_set_callback_data
 <entry role="parameter_description"><para>the user data to be passed to all callbacks</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-raster-source-pattern-get-callback-data" role="function" condition="since:1.12">
 <title>cairo_raster_source_pattern_get_callback_data&#160;()</title>
 <indexterm zone="cairo-raster-source-pattern-get-callback-data" role="1.12"><primary sortas="raster_source_pattern_get_callback_data">cairo_raster_source_pattern_get_callback_data</primary></indexterm>
@@ -156,7 +148,7 @@ cairo_raster_source_pattern_set_callback_data
 cairo_raster_source_pattern_get_callback_data
                                (<parameter><link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link> *pattern</parameter>);</programlisting>
 <para>Queries the current user data.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-raster-source-pattern-get-callback-data.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -168,11 +160,10 @@ cairo_raster_source_pattern_get_callback_data
 <entry role="parameter_description"><para>the pattern to update</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-raster-source-pattern-get-callback-data.returns" role="returns">
 <title>Returns</title>
 <para> the current user-data passed to each callback</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-raster-source-pattern-set-acquire" role="function" condition="since:1.12">
 <title>cairo_raster_source_pattern_set_acquire&#160;()</title>
 <indexterm zone="cairo-raster-source-pattern-set-acquire" role="1.12"><primary sortas="raster_source_pattern_set_acquire">cairo_raster_source_pattern_set_acquire</primary></indexterm>
@@ -191,7 +182,7 @@ of interest specified by extents. The surface is allowed to be the entire
 sample area, but if it does contain a subsection of the sample area,
 the surface extents should be provided by setting the device offset (along
 with its width and height) using <link linkend="cairo-surface-set-device-offset"><function>cairo_surface_set_device_offset()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-raster-source-pattern-set-acquire.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -209,7 +200,7 @@ with its width and height) using <link linkend="cairo-surface-set-device-offset"
 <entry role="parameter_description"><para>release callback</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-raster-source-pattern-get-acquire" role="function" condition="since:1.12">
 <title>cairo_raster_source_pattern_get_acquire&#160;()</title>
 <indexterm zone="cairo-raster-source-pattern-get-acquire" role="1.12"><primary sortas="raster_source_pattern_get_acquire">cairo_raster_source_pattern_get_acquire</primary></indexterm>
@@ -219,7 +210,7 @@ cairo_raster_source_pattern_get_acquire
                                 <parameter><link linkend="cairo-raster-source-acquire-func-t"><type>cairo_raster_source_acquire_func_t</type></link> *acquire</parameter>,
                                 <parameter><link linkend="cairo-raster-source-release-func-t"><type>cairo_raster_source_release_func_t</type></link> *release</parameter>);</programlisting>
 <para>Queries the current acquire and release callbacks.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-raster-source-pattern-get-acquire.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -237,7 +228,7 @@ cairo_raster_source_pattern_get_acquire
 <entry role="parameter_description"><para>return value for the current release callback</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-raster-source-pattern-set-snapshot" role="function" condition="since:1.12">
 <title>cairo_raster_source_pattern_set_snapshot&#160;()</title>
 <indexterm zone="cairo-raster-source-pattern-set-snapshot" role="1.12"><primary sortas="raster_source_pattern_set_snapshot">cairo_raster_source_pattern_set_snapshot</primary></indexterm>
@@ -248,7 +239,7 @@ cairo_raster_source_pattern_set_snapshot
 <para>Sets the callback that will be used whenever a snapshot is taken of the
 pattern, that is whenever the current contents of the pattern should be
 preserved for later use. This is typically invoked whilst printing.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-raster-source-pattern-set-snapshot.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -263,7 +254,7 @@ preserved for later use. This is typically invoked whilst printing.</para>
 <entry role="parameter_description"><para>snapshot callback</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-raster-source-pattern-get-snapshot" role="function" condition="since:1.12">
 <title>cairo_raster_source_pattern_get_snapshot&#160;()</title>
 <indexterm zone="cairo-raster-source-pattern-get-snapshot" role="1.12"><primary sortas="raster_source_pattern_get_snapshot">cairo_raster_source_pattern_get_snapshot</primary></indexterm>
@@ -271,7 +262,7 @@ preserved for later use. This is typically invoked whilst printing.</para>
 cairo_raster_source_pattern_get_snapshot
                                (<parameter><link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link> *pattern</parameter>);</programlisting>
 <para>Queries the current snapshot callback.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-raster-source-pattern-get-snapshot.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -283,11 +274,10 @@ cairo_raster_source_pattern_get_snapshot
 <entry role="parameter_description"><para>the pattern to query</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-raster-source-pattern-get-snapshot.returns" role="returns">
 <title>Returns</title>
 <para> the current snapshot callback</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-raster-source-pattern-set-copy" role="function" condition="since:1.12">
 <title>cairo_raster_source_pattern_set_copy&#160;()</title>
 <indexterm zone="cairo-raster-source-pattern-set-copy" role="1.12"><primary sortas="raster_source_pattern_set_copy">cairo_raster_source_pattern_set_copy</primary></indexterm>
@@ -296,7 +286,7 @@ cairo_raster_source_pattern_set_copy (<parameter><link linkend="cairo-pattern-t"
                                       <parameter><link linkend="cairo-raster-source-copy-func-t"><type>cairo_raster_source_copy_func_t</type></link> copy</parameter>);</programlisting>
 <para>Updates the copy callback which is used whenever a temporary copy of the
 pattern is taken.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-raster-source-pattern-set-copy.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -311,14 +301,14 @@ pattern is taken.</para>
 <entry role="parameter_description"><para>the copy callback</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-raster-source-pattern-get-copy" role="function" condition="since:1.12">
 <title>cairo_raster_source_pattern_get_copy&#160;()</title>
 <indexterm zone="cairo-raster-source-pattern-get-copy" role="1.12"><primary sortas="raster_source_pattern_get_copy">cairo_raster_source_pattern_get_copy</primary></indexterm>
 <programlisting language="C"><link linkend="cairo-raster-source-copy-func-t"><returnvalue>cairo_raster_source_copy_func_t</returnvalue></link>
 cairo_raster_source_pattern_get_copy (<parameter><link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link> *pattern</parameter>);</programlisting>
 <para>Queries the current copy callback.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-raster-source-pattern-get-copy.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -330,11 +320,10 @@ cairo_raster_source_pattern_get_copy (<parameter><link linkend="cairo-pattern-t"
 <entry role="parameter_description"><para>the pattern to query</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-raster-source-pattern-get-copy.returns" role="returns">
 <title>Returns</title>
 <para> the current copy callback</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-raster-source-pattern-set-finish" role="function" condition="since:1.12">
 <title>cairo_raster_source_pattern_set_finish&#160;()</title>
 <indexterm zone="cairo-raster-source-pattern-set-finish" role="1.12"><primary sortas="raster_source_pattern_set_finish">cairo_raster_source_pattern_set_finish</primary></indexterm>
@@ -344,7 +333,7 @@ cairo_raster_source_pattern_set_finish
                                 <parameter><link linkend="cairo-raster-source-finish-func-t"><type>cairo_raster_source_finish_func_t</type></link> finish</parameter>);</programlisting>
 <para>Updates the finish callback which is used whenever a pattern (or a copy
 thereof) will no longer be used.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-raster-source-pattern-set-finish.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -359,7 +348,7 @@ thereof) will no longer be used.</para>
 <entry role="parameter_description"><para>the finish callback</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-raster-source-pattern-get-finish" role="function" condition="since:1.12">
 <title>cairo_raster_source_pattern_get_finish&#160;()</title>
 <indexterm zone="cairo-raster-source-pattern-get-finish" role="1.12"><primary sortas="raster_source_pattern_get_finish">cairo_raster_source_pattern_get_finish</primary></indexterm>
@@ -367,7 +356,7 @@ thereof) will no longer be used.</para>
 cairo_raster_source_pattern_get_finish
                                (<parameter><link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link> *pattern</parameter>);</programlisting>
 <para>Queries the current finish callback.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-raster-source-pattern-get-finish.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -379,11 +368,10 @@ cairo_raster_source_pattern_get_finish
 <entry role="parameter_description"><para>the pattern to query</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-raster-source-pattern-get-finish.returns" role="returns">
 <title>Returns</title>
 <para> the current finish callback</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-raster-source-acquire-func-t" role="function" condition="since:1.12">
 <title>cairo_raster_source_acquire_func_t&#160;()</title>
 <indexterm zone="cairo-raster-source-acquire-func-t" role="1.12"><primary sortas="raster_source_acquire_func_t">cairo_raster_source_acquire_func_t</primary></indexterm>
@@ -404,7 +392,7 @@ target for explicit handling by the application of a set of cached sources
 on the device. The region of sample data provided should be defined using
 <link linkend="cairo-surface-set-device-offset"><function>cairo_surface_set_device_offset()</function></link> to specify the top-left corner of the
 sample data (along with width and height of the surface).</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-raster-source-acquire-func-t.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -425,11 +413,10 @@ sample data (along with width and height of the surface).</para>
 <entry role="parameter_description"><para>rectangular region of interest in pixels in sample space</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-raster-source-acquire-func-t.returns" role="returns">
 <title>Returns</title>
 <para> a <link linkend="cairo-surface-t"><type>cairo_surface_t</type></link></para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-raster-source-release-func-t" role="function" condition="since:1.12">
 <title>cairo_raster_source_release_func_t&#160;()</title>
 <indexterm zone="cairo-raster-source-release-func-t" role="1.12"><primary sortas="raster_source_release_func_t">cairo_raster_source_release_func_t</primary></indexterm>
@@ -441,7 +428,7 @@ sample data (along with width and height of the surface).</para>
 called when the pixel data is no longer being access by the pattern
 for the rendering operation. Typically this function will simply
 destroy the surface created during acquire.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-raster-source-release-func-t.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -459,7 +446,7 @@ destroy the surface created during acquire.</para>
 <entry role="parameter_description"><para>the surface created during acquire</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-raster-source-snapshot-func-t" role="function" condition="since:1.12">
 <title>cairo_raster_source_snapshot_func_t&#160;()</title>
 <indexterm zone="cairo-raster-source-snapshot-func-t" role="1.12"><primary sortas="raster_source_snapshot_func_t">cairo_raster_source_snapshot_func_t</primary></indexterm>
@@ -472,7 +459,7 @@ called when the pixel data needs to be preserved for later use
 during printing. This pattern will be accessed again later, and it
 is expected to provide the pixel data that was current at the time
 of snapshotting.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-raster-source-snapshot-func-t.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -487,12 +474,11 @@ of snapshotting.</para>
 <entry role="parameter_description"><para>the user data supplied during creation</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-raster-source-snapshot-func-t.returns" role="returns">
 <title>Returns</title>
 <para> CAIRO_STATUS_SUCCESS on success, or one of the
 <link linkend="cairo-status-t"><type>cairo_status_t</type></link> error codes for failure.</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-raster-source-copy-func-t" role="function" condition="since:1.12">
 <title>cairo_raster_source_copy_func_t&#160;()</title>
 <indexterm zone="cairo-raster-source-copy-func-t" role="1.12"><primary sortas="raster_source_copy_func_t">cairo_raster_source_copy_func_t</primary></indexterm>
@@ -502,7 +488,7 @@ of snapshotting.</para>
                                     <parameter>const <link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link> *other</parameter>);</programlisting>
 <para><link linkend="cairo-raster-source-copy-func-t"><type>cairo_raster_source_copy_func_t</type></link> is the type of function which is
 called when the pattern gets copied as a normal part of rendering.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-raster-source-copy-func-t.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -520,12 +506,11 @@ called when the pattern gets copied as a normal part of rendering.</para>
 <entry role="parameter_description"><para>the <link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link> being used as the source for the copy</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-raster-source-copy-func-t.returns" role="returns">
 <title>Returns</title>
 <para> CAIRO_STATUS_SUCCESS on success, or one of the
 <link linkend="cairo-status-t"><type>cairo_status_t</type></link> error codes for failure.</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-raster-source-finish-func-t" role="function" condition="since:1.12">
 <title>cairo_raster_source_finish_func_t&#160;()</title>
 <indexterm zone="cairo-raster-source-finish-func-t" role="1.12"><primary sortas="raster_source_finish_func_t">cairo_raster_source_finish_func_t</primary></indexterm>
@@ -534,7 +519,7 @@ called when the pattern gets copied as a normal part of rendering.</para>
                                       <parameter><link linkend="void"><type>void</type></link> *callback_data</parameter>);</programlisting>
 <para><link linkend="cairo-raster-source-finish-func-t"><type>cairo_raster_source_finish_func_t</type></link> is the type of function which is
 called when the pattern (or a copy thereof) is no longer required.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-raster-source-finish-func-t.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -549,7 +534,7 @@ called when the pattern (or a copy thereof) is no longer required.</para>
 <entry role="parameter_description"><para>the user data supplied during creation</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-Raster-Sources.other_details" role="details">

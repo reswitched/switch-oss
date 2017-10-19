@@ -58,6 +58,7 @@ public:
     WEBCORE_EXPORT static String invalidSessionIDKey();
     WEBCORE_EXPORT static String isAttachmentKey();
     WEBCORE_EXPORT static String isConditionalRequestKey();
+    static String isDisabledKey();
     static String isErrorPageKey();
     static String isExpiredKey();
     WEBCORE_EXPORT static String isReloadIgnoringCacheDataKey();
@@ -101,8 +102,10 @@ public:
     static String quirkRedirectComingKey();
     static String rawKey();
     static String reasonKey();
+    static String redirectKey();
     static String reloadFromOriginKey();
     static String reloadKey();
+    static String replaceKey();
     WEBCORE_EXPORT static String requestKey();
     static String resourceKey();
     static String resourceRequestKey();
@@ -118,6 +121,7 @@ public:
     static String svgDocumentKey();
     WEBCORE_EXPORT static String synchronousMessageFailedKey();
     WEBCORE_EXPORT static String uncacheableStatusCodeKey();
+    static String underMemoryPressureKey();
     WEBCORE_EXPORT static String unlikelyToReuseKey();
     WEBCORE_EXPORT static String unsupportedHTTPMethodKey();
     static String unsuspendableDOMObjectKey();

@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-User-Fonts.top_of_page">User Fonts</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>User Fonts</refname>
@@ -67,11 +65,6 @@
 </tgroup>
 </informaltable>
 </refsect1>
-<refsect1 id="cairo-User-Fonts.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
-</refsect1>
 
 
 <refsect1 id="cairo-User-Fonts.description" role="desc">
@@ -114,7 +107,7 @@ in the previous paragraph will be used.</para>
  is not fully initialized at this
 point and trying to use it for text operations in the callback will result
 in deadlock.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-user-scaled-font-init-func-t.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -132,11 +125,10 @@ in deadlock.</para>
 <entry role="parameter_description"><para>font extents to fill in, in font space</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-user-scaled-font-init-func-t.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> upon success, or an error status on error.</para>
-<para></para>
-</refsect3><para role="since">Since 1.8</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.8">1.8</link></para></refsect2>
 <refsect2 id="cairo-user-scaled-font-render-glyph-func-t" role="function" condition="since:1.8">
 <title>cairo_user_scaled_font_render_glyph_func_t&#160;()</title>
 <indexterm zone="cairo-user-scaled-font-render-glyph-func-t" role="1.8"><primary sortas="user_scaled_font_render_glyph_func_t">cairo_user_scaled_font_render_glyph_func_t</primary></indexterm>
@@ -188,7 +180,7 @@ desired behavior is.  However, if for any reason the callback sets the
 extents, it must be ink extents, and include the extents of all drawing
 done to <parameter>cr</parameter>
  in the callback.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-user-scaled-font-render-glyph-func-t.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -209,12 +201,11 @@ done to <parameter>cr</parameter>
 <entry role="parameter_description"><para>glyph extents to fill in, in font space</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-user-scaled-font-render-glyph-func-t.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> upon success, or
 <link linkend="CAIRO-STATUS-USER-FONT-ERROR:CAPS"><literal>CAIRO_STATUS_USER_FONT_ERROR</literal></link> or any other error status on error.</para>
-<para></para>
-</refsect3><para role="since">Since 1.8</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.8">1.8</link></para></refsect2>
 <refsect2 id="cairo-user-scaled-font-text-to-glyphs-func-t" role="function" condition="since:1.8">
 <title>cairo_user_scaled_font_text_to_glyphs_func_t&#160;()</title>
 <indexterm zone="cairo-user-scaled-font-text-to-glyphs-func-t" role="1.8"><primary sortas="user_scaled_font_text_to_glyphs_func_t">cairo_user_scaled_font_text_to_glyphs_func_t</primary></indexterm>
@@ -287,7 +278,7 @@ glyphs in the 0 to 65535 range.  Furthermore, some applications may
 assume that glyph 0 is a special glyph-not-found glyph.  User-fonts
 are advised to use glyph 0 for such purposes and do not use that
 glyph value for other purposes.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-user-scaled-font-text-to-glyphs-func-t.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -323,13 +314,12 @@ output <parameter>clusters</parameter>
 </para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-user-scaled-font-text-to-glyphs-func-t.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> upon success,
 <link linkend="CAIRO-STATUS-USER-FONT-NOT-IMPLEMENTED:CAPS"><literal>CAIRO_STATUS_USER_FONT_NOT_IMPLEMENTED</literal></link> if fallback options should be tried,
 or <link linkend="CAIRO-STATUS-USER-FONT-ERROR:CAPS"><literal>CAIRO_STATUS_USER_FONT_ERROR</literal></link> or any other error status on error.</para>
-<para></para>
-</refsect3><para role="since">Since 1.8</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.8">1.8</link></para></refsect2>
 <refsect2 id="cairo-user-scaled-font-unicode-to-glyph-func-t" role="function" condition="since:1.8">
 <title>cairo_user_scaled_font_unicode_to_glyph_func_t&#160;()</title>
 <indexterm zone="cairo-user-scaled-font-unicode-to-glyph-func-t" role="1.8"><primary sortas="user_scaled_font_unicode_to_glyph_func_t">cairo_user_scaled_font_unicode_to_glyph_func_t</primary></indexterm>
@@ -360,7 +350,7 @@ glyphs in the 0 to 65535 range.  Furthermore, some applications may
 assume that glyph 0 is a special glyph-not-found glyph.  User-fonts
 are advised to use glyph 0 for such purposes and do not use that
 glyph value for other purposes.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-user-scaled-font-unicode-to-glyph-func-t.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -378,13 +368,12 @@ glyph value for other purposes.</para>
 <entry role="parameter_description"><para>output glyph index</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-user-scaled-font-unicode-to-glyph-func-t.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> upon success,
 <link linkend="CAIRO-STATUS-USER-FONT-NOT-IMPLEMENTED:CAPS"><literal>CAIRO_STATUS_USER_FONT_NOT_IMPLEMENTED</literal></link> if fallback options should be tried,
 or <link linkend="CAIRO-STATUS-USER-FONT-ERROR:CAPS"><literal>CAIRO_STATUS_USER_FONT_ERROR</literal></link> or any other error status on error.</para>
-<para></para>
-</refsect3><para role="since">Since 1.8</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.8">1.8</link></para></refsect2>
 <refsect2 id="cairo-user-font-face-create" role="function" condition="since:1.8">
 <title>cairo_user_font_face_create&#160;()</title>
 <indexterm zone="cairo-user-font-face-create" role="1.8"><primary sortas="user_font_face_create">cairo_user_font_face_create</primary></indexterm>
@@ -398,12 +387,11 @@ user font.  The only mandatory callback is render_glyph.</para>
 and access it from the user-font callbacks by using
 <link linkend="cairo-scaled-font-get-font-face"><function>cairo_scaled_font_get_font_face()</function></link> followed by
 <link linkend="cairo-font-face-get-user-data"><function>cairo_font_face_get_user_data()</function></link>.</para>
-<refsect3 role="returns">
+<refsect3 id="cairo-user-font-face-create.returns" role="returns">
 <title>Returns</title>
 <para> a newly created <link linkend="cairo-font-face-t"><type>cairo_font_face_t</type></link>. Free with
 <link linkend="cairo-font-face-destroy"><function>cairo_font_face_destroy()</function></link> when you are done using it.</para>
-<para></para>
-</refsect3><para role="since">Since 1.8</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.8">1.8</link></para></refsect2>
 <refsect2 id="cairo-user-font-face-set-init-func" role="function" condition="since:1.8">
 <title>cairo_user_font_face_set_init_func&#160;()</title>
 <indexterm zone="cairo-user-font-face-set-init-func" role="1.8"><primary sortas="user_font_face_set_init_func">cairo_user_font_face_set_init_func</primary></indexterm>
@@ -416,7 +404,7 @@ works.</para>
 <para>The font-face should not be immutable or a <link linkend="CAIRO-STATUS-USER-FONT-IMMUTABLE:CAPS"><literal>CAIRO_STATUS_USER_FONT_IMMUTABLE</literal></link>
 error will occur.  A user font-face is immutable as soon as a scaled-font
 is created from it.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-user-font-face-set-init-func.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -431,14 +419,14 @@ is created from it.</para>
 <entry role="parameter_description"><para>The init callback, or <link linkend="NULL:CAPS"><literal>NULL</literal></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.8</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.8">1.8</link></para></refsect2>
 <refsect2 id="cairo-user-font-face-get-init-func" role="function" condition="since:1.8">
 <title>cairo_user_font_face_get_init_func&#160;()</title>
 <indexterm zone="cairo-user-font-face-get-init-func" role="1.8"><primary sortas="user_font_face_get_init_func">cairo_user_font_face_get_init_func</primary></indexterm>
 <programlisting language="C"><link linkend="cairo-user-scaled-font-init-func-t"><returnvalue>cairo_user_scaled_font_init_func_t</returnvalue></link>
 cairo_user_font_face_get_init_func (<parameter><link linkend="cairo-font-face-t"><type>cairo_font_face_t</type></link> *font_face</parameter>);</programlisting>
 <para>Gets the scaled-font initialization function of a user-font.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-user-font-face-get-init-func.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -450,12 +438,11 @@ cairo_user_font_face_get_init_func (<parameter><link linkend="cairo-font-face-t"
 <entry role="parameter_description"><para>A user font face</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-user-font-face-get-init-func.returns" role="returns">
 <title>Returns</title>
 <para> The init callback of <parameter>font_face</parameter>
 or <link linkend="NULL:CAPS"><literal>NULL</literal></link> if none set or an error has occurred.</para>
-<para></para>
-</refsect3><para role="since">Since 1.8</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.8">1.8</link></para></refsect2>
 <refsect2 id="cairo-user-font-face-set-render-glyph-func" role="function" condition="since:1.8">
 <title>cairo_user_font_face_set_render_glyph_func&#160;()</title>
 <indexterm zone="cairo-user-font-face-set-render-glyph-func" role="1.8"><primary sortas="user_font_face_set_render_glyph_func">cairo_user_font_face_set_render_glyph_func</primary></indexterm>
@@ -473,7 +460,7 @@ is created from it.</para>
 If the callback is <link linkend="NULL:CAPS"><literal>NULL</literal></link> and a glyph is tried to be rendered using
 <parameter>font_face</parameter>
 , a <link linkend="CAIRO-STATUS-USER-FONT-ERROR:CAPS"><literal>CAIRO_STATUS_USER_FONT_ERROR</literal></link> will occur.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-user-font-face-set-render-glyph-func.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -488,7 +475,7 @@ If the callback is <link linkend="NULL:CAPS"><literal>NULL</literal></link> and 
 <entry role="parameter_description"><para>The render_glyph callback, or <link linkend="NULL:CAPS"><literal>NULL</literal></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.8</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.8">1.8</link></para></refsect2>
 <refsect2 id="cairo-user-font-face-get-render-glyph-func" role="function" condition="since:1.8">
 <title>cairo_user_font_face_get_render_glyph_func&#160;()</title>
 <indexterm zone="cairo-user-font-face-get-render-glyph-func" role="1.8"><primary sortas="user_font_face_get_render_glyph_func">cairo_user_font_face_get_render_glyph_func</primary></indexterm>
@@ -496,7 +483,7 @@ If the callback is <link linkend="NULL:CAPS"><literal>NULL</literal></link> and 
 cairo_user_font_face_get_render_glyph_func
                                (<parameter><link linkend="cairo-font-face-t"><type>cairo_font_face_t</type></link> *font_face</parameter>);</programlisting>
 <para>Gets the glyph rendering function of a user-font.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-user-font-face-get-render-glyph-func.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -508,12 +495,11 @@ cairo_user_font_face_get_render_glyph_func
 <entry role="parameter_description"><para>A user font face</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-user-font-face-get-render-glyph-func.returns" role="returns">
 <title>Returns</title>
 <para> The render_glyph callback of <parameter>font_face</parameter>
 or <link linkend="NULL:CAPS"><literal>NULL</literal></link> if none set or an error has occurred.</para>
-<para></para>
-</refsect3><para role="since">Since 1.8</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.8">1.8</link></para></refsect2>
 <refsect2 id="cairo-user-font-face-set-unicode-to-glyph-func" role="function" condition="since:1.8">
 <title>cairo_user_font_face_set_unicode_to_glyph_func&#160;()</title>
 <indexterm zone="cairo-user-font-face-set-unicode-to-glyph-func" role="1.8"><primary sortas="user_font_face_set_unicode_to_glyph_func">cairo_user_font_face_set_unicode_to_glyph_func</primary></indexterm>
@@ -527,7 +513,7 @@ works.</para>
 <para>The font-face should not be immutable or a <link linkend="CAIRO-STATUS-USER-FONT-IMMUTABLE:CAPS"><literal>CAIRO_STATUS_USER_FONT_IMMUTABLE</literal></link>
 error will occur.  A user font-face is immutable as soon as a scaled-font
 is created from it.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-user-font-face-set-unicode-to-glyph-func.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -542,7 +528,7 @@ is created from it.</para>
 <entry role="parameter_description"><para>The unicode_to_glyph callback, or <link linkend="NULL:CAPS"><literal>NULL</literal></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.8</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.8">1.8</link></para></refsect2>
 <refsect2 id="cairo-user-font-face-get-unicode-to-glyph-func" role="function" condition="since:1.8">
 <title>cairo_user_font_face_get_unicode_to_glyph_func&#160;()</title>
 <indexterm zone="cairo-user-font-face-get-unicode-to-glyph-func" role="1.8"><primary sortas="user_font_face_get_unicode_to_glyph_func">cairo_user_font_face_get_unicode_to_glyph_func</primary></indexterm>
@@ -550,7 +536,7 @@ is created from it.</para>
 cairo_user_font_face_get_unicode_to_glyph_func
                                (<parameter><link linkend="cairo-font-face-t"><type>cairo_font_face_t</type></link> *font_face</parameter>);</programlisting>
 <para>Gets the unicode-to-glyph conversion function of a user-font.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-user-font-face-get-unicode-to-glyph-func.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -562,12 +548,11 @@ cairo_user_font_face_get_unicode_to_glyph_func
 <entry role="parameter_description"><para>A user font face</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-user-font-face-get-unicode-to-glyph-func.returns" role="returns">
 <title>Returns</title>
 <para> The unicode_to_glyph callback of <parameter>font_face</parameter>
 or <link linkend="NULL:CAPS"><literal>NULL</literal></link> if none set or an error occurred.</para>
-<para></para>
-</refsect3><para role="since">Since 1.8</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.8">1.8</link></para></refsect2>
 <refsect2 id="cairo-user-font-face-set-text-to-glyphs-func" role="function" condition="since:1.8">
 <title>cairo_user_font_face_set_text_to_glyphs_func&#160;()</title>
 <indexterm zone="cairo-user-font-face-set-text-to-glyphs-func" role="1.8"><primary sortas="user_font_face_set_text_to_glyphs_func">cairo_user_font_face_set_text_to_glyphs_func</primary></indexterm>
@@ -581,7 +566,7 @@ works.</para>
 <para>The font-face should not be immutable or a <link linkend="CAIRO-STATUS-USER-FONT-IMMUTABLE:CAPS"><literal>CAIRO_STATUS_USER_FONT_IMMUTABLE</literal></link>
 error will occur.  A user font-face is immutable as soon as a scaled-font
 is created from it.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-user-font-face-set-text-to-glyphs-func.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -596,7 +581,7 @@ is created from it.</para>
 <entry role="parameter_description"><para>The text_to_glyphs callback, or <link linkend="NULL:CAPS"><literal>NULL</literal></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.8</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.8">1.8</link></para></refsect2>
 <refsect2 id="cairo-user-font-face-get-text-to-glyphs-func" role="function" condition="since:1.8">
 <title>cairo_user_font_face_get_text_to_glyphs_func&#160;()</title>
 <indexterm zone="cairo-user-font-face-get-text-to-glyphs-func" role="1.8"><primary sortas="user_font_face_get_text_to_glyphs_func">cairo_user_font_face_get_text_to_glyphs_func</primary></indexterm>
@@ -604,7 +589,7 @@ is created from it.</para>
 cairo_user_font_face_get_text_to_glyphs_func
                                (<parameter><link linkend="cairo-font-face-t"><type>cairo_font_face_t</type></link> *font_face</parameter>);</programlisting>
 <para>Gets the text-to-glyphs conversion function of a user-font.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-user-font-face-get-text-to-glyphs-func.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -616,12 +601,11 @@ cairo_user_font_face_get_text_to_glyphs_func
 <entry role="parameter_description"><para>A user font face</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-user-font-face-get-text-to-glyphs-func.returns" role="returns">
 <title>Returns</title>
 <para> The text_to_glyphs callback of <parameter>font_face</parameter>
 or <link linkend="NULL:CAPS"><literal>NULL</literal></link> if none set or an error occurred.</para>
-<para></para>
-</refsect3><para role="since">Since 1.8</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.8">1.8</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-User-Fonts.other_details" role="details">
@@ -635,7 +619,7 @@ or <link linkend="NULL:CAPS"><literal>NULL</literal></link> if none set or an er
 This macro can be used to conditionally compile backend-specific code.
 The user font backend is always built in versions of cairo that support
 this feature (1.8 and later).</para>
-<para role="since">Since 1.8</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.8">1.8</link></para></refsect2>
 
 </refsect1>
 

@@ -49,6 +49,7 @@ void RenderCombineText::styleDidChange(StyleDifference diff, const RenderStyle* 
     }
 
     m_needsFontUpdate = true;
+    combineTextIfNeeded();
 }
 
 void RenderCombineText::setRenderedText(const String& text)
@@ -56,6 +57,7 @@ void RenderCombineText::setRenderedText(const String& text)
     RenderText::setRenderedText(text);
 
     m_needsFontUpdate = true;
+    combineTextIfNeeded();
 }
 
 float RenderCombineText::width(unsigned from, unsigned length, const FontCascade& font, float xPosition, HashSet<const Font*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
@@ -85,7 +87,7 @@ void RenderCombineText::getStringToRender(int start, String& string, int& length
     string = string.substringSharingImpl(static_cast<unsigned>(start), length);
 }
 
-void RenderCombineText::combineText()
+void RenderCombineText::combineTextIfNeeded()
 {
     if (!m_needsFontUpdate)
         return;
@@ -144,6 +146,7 @@ void RenderCombineText::combineText()
         DEPRECATED_DEFINE_STATIC_LOCAL(String, objectReplacementCharacterString, (&objectReplacementCharacter, 1));
         RenderText::setRenderedText(objectReplacementCharacterString.impl());
         m_combinedTextSize = FloatSize(combinedTextWidth, glyphOverflow.bottom + glyphOverflow.top);
+        m_lineBoxes.dirtyRange(*this, 0, originalText().length(), originalText().length());
     }
 }
 

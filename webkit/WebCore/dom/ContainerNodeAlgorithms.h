@@ -28,6 +28,7 @@
 #include "HTMLFrameOwnerElement.h"
 #include "InspectorInstrumentation.h"
 #include "NodeTraversal.h"
+#include "NoEventDispatchAssertion.h"
 #include "ShadowRoot.h"
 #include <wtf/Assertions.h>
 #include <wtf/Ref.h>
@@ -115,6 +116,8 @@ inline void removeDetachedChildrenInContainer(GenericNodeContainer& container)
 template<class GenericNode, class GenericNodeContainer>
 inline void appendChildToContainer(GenericNode* child, GenericNodeContainer& container)
 {
+    NoEventDispatchAssertion assertNoEventDispatch;
+
     child->setParentNode(&container);
 
     GenericNode* lastChild = container.lastChild();
@@ -219,7 +222,9 @@ inline void ChildNodeInsertionNotifier::notifyNodeInsertedIntoTree(ContainerNode
 
 inline void ChildNodeInsertionNotifier::notify(Node& node, NodeVector& postInsertionNotificationTargets)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!NoEventDispatchAssertion::isEventDispatchForbidden());
+#if !PLATFORM(WKC)
+    ASSERT_WITH_SECURITY_IMPLICATION(NoEventDispatchAssertion::isEventDispatchAllowedInSubtree(insertionPoint));
+#endif
 
     InspectorInstrumentation::didInsertDOMNode(node.document(), node);
 

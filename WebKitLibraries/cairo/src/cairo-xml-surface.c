@@ -1105,7 +1105,8 @@ _cairo_xml_surface_create_internal (cairo_device_t *device,
     _cairo_surface_init (&surface->base,
 			 &_cairo_xml_surface_backend,
 			 device,
-			 content);
+			 content,
+			 TRUE); /* is_vector */
 
     surface->width = width;
     surface->height = height;

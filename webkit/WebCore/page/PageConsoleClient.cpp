@@ -194,8 +194,7 @@ void PageConsoleClient::profile(JSC::ExecState* exec, const String& title)
 
 void PageConsoleClient::profileEnd(JSC::ExecState* exec, const String& title)
 {
-    if (RefPtr<JSC::Profile> profile = InspectorInstrumentation::stopProfiling(m_page, exec, title))
-        m_profiles.append(WTF::move(profile));
+    InspectorInstrumentation::stopProfiling(m_page, exec, title);
 }
 
 void PageConsoleClient::time(JSC::ExecState*, const String& title)
@@ -212,11 +211,6 @@ void PageConsoleClient::timeEnd(JSC::ExecState* exec, const String& title)
 void PageConsoleClient::timeStamp(JSC::ExecState*, RefPtr<ScriptArguments>&& arguments)
 {
     InspectorInstrumentation::consoleTimeStamp(m_page.mainFrame(), WTF::move(arguments));
-}
-
-void PageConsoleClient::clearProfiles()
-{
-    m_profiles.clear();
 }
 
 } // namespace WebCore

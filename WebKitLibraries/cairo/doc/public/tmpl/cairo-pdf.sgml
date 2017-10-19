@@ -9,10 +9,12 @@ cairo-pdf
 
 </para>
 
+
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
+
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -26,6 +28,35 @@ cairo-pdf
 </para>
 
 
+
+<!-- ##### MACRO CAIRO_PDF_OUTLINE_ROOT ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### ENUM cairo_pdf_outline_flags_t ##### -->
+<para>
+
+</para>
+
+@CAIRO_PDF_OUTLINE_FLAG_OPEN: 
+@CAIRO_PDF_OUTLINE_FLAG_BOLD: 
+@CAIRO_PDF_OUTLINE_FLAG_ITALIC: 
+
+<!-- ##### ENUM cairo_pdf_metadata_t ##### -->
+<para>
+
+</para>
+
+@CAIRO_PDF_METADATA_TITLE: 
+@CAIRO_PDF_METADATA_AUTHOR: 
+@CAIRO_PDF_METADATA_SUBJECT: 
+@CAIRO_PDF_METADATA_KEYWORDS: 
+@CAIRO_PDF_METADATA_CREATOR: 
+@CAIRO_PDF_METADATA_CREATE_DATE: 
+@CAIRO_PDF_METADATA_MOD_DATE: 
 
 <!-- ##### FUNCTION cairo_pdf_surface_create ##### -->
 <para>
@@ -93,5 +124,47 @@ cairo-pdf
 @surface: 
 @width_in_points: 
 @height_in_points: 
+
+
+<!-- ##### FUNCTION cairo_pdf_surface_add_outline ##### -->
+<para>
+
+</para>
+
+@surface: 
+@parent_id: 
+@utf8: 
+@dest: 
+@flags: 
+@Returns: 
+
+
+<!-- ##### FUNCTION cairo_pdf_surface_set_metadata ##### -->
+<para>
+
+</para>
+
+@surface: 
+@metadata: 
+@utf8: 
+
+
+<!-- ##### FUNCTION cairo_pdf_surface_set_page_label ##### -->
+<para>
+
+</para>
+
+@surface: 
+@utf8: 
+
+
+<!-- ##### FUNCTION cairo_pdf_surface_set_thumbnail_size ##### -->
+<para>
+
+</para>
+
+@surface: 
+@width: 
+@height: 
 
 

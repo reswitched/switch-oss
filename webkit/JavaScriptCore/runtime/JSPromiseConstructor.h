@@ -34,19 +34,20 @@ namespace JSC {
 
 class JSPromise;
 class JSPromisePrototype;
+class GetterSetter;
 
 class JSPromiseConstructor : public InternalFunction {
 public:
     typedef InternalFunction Base;
     static const unsigned StructureFlags = Base::StructureFlags | OverridesGetOwnPropertySlot;
 
-    static JSPromiseConstructor* create(VM&, Structure*, JSPromisePrototype*);
+    static JSPromiseConstructor* create(VM&, Structure*, JSPromisePrototype*, GetterSetter* speciesSymbol);
     static Structure* createStructure(VM&, JSGlobalObject*, JSValue);
 
     DECLARE_INFO;
 
 protected:
-    void finishCreation(VM&, JSPromisePrototype*);
+    void finishCreation(VM&, JSPromisePrototype*, GetterSetter*);
 
 private:
     JSPromiseConstructor(VM&, Structure*);

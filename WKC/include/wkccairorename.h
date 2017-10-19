@@ -1,4 +1,4 @@
-/* Copyright(c) 2011-2016 ACCESS CO., LTD. All rights reserved. */
+/* Copyright(c) 2011-2017 ACCESS CO., LTD. All rights reserved. */
 /* This file created automatically */
 
 #ifndef _WKC_CAIRORENAME_H_
@@ -108,6 +108,8 @@
 #define cairo_stroke wkc_cairo_stroke
 #define cairo_stroke_extents wkc_cairo_stroke_extents
 #define cairo_stroke_preserve wkc_cairo_stroke_preserve
+#define cairo_tag_begin wkc_cairo_tag_begin
+#define cairo_tag_end wkc_cairo_tag_end
 #define cairo_text_extents wkc_cairo_text_extents
 #define cairo_text_path wkc_cairo_text_path
 #define cairo_transform wkc_cairo_transform
@@ -156,6 +158,7 @@
 #define _cairo_bentley_ottmann_tessellate_rectangular_traps wkc__cairo_bentley_ottmann_tessellate_rectangular_traps
 #define _cairo_bentley_ottmann_tessellate_rectilinear_polygon_to_boxes wkc__cairo_bentley_ottmann_tessellate_rectilinear_polygon_to_boxes
 #define _cairo_bentley_ottmann_tessellate_rectilinear_traps wkc__cairo_bentley_ottmann_tessellate_rectilinear_traps
+#define _cairo_botor_scan_converter_add_polygon wkc__cairo_botor_scan_converter_add_polygon
 #define _cairo_botor_scan_converter_init wkc__cairo_botor_scan_converter_init
 #define _cairo_boxes_add wkc__cairo_boxes_add
 #define _cairo_boxes_clear wkc__cairo_boxes_clear
@@ -262,8 +265,10 @@
 #define _cairo_damage_create_in_error wkc__cairo_damage_create_in_error
 #define _cairo_damage_destroy wkc__cairo_damage_destroy
 #define _cairo_damage_reduce wkc__cairo_damage_reduce
+#define _cairo_debug_print_matrix wkc__cairo_debug_print_matrix
 #define _cairo_debug_print_path wkc__cairo_debug_print_path
 #define _cairo_debug_print_polygon wkc__cairo_debug_print_polygon
+#define _cairo_debug_print_rect wkc__cairo_debug_print_rect
 #define cairo_debug_reset_static_data wkc_cairo_debug_reset_static_data
 #define _cairo_default_context_create wkc__cairo_default_context_create
 #define _cairo_default_context_fini wkc__cairo_default_context_fini
@@ -492,6 +497,8 @@
 #define _cairo_gstate_show_text_glyphs wkc__cairo_gstate_show_text_glyphs
 #define _cairo_gstate_stroke wkc__cairo_gstate_stroke
 #define _cairo_gstate_stroke_extents wkc__cairo_gstate_stroke_extents
+#define _cairo_gstate_tag_begin wkc__cairo_gstate_tag_begin
+#define _cairo_gstate_tag_end wkc__cairo_gstate_tag_end
 #define _cairo_gstate_transform wkc__cairo_gstate_transform
 #define _cairo_gstate_translate wkc__cairo_gstate_translate
 #define _cairo_gstate_user_to_device wkc__cairo_gstate_user_to_device
@@ -995,6 +1002,7 @@
 #define _cairo_surface_set_resolution wkc__cairo_surface_set_resolution
 #define _cairo_surface_show_text_glyphs wkc__cairo_surface_show_text_glyphs
 #define _cairo_surface_stroke wkc__cairo_surface_stroke
+#define _cairo_surface_tag wkc__cairo_surface_tag
 #define _cairo_surface_unmap_image wkc__cairo_surface_unmap_image
 #define cairo_surface_copy_page wkc_cairo_surface_copy_page
 #define cairo_surface_create_similar wkc_cairo_surface_create_similar
@@ -1079,6 +1087,7 @@
 #define _cairo_surface_wrapper_show_text_glyphs wkc__cairo_surface_wrapper_show_text_glyphs
 #define _cairo_surface_wrapper_snapshot wkc__cairo_surface_wrapper_snapshot
 #define _cairo_surface_wrapper_stroke wkc__cairo_surface_wrapper_stroke
+#define _cairo_surface_wrapper_tag wkc__cairo_surface_wrapper_tag
 #define _cairo_time_cmp wkc__cairo_time_cmp
 #define _cairo_time_from_s wkc__cairo_time_from_s
 #define _cairo_time_get wkc__cairo_time_get
@@ -1121,6 +1130,7 @@
 #define _cairo_tristrip_limit wkc__cairo_tristrip_limit
 #define _cairo_tristrip_move_to wkc__cairo_tristrip_move_to
 #define _cairo_tristrip_translate wkc__cairo_tristrip_translate
+#define _cairo_ucs4_to_utf16 wkc__cairo_ucs4_to_utf16
 #define _cairo_ucs4_to_utf8 wkc__cairo_ucs4_to_utf8
 #define _cairo_utf8_get_char_validated wkc__cairo_utf8_get_char_validated
 #define _cairo_utf8_to_ucs4 wkc__cairo_utf8_to_ucs4

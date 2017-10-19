@@ -483,11 +483,14 @@ void HTMLElement::parseAttribute(const QualifiedName& name, const AtomicString& 
         setAttributeEventListener(eventName, name, value);
 }
 
-Ref<DocumentFragment> HTMLElement::textToFragment(const String& text, ExceptionCode& ec)
+static Ref<DocumentFragment> textToFragment(Document& document, const String& text, ExceptionCode& ec)
 {
     ec = 0;
 
-    auto fragment = DocumentFragment::create(document());
+    auto fragment = DocumentFragment::create(document);
+
+    // It's safe to dispatch events on the new fragment since author scripts have no access to it yet.
+    NoEventDispatchAssertion::EventAllowedScope allowedScope(fragment);
 
     for (unsigned start = 0, length = text.length(); start < length; ) {
 
@@ -500,14 +503,14 @@ Ref<DocumentFragment> HTMLElement::textToFragment(const String& text, ExceptionC
                 break;
         }
 
-        fragment->appendChild(Text::create(document(), text.substring(start, i - start)), ec);
+        fragment->appendChild(Text::create(document, text.substring(start, i - start)), ec);
         if (ec)
             break;
 
         if (i == length)
             break;
 
-        fragment->appendChild(HTMLBRElement::create(document()), ec);
+        fragment->appendChild(HTMLBRElement::create(document), ec);
         if (ec)
             break;
 
@@ -623,9 +626,11 @@ void HTMLElement::setInnerText(const String& text, ExceptionCode& ec)
 
     // Add text nodes and <br> elements.
     ec = 0;
-    RefPtr<DocumentFragment> fragment = textToFragment(text, ec);
-    if (!ec)
-        replaceChildrenWithFragment(*this, fragment.release(), ec);
+    auto fragment = textToFragment(document(), text, ec);
+    // FIXME: This should use replaceAllChildren() once it accepts DocumentFragments as input.
+    // It's safe to dispatch events on the new fragment since author scripts have no access to it yet.
+    NoEventDispatchAssertion::EventAllowedScope allowedScope(fragment.get());
+    replaceChildrenWithFragment(*this, WTF::move(fragment), ec);
 }
 
 void HTMLElement::setOuterText(const String& text, ExceptionCode& ec)
@@ -652,7 +657,7 @@ void HTMLElement::setOuterText(const String& text, ExceptionCode& ec)
     
     // Convert text to fragment with <br> tags instead of linebreaks if needed.
     if (text.contains('\r') || text.contains('\n'))
-        newChild = textToFragment(text, ec);
+        newChild = textToFragment(document(), text, ec);
     else
         newChild = Text::create(document(), text);
 
@@ -660,7 +665,7 @@ void HTMLElement::setOuterText(const String& text, ExceptionCode& ec)
         ec = HIERARCHY_REQUEST_ERR;
     if (ec)
         return;
-    parent->replaceChild(newChild.release(), this, ec);
+    parent->replaceChild(newChild.releaseNonNull(), *this, ec);
 
     RefPtr<Node> node = next ? next->previousSibling() : nullptr;
     if (!ec && is<Text>(node.get()))
@@ -669,7 +674,7 @@ void HTMLElement::setOuterText(const String& text, ExceptionCode& ec)
         mergeWithNextTextNode(downcast<Text>(*prev), ec);
 }
 
-Node* HTMLElement::insertAdjacent(const String& where, Node* newChild, ExceptionCode& ec)
+Node* HTMLElement::insertAdjacent(const String& where, Ref<Node>&& newChild, ExceptionCode& ec)
 {
     // In Internet Explorer if the element has no parent and where is "beforeBegin" or "afterEnd",
     // a document fragment is created and the elements appended in the correct order. This document
@@ -680,18 +685,18 @@ Node* HTMLElement::insertAdjacent(const String& where, Node* newChild, Exception
 
     if (equalIgnoringCase(where, "beforeBegin")) {
         ContainerNode* parent = this->parentNode();
-        return (parent && parent->insertBefore(newChild, this, ec)) ? newChild : nullptr;
+        return (parent && parent->insertBefore(newChild.copyRef(), this, ec)) ? newChild.ptr() : nullptr;
     }
 
     if (equalIgnoringCase(where, "afterBegin"))
-        return insertBefore(newChild, firstChild(), ec) ? newChild : nullptr;
+        return insertBefore(newChild.copyRef(), firstChild(), ec) ? newChild.ptr() : nullptr;
 
     if (equalIgnoringCase(where, "beforeEnd"))
-        return appendChild(newChild, ec) ? newChild : nullptr;
+        return appendChild(newChild.copyRef(), ec) ? newChild.ptr() : nullptr;
 
     if (equalIgnoringCase(where, "afterEnd")) {
         ContainerNode* parent = this->parentNode();
-        return (parent && parent->insertBefore(newChild, nextSibling(), ec)) ? newChild : nullptr;
+        return (parent && parent->insertBefore(newChild.copyRef(), nextSibling(), ec)) ? newChild.ptr() : nullptr;
     }
     
     // IE throws COM Exception E_INVALIDARG; this is the best DOM exception alternative.
@@ -707,7 +712,7 @@ Element* HTMLElement::insertAdjacentElement(const String& where, Element* newChi
         return nullptr;
     }
 
-    Node* returnValue = insertAdjacent(where, newChild, ec);
+    Node* returnValue = insertAdjacent(where, *newChild, ec);
     ASSERT_WITH_SECURITY_IMPLICATION(!returnValue || is<Element>(*returnValue));
     return downcast<Element>(returnValue); 
 }
@@ -738,13 +743,12 @@ void HTMLElement::insertAdjacentHTML(const String& where, const String& markup, 
     RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, contextElement, AllowScriptingContent, ec);
     if (!fragment)
         return;
-    insertAdjacent(where, fragment.get(), ec);
+    insertAdjacent(where, fragment.releaseNonNull(), ec);
 }
 
 void HTMLElement::insertAdjacentText(const String& where, const String& text, ExceptionCode& ec)
 {
-    RefPtr<Text> textNode = document().createTextNode(text);
-    insertAdjacent(where, textNode.get(), ec);
+    insertAdjacent(where, document().createTextNode(text), ec);
 }
 
 void HTMLElement::applyAlignmentAttributeToStyle(const AtomicString& alignment, MutableStyleProperties& style)

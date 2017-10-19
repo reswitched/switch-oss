@@ -1,7 +1,7 @@
 /*
  *  wkcclib.h
  *
- *  Copyright(c) 2009-2016 ACCESS CO., LTD. All rights reserved.
+ *  Copyright(c) 2009-2017 ACCESS CO., LTD. All rights reserved.
  */
 
 #ifndef _WKCCLIB_H_
@@ -1152,6 +1152,15 @@ WKC_PEER_API unsigned int wkc_ntohl(unsigned int in_x);
 POSIX The behavior must be the same as the ntos() function.
 */
 WKC_PEER_API unsigned int wkc_ntohs(unsigned int in_x);
+struct in_addr;
+/**
+@brief POSIX inet_ntoa() function
+@param in_x Conforms to POSIX inet_ntoa()
+@return Conforms to POSIX inet_ntoa()
+@attention
+POSIX The behavior must be the same as the inet_ntoa() function.
+*/
+WKC_PEER_API char* wkc_inet_ntoa(struct in_addr in_x);
 
 /* for y2038 issue specials */
 

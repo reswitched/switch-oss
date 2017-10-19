@@ -48,7 +48,7 @@ public:
     GLContext* context() { return m_context; }
 
 private:
-    GLContext* m_context;
+    GLContext* m_context { nullptr };
 };
 
 ThreadSpecific<ThreadGlobalGLContext>* ThreadGlobalGLContext::staticGLContext;

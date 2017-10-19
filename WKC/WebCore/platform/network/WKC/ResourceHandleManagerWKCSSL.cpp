@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,9 +49,12 @@
 #include <curl/multi.h>
 
 #include <openssl/ssl.h>
+#include <openssl/ssl_locl.h>
 #include <openssl/x509v3.h>
+#include <openssl/x509_int.h>
+#include <openssl/x509_lcl.h>
 #include <openssl/x509_vfy.h>
-#include <openssl/evp.h>
+#include <openssl/evp_locl.h>
 #include <openssl/rand.h>
 #include <openssl/pkcs12.h>
 
@@ -85,6 +88,9 @@
 #endif
 #if defined(SSL_OP_NO_TLSv1_2) && !defined(OPENSSL_NO_TLS1_2)
 #define OPENSSL_SUPPORT_TLSv1_2
+#endif
+#if defined(SSL_OP_NO_TLSv1_3) && !defined(OPENSSL_NO_TLS1_3)
+#define OPENSSL_SUPPORT_TLSv1_3
 #endif
 
 
@@ -199,7 +205,7 @@ static unsigned char* encrypt_key(const unsigned char* in_key, int in_keylen, bo
     memset(newkey, 0x00, (in_keylen + RHMSSL_AES_LEN));
 
     EVP_CIPHER_CTX ctx;
-    EVP_CIPHER_CTX_init(&ctx);
+    memset(&ctx, 0, sizeof(ctx));
 
     if (isEncrypt) {
         EVP_EncryptInit(&ctx, EVP_aes_128_ecb(), gMagic, gIV);
@@ -213,7 +219,7 @@ static unsigned char* encrypt_key(const unsigned char* in_key, int in_keylen, bo
     }
 
     newkey[resultlen + tmplen] = 0x0;
-    EVP_CIPHER_CTX_cleanup(&ctx);
+    EVP_CIPHER_CTX_reset(&ctx);
 
     if (out_len)
         *out_len = resultlen + tmplen;
@@ -373,12 +379,15 @@ ResourceHandleManagerSSL::ResourceHandleManagerSSL(ResourceHandleManager* rhm, C
 {
     nxLog_in("");
 
-    RAND_pseudo_bytes(gMagic, RHMSSL_AES_LEN);
-    RAND_pseudo_bytes(gIV, RHMSSL_AES_LEN);
+    RAND_bytes(gMagic, RHMSSL_AES_LEN);
+    RAND_bytes(gIV, RHMSSL_AES_LEN);
 
     memset(gBuff, 0x00, RHMSSL_BUFF_LEN);
 
     m_enableVersion = CURL_SSLVERSION_DEFAULT;
+#ifdef OPENSSL_SUPPORT_TLSv1_3
+    m_enableVersion |= CURL_SSLVERSION_TLSv1_3;
+#endif
 #ifdef OPENSSL_SUPPORT_TLSv1_2
     m_enableVersion |= CURL_SSLVERSION_TLSv1_2;
 #endif
@@ -871,8 +880,9 @@ void ResourceHandleManagerSSL::ClientCertSelectCallback(void *data, X509 **x509,
 
     switch (ssl->version) {
     case SSL2_VERSION:
-        if (!ssl->s2) return;
-        break;
+#ifdef OPENSSL_SUPPORT_TLSv1_3
+    case TLS1_3_VERSION:
+#endif
 #ifdef OPENSSL_SUPPORT_TLSv1_2
     case TLS1_2_VERSION:
 #endif
@@ -914,6 +924,9 @@ void ResourceHandleManagerSSL::ClientCertSelectCallback(void *data, X509 **x509,
             nxLog_w("SSLv2 is not supported any more");
             break;
 
+#ifdef OPENSSL_SUPPORT_TLSv1_3
+        case TLS1_3_VERSION:
+#endif
 #ifdef OPENSSL_SUPPORT_TLSv1_2
         case TLS1_2_VERSION:
 #endif
@@ -1412,6 +1425,10 @@ void ResourceHandleManagerSSL::SSLEnableProtocols(unsigned int versions)
         if (versions & CURL_SSLVERSION_TLSv1_2)
             ver |= CURL_SSLVERSION_TLSv1_2;
 #endif
+#ifdef OPENSSL_SUPPORT_TLSv1_3
+        if (versions & CURL_SSLVERSION_TLSv1_3)
+            ver |= CURL_SSLVERSION_TLSv1_3;
+#endif
     }
 
     m_enableVersion = ver;
@@ -1781,7 +1798,7 @@ void ClientCertificate::init(X509 *x509)
 {
     char *s=NULL;
     int buflen;
-    ASN1_TIME *certdate = 0;
+    const ASN1_TIME *certdate = 0;
     ASN1_INTEGER *num = 0;
 
     gBuff[0] = 0x00;
@@ -1807,11 +1824,11 @@ void ClientCertificate::init(X509 *x509)
         m_serialNumber = (char*)gBuff;
     }
 
-    certdate = X509_get_notBefore(x509);
+    certdate = X509_get0_notBefore(x509);
     asn1_output(certdate, (char*)gBuff, RHMSSL_BUFF_LEN);
     m_NotBefore = (char*)gBuff;
 
-    certdate = X509_get_notAfter(x509);
+    certdate = X509_get0_notAfter(x509);
     asn1_output(certdate, (char*)gBuff, RHMSSL_BUFF_LEN);
     m_NotAfter = (char*)gBuff;
 }

@@ -2,7 +2,7 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2003, 2006, 2007, 2008, 2009, 2010, 2014 Apple Inc. All rights reserved.
+ * Copyright (C) 2003-2017 Apple Inc. All rights reserved.
  * Copyright (C) 2009 Rob Buis (rwlbuis@gmail.com)
  * Copyright (C) 2011 Google Inc. All rights reserved.
  *
@@ -54,6 +54,7 @@
 #include "StyleResolveForDocument.h"
 #include "StyleSheetContents.h"
 #include <wtf/Ref.h>
+#include <wtf/TemporaryChange.h>
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {
@@ -198,6 +199,10 @@ void HTMLLinkElement::process()
         return;
     }
 
+    // Prevent recursive loading of link.
+    if (m_isHandlingBeforeLoad)
+        return;
+
     URL url = getNonEmptyURLAttribute(hrefAttr);
 
     if (!m_linkLoader.loadLink(m_relAttribute, url, document()))
@@ -217,8 +222,11 @@ void HTMLLinkElement::process()
             m_cachedSheet = 0;
         }
 
-        if (!shouldLoadLink())
-            return;
+        {
+            TemporaryChange<bool> change(m_isHandlingBeforeLoad, true);
+            if (!shouldLoadLink())
+                return;
+        }
 
         m_loading = true;
 
@@ -251,6 +259,8 @@ void HTMLLinkElement::process()
             // The request may have been denied if (for example) the stylesheet is local and the document is remote.
             m_loading = false;
             removePendingSheet();
+
+        ASSERT_WITH_SECURITY_IMPLICATION(!m_cachedSheet);
         }
     } else if (m_sheet) {
         // we no longer contain a stylesheet, e.g. perhaps rel or type was changed
@@ -448,6 +458,8 @@ void HTMLLinkElement::handleClick(Event& event)
         return;
     Frame* frame = document().frame();
     if (!frame)
+        return;
+    if (document().pageCacheState() != Document::NotInPageCache)
         return;
     frame->loader().urlSelected(url, target(), &event, LockHistory::No, LockBackForwardList::No, MaybeSendReferrer, document().shouldOpenExternalURLsPolicyToPropagate());
 }

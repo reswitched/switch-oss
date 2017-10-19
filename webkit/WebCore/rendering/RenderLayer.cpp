@@ -2450,8 +2450,7 @@ void RenderLayer::scrollTo(int x, int y)
 
     // Update the positions of our child layers (if needed as only fixed layers should be impacted by a scroll).
     // We don't update compositing layers, because we need to do a deep update from the compositing ancestor.
-    bool inLayout = view.frameView().isInLayout();
-    if (!inLayout) {
+    if (!view.frameView().isInRenderTreeLayout()) {
         // If we're in the middle of layout, we'll just update layers once layout has finished.
         updateLayerPositionsAfterOverflowScroll();
         // Update regions, scrolling may change the clip of a particular region.
@@ -3869,14 +3868,14 @@ bool RenderLayer::scroll(ScrollDirection direction, ScrollGranularity granularit
     return ScrollableArea::scroll(direction, granularity, multiplier);
 }
 
-void RenderLayer::paint(GraphicsContext* context, const LayoutRect& damageRect, const LayoutSize& subpixelAccumulation, PaintBehavior paintBehavior, RenderObject* subtreePaintRoot, PaintLayerFlags paintFlags)
+void RenderLayer::paint(GraphicsContext* context, const LayoutRect& damageRect, const LayoutSize& subpixelAccumulation, PaintBehavior paintBehavior, RenderObject* subtreePaintRoot, PaintLayerFlags paintFlags, SecurityOriginPaintPolicy paintPolicy)
 {
 #if PLATFORM(WKC)
     CRASH_IF_STACK_OVERFLOW(WKC_STACK_MARGIN_DEFAULT);
 #endif
     OverlapTestRequestMap overlapTestRequests;
 
-    LayerPaintingInfo paintingInfo(this, enclosingIntRect(damageRect), paintBehavior, subpixelAccumulation, subtreePaintRoot, &overlapTestRequests);
+    LayerPaintingInfo paintingInfo(this, enclosingIntRect(damageRect), paintBehavior, subpixelAccumulation, subtreePaintRoot, &overlapTestRequests, paintPolicy == SecurityOriginPaintPolicy::AccessibleOriginOnly);
     paintLayer(context, paintingInfo, paintFlags);
 
     for (auto& widget : overlapTestRequests.keys())
@@ -4272,6 +4271,8 @@ std::unique_ptr<FilterEffectRendererHelper> RenderLayer::setupFilters(GraphicsCo
         // Otherwise, if for example this layer has overflow:hidden, a drop shadow will not compute correctly.
         // Note that we will still apply the clipping on the final rendering of the filter.
         paintingInfo.clipToDirtyRect = !filterInfo->renderer()->hasFilterThatMovesPixels();
+
+        paintingInfo.requireSecurityOriginAccessForWidgets = filterInfo->renderer()->hasFilterThatShouldBeRestrictedBySecurityOrigin();
         return filterPainter;
     }
     return nullptr;
@@ -4521,8 +4522,10 @@ void RenderLayer::paintLayerByApplyingTransform(GraphicsContext* context, const 
 
     // Now do a paint with the root layer shifted to be us.
     LayoutSize adjustedSubpixelAccumulation = offsetForThisLayer - LayoutSize(devicePixelSnappedOffsetForThisLayer);
-    LayerPaintingInfo transformedPaintingInfo(this, LayoutRect(encloseRectToDevicePixels(transform.inverse().mapRect(paintingInfo.paintDirtyRect), deviceScaleFactor)),
-        paintingInfo.paintBehavior, adjustedSubpixelAccumulation, paintingInfo.subtreePaintRoot, paintingInfo.overlapTestRequests);
+    LayerPaintingInfo transformedPaintingInfo(paintingInfo);
+    transformedPaintingInfo.rootLayer = this;
+    transformedPaintingInfo.paintDirtyRect = LayoutRect(encloseRectToDevicePixels(transform.inverse().mapRect(paintingInfo.paintDirtyRect), deviceScaleFactor));
+    transformedPaintingInfo.subpixelAccumulation = adjustedSubpixelAccumulation;
     paintLayerContentsAndReflection(context, transformedPaintingInfo, paintFlags);
 }
 
@@ -4844,7 +4847,7 @@ void RenderLayer::paintForegroundForFragmentsWithPhase(PaintPhase phase, const L
         if (shouldClip)
             clipToRect(localPaintingInfo, context, fragment.foregroundRect);
     
-        PaintInfo paintInfo(context, fragment.foregroundRect.rect(), phase, paintBehavior, subtreePaintRootForRenderer, nullptr, nullptr, &localPaintingInfo.rootLayer->renderer());
+        PaintInfo paintInfo(context, fragment.foregroundRect.rect(), phase, paintBehavior, subtreePaintRootForRenderer, nullptr, nullptr, &localPaintingInfo.rootLayer->renderer(), localPaintingInfo.requireSecurityOriginAccessForWidgets);
         if (phase == PaintPhaseForeground)
             paintInfo.overlapTestRequests = localPaintingInfo.overlapTestRequests;
         renderer().paint(paintInfo, toLayoutPoint(fragment.layerBounds.location() - renderBoxLocation() + localPaintingInfo.subpixelAccumulation));

@@ -3764,6 +3764,7 @@ WKCWebKitInitialize(void* memory, unsigned int memory_size, void* font_memory, u
     wkcDrawContextInitializePeer();
 
     JSC::initializeThreading();
+    RunLoop::initializeMainRunLoop();
 #if !LOG_DISABLED
     WebCore::initializeLoggingChannelsIfNecessary();
 #endif

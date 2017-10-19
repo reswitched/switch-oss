@@ -65,7 +65,7 @@ InspectorServerClientWKC::remoteFrontendConnected()
 void
 InspectorServerClientWKC::remoteFrontendDisconnected()
 {
-    m_view->core()->inspectorController().disconnectFrontend(Inspector::DisconnectReason::InspectorDestroyed);
+    m_view->core()->inspectorController().disconnectFrontend(this);
     m_remoteFrontendConnected = false;
 }
 
@@ -95,6 +95,15 @@ InspectorServerClientWKC::disableRemoteInspection()
     if (m_remoteInspectionPageId)
         WebInspectorServer::sharedInstance()->unregisterPage(m_remoteInspectionPageId);
     m_remoteInspectionPageId = 0;
+}
+
+Inspector::FrontendChannel::ConnectionType
+InspectorServerClientWKC::connectionType() const
+{
+    if (m_remoteInspectionPageId)
+        return Inspector::FrontendChannel::ConnectionType::Remote;
+    else
+        return Inspector::FrontendChannel::ConnectionType::Local;
 }
 
 bool

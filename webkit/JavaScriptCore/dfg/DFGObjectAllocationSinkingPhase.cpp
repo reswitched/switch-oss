@@ -851,6 +851,10 @@ private:
                     escape(edge.node());
                 });
             break;
+                
+        case Kind::NewArrowFunction:
+            out.print("NewArrowFunction");
+            break;
 
         case NewFunction:
             if (!node->castOperand<FunctionExecutable*>()->singletonFunction()->isStillValid())

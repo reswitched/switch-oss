@@ -35,20 +35,28 @@
 
 namespace WebCore {
 
+#if PLATFORM(WKC)
+WKC_DEFINE_GLOBAL_PTR(MessageQueue<AsyncAudioDecoder::DecodingTask>*, gQueue, 0);
+#endif
+
 AsyncAudioDecoder::AsyncAudioDecoder()
 {
+#if !PLATFORM(WKC)
     // Start worker thread.
     MutexLocker lock(m_threadCreationMutex);
     m_threadID = createThread(AsyncAudioDecoder::threadEntry, this, "Audio Decoder");
+#endif
 }
 
 AsyncAudioDecoder::~AsyncAudioDecoder()
 {
+#if !PLATFORM(WKC)
     m_queue.kill();
     
     // Stop thread.
     waitForThreadCompletion(m_threadID);
     m_threadID = 0;
+#endif
 }
 
 void AsyncAudioDecoder::decodeAsync(ArrayBuffer* audioData, float sampleRate, PassRefPtr<AudioBufferCallback> successCallback, PassRefPtr<AudioBufferCallback> errorCallback)
@@ -58,8 +66,21 @@ void AsyncAudioDecoder::decodeAsync(ArrayBuffer* audioData, float sampleRate, Pa
     if (!audioData)
         return;
 
+#if !PLATFORM(WKC)
     auto decodingTask = std::make_unique<DecodingTask>(audioData, sampleRate, successCallback, errorCallback);
     m_queue.append(WTF::move(decodingTask)); // note that ownership of the task is effectively taken by the queue.
+#else
+    // We create only one MessageQueue and one AudioDecoder thread, and we never kill them.
+    if (!gQueue) {
+        gQueue = new MessageQueue<DecodingTask>();
+        WTF::ThreadIdentifier threadID = createThread(AsyncAudioDecoder::threadEntry, this, "Audio Decoder");
+        if (!threadID) {
+            CRASH();
+        }
+    }
+    auto decodingTask = std::make_unique<DecodingTask>(audioData, sampleRate, successCallback, errorCallback);
+    gQueue->append(WTF::move(decodingTask)); // note that ownership of the task is effectively taken by the queue.
+#endif
 }
 
 // Asynchronously decode in this thread.
@@ -74,6 +95,7 @@ void AsyncAudioDecoder::runLoop()
 {
     ASSERT(!isMainThread());
 
+#if !PLATFORM(WKC)
     {
         // Wait for until we have m_threadID established before starting the run loop.
         MutexLocker lock(m_threadCreationMutex);
@@ -85,6 +107,14 @@ void AsyncAudioDecoder::runLoop()
         // See DecodingTask::notifyComplete() for cleanup.
         decodingTask.release()->decode();
     }
+#else
+    // Keep running decoding tasks until we're force-terminated.
+    while (auto decodingTask = gQueue->waitForMessage()) {
+        // Let the task take care of its own ownership.
+        // See DecodingTask::notifyComplete() for cleanup.
+        decodingTask.release()->decode();
+    }
+#endif
 }
 
 AsyncAudioDecoder::DecodingTask::DecodingTask(ArrayBuffer* audioData, float sampleRate, PassRefPtr<AudioBufferCallback> successCallback, PassRefPtr<AudioBufferCallback> errorCallback)

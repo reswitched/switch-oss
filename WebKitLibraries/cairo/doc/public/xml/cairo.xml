@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-cairo-t.top_of_page">cairo_t</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>cairo_t</refname>
@@ -168,11 +166,6 @@
 </tgroup>
 </informaltable>
 </refsect1>
-<refsect1 id="cairo-cairo-t.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
-</refsect1>
 
 
 <refsect1 id="cairo-cairo-t.description" role="desc">
@@ -205,7 +198,7 @@ variant).</para>
 , so you can immediately
 call <link linkend="cairo-surface-destroy"><function>cairo_surface_destroy()</function></link> on it if you don't need to
 maintain a separate reference to it.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-create.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -217,7 +210,7 @@ maintain a separate reference to it.</para>
 <entry role="parameter_description"><para>target surface for the context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-create.returns" role="returns">
 <title>Returns</title>
 <para> a newly allocated <link linkend="cairo-t"><type>cairo_t</type></link> with a reference
 count of 1. The initial reference count should be released
@@ -229,8 +222,7 @@ you attempt to target a surface which does not support
 writing (such as <link linkend="cairo-mime-surface-t"><type>cairo_mime_surface_t</type></link>) then a
 <link linkend="CAIRO-STATUS-WRITE-ERROR:CAPS"><literal>CAIRO_STATUS_WRITE_ERROR</literal></link> will be raised.  You can use this
 object normally, but no drawing will be done.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-reference" role="function" condition="since:1.0">
 <title>cairo_reference&#160;()</title>
 <indexterm zone="cairo-reference" role="1.0"><primary sortas="reference">cairo_reference</primary></indexterm>
@@ -241,9 +233,9 @@ cairo_reference (<parameter><link linkend="cairo-t"><type>cairo_t</type></link> 
 <parameter>cr</parameter>
  from being destroyed until a matching call to <link linkend="cairo-destroy"><function>cairo_destroy()</function></link>
 is made.</para>
-<para>The number of references to a <link linkend="cairo-t"><type>cairo_t</type></link> can be get using
-<link linkend="cairo-get-reference-count"><function>cairo_get_reference_count()</function></link>.</para>
-<refsect3 role="parameters">
+<para>Use <link linkend="cairo-get-reference-count"><function>cairo_get_reference_count()</function></link> to get the number of references to
+a <link linkend="cairo-t"><type>cairo_t</type></link>.</para>
+<refsect3 id="cairo-reference.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -255,11 +247,10 @@ is made.</para>
 <entry role="parameter_description"><para>a <link linkend="cairo-t"><type>cairo_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-reference.returns" role="returns">
 <title>Returns</title>
 <para> the referenced <link linkend="cairo-t"><type>cairo_t</type></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-destroy" role="function" condition="since:1.0">
 <title>cairo_destroy&#160;()</title>
 <indexterm zone="cairo-destroy" role="1.0"><primary sortas="destroy">cairo_destroy</primary></indexterm>
@@ -270,7 +261,7 @@ cairo_destroy (<parameter><link linkend="cairo-t"><type>cairo_t</type></link> *c
 is zero, then <parameter>cr</parameter>
  and all associated resources are freed.
 See <link linkend="cairo-reference"><function>cairo_reference()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-destroy.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -282,14 +273,14 @@ See <link linkend="cairo-reference"><function>cairo_reference()</function></link
 <entry role="parameter_description"><para>a <link linkend="cairo-t"><type>cairo_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-status" role="function" condition="since:1.0">
 <title>cairo_status&#160;()</title>
 <indexterm zone="cairo-status" role="1.0"><primary sortas="status">cairo_status</primary></indexterm>
 <programlisting language="C"><link linkend="cairo-status-t"><returnvalue>cairo_status_t</returnvalue></link>
 cairo_status (<parameter><link linkend="cairo-t"><type>cairo_t</type></link> *cr</parameter>);</programlisting>
 <para>Checks whether an error has previously occurred for this context.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-status.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -301,11 +292,10 @@ cairo_status (<parameter><link linkend="cairo-t"><type>cairo_t</type></link> *cr
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-status.returns" role="returns">
 <title>Returns</title>
 <para> the current status of this context, see <link linkend="cairo-status-t"><type>cairo_status_t</type></link></para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-save" role="function" condition="since:1.0">
 <title>cairo_save&#160;()</title>
 <indexterm zone="cairo-save" role="1.0"><primary sortas="save">cairo_save</primary></indexterm>
@@ -324,7 +314,7 @@ restores the state from the matching paired <link linkend="cairo-save"><function
 a <link linkend="cairo-t"><type>cairo_t</type></link> is freed. If the reference count of a <link linkend="cairo-t"><type>cairo_t</type></link>
 drops to zero in response to a call to <link linkend="cairo-destroy"><function>cairo_destroy()</function></link>,
 any saved states will be freed along with the <link linkend="cairo-t"><type>cairo_t</type></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-save.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -336,7 +326,7 @@ any saved states will be freed along with the <link linkend="cairo-t"><type>cair
 <entry role="parameter_description"><para>a <link linkend="cairo-t"><type>cairo_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-restore" role="function" condition="since:1.0">
 <title>cairo_restore&#160;()</title>
 <indexterm zone="cairo-restore" role="1.0"><primary sortas="restore">cairo_restore</primary></indexterm>
@@ -346,7 +336,7 @@ cairo_restore (<parameter><link linkend="cairo-t"><type>cairo_t</type></link> *c
  to the state saved by a preceding call to
 <link linkend="cairo-save"><function>cairo_save()</function></link> and removes that state from the stack of
 saved states.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-restore.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -358,7 +348,7 @@ saved states.</para>
 <entry role="parameter_description"><para>a <link linkend="cairo-t"><type>cairo_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-get-target" role="function" condition="since:1.0">
 <title>cairo_get_target&#160;()</title>
 <indexterm zone="cairo-get-target" role="1.0"><primary sortas="get_target">cairo_get_target</primary></indexterm>
@@ -372,7 +362,7 @@ can be a "nil" surface if <parameter>cr</parameter>
 (ie. <link linkend="cairo-status"><function>cairo_status()</function></link> <literal>!=</literal> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link>).
 A nil surface is indicated by <link linkend="cairo-surface-status"><function>cairo_surface_status()</function></link>
 <literal>!=</literal> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-get-target.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -384,12 +374,11 @@ A nil surface is indicated by <link linkend="cairo-surface-status"><function>cai
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-get-target.returns" role="returns">
 <title>Returns</title>
 <para> the target surface. This object is owned by cairo. To
 keep a reference to it, you must call <link linkend="cairo-surface-reference"><function>cairo_surface_reference()</function></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-push-group" role="function" condition="since:1.2">
 <title>cairo_push_group&#160;()</title>
 <indexterm zone="cairo-push-group" role="1.2"><primary sortas="push_group">cairo_push_group</primary></indexterm>
@@ -426,7 +415,7 @@ cairo_stroke (cr);
 cairo_pop_group_to_source (cr);
 cairo_paint_with_alpha (cr, alpha);
 </programlisting></informalexample>
-<refsect3 role="parameters">
+<refsect3 id="cairo-push-group.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -438,7 +427,7 @@ cairo_paint_with_alpha (cr, alpha);
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-push-group-with-content" role="function" condition="since:1.2">
 <title>cairo_push_group_with_content&#160;()</title>
 <indexterm zone="cairo-push-group-with-content" role="1.2"><primary sortas="push_group_with_content">cairo_push_group_with_content</primary></indexterm>
@@ -455,7 +444,7 @@ provide the result of any drawing to the group as a pattern,
 control this content type is the only distinction between this
 function and <link linkend="cairo-push-group"><function>cairo_push_group()</function></link> which you should see for a more
 detailed description of group rendering.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-push-group-with-content.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -471,7 +460,7 @@ detailed description of group rendering.</para>
 will be created</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-pop-group" role="function" condition="since:1.2">
 <title>cairo_pop_group&#160;()</title>
 <indexterm zone="cairo-pop-group" role="1.2"><primary sortas="pop_group">cairo_pop_group</primary></indexterm>
@@ -485,7 +474,7 @@ group.</para>
 call to <link linkend="cairo-save"><function>cairo_save()</function></link> by the push_group function), so that any
 changes to the graphics state will not be visible outside the
 group.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pop-group.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -497,14 +486,13 @@ group.</para>
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-pop-group.returns" role="returns">
 <title>Returns</title>
 <para> a newly created (surface) pattern containing the
 results of all drawing operations performed to the group. The
 caller owns the returned object and should call
 <link linkend="cairo-pattern-destroy"><function>cairo_pattern_destroy()</function></link> when finished with it.</para>
-<para></para>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-pop-group-to-source" role="function" condition="since:1.2">
 <title>cairo_pop_group_to_source&#160;()</title>
 <indexterm zone="cairo-pop-group-to-source" role="1.2"><primary sortas="pop_group_to_source">cairo_pop_group_to_source</primary></indexterm>
@@ -526,7 +514,7 @@ the short-lived pointer to the pattern.</para>
 call to <link linkend="cairo-save"><function>cairo_save()</function></link> by the push_group function), so that any
 changes to the graphics state will not be visible outside the
 group.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-pop-group-to-source.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -538,7 +526,7 @@ group.</para>
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-get-group-target" role="function" condition="since:1.2">
 <title>cairo_get_group_target&#160;()</title>
 <indexterm zone="cairo-get-group-target" role="1.2"><primary sortas="get_group_target">cairo_get_group_target</primary></indexterm>
@@ -554,7 +542,7 @@ can be a "nil" surface if <parameter>cr</parameter>
 (ie. <link linkend="cairo-status"><function>cairo_status()</function></link> <literal>!=</literal> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link>).
 A nil surface is indicated by <link linkend="cairo-surface-status"><function>cairo_surface_status()</function></link>
 <literal>!=</literal> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-get-group-target.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -566,12 +554,11 @@ A nil surface is indicated by <link linkend="cairo-surface-status"><function>cai
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-get-group-target.returns" role="returns">
 <title>Returns</title>
 <para> the target surface. This object is owned by cairo. To
 keep a reference to it, you must call <link linkend="cairo-surface-reference"><function>cairo_surface_reference()</function></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-set-source-rgb" role="function" condition="since:1.0">
 <title>cairo_set_source_rgb&#160;()</title>
 <indexterm zone="cairo-set-source-rgb" role="1.0"><primary sortas="set_source_rgb">cairo_set_source_rgb</primary></indexterm>
@@ -593,7 +580,7 @@ clamped.</para>
 </orderedlist>
 <para>The default source pattern is opaque black, (that is, it is
 equivalent to cairo_set_source_rgb(cr, 0.0, 0.0, 0.0)).</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-set-source-rgb.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -614,7 +601,7 @@ equivalent to cairo_set_source_rgb(cr, 0.0, 0.0, 0.0)).</para>
 <entry role="parameter_description"><para>blue component of color</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-set-source-rgba" role="function" condition="since:1.0">
 <title>cairo_set_source_rgba&#160;()</title>
 <indexterm zone="cairo-set-source-rgba" role="1.0"><primary sortas="set_source_rgba">cairo_set_source_rgba</primary></indexterm>
@@ -633,7 +620,7 @@ range 0 to 1. If the values passed in are outside that range, they
 will be clamped.</para>
 <para>The default source pattern is opaque black, (that is, it is
 equivalent to cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0)).</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-set-source-rgba.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -657,7 +644,7 @@ equivalent to cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 1.0)).</para>
 <entry role="parameter_description"><para>alpha component of color</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-set-source" role="function" condition="since:1.0">
 <title>cairo_set_source&#160;()</title>
 <indexterm zone="cairo-set-source" role="1.0"><primary sortas="set_source">cairo_set_source</primary></indexterm>
@@ -676,7 +663,7 @@ will not affect the source pattern. See <link linkend="cairo-pattern-set-matrix"
 <para>The default source pattern is a solid pattern that is opaque black,
 (that is, it is equivalent to cairo_set_source_rgb(cr, 0.0, 0.0,
 0.0)).</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-set-source.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -692,7 +679,7 @@ will not affect the source pattern. See <link linkend="cairo-pattern-set-matrix"
 subsequent drawing operations.</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-set-source-surface" role="function" condition="since:1.0">
 <title>cairo_set_source_surface&#160;()</title>
 <indexterm zone="cairo-set-source-surface" role="1.0"><primary sortas="set_source_surface">cairo_set_source_surface</primary></indexterm>
@@ -720,7 +707,7 @@ set to the default values as in <link linkend="cairo-pattern-create-for-surface"
 The resulting pattern can be queried with <link linkend="cairo-get-source"><function>cairo_get_source()</function></link> so
 that these attributes can be modified if desired, (eg. to create a
 repeating pattern with <link linkend="cairo-pattern-set-extend"><function>cairo_pattern_set_extend()</function></link>).</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-set-source-surface.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -741,7 +728,7 @@ repeating pattern with <link linkend="cairo-pattern-set-extend"><function>cairo_
 <entry role="parameter_description"><para>User-space Y coordinate for surface origin</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-get-source" role="function" condition="since:1.0">
 <title>cairo_get_source&#160;()</title>
 <indexterm zone="cairo-get-source" role="1.0"><primary sortas="get_source">cairo_get_source</primary></indexterm>
@@ -749,7 +736,7 @@ repeating pattern with <link linkend="cairo-pattern-set-extend"><function>cairo_
 cairo_get_source (<parameter><link linkend="cairo-t"><type>cairo_t</type></link> *cr</parameter>);</programlisting>
 <para>Gets the current source pattern for <parameter>cr</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-get-source.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -761,13 +748,12 @@ cairo_get_source (<parameter><link linkend="cairo-t"><type>cairo_t</type></link>
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-get-source.returns" role="returns">
 <title>Returns</title>
 <para> the current source pattern. This object is owned by
 cairo. To keep a reference to it, you must call
 <link linkend="cairo-pattern-reference"><function>cairo_pattern_reference()</function></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-set-antialias" role="function" condition="since:1.0">
 <title>cairo_set_antialias&#160;()</title>
 <indexterm zone="cairo-set-antialias" role="1.0"><primary sortas="set_antialias">cairo_set_antialias</primary></indexterm>
@@ -780,7 +766,7 @@ a particular value.  At the current time, no backend supports
 <link linkend="CAIRO-ANTIALIAS-SUBPIXEL:CAPS"><literal>CAIRO_ANTIALIAS_SUBPIXEL</literal></link> when drawing shapes.</para>
 <para>Note that this option does not affect text rendering, instead see
 <link linkend="cairo-font-options-set-antialias"><function>cairo_font_options_set_antialias()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-set-antialias.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -795,7 +781,7 @@ a particular value.  At the current time, no backend supports
 <entry role="parameter_description"><para>the new antialiasing mode</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-get-antialias" role="function" condition="since:1.0">
 <title>cairo_get_antialias&#160;()</title>
 <indexterm zone="cairo-get-antialias" role="1.0"><primary sortas="get_antialias">cairo_get_antialias</primary></indexterm>
@@ -803,7 +789,7 @@ a particular value.  At the current time, no backend supports
 cairo_get_antialias (<parameter><link linkend="cairo-t"><type>cairo_t</type></link> *cr</parameter>);</programlisting>
 <para>Gets the current shape antialiasing mode, as set by
 <link linkend="cairo-set-antialias"><function>cairo_set_antialias()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-get-antialias.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -815,11 +801,10 @@ cairo_get_antialias (<parameter><link linkend="cairo-t"><type>cairo_t</type></li
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-get-antialias.returns" role="returns">
 <title>Returns</title>
 <para> the current shape antialiasing mode.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-set-dash" role="function" condition="since:1.0">
 <title>cairo_set_dash&#160;()</title>
 <indexterm zone="cairo-set-dash" role="1.0"><primary sortas="set_dash">cairo_set_dash</primary></indexterm>
@@ -854,7 +839,7 @@ on and off portions of the size specified by the single value in
 <parameter>cr</parameter>
  will be put into an error state with a status of
 <link linkend="CAIRO-STATUS-INVALID-DASH:CAPS"><literal>CAIRO_STATUS_INVALID_DASH</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-set-dash.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -875,7 +860,7 @@ on and off portions of the size specified by the single value in
 <entry role="parameter_description"><para>an offset into the dash pattern at which the stroke should start</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-get-dash-count" role="function" condition="since:1.4">
 <title>cairo_get_dash_count&#160;()</title>
 <indexterm zone="cairo-get-dash-count" role="1.4"><primary sortas="get_dash_count">cairo_get_dash_count</primary></indexterm>
@@ -885,7 +870,7 @@ cairo_get_dash_count (<parameter><link linkend="cairo-t"><type>cairo_t</type></l
  (0 if dashing
 is not currently in effect).</para>
 <para>See also <link linkend="cairo-set-dash"><function>cairo_set_dash()</function></link> and <link linkend="cairo-get-dash"><function>cairo_get_dash()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-get-dash-count.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -897,11 +882,10 @@ is not currently in effect).</para>
 <entry role="parameter_description"><para>a <link linkend="cairo-t"><type>cairo_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-get-dash-count.returns" role="returns">
 <title>Returns</title>
 <para> the length of the dash array, or 0 if no dash array set.</para>
-<para></para>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 <refsect2 id="cairo-get-dash" role="function" condition="since:1.4">
 <title>cairo_get_dash&#160;()</title>
 <indexterm zone="cairo-get-dash" role="1.4"><primary sortas="get_dash">cairo_get_dash</primary></indexterm>
@@ -913,7 +897,7 @@ cairo_get_dash (<parameter><link linkend="cairo-t"><type>cairo_t</type></link> *
  should be big
 enough to hold at least the number of values returned by
 <link linkend="cairo-get-dash-count"><function>cairo_get_dash_count()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-get-dash.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -931,7 +915,7 @@ enough to hold at least the number of values returned by
 <entry role="parameter_description"><para>return value for the current dash offset, or <link linkend="NULL:CAPS"><literal>NULL</literal></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 <refsect2 id="cairo-set-fill-rule" role="function" condition="since:1.0">
 <title>cairo_set_fill_rule&#160;()</title>
 <indexterm zone="cairo-set-fill-rule" role="1.0"><primary sortas="set_fill_rule">cairo_set_fill_rule</primary></indexterm>
@@ -944,7 +928,7 @@ is used to determine which regions are inside or outside a complex
 both <link linkend="cairo-fill"><function>cairo_fill()</function></link> and <link linkend="cairo-clip"><function>cairo_clip()</function></link>. See <link linkend="cairo-fill-rule-t"><type>cairo_fill_rule_t</type></link> for details
 on the semantics of each available fill rule.</para>
 <para>The default fill rule is <link linkend="CAIRO-FILL-RULE-WINDING:CAPS"><literal>CAIRO_FILL_RULE_WINDING</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-set-fill-rule.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -959,14 +943,14 @@ on the semantics of each available fill rule.</para>
 <entry role="parameter_description"><para>a fill rule, specified as a <link linkend="cairo-fill-rule-t"><type>cairo_fill_rule_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-get-fill-rule" role="function" condition="since:1.0">
 <title>cairo_get_fill_rule&#160;()</title>
 <indexterm zone="cairo-get-fill-rule" role="1.0"><primary sortas="get_fill_rule">cairo_get_fill_rule</primary></indexterm>
 <programlisting language="C"><link linkend="cairo-fill-rule-t"><returnvalue>cairo_fill_rule_t</returnvalue></link>
 cairo_get_fill_rule (<parameter><link linkend="cairo-t"><type>cairo_t</type></link> *cr</parameter>);</programlisting>
 <para>Gets the current fill rule, as set by <link linkend="cairo-set-fill-rule"><function>cairo_set_fill_rule()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-get-fill-rule.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -978,11 +962,10 @@ cairo_get_fill_rule (<parameter><link linkend="cairo-t"><type>cairo_t</type></li
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-get-fill-rule.returns" role="returns">
 <title>Returns</title>
 <para> the current fill rule.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-set-line-cap" role="function" condition="since:1.0">
 <title>cairo_set_line_cap&#160;()</title>
 <indexterm zone="cairo-set-line-cap" role="1.0"><primary sortas="set_line_cap">cairo_set_line_cap</primary></indexterm>
@@ -997,7 +980,7 @@ examined by <link linkend="cairo-stroke"><function>cairo_stroke()</function></li
 <link linkend="cairo-stroke-to-path"><function>cairo_stroke_to_path()</function></link>, but does not have any effect during path
 construction.</para>
 <para>The default line cap style is <link linkend="CAIRO-LINE-CAP-BUTT:CAPS"><literal>CAIRO_LINE_CAP_BUTT</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-set-line-cap.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1012,14 +995,14 @@ construction.</para>
 <entry role="parameter_description"><para>a line cap style</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-get-line-cap" role="function" condition="since:1.0">
 <title>cairo_get_line_cap&#160;()</title>
 <indexterm zone="cairo-get-line-cap" role="1.0"><primary sortas="get_line_cap">cairo_get_line_cap</primary></indexterm>
 <programlisting language="C"><link linkend="cairo-line-cap-t"><returnvalue>cairo_line_cap_t</returnvalue></link>
 cairo_get_line_cap (<parameter><link linkend="cairo-t"><type>cairo_t</type></link> *cr</parameter>);</programlisting>
 <para>Gets the current line cap style, as set by <link linkend="cairo-set-line-cap"><function>cairo_set_line_cap()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-get-line-cap.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1031,11 +1014,10 @@ cairo_get_line_cap (<parameter><link linkend="cairo-t"><type>cairo_t</type></lin
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-get-line-cap.returns" role="returns">
 <title>Returns</title>
 <para> the current line cap style.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-set-line-join" role="function" condition="since:1.0">
 <title>cairo_set_line_join&#160;()</title>
 <indexterm zone="cairo-set-line-join" role="1.0"><primary sortas="set_line_join">cairo_set_line_join</primary></indexterm>
@@ -1050,7 +1032,7 @@ examined by <link linkend="cairo-stroke"><function>cairo_stroke()</function></li
 <link linkend="cairo-stroke-to-path"><function>cairo_stroke_to_path()</function></link>, but does not have any effect during path
 construction.</para>
 <para>The default line join style is <link linkend="CAIRO-LINE-JOIN-MITER:CAPS"><literal>CAIRO_LINE_JOIN_MITER</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-set-line-join.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1065,14 +1047,14 @@ construction.</para>
 <entry role="parameter_description"><para>a line join style</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-get-line-join" role="function" condition="since:1.0">
 <title>cairo_get_line_join&#160;()</title>
 <indexterm zone="cairo-get-line-join" role="1.0"><primary sortas="get_line_join">cairo_get_line_join</primary></indexterm>
 <programlisting language="C"><link linkend="cairo-line-join-t"><returnvalue>cairo_line_join_t</returnvalue></link>
 cairo_get_line_join (<parameter><link linkend="cairo-t"><type>cairo_t</type></link> *cr</parameter>);</programlisting>
 <para>Gets the current line join style, as set by <link linkend="cairo-set-line-join"><function>cairo_set_line_join()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-get-line-join.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1084,11 +1066,10 @@ cairo_get_line_join (<parameter><link linkend="cairo-t"><type>cairo_t</type></li
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-get-line-join.returns" role="returns">
 <title>Returns</title>
 <para> the current line join style.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-set-line-width" role="function" condition="since:1.0">
 <title>cairo_set_line_width&#160;()</title>
 <indexterm zone="cairo-set-line-width" role="1.0"><primary sortas="set_line_width">cairo_set_line_width</primary></indexterm>
@@ -1112,7 +1093,7 @@ examined by <link linkend="cairo-stroke"><function>cairo_stroke()</function></li
 <link linkend="cairo-stroke-to-path"><function>cairo_stroke_to_path()</function></link>, but does not have any effect during path
 construction.</para>
 <para>The default line width value is 2.0.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-set-line-width.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1127,7 +1108,7 @@ construction.</para>
 <entry role="parameter_description"><para>a line width</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-get-line-width" role="function" condition="since:1.0">
 <title>cairo_get_line_width&#160;()</title>
 <indexterm zone="cairo-get-line-width" role="1.0"><primary sortas="get_line_width">cairo_get_line_width</primary></indexterm>
@@ -1137,7 +1118,7 @@ cairo_get_line_width (<parameter><link linkend="cairo-t"><type>cairo_t</type></l
 <link linkend="cairo-set-line-width"><function>cairo_set_line_width()</function></link>. Note that the value is unchanged even if
 the CTM has changed between the calls to <link linkend="cairo-set-line-width"><function>cairo_set_line_width()</function></link> and
 <link linkend="cairo-get-line-width"><function>cairo_get_line_width()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-get-line-width.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1149,11 +1130,10 @@ the CTM has changed between the calls to <link linkend="cairo-set-line-width"><f
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-get-line-width.returns" role="returns">
 <title>Returns</title>
 <para> the current line width.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-set-miter-limit" role="function" condition="since:1.0">
 <title>cairo_set_miter_limit&#160;()</title>
 <indexterm zone="cairo-set-miter-limit" role="1.0"><primary sortas="set_miter_limit">cairo_set_miter_limit</primary></indexterm>
@@ -1178,7 +1158,7 @@ at 60 degrees, and a miter limit of 1.414 makes the cutoff at 90
 degrees.</para>
 <para>A miter limit for a desired angle can be computed as: miter limit =
 1/sin(angle/2)</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-set-miter-limit.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1193,14 +1173,14 @@ degrees.</para>
 <entry role="parameter_description"><para>miter limit to set</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-get-miter-limit" role="function" condition="since:1.0">
 <title>cairo_get_miter_limit&#160;()</title>
 <indexterm zone="cairo-get-miter-limit" role="1.0"><primary sortas="get_miter_limit">cairo_get_miter_limit</primary></indexterm>
 <programlisting language="C"><link linkend="double"><returnvalue>double</returnvalue></link>
 cairo_get_miter_limit (<parameter><link linkend="cairo-t"><type>cairo_t</type></link> *cr</parameter>);</programlisting>
 <para>Gets the current miter limit, as set by <link linkend="cairo-set-miter-limit"><function>cairo_set_miter_limit()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-get-miter-limit.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1212,11 +1192,10 @@ cairo_get_miter_limit (<parameter><link linkend="cairo-t"><type>cairo_t</type></
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-get-miter-limit.returns" role="returns">
 <title>Returns</title>
 <para> the current miter limit.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-set-operator" role="function" condition="since:1.0">
 <title>cairo_set_operator&#160;()</title>
 <indexterm zone="cairo-set-operator" role="1.0"><primary sortas="set_operator">cairo_set_operator</primary></indexterm>
@@ -1227,7 +1206,7 @@ cairo_set_operator (<parameter><link linkend="cairo-t"><type>cairo_t</type></lin
 operations. See <link linkend="cairo-operator-t"><type>cairo_operator_t</type></link> for details on the semantics of
 each available compositing operator.</para>
 <para>The default operator is <link linkend="CAIRO-OPERATOR-OVER:CAPS"><literal>CAIRO_OPERATOR_OVER</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-set-operator.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1242,14 +1221,14 @@ each available compositing operator.</para>
 <entry role="parameter_description"><para>a compositing operator, specified as a <link linkend="cairo-operator-t"><type>cairo_operator_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-get-operator" role="function" condition="since:1.0">
 <title>cairo_get_operator&#160;()</title>
 <indexterm zone="cairo-get-operator" role="1.0"><primary sortas="get_operator">cairo_get_operator</primary></indexterm>
 <programlisting language="C"><link linkend="cairo-operator-t"><returnvalue>cairo_operator_t</returnvalue></link>
 cairo_get_operator (<parameter><link linkend="cairo-t"><type>cairo_t</type></link> *cr</parameter>);</programlisting>
 <para>Gets the current compositing operator for a cairo context.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-get-operator.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1261,11 +1240,10 @@ cairo_get_operator (<parameter><link linkend="cairo-t"><type>cairo_t</type></lin
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-get-operator.returns" role="returns">
 <title>Returns</title>
 <para> the current compositing operator.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-set-tolerance" role="function" condition="since:1.0">
 <title>cairo_set_tolerance&#160;()</title>
 <indexterm zone="cairo-set-tolerance" role="1.0"><primary sortas="set_tolerance">cairo_set_tolerance</primary></indexterm>
@@ -1284,7 +1262,7 @@ within Cairo is limited by the precision of its internal arithmetic, and
 the prescribed <parameter>tolerance</parameter>
  is restricted to the smallest
 representable internal value.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-set-tolerance.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1299,14 +1277,14 @@ representable internal value.</para>
 <entry role="parameter_description"><para>the tolerance, in device units (typically pixels)</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-get-tolerance" role="function" condition="since:1.0">
 <title>cairo_get_tolerance&#160;()</title>
 <indexterm zone="cairo-get-tolerance" role="1.0"><primary sortas="get_tolerance">cairo_get_tolerance</primary></indexterm>
 <programlisting language="C"><link linkend="double"><returnvalue>double</returnvalue></link>
 cairo_get_tolerance (<parameter><link linkend="cairo-t"><type>cairo_t</type></link> *cr</parameter>);</programlisting>
 <para>Gets the current tolerance value, as set by <link linkend="cairo-set-tolerance"><function>cairo_set_tolerance()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-get-tolerance.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1318,11 +1296,10 @@ cairo_get_tolerance (<parameter><link linkend="cairo-t"><type>cairo_t</type></li
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-get-tolerance.returns" role="returns">
 <title>Returns</title>
 <para> the current tolerance value.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-clip" role="function" condition="since:1.0">
 <title>cairo_clip&#160;()</title>
 <indexterm zone="cairo-clip" role="1.0"><primary sortas="clip">cairo_clip</primary></indexterm>
@@ -1342,7 +1319,7 @@ temporary restriction of the clip region can be achieved by
 calling <link linkend="cairo-clip"><function>cairo_clip()</function></link> within a <link linkend="cairo-save"><function>cairo_save()</function></link>/<link linkend="cairo-restore"><function>cairo_restore()</function></link>
 pair. The only other means of increasing the size of the clip
 region is <link linkend="cairo-reset-clip"><function>cairo_reset_clip()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-clip.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1354,7 +1331,7 @@ region is <link linkend="cairo-reset-clip"><function>cairo_reset_clip()</functio
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-clip-preserve" role="function" condition="since:1.0">
 <title>cairo_clip_preserve&#160;()</title>
 <indexterm zone="cairo-clip-preserve" role="1.0"><primary sortas="clip_preserve">cairo_clip_preserve</primary></indexterm>
@@ -1374,7 +1351,7 @@ temporary restriction of the clip region can be achieved by
 calling <link linkend="cairo-clip-preserve"><function>cairo_clip_preserve()</function></link> within a <link linkend="cairo-save"><function>cairo_save()</function></link>/<link linkend="cairo-restore"><function>cairo_restore()</function></link>
 pair. The only other means of increasing the size of the clip
 region is <link linkend="cairo-reset-clip"><function>cairo_reset_clip()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-clip-preserve.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1386,7 +1363,7 @@ region is <link linkend="cairo-reset-clip"><function>cairo_reset_clip()</functio
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-clip-extents" role="function" condition="since:1.4">
 <title>cairo_clip_extents&#160;()</title>
 <indexterm zone="cairo-clip-extents" role="1.4"><primary sortas="clip_extents">cairo_clip_extents</primary></indexterm>
@@ -1398,7 +1375,7 @@ cairo_clip_extents (<parameter><link linkend="cairo-t"><type>cairo_t</type></lin
                     <parameter><link linkend="double"><type>double</type></link> *y2</parameter>);</programlisting>
 <para>Computes a bounding box in user coordinates covering the area inside the
 current clip.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-clip-extents.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1422,7 +1399,7 @@ current clip.</para>
 <entry role="parameter_description"><para>bottom of the resulting extents</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 <refsect2 id="cairo-in-clip" role="function" condition="since:1.10">
 <title>cairo_in_clip&#160;()</title>
 <indexterm zone="cairo-in-clip" role="1.10"><primary sortas="in_clip">cairo_in_clip</primary></indexterm>
@@ -1434,7 +1411,7 @@ cairo_in_clip (<parameter><link linkend="cairo-t"><type>cairo_t</type></link> *c
 visible through the current clip, i.e. the area that would be filled by
 a <link linkend="cairo-paint"><function>cairo_paint()</function></link> operation.</para>
 <para>See <link linkend="cairo-clip"><function>cairo_clip()</function></link>, and <link linkend="cairo-clip-preserve"><function>cairo_clip_preserve()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-in-clip.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1452,12 +1429,11 @@ a <link linkend="cairo-paint"><function>cairo_paint()</function></link> operatio
 <entry role="parameter_description"><para>Y coordinate of the point to test</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-in-clip.returns" role="returns">
 <title>Returns</title>
 <para> A non-zero value if the point is inside, or zero if
 outside.</para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-reset-clip" role="function" condition="since:1.0">
 <title>cairo_reset_clip&#160;()</title>
 <indexterm zone="cairo-reset-clip" role="1.0"><primary sortas="reset_clip">cairo_reset_clip</primary></indexterm>
@@ -1473,7 +1449,7 @@ exact bounds of the target surface.</para>
 higher-level code which calls <link linkend="cairo-clip"><function>cairo_clip()</function></link>. Consider using
 <link linkend="cairo-save"><function>cairo_save()</function></link> and <link linkend="cairo-restore"><function>cairo_restore()</function></link> around <link linkend="cairo-clip"><function>cairo_clip()</function></link> as a more
 robust means of temporarily restricting the clip region.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-reset-clip.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1485,7 +1461,7 @@ robust means of temporarily restricting the clip region.</para>
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-rectangle-list-destroy" role="function" condition="since:1.4">
 <title>cairo_rectangle_list_destroy&#160;()</title>
 <indexterm zone="cairo-rectangle-list-destroy" role="1.4"><primary sortas="rectangle_list_destroy">cairo_rectangle_list_destroy</primary></indexterm>
@@ -1496,7 +1472,7 @@ cairo_rectangle_list_destroy (<parameter><link linkend="cairo-rectangle-list-t">
 references. After this call, the <parameter>rectangle_list</parameter>
  pointer must not
 be dereferenced.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-rectangle-list-destroy.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1508,7 +1484,7 @@ be dereferenced.</para>
 <entry role="parameter_description"><para>a rectangle list, as obtained from <link linkend="cairo-copy-clip-rectangle-list"><function>cairo_copy_clip_rectangle_list()</function></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 <refsect2 id="cairo-copy-clip-rectangle-list" role="function" condition="since:1.4">
 <title>cairo_copy_clip_rectangle_list&#160;()</title>
 <indexterm zone="cairo-copy-clip-rectangle-list" role="1.4"><primary sortas="copy_clip_rectangle_list">cairo_copy_clip_rectangle_list</primary></indexterm>
@@ -1520,7 +1496,7 @@ Never returns <link linkend="NULL:CAPS"><literal>NULL</literal></link>.</para>
 indicate that the clip region cannot be represented as a list of
 user-space rectangles. The status may have other values to indicate
 other errors.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-copy-clip-rectangle-list.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1532,12 +1508,11 @@ other errors.</para>
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-copy-clip-rectangle-list.returns" role="returns">
 <title>Returns</title>
 <para> the current clip region as a list of rectangles in user coordinates,
 which should be destroyed using <link linkend="cairo-rectangle-list-destroy"><function>cairo_rectangle_list_destroy()</function></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 <refsect2 id="cairo-fill" role="function" condition="since:1.0">
 <title>cairo_fill&#160;()</title>
 <indexterm zone="cairo-fill" role="1.0"><primary sortas="fill">cairo_fill</primary></indexterm>
@@ -1548,7 +1523,7 @@ current fill rule, (each sub-path is implicitly closed before being
 filled). After <link linkend="cairo-fill"><function>cairo_fill()</function></link>, the current path will be cleared from
 the cairo context. See <link linkend="cairo-set-fill-rule"><function>cairo_set_fill_rule()</function></link> and
 <link linkend="cairo-fill-preserve"><function>cairo_fill_preserve()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-fill.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1560,7 +1535,7 @@ the cairo context. See <link linkend="cairo-set-fill-rule"><function>cairo_set_f
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-fill-preserve" role="function" condition="since:1.0">
 <title>cairo_fill_preserve&#160;()</title>
 <indexterm zone="cairo-fill-preserve" role="1.0"><primary sortas="fill_preserve">cairo_fill_preserve</primary></indexterm>
@@ -1571,7 +1546,7 @@ current fill rule, (each sub-path is implicitly closed before being
 filled). Unlike <link linkend="cairo-fill"><function>cairo_fill()</function></link>, <link linkend="cairo-fill-preserve"><function>cairo_fill_preserve()</function></link> preserves the
 path within the cairo context.</para>
 <para>See <link linkend="cairo-set-fill-rule"><function>cairo_set_fill_rule()</function></link> and <link linkend="cairo-fill"><function>cairo_fill()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-fill-preserve.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1583,7 +1558,7 @@ path within the cairo context.</para>
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-fill-extents" role="function" condition="since:1.0">
 <title>cairo_fill_extents&#160;()</title>
 <indexterm zone="cairo-fill-extents" role="1.0"><primary sortas="fill_extents">cairo_fill_extents</primary></indexterm>
@@ -1606,7 +1581,7 @@ compute the precise inked areas in light of the fill rule, so
 <link linkend="cairo-path-extents"><function>cairo_path_extents()</function></link> may be more desirable for sake of performance
 if the non-inked path extents are desired.</para>
 <para>See <link linkend="cairo-fill"><function>cairo_fill()</function></link>, <link linkend="cairo-set-fill-rule"><function>cairo_set_fill_rule()</function></link> and <link linkend="cairo-fill-preserve"><function>cairo_fill_preserve()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-fill-extents.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1630,7 +1605,7 @@ if the non-inked path extents are desired.</para>
 <entry role="parameter_description"><para>bottom of the resulting extents</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-in-fill" role="function" condition="since:1.0">
 <title>cairo_in_fill&#160;()</title>
 <indexterm zone="cairo-in-fill" role="1.0"><primary sortas="in_fill">cairo_in_fill</primary></indexterm>
@@ -1643,7 +1618,7 @@ affected by a <link linkend="cairo-fill"><function>cairo_fill()</function></link
 filling parameters. Surface dimensions and clipping are not taken
 into account.</para>
 <para>See <link linkend="cairo-fill"><function>cairo_fill()</function></link>, <link linkend="cairo-set-fill-rule"><function>cairo_set_fill_rule()</function></link> and <link linkend="cairo-fill-preserve"><function>cairo_fill_preserve()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-in-fill.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1661,12 +1636,11 @@ into account.</para>
 <entry role="parameter_description"><para>Y coordinate of the point to test</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-in-fill.returns" role="returns">
 <title>Returns</title>
 <para> A non-zero value if the point is inside, or zero if
 outside.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-mask" role="function" condition="since:1.0">
 <title>cairo_mask&#160;()</title>
 <indexterm zone="cairo-mask" role="1.0"><primary sortas="mask">cairo_mask</primary></indexterm>
@@ -1679,7 +1653,7 @@ using the alpha channel of <parameter>pattern</parameter>
 areas of <parameter>pattern</parameter>
  are painted with the source, transparent
 areas are not painted.)</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-mask.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1694,7 +1668,7 @@ areas are not painted.)</para>
 <entry role="parameter_description"><para>a <link linkend="cairo-pattern-t"><type>cairo_pattern_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-mask-surface" role="function" condition="since:1.0">
 <title>cairo_mask_surface&#160;()</title>
 <indexterm zone="cairo-mask-surface" role="1.0"><primary sortas="mask_surface">cairo_mask_surface</primary></indexterm>
@@ -1709,7 +1683,7 @@ using the alpha channel of <parameter>surface</parameter>
 areas of <parameter>surface</parameter>
  are painted with the source, transparent
 areas are not painted.)</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-mask-surface.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1732,7 +1706,7 @@ areas are not painted.)</para>
 </para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-paint" role="function" condition="since:1.0">
 <title>cairo_paint&#160;()</title>
 <indexterm zone="cairo-paint" role="1.0"><primary sortas="paint">cairo_paint</primary></indexterm>
@@ -1740,7 +1714,7 @@ areas are not painted.)</para>
 cairo_paint (<parameter><link linkend="cairo-t"><type>cairo_t</type></link> *cr</parameter>);</programlisting>
 <para>A drawing operator that paints the current source everywhere within
 the current clip region.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-paint.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1752,7 +1726,7 @@ the current clip region.</para>
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-paint-with-alpha" role="function" condition="since:1.0">
 <title>cairo_paint_with_alpha&#160;()</title>
 <indexterm zone="cairo-paint-with-alpha" role="1.0"><primary sortas="paint_with_alpha">cairo_paint_with_alpha</primary></indexterm>
@@ -1764,7 +1738,7 @@ the current clip region using a mask of constant alpha value
 <parameter>alpha</parameter>
 . The effect is similar to <link linkend="cairo-paint"><function>cairo_paint()</function></link>, but the drawing
 is faded out using the alpha value.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-paint-with-alpha.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1779,7 +1753,7 @@ is faded out using the alpha value.</para>
 <entry role="parameter_description"><para>alpha value, between 0 (transparent) and 1 (opaque)</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-stroke" role="function" condition="since:1.0">
 <title>cairo_stroke&#160;()</title>
 <indexterm zone="cairo-stroke" role="1.0"><primary sortas="stroke">cairo_stroke</primary></indexterm>
@@ -1814,7 +1788,7 @@ is indeterminate).</para>
 </orderedlist>
 <para>In no case will a cap style of <link linkend="CAIRO-LINE-CAP-BUTT:CAPS"><literal>CAIRO_LINE_CAP_BUTT</literal></link> cause anything
 to be drawn in the case of either degenerate segments or sub-paths.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-stroke.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1826,7 +1800,7 @@ to be drawn in the case of either degenerate segments or sub-paths.</para>
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-stroke-preserve" role="function" condition="since:1.0">
 <title>cairo_stroke_preserve&#160;()</title>
 <indexterm zone="cairo-stroke-preserve" role="1.0"><primary sortas="stroke_preserve">cairo_stroke_preserve</primary></indexterm>
@@ -1839,7 +1813,7 @@ cairo context.</para>
 <para>See <link linkend="cairo-set-line-width"><function>cairo_set_line_width()</function></link>, <link linkend="cairo-set-line-join"><function>cairo_set_line_join()</function></link>,
 <link linkend="cairo-set-line-cap"><function>cairo_set_line_cap()</function></link>, <link linkend="cairo-set-dash"><function>cairo_set_dash()</function></link>, and
 <link linkend="cairo-stroke-preserve"><function>cairo_stroke_preserve()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-stroke-preserve.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1851,7 +1825,7 @@ cairo context.</para>
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-stroke-extents" role="function" condition="since:1.0">
 <title>cairo_stroke_extents&#160;()</title>
 <indexterm zone="cairo-stroke-extents" role="1.0"><primary sortas="stroke_extents">cairo_stroke_extents</primary></indexterm>
@@ -1877,7 +1851,7 @@ performance if non-inked path extents are desired.</para>
 <para>See <link linkend="cairo-stroke"><function>cairo_stroke()</function></link>, <link linkend="cairo-set-line-width"><function>cairo_set_line_width()</function></link>, <link linkend="cairo-set-line-join"><function>cairo_set_line_join()</function></link>,
 <link linkend="cairo-set-line-cap"><function>cairo_set_line_cap()</function></link>, <link linkend="cairo-set-dash"><function>cairo_set_dash()</function></link>, and
 <link linkend="cairo-stroke-preserve"><function>cairo_stroke_preserve()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-stroke-extents.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1901,7 +1875,7 @@ performance if non-inked path extents are desired.</para>
 <entry role="parameter_description"><para>bottom of the resulting extents</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-in-stroke" role="function" condition="since:1.0">
 <title>cairo_in_stroke&#160;()</title>
 <indexterm zone="cairo-in-stroke" role="1.0"><primary sortas="in_stroke">cairo_in_stroke</primary></indexterm>
@@ -1916,7 +1890,7 @@ into account.</para>
 <para>See <link linkend="cairo-stroke"><function>cairo_stroke()</function></link>, <link linkend="cairo-set-line-width"><function>cairo_set_line_width()</function></link>, <link linkend="cairo-set-line-join"><function>cairo_set_line_join()</function></link>,
 <link linkend="cairo-set-line-cap"><function>cairo_set_line_cap()</function></link>, <link linkend="cairo-set-dash"><function>cairo_set_dash()</function></link>, and
 <link linkend="cairo-stroke-preserve"><function>cairo_stroke_preserve()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-in-stroke.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1934,12 +1908,11 @@ into account.</para>
 <entry role="parameter_description"><para>Y coordinate of the point to test</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-in-stroke.returns" role="returns">
 <title>Returns</title>
 <para> A non-zero value if the point is inside, or zero if
 outside.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-copy-page" role="function" condition="since:1.0">
 <title>cairo_copy_page&#160;()</title>
 <indexterm zone="cairo-copy-page" role="1.0"><primary sortas="copy_page">cairo_copy_page</primary></indexterm>
@@ -1952,7 +1925,7 @@ empty page after the emission.</para>
 <para>This is a convenience function that simply calls
 <link linkend="cairo-surface-copy-page"><function>cairo_surface_copy_page()</function></link> on <parameter>cr</parameter>
 's target.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-copy-page.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1964,7 +1937,7 @@ empty page after the emission.</para>
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-show-page" role="function" condition="since:1.0">
 <title>cairo_show_page&#160;()</title>
 <indexterm zone="cairo-show-page" role="1.0"><primary sortas="show_page">cairo_show_page</primary></indexterm>
@@ -1975,7 +1948,7 @@ pages.  Use <link linkend="cairo-copy-page"><function>cairo_copy_page()</functio
 <para>This is a convenience function that simply calls
 <link linkend="cairo-surface-show-page"><function>cairo_surface_show_page()</function></link> on <parameter>cr</parameter>
 's target.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-show-page.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -1987,7 +1960,7 @@ pages.  Use <link linkend="cairo-copy-page"><function>cairo_copy_page()</functio
 <entry role="parameter_description"><para>a cairo context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-get-reference-count" role="function" condition="since:1.4">
 <title>cairo_get_reference_count&#160;()</title>
 <indexterm zone="cairo-get-reference-count" role="1.4"><primary sortas="get_reference_count">cairo_get_reference_count</primary></indexterm>
@@ -1995,7 +1968,7 @@ pages.  Use <link linkend="cairo-copy-page"><function>cairo_copy_page()</functio
 cairo_get_reference_count (<parameter><link linkend="cairo-t"><type>cairo_t</type></link> *cr</parameter>);</programlisting>
 <para>Returns the current reference count of <parameter>cr</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-get-reference-count.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -2007,13 +1980,12 @@ cairo_get_reference_count (<parameter><link linkend="cairo-t"><type>cairo_t</typ
 <entry role="parameter_description"><para>a <link linkend="cairo-t"><type>cairo_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-get-reference-count.returns" role="returns">
 <title>Returns</title>
 <para> the current reference count of <parameter>cr</parameter>
 .  If the
 object is a nil object, 0 will be returned.</para>
-<para></para>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 <refsect2 id="cairo-set-user-data" role="function" condition="since:1.4">
 <title>cairo_set_user_data&#160;()</title>
 <indexterm zone="cairo-set-user-data" role="1.4"><primary sortas="set_user_data">cairo_set_user_data</primary></indexterm>
@@ -2027,7 +1999,7 @@ cairo_set_user_data (<parameter><link linkend="cairo-t"><type>cairo_t</type></li
 call this function with the key that was used to set it and <link linkend="NULL:CAPS"><literal>NULL</literal></link>
 for <parameter>data</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-set-user-data.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -2050,12 +2022,11 @@ for <parameter>data</parameter>
 same key.</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-set-user-data.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> or <link linkend="CAIRO-STATUS-NO-MEMORY:CAPS"><literal>CAIRO_STATUS_NO_MEMORY</literal></link> if a
 slot could not be allocated for the user data.</para>
-<para></para>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 <refsect2 id="cairo-get-user-data" role="function" condition="since:1.4">
 <title>cairo_get_user_data&#160;()</title>
 <indexterm zone="cairo-get-user-data" role="1.4"><primary sortas="get_user_data">cairo_get_user_data</primary></indexterm>
@@ -2066,7 +2037,7 @@ cairo_get_user_data (<parameter><link linkend="cairo-t"><type>cairo_t</type></li
  using the specified
 key.  If no user data has been attached with the given key this
 function returns <link linkend="NULL:CAPS"><literal>NULL</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-get-user-data.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -2082,11 +2053,10 @@ function returns <link linkend="NULL:CAPS"><literal>NULL</literal></link>.</para
 attached to</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-get-user-data.returns" role="returns">
 <title>Returns</title>
 <para> the user data previously attached or <link linkend="NULL:CAPS"><literal>NULL</literal></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-cairo-t.other_details" role="details">
@@ -2103,7 +2073,7 @@ cairo and all drawing with cairo is always done to a <link linkend="cairo-t"><ty
 object.</para>
 <para>Memory management of <link linkend="cairo-t"><type>cairo_t</type></link> is done with
 <link linkend="cairo-reference"><function>cairo_reference()</function></link> and <link linkend="cairo-destroy"><function>cairo_destroy()</function></link>.</para>
-<para role="since">Since 1.0</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-antialias-t" role="enum" condition="since:1.0">
 <title>enum cairo_antialias_t</title>
 <indexterm zone="cairo-antialias-t" role="1.0"><primary sortas="antialias_t">cairo_antialias_t</primary></indexterm>
@@ -2131,7 +2101,7 @@ than to enable some form of antialiasing. In the case of glyph rendering,
  is left entirely up to
 the backend, typically this will be similar to <parameter>CAIRO_ANTIALIAS_GOOD</parameter>
 .</para>
-<refsect3 role="enum_members">
+<refsect3 id="cairo-antialias-t.members" role="enum_members">
 <title>Members</title>
 <informaltable role="enum_members_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -2182,7 +2152,7 @@ quality, sacrificing speed if necessary, since 1.12</para>
 <entry role="enum_member_annotations"></entry>
 </row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-fill-rule-t" role="enum" condition="since:1.0">
 <title>enum cairo_fill_rule_t</title>
 <indexterm zone="cairo-fill-rule-t" role="1.0"><primary sortas="fill_rule_t">cairo_fill_rule_t</primary></indexterm>
@@ -2196,7 +2166,7 @@ or have a tricky intersection such as intersecting tangent to the path.
 is just a description of the rule that is applied.)</para>
 <para>The default fill rule is <link linkend="CAIRO-FILL-RULE-WINDING:CAPS"><literal>CAIRO_FILL_RULE_WINDING</literal></link>.</para>
 <para>New entries may be added in future versions.</para>
-<refsect3 role="enum_members">
+<refsect3 id="cairo-fill-rule-t.members" role="enum_members">
 <title>Members</title>
 <informaltable role="enum_members_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -2222,13 +2192,13 @@ filled. (Since 1.0)</para>
 <entry role="enum_member_annotations"></entry>
 </row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-line-cap-t" role="enum" condition="since:1.0">
 <title>enum cairo_line_cap_t</title>
 <indexterm zone="cairo-line-cap-t" role="1.0"><primary sortas="line_cap_t">cairo_line_cap_t</primary></indexterm>
 <para>Specifies how to render the endpoints of the path when stroking.</para>
 <para>The default line cap style is <link linkend="CAIRO-LINE-CAP-BUTT:CAPS"><literal>CAIRO_LINE_CAP_BUTT</literal></link>.</para>
-<refsect3 role="enum_members">
+<refsect3 id="cairo-line-cap-t.members" role="enum_members">
 <title>Members</title>
 <informaltable role="enum_members_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -2252,13 +2222,13 @@ filled. (Since 1.0)</para>
 <entry role="enum_member_annotations"></entry>
 </row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-line-join-t" role="enum" condition="since:1.0">
 <title>enum cairo_line_join_t</title>
 <indexterm zone="cairo-line-join-t" role="1.0"><primary sortas="line_join_t">cairo_line_join_t</primary></indexterm>
 <para>Specifies how to render the junction of two lines when stroking.</para>
 <para>The default line join style is <link linkend="CAIRO-LINE-JOIN-MITER:CAPS"><literal>CAIRO_LINE_JOIN_MITER</literal></link>.</para>
-<refsect3 role="enum_members">
+<refsect3 id="cairo-line-join-t.members" role="enum_members">
 <title>Members</title>
 <informaltable role="enum_members_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -2285,7 +2255,7 @@ the line width from the joint point (Since 1.0)</para>
 <entry role="enum_member_annotations"></entry>
 </row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-operator-t" role="enum" condition="since:1.0">
 <title>enum cairo_operator_t</title>
 <indexterm zone="cairo-operator-t" role="1.0"><primary sortas="operator_t">cairo_operator_t</primary></indexterm>
@@ -2303,7 +2273,7 @@ translucent layers too.
 For a more detailed explanation of the effects of each operator, including
 the mathematical definitions, see</para>
 <ulink url="http://cairographics.org/operators/">http://cairographics.org/operators/</ulink>.
-<refsect3 role="enum_members">
+<refsect3 id="cairo-operator-t.members" role="enum_members">
 <title>Members</title>
 <informaltable role="enum_members_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -2487,7 +2457,7 @@ inverse effect to <parameter>CAIRO_OPERATOR_HSL_COLOR</parameter>
 <entry role="enum_member_annotations"></entry>
 </row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-rectangle-t" role="struct" condition="since:1.4">
 <title>cairo_rectangle_t</title>
 <indexterm zone="cairo-rectangle-t" role="1.4"><primary sortas="rectangle_t">cairo_rectangle_t</primary></indexterm>
@@ -2496,7 +2466,7 @@ inverse effect to <parameter>CAIRO_OPERATOR_HSL_COLOR</parameter>
 } cairo_rectangle_t;
 </programlisting>
 <para>A data structure for holding a rectangle.</para>
-<refsect3 role="struct_members">
+<refsect3 id="cairo-rectangle-t.members" role="struct_members">
 <title>Members</title>
 <informaltable role="struct_members_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -2504,29 +2474,25 @@ inverse effect to <parameter>CAIRO_OPERATOR_HSL_COLOR</parameter>
 <colspec colname="struct_members_description"/>
 <colspec colname="struct_members_annotations" colwidth="200px"/>
 <tbody>
-<row><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-rectangle-t.x">x</structfield>;</para></entry>
-<listitem><para>X coordinate of the left side of the rectangle</para></listitem>
+<row role="member"><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-rectangle-t.x">x</structfield>;</para></entry>
 <entry role="struct_member_description"><para>X coordinate of the left side of the rectangle</para></entry>
 <entry role="struct_member_annotations"></entry>
 </row>
-<row><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-rectangle-t.y">y</structfield>;</para></entry>
-<listitem><para>Y coordinate of the the top side of the rectangle</para></listitem>
+<row role="member"><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-rectangle-t.y">y</structfield>;</para></entry>
 <entry role="struct_member_description"><para>Y coordinate of the the top side of the rectangle</para></entry>
 <entry role="struct_member_annotations"></entry>
 </row>
-<row><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-rectangle-t.width">width</structfield>;</para></entry>
-<listitem><para>width of the rectangle</para></listitem>
+<row role="member"><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-rectangle-t.width">width</structfield>;</para></entry>
 <entry role="struct_member_description"><para>width of the rectangle</para></entry>
 <entry role="struct_member_annotations"></entry>
 </row>
-<row><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-rectangle-t.height">height</structfield>;</para></entry>
-<listitem><para>height of the rectangle</para></listitem>
+<row role="member"><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-rectangle-t.height">height</structfield>;</para></entry>
 <entry role="struct_member_description"><para>height of the rectangle</para></entry>
 <entry role="struct_member_annotations"></entry>
 </row>
 </tbody></tgroup></informaltable>
 </refsect3>
-<para role="since">Since 1.4</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 <refsect2 id="cairo-rectangle-list-t" role="struct" condition="since:1.4">
 <title>cairo_rectangle_list_t</title>
 <indexterm zone="cairo-rectangle-list-t" role="1.4"><primary sortas="rectangle_list_t">cairo_rectangle_list_t</primary></indexterm>
@@ -2538,7 +2504,7 @@ inverse effect to <parameter>CAIRO_OPERATOR_HSL_COLOR</parameter>
 </programlisting>
 <para>A data structure for holding a dynamically allocated
 array of rectangles.</para>
-<refsect3 role="struct_members">
+<refsect3 id="cairo-rectangle-list-t.members" role="struct_members">
 <title>Members</title>
 <informaltable role="struct_members_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -2546,24 +2512,21 @@ array of rectangles.</para>
 <colspec colname="struct_members_description"/>
 <colspec colname="struct_members_annotations" colwidth="200px"/>
 <tbody>
-<row><entry role="struct_member_name"><para><link linkend="cairo-status-t"><type>cairo_status_t</type></link>&#160;<structfield id="cairo-rectangle-list-t.status">status</structfield>;</para></entry>
-<listitem><para>Error status of the rectangle list</para></listitem>
+<row role="member"><entry role="struct_member_name"><para><link linkend="cairo-status-t"><type>cairo_status_t</type></link>&#160;<structfield id="cairo-rectangle-list-t.status">status</structfield>;</para></entry>
 <entry role="struct_member_description"><para>Error status of the rectangle list</para></entry>
 <entry role="struct_member_annotations"></entry>
 </row>
-<row><entry role="struct_member_name"><para><link linkend="cairo-rectangle-t"><type>cairo_rectangle_t</type></link>&#160;*<structfield id="cairo-rectangle-list-t.rectangles">rectangles</structfield>;</para></entry>
-<listitem><para>Array containing the rectangles</para></listitem>
+<row role="member"><entry role="struct_member_name"><para><link linkend="cairo-rectangle-t"><type>cairo_rectangle_t</type></link>&#160;*<structfield id="cairo-rectangle-list-t.rectangles">rectangles</structfield>;</para></entry>
 <entry role="struct_member_description"><para>Array containing the rectangles</para></entry>
 <entry role="struct_member_annotations"></entry>
 </row>
-<row><entry role="struct_member_name"><para><link linkend="int"><type>int</type></link>&#160;<structfield id="cairo-rectangle-list-t.num-rectangles">num_rectangles</structfield>;</para></entry>
-<listitem><para>Number of rectangles in this list</para></listitem>
+<row role="member"><entry role="struct_member_name"><para><link linkend="int"><type>int</type></link>&#160;<structfield id="cairo-rectangle-list-t.num-rectangles">num_rectangles</structfield>;</para></entry>
 <entry role="struct_member_description"><para>Number of rectangles in this list</para></entry>
 <entry role="struct_member_annotations"></entry>
 </row>
 </tbody></tgroup></informaltable>
 </refsect3>
-<para role="since">Since 1.4</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-cairo-t.see-also">

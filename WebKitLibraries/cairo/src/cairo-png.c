@@ -136,7 +136,7 @@ png_simple_error_callback (png_structp png,
 
     /* default to the most likely error */
     if (*error == CAIRO_STATUS_SUCCESS)
-	*error = _cairo_error (CAIRO_STATUS_NO_MEMORY);
+	*error = _cairo_error (CAIRO_STATUS_PNG_ERROR);
 
 #ifdef PNG_SETJMP_SUPPORTED
     longjmp (png_jmpbuf (png), 1);
@@ -349,7 +349,8 @@ stdio_write_func (png_structp png, png_bytep data, png_size_t size)
  * be allocated for the operation or
  * %CAIRO_STATUS_SURFACE_TYPE_MISMATCH if the surface does not have
  * pixel contents, or %CAIRO_STATUS_WRITE_ERROR if an I/O error occurs
- * while attempting to write the file.
+ * while attempting to write the file, or %CAIRO_STATUS_PNG_ERROR if libpng
+ * returned an error.
  *
  * Since: 1.0
  **/
@@ -417,7 +418,8 @@ stream_write_func (png_structp png, png_bytep data, png_size_t size)
  * successfully.  Otherwise, %CAIRO_STATUS_NO_MEMORY is returned if
  * memory could not be allocated for the operation,
  * %CAIRO_STATUS_SURFACE_TYPE_MISMATCH if the surface does not have
- * pixel contents.
+ * pixel contents, or %CAIRO_STATUS_PNG_ERROR if libpng
+ * returned an error.
  *
  * Since: 1.0
  **/
@@ -744,6 +746,7 @@ read_png (struct png_read_closure_t *png_closure)
  *	%CAIRO_STATUS_NO_MEMORY
  *	%CAIRO_STATUS_FILE_NOT_FOUND
  *	%CAIRO_STATUS_READ_ERROR
+ *	%CAIRO_STATUS_PNG_ERROR
  *
  * Alternatively, you can allow errors to propagate through the drawing
  * operations and check the status on the context upon completion
@@ -799,6 +802,7 @@ cairo_image_surface_create_from_png (const char *filename)
  *
  *	%CAIRO_STATUS_NO_MEMORY
  *	%CAIRO_STATUS_READ_ERROR
+ *	%CAIRO_STATUS_PNG_ERROR
  *
  * Alternatively, you can allow errors to propagate through the drawing
  * operations and check the status on the context upon completion

@@ -478,7 +478,8 @@ cairo_surface_create_for_rectangle (cairo_surface_t *target,
     _cairo_surface_init (&surface->base,
 			 &_cairo_surface_subsurface_backend,
 			 NULL, /* device */
-			 target->content);
+			 target->content,
+			 target->is_vector);
 
     /* XXX forced integer alignment */
     surface->extents.x = ceil (x);
@@ -528,7 +529,8 @@ _cairo_surface_create_for_rectangle_int (cairo_surface_t *target,
     _cairo_surface_init (&surface->base,
 			 &_cairo_surface_subsurface_backend,
 			 NULL, /* device */
-			 target->content);
+			 target->content,
+			 target->is_vector);
 
     surface->extents = *extents;
     surface->extents.x *= target->device_transform.xx;

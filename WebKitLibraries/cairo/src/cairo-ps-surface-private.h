@@ -66,8 +66,9 @@ typedef struct cairo_ps_surface {
     cairo_content_t content;
     double width;
     double height;
-    cairo_rectangle_int_t page_bbox;
-    int bbox_x1, bbox_y1, bbox_x2, bbox_y2;
+    cairo_point_int_t document_bbox_p1, document_bbox_p2; /* in PS coordinates */
+    cairo_rectangle_int_t surface_extents;
+    cairo_bool_t surface_bounded;
     cairo_matrix_t cairo_to_ps;
 
     cairo_bool_t use_string_datasource;

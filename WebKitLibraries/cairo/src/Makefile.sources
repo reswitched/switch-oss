@@ -279,8 +279,8 @@ _cairo_deflate_stream_sources = cairo-deflate-stream.c
 cairo_sources += $(_cairo_deflate_stream_sources)
 
 cairo_pdf_headers = cairo-pdf.h
-cairo_pdf_private = cairo-pdf-surface-private.h
-cairo_pdf_sources = cairo-pdf-surface.c
+cairo_pdf_private = cairo-pdf-surface-private.h cairo-tag-stack-private.h cairo-tag-attributes-private.h
+cairo_pdf_sources = cairo-pdf-surface.c cairo-pdf-interchange.c cairo-tag-stack.c cairo-tag-attributes.c
 
 cairo_svg_headers = cairo-svg.h
 cairo_svg_private = cairo-svg-surface-private.h
@@ -416,7 +416,6 @@ cairo_directfb_sources = cairo-directfb-surface.c
 
 cairo_drm_headers = cairo-drm.h
 cairo_drm_private = drm/cairo-drm-private.h \
-		    drm/cairo-drm-ioctl-private.h \
 		    drm/cairo-drm-intel-private.h \
 		    drm/cairo-drm-intel-brw-defines.h \
 		    drm/cairo-drm-intel-brw-structs.h \

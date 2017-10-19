@@ -28,15 +28,15 @@
 #include "AXObjectCache.h"
 #include "Attr.h"
 #include "BeforeLoadEvent.h"
-#include "ChildListMutationScope.h"
-#include "Chrome.h"
-#include "ChromeClient.h"
 #include "CSSParser.h"
 #include "CSSRule.h"
 #include "CSSSelector.h"
 #include "CSSSelectorList.h"
 #include "CSSStyleRule.h"
 #include "CSSStyleSheet.h"
+#include "ChildListMutationScope.h"
+#include "Chrome.h"
+#include "ChromeClient.h"
 #include "ContainerNodeAlgorithms.h"
 #include "ContextMenuController.h"
 #include "DOMImplementation.h"
@@ -51,6 +51,7 @@
 #include "FrameView.h"
 #include "HTMLCollection.h"
 #include "HTMLElement.h"
+#include "NoEventDispatchAssertion.h"
 #include "HTMLImageElement.h"
 #include "HTMLStyleElement.h"
 #include "InsertionPoint.h"
@@ -58,6 +59,7 @@
 #include "KeyboardEvent.h"
 #include "Logging.h"
 #include "MutationEvent.h"
+#include "NodeOrString.h"
 #include "NodeRenderStyle.h"
 #include "PlatformMouseEvent.h"
 #include "PlatformWheelEvent.h"
@@ -459,44 +461,150 @@ Element* Node::nextElementSibling() const
 
 bool Node::insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionCode& ec)
 {
+    if (!newChild) {
+        ec = TypeError;
+        return false;
+    }
     if (!is<ContainerNode>(*this)) {
         ec = HIERARCHY_REQUEST_ERR;
         return false;
     }
-    return downcast<ContainerNode>(*this).insertBefore(newChild, refChild, ec);
+    return downcast<ContainerNode>(*this).insertBefore(*newChild, refChild, ec);
 }
 
 bool Node::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionCode& ec)
 {
+    if (!newChild || !oldChild) {
+        ec = TypeError;
+        return false;
+    }
     if (!is<ContainerNode>(*this)) {
         ec = HIERARCHY_REQUEST_ERR;
         return false;
     }
-    return downcast<ContainerNode>(*this).replaceChild(newChild, oldChild, ec);
+    return downcast<ContainerNode>(*this).replaceChild(*newChild, *oldChild, ec);
 }
 
 bool Node::removeChild(Node* oldChild, ExceptionCode& ec)
 {
+    if (!oldChild) {
+        ec = TypeError;
+        return false;
+    }
     if (!is<ContainerNode>(*this)) {
         ec = NOT_FOUND_ERR;
         return false;
     }
-    return downcast<ContainerNode>(*this).removeChild(oldChild, ec);
+    return downcast<ContainerNode>(*this).removeChild(*oldChild, ec);
 }
 
 bool Node::appendChild(PassRefPtr<Node> newChild, ExceptionCode& ec)
 {
+    if (!newChild) {
+        ec = TypeError;
+        return false;
+    }
     if (!is<ContainerNode>(*this)) {
         ec = HIERARCHY_REQUEST_ERR;
         return false;
     }
-    return downcast<ContainerNode>(*this).appendChild(newChild, ec);
+    return downcast<ContainerNode>(*this).appendChild(*newChild, ec);
+}
+
+static HashSet<RefPtr<Node>> nodeSetPreTransformedFromNodeOrStringVector(const Vector<NodeOrString>& nodeOrStringVector)
+{
+    HashSet<RefPtr<Node>> nodeSet;
+    for (auto& nodeOrString : nodeOrStringVector) {
+        switch (nodeOrString.type()) {
+        case NodeOrString::Type::String:
+            break;
+        case NodeOrString::Type::Node:
+            nodeSet.add(&nodeOrString.node());
+            break;
+        }
+    }
+
+    return nodeSet;
+}
+
+static RefPtr<Node> firstPrecedingSiblingNotInNodeSet(Node& context, const HashSet<RefPtr<Node>>& nodeSet)
+{
+    for (auto* sibling = context.previousSibling(); sibling; sibling = sibling->previousSibling()) {
+        if (!nodeSet.contains(sibling))
+            return sibling;
+    }
+    return nullptr;
+}
+
+static RefPtr<Node> firstFollowingSiblingNotInNodeSet(Node& context, const HashSet<RefPtr<Node>>& nodeSet)
+{
+    for (auto* sibling = context.nextSibling(); sibling; sibling = sibling->nextSibling()) {
+        if (!nodeSet.contains(sibling))
+            return sibling;
+    }
+    return nullptr;
+}
+
+void Node::before(Vector<NodeOrString>&& nodeOrStringVector, ExceptionCode& ec)
+{
+    RefPtr<ContainerNode> parent = parentNode();
+    if (!parent)
+        return;
+
+    auto nodeSet = nodeSetPreTransformedFromNodeOrStringVector(nodeOrStringVector);
+    auto viablePreviousSibling = firstPrecedingSiblingNotInNodeSet(*this, nodeSet);
+
+    auto node = convertNodesOrStringsIntoNode(*this, WTF::move(nodeOrStringVector), ec);
+    if (ec || !node)
+        return;
+
+    if (viablePreviousSibling)
+        viablePreviousSibling = viablePreviousSibling->nextSibling();
+    else
+        viablePreviousSibling = parent->firstChild();
+
+    parent->insertBefore(node.releaseNonNull(), viablePreviousSibling.get(), ec);
+}
+
+void Node::after(Vector<NodeOrString>&& nodeOrStringVector, ExceptionCode& ec)
+{
+    RefPtr<ContainerNode> parent = parentNode();
+    if (!parent)
+        return;
+
+    auto nodeSet = nodeSetPreTransformedFromNodeOrStringVector(nodeOrStringVector);
+    auto viableNextSibling = firstFollowingSiblingNotInNodeSet(*this, nodeSet);
+
+    auto node = convertNodesOrStringsIntoNode(*this, WTF::move(nodeOrStringVector), ec);
+    if (ec || !node)
+        return;
+
+    parent->insertBefore(node.releaseNonNull(), viableNextSibling.get(), ec);
+}
+
+void Node::replaceWith(Vector<NodeOrString>&& nodeOrStringVector, ExceptionCode& ec)
+{
+    RefPtr<ContainerNode> parent = parentNode();
+    if (!parent)
+        return;
+
+    auto nodeSet = nodeSetPreTransformedFromNodeOrStringVector(nodeOrStringVector);
+    auto viableNextSibling = firstFollowingSiblingNotInNodeSet(*this, nodeSet);
+
+    auto node = convertNodesOrStringsIntoNode(*this, WTF::move(nodeOrStringVector), ec);
+    if (ec || !node)
+        return;
+
+    if (parentNode() == parent)
+        parent->replaceChild(node.releaseNonNull(), *this, ec);
+    else
+        parent->insertBefore(node.releaseNonNull(), viableNextSibling.get(), ec);
 }
 
 void Node::remove(ExceptionCode& ec)
 {
     if (ContainerNode* parent = parentNode())
-        parent->removeChild(this, ec);
+        parent->removeChild(*this, ec);
 }
 
 void Node::normalize()
@@ -2080,7 +2188,7 @@ void Node::dispatchSubtreeModifiedEvent()
     if (isInShadowTree())
         return;
 
-    ASSERT_WITH_SECURITY_IMPLICATION(!NoEventDispatchAssertion::isEventDispatchForbidden());
+    ASSERT_WITH_SECURITY_IMPLICATION(NoEventDispatchAssertion::isEventDispatchAllowedInSubtree(*this));
 
     if (!document().hasListenerType(Document::DOMSUBTREEMODIFIED_LISTENER))
         return;
@@ -2093,7 +2201,7 @@ void Node::dispatchSubtreeModifiedEvent()
 
 bool Node::dispatchDOMActivateEvent(int detail, PassRefPtr<Event> underlyingEvent)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!NoEventDispatchAssertion::isEventDispatchForbidden());
+    ASSERT_WITH_SECURITY_IMPLICATION(NoEventDispatchAssertion::isEventAllowedInMainThread());
     RefPtr<UIEvent> event = UIEvent::create(eventNames().DOMActivateEvent, true, true, document().defaultView(), detail);
     event->setUnderlyingEvent(underlyingEvent);
     dispatchScopedEvent(event);

@@ -27,7 +27,7 @@ function catch(onRejected)
 {
     "use strict";
 
-    return this.then(undefined, onRejected);
+    return this.then(@undefined, onRejected);
 }
 
 function then(onFulfilled, onRejected)

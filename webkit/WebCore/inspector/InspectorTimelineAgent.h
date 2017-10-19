@@ -47,10 +47,6 @@
 #endif
 #include <wtf/Vector.h>
 
-namespace JSC {
-class Profile;
-}
-
 namespace WebCore {
 
 class Event;
@@ -132,8 +128,8 @@ public:
     void didCommitLoad();
 
     // Methods called from WebCore.
-    void startFromConsole(JSC::ExecState*, const String &title);
-    PassRefPtr<JSC::Profile> stopFromConsole(JSC::ExecState*, const String& title);
+    void startFromConsole(JSC::ExecState*, const String& title);
+    void stopFromConsole(JSC::ExecState*, const String& title);
 
     // InspectorInstrumentation callbacks.
     void didInstallTimer(int timerId, int timeout, bool singleShot, Frame*);
@@ -244,8 +240,6 @@ private:
     int m_maxCallStackDepth { 5 };
     InspectorType m_inspectorType;
     InspectorClient* m_client;
-
-    Vector<TimelineRecordEntry> m_pendingConsoleProfileRecords;
 
     bool m_enabled { false };
     bool m_enabledFromFrontend { false };

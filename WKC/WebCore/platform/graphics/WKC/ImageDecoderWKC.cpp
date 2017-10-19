@@ -63,6 +63,10 @@ ImageFrame::operator=(const ImageFrame& other)
     setDuration(other.duration());
     setDisposalMethod(other.disposalMethod());
     setPremultiplyAlpha(other.premultiplyAlpha());
+#if ENABLE(WKC_BLINK_AWEBP)
+    m_alphaBlendSource = other.alphaBlendSource();
+    m_requiredPreviousFrameIndex = other.requiredPreviousFrameIndex();
+#endif
     return *this;
 }
 

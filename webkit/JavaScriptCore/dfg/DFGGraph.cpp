@@ -257,8 +257,8 @@ void Graph::dump(PrintStream& out, const char* prefix, Node* node, DumpContext* 
     if (node->hasMultiGetByOffsetData()) {
         MultiGetByOffsetData& data = node->multiGetByOffsetData();
         out.print(comma, "id", data.identifierNumber, "{", identifiers()[data.identifierNumber], "}");
-        for (unsigned i = 0; i < data.variants.size(); ++i)
-            out.print(comma, inContext(data.variants[i], context));
+        for (unsigned i = 0; i < data.cases.size(); ++i)
+            out.print(comma, inContext(data.cases[i], context));
     }
     if (node->hasMultiPutByOffsetData()) {
         MultiPutByOffsetData& data = node->multiPutByOffsetData();
@@ -530,6 +530,8 @@ void Graph::dump(PrintStream& out, DumpContext* context)
         if (value->pointsToHeap())
             out.print("    ", inContext(*value, &myContext), "\n");
     }
+
+    out.print(inContext(watchpoints(), &myContext));
     
     if (!myContext.isEmpty()) {
         myContext.dump(out);
@@ -861,6 +863,30 @@ void Graph::clearFlagsOnAllNodes(NodeFlags flags)
     }
 }
 
+bool Graph::watchCondition(const ObjectPropertyCondition& key)
+{
+    if (!key.isWatchable())
+        return false;
+    
+    m_plan.weakReferences.addLazily(key.object());
+    if (key.hasPrototype())
+        m_plan.weakReferences.addLazily(key.prototype());
+    if (key.hasRequiredValue())
+        m_plan.weakReferences.addLazily(key.requiredValue());
+    
+    m_plan.watchpoints.addLazily(key);
+
+    if (key.kind() == PropertyCondition::Presence)
+        m_safeToLoad.add(std::make_pair(key.object(), key.offset()));
+    
+    return true;
+}
+
+bool Graph::isSafeToLoad(JSObject* base, PropertyOffset offset)
+{
+    return m_safeToLoad.contains(std::make_pair(base, offset));
+}
+
 FullBytecodeLiveness& Graph::livenessFor(CodeBlock* codeBlock)
 {
     HashMap<CodeBlock*, std::unique_ptr<FullBytecodeLiveness>>::iterator iter = m_bytecodeLiveness.find(codeBlock);
@@ -899,30 +925,31 @@ BytecodeKills& Graph::killsFor(InlineCallFrame* inlineCallFrame)
 
 bool Graph::isLiveInBytecode(VirtualRegister operand, CodeOrigin codeOrigin)
 {
+    CodeOrigin* codeOriginPtr = &codeOrigin;
     for (;;) {
         VirtualRegister reg = VirtualRegister(
-            operand.offset() - codeOrigin.stackOffset());
+            operand.offset() - codeOriginPtr->stackOffset());
         
-        if (operand.offset() < codeOrigin.stackOffset() + JSStack::CallFrameHeaderSize) {
+        if (operand.offset() < codeOriginPtr->stackOffset() + JSStack::CallFrameHeaderSize) {
             if (reg.isArgument()) {
                 RELEASE_ASSERT(reg.offset() < JSStack::CallFrameHeaderSize);
                 
-                if (codeOrigin.inlineCallFrame->isClosureCall
+                if (codeOriginPtr->inlineCallFrame->isClosureCall
                     && reg.offset() == JSStack::Callee)
                     return true;
                 
-                if (codeOrigin.inlineCallFrame->isVarargs()
+                if (codeOriginPtr->inlineCallFrame->isVarargs()
                     && reg.offset() == JSStack::ArgumentCount)
                     return true;
                 
                 return false;
             }
             
-            return livenessFor(codeOrigin.inlineCallFrame).operandIsLive(
-                reg.offset(), codeOrigin.bytecodeIndex);
+            return livenessFor(codeOriginPtr->inlineCallFrame).operandIsLive(
+                reg.offset(), codeOriginPtr->bytecodeIndex);
         }
         
-        InlineCallFrame* inlineCallFrame = codeOrigin.inlineCallFrame;
+        InlineCallFrame* inlineCallFrame = codeOriginPtr->inlineCallFrame;
         if (!inlineCallFrame)
             break;
 
@@ -932,7 +959,11 @@ bool Graph::isLiveInBytecode(VirtualRegister operand, CodeOrigin codeOrigin)
             && static_cast<size_t>(reg.toArgument()) < inlineCallFrame->arguments.size())
             return true;
         
-        codeOrigin = inlineCallFrame->caller;
+        codeOriginPtr = inlineCallFrame->getCallerSkippingDeadFrames();
+
+        // The first inline call frame could be an inline tail call
+        if (!codeOriginPtr)
+            break;
     }
     
     return true;
@@ -1035,8 +1066,12 @@ JSValue Graph::tryGetConstantProperty(JSValue base, Structure* structure, Proper
 JSValue Graph::tryGetConstantProperty(
     JSValue base, const StructureAbstractValue& structure, PropertyOffset offset)
 {
-    if (structure.isTop() || structure.isClobbered())
+    if (structure.isTop() || structure.isClobbered()) {
+        // FIXME: If we just converted the offset to a uid, we could do ObjectPropertyCondition
+        // watching to constant-fold the property.
+        // https://bugs.webkit.org/show_bug.cgi?id=147271
         return JSValue();
+    }
     
     return tryGetConstantProperty(base, structure.set(), offset);
 }
@@ -1187,17 +1222,9 @@ void Graph::visitChildren(SlotVisitor& visitor)
                 break;
                 
             case MultiGetByOffset:
-                for (unsigned i = node->multiGetByOffsetData().variants.size(); i--;) {
-                    GetByIdVariant& variant = node->multiGetByOffsetData().variants[i];
-                    const StructureSet& set = variant.structureSet();
-                    for (unsigned j = set.size(); j--;)
-                        visitor.appendUnbarrieredReadOnlyPointer(set[j]);
-
-                    // Don't need to mark anything in the structure chain because that would
-                    // have been decomposed into CheckStructure's. Don't need to mark the
-                    // callLinkStatus because we wouldn't use MultiGetByOffset if any of the
-                    // variants did that.
-                    ASSERT(!variant.callLinkStatus());
+                for (const MultiGetByOffsetCase& getCase : node->multiGetByOffsetData().cases) {
+                    for (Structure* structure : getCase.set())
+                        visitor.appendUnbarrieredReadOnlyPointer(structure);
                 }
                 break;
                     

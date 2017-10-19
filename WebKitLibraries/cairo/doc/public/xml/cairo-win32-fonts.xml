@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-Win32-Fonts.top_of_page">Win32 Fonts</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>Win32 Fonts</refname>
@@ -57,11 +55,6 @@
 </tgroup>
 </informaltable>
 </refsect1>
-<refsect1 id="cairo-Win32-Fonts.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
-</refsect1>
 
 
 <refsect1 id="cairo-Win32-Fonts.description" role="desc">
@@ -84,7 +77,7 @@ cairo_win32_font_face_create_for_logfontw
 The <link linkend="cairo-scaled-font-t"><type>cairo_scaled_font_t</type></link>
 returned from <link linkend="cairo-scaled-font-create"><function>cairo_scaled_font_create()</function></link> is also for the Win32 backend
 and can be used with functions such as <link linkend="cairo-win32-scaled-font-select-font"><function>cairo_win32_scaled_font_select_font()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-win32-font-face-create-for-logfontw.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -98,12 +91,11 @@ The lfHeight, lfWidth, lfOrientation and lfEscapement
 fields of this structure are ignored.</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-win32-font-face-create-for-logfontw.returns" role="returns">
 <title>Returns</title>
 <para> a newly created <link linkend="cairo-font-face-t"><type>cairo_font_face_t</type></link>. Free with
 <link linkend="cairo-font-face-destroy"><function>cairo_font_face_destroy()</function></link> when you are done using it.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-win32-font-face-create-for-hfont" role="function" condition="since:1.2">
 <title>cairo_win32_font_face_create_for_hfont&#160;()</title>
 <indexterm zone="cairo-win32-font-face-create-for-hfont" role="1.2"><primary sortas="win32_font_face_create_for_hfont">cairo_win32_font_face_create_for_hfont</primary></indexterm>
@@ -116,7 +108,7 @@ cairo_win32_font_face_create_for_hfont
 The <link linkend="cairo-scaled-font-t"><type>cairo_scaled_font_t</type></link>
 returned from <link linkend="cairo-scaled-font-create"><function>cairo_scaled_font_create()</function></link> is also for the Win32 backend
 and can be used with functions such as <link linkend="cairo-win32-scaled-font-select-font"><function>cairo_win32_scaled_font_select_font()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-win32-font-face-create-for-hfont.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -128,12 +120,11 @@ and can be used with functions such as <link linkend="cairo-win32-scaled-font-se
 <entry role="parameter_description"><para>An <link linkend="HFONT:CAPS"><type>HFONT</type></link> structure specifying the font to use.</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-win32-font-face-create-for-hfont.returns" role="returns">
 <title>Returns</title>
 <para> a newly created <link linkend="cairo-font-face-t"><type>cairo_font_face_t</type></link>. Free with
 <link linkend="cairo-font-face-destroy"><function>cairo_font_face_destroy()</function></link> when you are done using it.</para>
-<para></para>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-win32-font-face-create-for-logfontw-hfont" role="function" condition="since:1.6">
 <title>cairo_win32_font_face_create_for_logfontw_hfont&#160;()</title>
 <indexterm zone="cairo-win32-font-face-create-for-logfontw-hfont" role="1.6"><primary sortas="win32_font_face_create_for_logfontw_hfont">cairo_win32_font_face_create_for_logfontw_hfont</primary></indexterm>
@@ -147,7 +138,7 @@ cairo_win32_font_face_create_for_logfontw_hfont
 The <link linkend="cairo-scaled-font-t"><type>cairo_scaled_font_t</type></link>
 returned from <link linkend="cairo-scaled-font-create"><function>cairo_scaled_font_create()</function></link> is also for the Win32 backend
 and can be used with functions such as <link linkend="cairo-win32-scaled-font-select-font"><function>cairo_win32_scaled_font_select_font()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-win32-font-face-create-for-logfontw-hfont.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -167,12 +158,11 @@ lfEscapement must be zero.</para></entry>
 -lfHeight and the CTM is identity.</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-win32-font-face-create-for-logfontw-hfont.returns" role="returns">
 <title>Returns</title>
 <para> a newly created <link linkend="cairo-font-face-t"><type>cairo_font_face_t</type></link>. Free with
 <link linkend="cairo-font-face-destroy"><function>cairo_font_face_destroy()</function></link> when you are done using it.</para>
-<para></para>
-</refsect3><para role="since">Since 1.6</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.6">1.6</link></para></refsect2>
 <refsect2 id="cairo-win32-scaled-font-select-font" role="function" condition="since:1.0">
 <title>cairo_win32_scaled_font_select_font&#160;()</title>
 <indexterm zone="cairo-win32-scaled-font-select-font" role="1.0"><primary sortas="win32_scaled_font_select_font">cairo_win32_scaled_font_select_font</primary></indexterm>
@@ -190,7 +180,7 @@ by this function.</para>
 coordinates from the device context to font space.</para>
 <para>Normally, calls to <link linkend="SaveDC"><function>SaveDC()</function></link> and <link linkend="RestoreDC"><function>RestoreDC()</function></link> would be made around
 the use of this function to preserve the original graphics state.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-win32-scaled-font-select-font.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -206,20 +196,19 @@ object can be created with <link linkend="cairo-win32-font-face-create-for-logfo
 <entry role="parameter_description"><para>a device context</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-win32-scaled-font-select-font.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> if the operation succeeded.
 otherwise an error such as <link linkend="CAIRO-STATUS-NO-MEMORY:CAPS"><literal>CAIRO_STATUS_NO_MEMORY</literal></link> and
 the device context is unchanged.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-win32-scaled-font-done-font" role="function" condition="since:1.0">
 <title>cairo_win32_scaled_font_done_font&#160;()</title>
 <indexterm zone="cairo-win32-scaled-font-done-font" role="1.0"><primary sortas="win32_scaled_font_done_font">cairo_win32_scaled_font_done_font</primary></indexterm>
 <programlisting language="C"><link linkend="void"><returnvalue>void</returnvalue></link>
 cairo_win32_scaled_font_done_font (<parameter><link linkend="cairo-scaled-font-t"><type>cairo_scaled_font_t</type></link> *scaled_font</parameter>);</programlisting>
 <para>Releases any resources allocated by <link linkend="cairo-win32-scaled-font-select-font"><function>cairo_win32_scaled_font_select_font()</function></link></para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-win32-scaled-font-done-font.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -231,7 +220,7 @@ cairo_win32_scaled_font_done_font (<parameter><link linkend="cairo-scaled-font-t
 <entry role="parameter_description"><para>A scaled font from the Win32 font backend.</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-win32-scaled-font-get-metrics-factor" role="function" condition="since:1.0">
 <title>cairo_win32_scaled_font_get_metrics_factor&#160;()</title>
 <indexterm zone="cairo-win32-scaled-font-get-metrics-factor" role="1.0"><primary sortas="win32_scaled_font_get_metrics_factor">cairo_win32_scaled_font_get_metrics_factor</primary></indexterm>
@@ -242,7 +231,7 @@ cairo_win32_scaled_font_get_metrics_factor
 space used by <link linkend="cairo-win32-scaled-font-select-font"><function>cairo_win32_scaled_font_select_font()</function></link> (that is, the
 coordinate system used by the Windows functions to return metrics) and
 font space coordinates.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-win32-scaled-font-get-metrics-factor.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -254,12 +243,11 @@ font space coordinates.</para>
 <entry role="parameter_description"><para>a scaled font from the Win32 font backend</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-win32-scaled-font-get-metrics-factor.returns" role="returns">
 <title>Returns</title>
 <para> factor to multiply logical units by to get font space
 coordinates.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-win32-scaled-font-get-logical-to-device" role="function" condition="since:1.4">
 <title>cairo_win32_scaled_font_get_logical_to_device&#160;()</title>
 <indexterm zone="cairo-win32-scaled-font-get-logical-to-device" role="1.4"><primary sortas="win32_scaled_font_get_logical_to_device">cairo_win32_scaled_font_get_logical_to_device</primary></indexterm>
@@ -270,7 +258,7 @@ cairo_win32_scaled_font_get_logical_to_device
 <para>Gets the transformation mapping the logical space used by <parameter>scaled_font</parameter>
 
 to device space.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-win32-scaled-font-get-logical-to-device.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -285,7 +273,7 @@ to device space.</para>
 <entry role="parameter_description"><para>matrix to return</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 <refsect2 id="cairo-win32-scaled-font-get-device-to-logical" role="function" condition="since:1.4">
 <title>cairo_win32_scaled_font_get_device_to_logical&#160;()</title>
 <indexterm zone="cairo-win32-scaled-font-get-device-to-logical" role="1.4"><primary sortas="win32_scaled_font_get_device_to_logical">cairo_win32_scaled_font_get_device_to_logical</primary></indexterm>
@@ -296,7 +284,7 @@ cairo_win32_scaled_font_get_device_to_logical
 <para>Gets the transformation mapping device space to the logical space
 used by <parameter>scaled_font</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-win32-scaled-font-get-device-to-logical.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -311,7 +299,7 @@ used by <parameter>scaled_font</parameter>
 <entry role="parameter_description"><para>matrix to return</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-Win32-Fonts.other_details" role="details">
@@ -323,7 +311,7 @@ used by <parameter>scaled_font</parameter>
 </programlisting>
 <para>Defined if the Microsoft Windows font backend is available.
 This macro can be used to conditionally compile backend-specific code.</para>
-<para role="since">Since 1.8</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.8">1.8</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-Win32-Fonts.see-also">

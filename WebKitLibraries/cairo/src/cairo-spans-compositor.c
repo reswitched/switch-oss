@@ -101,8 +101,10 @@ get_clip_surface (const cairo_spans_compositor_t *compositor,
 					     extents->width,
 					     extents->height,
 					     CAIRO_COLOR_TRANSPARENT);
+#ifdef WKC_CAIRO_CUSTOMIZE
     if (unlikely (surface->status))
         return surface;
+#endif
 
     _cairo_box_from_rectangle (&box, extents);
     _cairo_polygon_init (&polygon, &box, 1);

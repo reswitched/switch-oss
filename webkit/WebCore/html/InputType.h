@@ -215,6 +215,8 @@ public:
 
     virtual void blur();
 
+    virtual void elementDidBlur() { }
+
     // Shadow tree handling
 
     virtual void createShadowSubtree();

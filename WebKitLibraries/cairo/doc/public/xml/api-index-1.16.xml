@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8'?> 
+<!DOCTYPE indexdiv PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+                "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
+<!ENTITY version SYSTEM "version.xml">
+]>
+<indexdiv id="api-index-1.16">
+<indexdiv><title>P</title>
+<indexentry><primaryie linkends="cairo-pdf-metadata-t"><link linkend="cairo-pdf-metadata-t">cairo_pdf_metadata_t</link>, enum in <link linkend="cairo-PDF-Surfaces">PDF Surfaces</link></primaryie></indexentry>
+<indexentry><primaryie linkends="cairo-pdf-outline-flags-t"><link linkend="cairo-pdf-outline-flags-t">cairo_pdf_outline_flags_t</link>, enum in <link linkend="cairo-PDF-Surfaces">PDF Surfaces</link></primaryie></indexentry>
+<indexentry><primaryie linkends="CAIRO-PDF-OUTLINE-ROOT:CAPS"><link linkend="CAIRO-PDF-OUTLINE-ROOT:CAPS">CAIRO_PDF_OUTLINE_ROOT</link>, macro in <link linkend="cairo-PDF-Surfaces">PDF Surfaces</link></primaryie></indexentry>
+<indexentry><primaryie linkends="cairo-pdf-surface-add-outline"><link linkend="cairo-pdf-surface-add-outline">cairo_pdf_surface_add_outline</link>, function in <link linkend="cairo-PDF-Surfaces">PDF Surfaces</link></primaryie></indexentry>
+<indexentry><primaryie linkends="cairo-pdf-surface-set-metadata"><link linkend="cairo-pdf-surface-set-metadata">cairo_pdf_surface_set_metadata</link>, function in <link linkend="cairo-PDF-Surfaces">PDF Surfaces</link></primaryie></indexentry>
+<indexentry><primaryie linkends="cairo-pdf-surface-set-page-label"><link linkend="cairo-pdf-surface-set-page-label">cairo_pdf_surface_set_page_label</link>, function in <link linkend="cairo-PDF-Surfaces">PDF Surfaces</link></primaryie></indexentry>
+<indexentry><primaryie linkends="cairo-pdf-surface-set-thumbnail-size"><link linkend="cairo-pdf-surface-set-thumbnail-size">cairo_pdf_surface_set_thumbnail_size</link>, function in <link linkend="cairo-PDF-Surfaces">PDF Surfaces</link></primaryie></indexentry>
+</indexdiv>
+<indexdiv><title>T</title>
+<indexentry><primaryie linkends="cairo-tag-begin"><link linkend="cairo-tag-begin">cairo_tag_begin</link>, function in <link linkend="cairo-Tags-and-Links">Tags and Links</link></primaryie></indexentry>
+<indexentry><primaryie linkends="CAIRO-TAG-DEST:CAPS"><link linkend="CAIRO-TAG-DEST:CAPS">CAIRO_TAG_DEST</link>, macro in <link linkend="cairo-Tags-and-Links">Tags and Links</link></primaryie></indexentry>
+<indexentry><primaryie linkends="cairo-tag-end"><link linkend="cairo-tag-end">cairo_tag_end</link>, function in <link linkend="cairo-Tags-and-Links">Tags and Links</link></primaryie></indexentry>
+<indexentry><primaryie linkends="CAIRO-TAG-LINK:CAPS"><link linkend="CAIRO-TAG-LINK:CAPS">CAIRO_TAG_LINK</link>, macro in <link linkend="cairo-Tags-and-Links">Tags and Links</link></primaryie></indexentry>
+</indexdiv>
+</indexdiv>

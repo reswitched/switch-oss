@@ -30,6 +30,7 @@
 #include "URL.h"
 #include "ScriptCachedFrameData.h"
 #include <wtf/RefPtr.h>
+#include <wtf/Optional.h>
 
 namespace WebCore {
 
@@ -39,6 +40,7 @@ class Document;
 class DocumentLoader;
 class FrameView;
 class Node;
+enum class HasInsecureContent;
 
 class CachedFrameBase {
 public:
@@ -61,7 +63,8 @@ protected:
     std::unique_ptr<CachedFramePlatformData> m_cachedFramePlatformData;
     bool m_isMainFrame;
     bool m_isComposited;
-    
+    Optional<HasInsecureContent> m_hasInsecureContent;
+
     Vector<std::unique_ptr<CachedFrame>> m_childFrames;
 };
 
@@ -77,6 +80,9 @@ public:
     void destroy();
 
     WEBCORE_EXPORT void setCachedFramePlatformData(std::unique_ptr<CachedFramePlatformData>);
+    WEBCORE_EXPORT void setHasInsecureContent(HasInsecureContent);
+    Optional<HasInsecureContent> hasInsecureContent() const { return m_hasInsecureContent; }
+
     WEBCORE_EXPORT CachedFramePlatformData* cachedFramePlatformData();
 
     using CachedFrameBase::document;

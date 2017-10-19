@@ -129,6 +129,7 @@ class Page : public Supplementable<Page> {
 public:
     WEBCORE_EXPORT static void updateStyleForAllPagesAfterGlobalChangeInEnvironment();
     WEBCORE_EXPORT static void clearPreviousItemFromAllPages(HistoryItem*);
+    WEBCORE_EXPORT static void setTabSuspensionEnabled(bool);
 
     WEBCORE_EXPORT explicit Page(PageConfiguration&);
     WEBCORE_EXPORT ~Page();
@@ -169,6 +170,11 @@ public:
     void incrementSubframeCount() { ++m_subframeCount; }
     void decrementSubframeCount() { ASSERT(m_subframeCount); --m_subframeCount; }
     int subframeCount() const { checkSubframeCountConsistency(); return m_subframeCount; }
+
+    void incrementNestedRunLoopCount();
+    void decrementNestedRunLoopCount();
+    bool insideNestedRunLoop() const { return m_nestedRunLoopCount > 0; }
+    WEBCORE_EXPORT void whenUnnested(std::function<void()>);
 
 #if ENABLE(REMOTE_INSPECTOR)
     WEBCORE_EXPORT bool remoteInspectionAllowed() const;
@@ -349,6 +355,8 @@ public:
     // with exponential growth in the number of frames.
     static const int maxNumberOfFrames = 1000;
 
+    static bool s_tabSuspensionIsEnabled;
+
     void setEditable(bool isEditable) { m_isEditable = isEditable; }
     bool isEditable() { return m_isEditable; }
 
@@ -466,6 +474,8 @@ public:
     WEBCORE_EXPORT void setAllowsMediaDocumentInlinePlayback(bool);
 #endif
 
+    void setIsTabSuspended(bool);
+
 private:
     WEBCORE_EXPORT void initGroup();
 
@@ -490,6 +500,9 @@ private:
 
     void hiddenPageDOMTimerThrottlingStateChanged();
     void setTimerThrottlingEnabled(bool);
+    bool canTabSuspend();
+    void scheduleTabSuspension(bool);
+    void tabSuspensionTimerFired();
 
     const std::unique_ptr<Chrome> m_chrome;
     const std::unique_ptr<DragCaretController> m_dragCaretController;
@@ -525,7 +538,10 @@ private:
     PlugInClient* m_plugInClient;
     ValidationMessageClient* m_validationMessageClient;
 
-    int m_subframeCount;
+    int m_nestedRunLoopCount { 0 };
+    std::function<void()> m_unnestCallback;
+
+    int m_subframeCount { 0 };
     String m_groupName;
     bool m_openedByDOM;
 
@@ -579,6 +595,7 @@ private:
     bool m_isEditable;
     bool m_isPrerender;
     ViewState::Flags m_viewState;
+    PageActivityState::Flags m_pageActivityState;
 
     LayoutMilestones m_requestedLayoutMilestones;
 
@@ -621,6 +638,8 @@ private:
     SessionID m_sessionID;
 
     bool m_isClosing;
+    bool m_shouldTabSuspend { false };
+    Timer m_tabSuspensionTimer;
 
     MediaProducer::MediaStateFlags m_mediaState { MediaProducer::IsNotPlaying };
     

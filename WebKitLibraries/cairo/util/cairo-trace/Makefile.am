@@ -11,7 +11,7 @@ libcairo_trace_la_SOURCES = trace.c
 libcairo_trace_la_CPPFLAGS = -DCAIRO_TRACE_OUTDIR="\"$(cairooutdir)\"" \
 			  $(AM_CPPFLAGS)
 libcairo_trace_la_CFLAGS = $(CAIRO_CFLAGS) $(real_pthread_CFLAGS)
-libcairo_trace_la_LDFLAGS = -no-undefined
+libcairo_trace_la_LDFLAGS = -module -no-undefined -avoid-version
 
 libcairo_trace_la_LIBADD = $(real_pthread_LIBS) -lz
 if CAIRO_HAS_DL

@@ -113,7 +113,7 @@ _cairo_traps_fini (cairo_traps_t *traps)
     if (traps->traps != traps->traps_embedded)
 	free (traps->traps);
 
-    VG (VALGRIND_MAKE_MEM_NOACCESS (traps, sizeof (cairo_traps_t)));
+    VG (VALGRIND_MAKE_MEM_UNDEFINED (traps, sizeof (cairo_traps_t)));
 }
 
 /* make room for at least one more trap */
@@ -1029,7 +1029,6 @@ _cairo_traps_path (const cairo_traps_t *traps,
 void
 _cairo_debug_print_traps (FILE *file, const cairo_traps_t *traps)
 {
-#ifndef __WKC__
     cairo_box_t extents;
     int n;
 
@@ -1060,7 +1059,6 @@ _cairo_debug_print_traps (FILE *file, const cairo_traps_t *traps)
 		 traps->traps[n].right.p2.x,
 		 traps->traps[n].right.p2.y);
     }
-#endif
 }
 
 struct cairo_trap_renderer {

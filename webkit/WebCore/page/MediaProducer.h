@@ -40,6 +40,7 @@ public:
         DidPlayToEnd = 1 << 5,
         HasPlaybackTargetAvailabilityListener = 1 << 9,
         HasAudioOrVideo = 1 << 10,
+        HasUserInteractedWithMediaElement = 1 << 17,
     };
     typedef unsigned MediaStateFlags;
 

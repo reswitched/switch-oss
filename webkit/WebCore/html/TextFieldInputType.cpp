@@ -191,31 +191,31 @@ void TextFieldInputType::forwardEvent(Event* event)
             return;
     }
 
-    if (event->isMouseEvent()
-        || event->isDragEvent()
-        || event->eventInterface() == WheelEventInterfaceType
-        || event->type() == eventNames().blurEvent
-        || event->type() == eventNames().focusEvent)
-    {
-        element().document().updateStyleIfNeeded();
+    bool isFocusEvent = event->type() == eventNames().focusEvent;
+    bool isBlurEvent = event->type() == eventNames().blurEvent;
+    if (isFocusEvent || isBlurEvent)
+        capsLockStateMayHaveChanged();
+    if (event->isMouseEvent() || isFocusEvent || isBlurEvent)
+        element().forwardEvent(event);
+}
 
-        if (element().renderer()) {
-            RenderTextControlSingleLine& renderTextControl = downcast<RenderTextControlSingleLine>(*element().renderer());
-            if (event->type() == eventNames().blurEvent) {
-                if (RenderTextControlInnerBlock* innerTextRenderer = innerTextElement()->renderer()) {
-                    if (RenderLayer* innerLayer = innerTextRenderer->layer()) {
-                        IntSize scrollOffset(!renderTextControl.style().isLeftToRightDirection() ? innerLayer->scrollWidth() : 0, 0);
-                        innerLayer->scrollToOffset(scrollOffset, RenderLayer::ScrollOffsetClamped);
-                    }
-                }
+void TextFieldInputType::elementDidBlur()
+{
+    auto* renderer = element().renderer();
+    if (!renderer)
+        return;
 
-                capsLockStateMayHaveChanged();
-            } else if (event->type() == eventNames().focusEvent)
-                capsLockStateMayHaveChanged();
+    auto* innerTextRenderer = innerTextElement()->renderer();
+    if (!innerTextRenderer)
+        return;
 
-            element().forwardEvent(event);
-        }
-    }
+    auto* innerLayer = innerTextRenderer->layer();
+    if (!innerLayer)
+        return;
+
+    bool isLeftToRightDirection = downcast<RenderTextControlSingleLine>(*renderer).style().isLeftToRightDirection();
+    IntPoint scrollOffset(isLeftToRightDirection ? 0 : innerLayer->scrollWidth(), 0);
+    innerLayer->scrollToOffset(IntSize(scrollOffset.x(), scrollOffset.y()), RenderLayer::ScrollOffsetClamped);
 }
 
 void TextFieldInputType::handleFocusEvent(Node* oldFocusedNode, FocusDirection)
@@ -279,7 +279,7 @@ void TextFieldInputType::createShadowSubtree()
     m_innerText = TextControlInnerTextElement::create(document);
 
     if (!createsContainer) {
-        element().userAgentShadowRoot()->appendChild(m_innerText, IGNORE_EXCEPTION);
+        element().userAgentShadowRoot()->appendChild(*m_innerText, IGNORE_EXCEPTION);
         updatePlaceholderText();
         return;
     }
@@ -289,7 +289,7 @@ void TextFieldInputType::createShadowSubtree()
 
     if (shouldHaveSpinButton) {
         m_innerSpinButton = SpinButtonElement::create(document, *this);
-        m_container->appendChild(m_innerSpinButton, IGNORE_EXCEPTION);
+        m_container->appendChild(*m_innerSpinButton, IGNORE_EXCEPTION);
     }
 
     if (shouldHaveCapsLockIndicator) {
@@ -299,7 +299,7 @@ void TextFieldInputType::createShadowSubtree()
         bool shouldDrawCapsLockIndicator = this->shouldDrawCapsLockIndicator();
         m_capsLockIndicator->setInlineStyleProperty(CSSPropertyDisplay, shouldDrawCapsLockIndicator ? CSSValueBlock : CSSValueNone, true);
 
-        m_container->appendChild(m_capsLockIndicator, IGNORE_EXCEPTION);
+        m_container->appendChild(*m_capsLockIndicator, IGNORE_EXCEPTION);
     }
 
     updateAutoFillButton();
@@ -466,7 +466,7 @@ void TextFieldInputType::updatePlaceholderText()
     String placeholderText = element().strippedPlaceholder();
     if (placeholderText.isEmpty()) {
         if (m_placeholder) {
-            m_placeholder->parentNode()->removeChild(m_placeholder.get(), ASSERT_NO_EXCEPTION);
+            m_placeholder->parentNode()->removeChild(*m_placeholder, ASSERT_NO_EXCEPTION);
             m_placeholder = nullptr;
         }
         return;
@@ -475,7 +475,7 @@ void TextFieldInputType::updatePlaceholderText()
         m_placeholder = HTMLDivElement::create(element().document());
         m_placeholder->setPseudo(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
         m_placeholder->setInlineStyleProperty(CSSPropertyDisplay, element().isPlaceholderVisible() ? CSSValueBlock : CSSValueNone, true);
-        element().userAgentShadowRoot()->insertBefore(m_placeholder, m_container ? m_container.get() : innerTextElement(), ASSERT_NO_EXCEPTION);
+        element().userAgentShadowRoot()->insertBefore(*m_placeholder, m_container ? m_container.get() : innerTextElement(), ASSERT_NO_EXCEPTION);
         
     }
     m_placeholder->setInnerText(placeholderText, ASSERT_NO_EXCEPTION);
@@ -605,10 +605,10 @@ void TextFieldInputType::createContainer()
     m_container->setPseudo(AtomicString("-webkit-textfield-decoration-container", AtomicString::ConstructFromLiteral));
 
     m_innerBlock = TextControlInnerElement::create(element().document());
-    m_innerBlock->appendChild(m_innerText, IGNORE_EXCEPTION);
-    m_container->appendChild(m_innerBlock, IGNORE_EXCEPTION);
+    m_innerBlock->appendChild(*m_innerText, IGNORE_EXCEPTION);
+    m_container->appendChild(*m_innerBlock, IGNORE_EXCEPTION);
 
-    element().userAgentShadowRoot()->appendChild(m_container, IGNORE_EXCEPTION);
+    element().userAgentShadowRoot()->appendChild(*m_container, IGNORE_EXCEPTION);
 }
 
 void TextFieldInputType::createAutoFillButton()
@@ -617,7 +617,7 @@ void TextFieldInputType::createAutoFillButton()
 
     m_autoFillButton = AutoFillButtonElement::create(element().document(), *this);
     m_autoFillButton->setPseudo(AtomicString("-webkit-auto-fill-button", AtomicString::ConstructFromLiteral));
-    m_container->appendChild(m_autoFillButton, IGNORE_EXCEPTION);
+    m_container->appendChild(*m_autoFillButton, IGNORE_EXCEPTION);
 }
 
 void TextFieldInputType::updateAutoFillButton()

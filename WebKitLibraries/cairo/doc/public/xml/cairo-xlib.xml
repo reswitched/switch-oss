@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-XLib-Surfaces.top_of_page">XLib Surfaces</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>XLib Surfaces</refname>
@@ -69,11 +67,6 @@
 </tgroup>
 </informaltable>
 </refsect1>
-<refsect1 id="cairo-XLib-Surfaces.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
-</refsect1>
 
 
 <refsect1 id="cairo-XLib-Surfaces.description" role="desc">
@@ -107,7 +100,7 @@ window changes.</para>
 the created surface will be clipped by those child windows.  When
 the created surface is used as a source, the contents of the
 children will be included.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xlib-surface-create.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -136,11 +129,10 @@ Currently, only TrueColor visuals are fully supported.</para></entry>
 .</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-xlib-surface-create.returns" role="returns">
 <title>Returns</title>
 <para> the newly created surface</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-xlib-surface-create-for-bitmap" role="function" condition="since:1.0">
 <title>cairo_xlib_surface_create_for_bitmap&#160;()</title>
 <indexterm zone="cairo-xlib-surface-create-for-bitmap" role="1.0"><primary sortas="xlib_surface_create_for_bitmap">cairo_xlib_surface_create_for_bitmap</primary></indexterm>
@@ -152,7 +144,7 @@ cairo_xlib_surface_create_for_bitmap (<parameter><link linkend="Display"><type>D
                                       <parameter><link linkend="int"><type>int</type></link> height</parameter>);</programlisting>
 <para>Creates an Xlib surface that draws to the given bitmap.
 This will be drawn to as a <link linkend="CAIRO-FORMAT-A1:CAPS"><literal>CAIRO_FORMAT_A1</literal></link> object.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xlib-surface-create-for-bitmap.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -179,11 +171,10 @@ This will be drawn to as a <link linkend="CAIRO-FORMAT-A1:CAPS"><literal>CAIRO_F
 .</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-xlib-surface-create-for-bitmap.returns" role="returns">
 <title>Returns</title>
 <para> the newly created surface</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-xlib-surface-set-size" role="function" condition="since:1.0">
 <title>cairo_xlib_surface_set_size&#160;()</title>
 <indexterm zone="cairo-xlib-surface-set-size" role="1.0"><primary sortas="xlib_surface_set_size">cairo_xlib_surface_set_size</primary></indexterm>
@@ -199,7 +190,7 @@ yourself, but for a toplevel window, it is necessary to listen for
 ConfigureNotify events.)</para>
 <para>A Pixmap can never change size, so it is never necessary to call
 this function on a surface created for a Pixmap.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xlib-surface-set-size.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -217,14 +208,14 @@ this function on a surface created for a Pixmap.</para>
 <entry role="parameter_description"><para>the new height of the surface</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-xlib-surface-get-display" role="function" condition="since:1.2">
 <title>cairo_xlib_surface_get_display&#160;()</title>
 <indexterm zone="cairo-xlib-surface-get-display" role="1.2"><primary sortas="xlib_surface_get_display">cairo_xlib_surface_get_display</primary></indexterm>
 <programlisting language="C"><link linkend="Display"><returnvalue>Display</returnvalue></link>&#160;*
 cairo_xlib_surface_get_display (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *surface</parameter>);</programlisting>
 <para>Get the X Display for the underlying X Drawable.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xlib-surface-get-display.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -236,18 +227,17 @@ cairo_xlib_surface_get_display (<parameter><link linkend="cairo-surface-t"><type
 <entry role="parameter_description"><para>a <link linkend="cairo-xlib-surface-t"><type>cairo_xlib_surface_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-xlib-surface-get-display.returns" role="returns">
 <title>Returns</title>
 <para> the display.</para>
-<para></para>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-xlib-surface-get-screen" role="function" condition="since:1.2">
 <title>cairo_xlib_surface_get_screen&#160;()</title>
 <indexterm zone="cairo-xlib-surface-get-screen" role="1.2"><primary sortas="xlib_surface_get_screen">cairo_xlib_surface_get_screen</primary></indexterm>
 <programlisting language="C"><link linkend="Screen"><returnvalue>Screen</returnvalue></link>&#160;*
 cairo_xlib_surface_get_screen (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *surface</parameter>);</programlisting>
 <para>Get the X Screen for the underlying X Drawable.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xlib-surface-get-screen.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -259,11 +249,10 @@ cairo_xlib_surface_get_screen (<parameter><link linkend="cairo-surface-t"><type>
 <entry role="parameter_description"><para>a <link linkend="cairo-xlib-surface-t"><type>cairo_xlib_surface_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-xlib-surface-get-screen.returns" role="returns">
 <title>Returns</title>
 <para> the screen.</para>
-<para></para>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-xlib-surface-set-drawable" role="function" condition="since:1.0">
 <title>cairo_xlib_surface_set_drawable&#160;()</title>
 <indexterm zone="cairo-xlib-surface-set-drawable" role="1.0"><primary sortas="xlib_surface_set_drawable">cairo_xlib_surface_set_drawable</primary></indexterm>
@@ -278,7 +267,7 @@ and format of the existing drawable or the application
 will get X protocol errors and will probably terminate.
 No checks are done by this function to ensure this
 compatibility.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xlib-surface-set-drawable.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -299,14 +288,14 @@ compatibility.</para>
 <entry role="parameter_description"><para>the height of the new drawable</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-xlib-surface-get-drawable" role="function" condition="since:1.2">
 <title>cairo_xlib_surface_get_drawable&#160;()</title>
 <indexterm zone="cairo-xlib-surface-get-drawable" role="1.2"><primary sortas="xlib_surface_get_drawable">cairo_xlib_surface_get_drawable</primary></indexterm>
 <programlisting language="C"><link linkend="Drawable"><returnvalue>Drawable</returnvalue></link>
 cairo_xlib_surface_get_drawable (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *surface</parameter>);</programlisting>
 <para>Get the underlying X Drawable used for the surface.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xlib-surface-get-drawable.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -318,11 +307,10 @@ cairo_xlib_surface_get_drawable (<parameter><link linkend="cairo-surface-t"><typ
 <entry role="parameter_description"><para>a <link linkend="cairo-xlib-surface-t"><type>cairo_xlib_surface_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-xlib-surface-get-drawable.returns" role="returns">
 <title>Returns</title>
 <para> the drawable.</para>
-<para></para>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-xlib-surface-get-visual" role="function" condition="since:1.2">
 <title>cairo_xlib_surface_get_visual&#160;()</title>
 <indexterm zone="cairo-xlib-surface-get-visual" role="1.2"><primary sortas="xlib_surface_get_visual">cairo_xlib_surface_get_visual</primary></indexterm>
@@ -334,7 +322,7 @@ underlying X Drawable.  If <parameter>surface</parameter>
  was created by
 <link linkend="cairo-xlib-surface-create"><function>cairo_xlib_surface_create()</function></link>, the return value is the Visual passed to that
 constructor.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xlib-surface-get-visual.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -346,20 +334,19 @@ constructor.</para>
 <entry role="parameter_description"><para>a <link linkend="cairo-xlib-surface-t"><type>cairo_xlib_surface_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-xlib-surface-get-visual.returns" role="returns">
 <title>Returns</title>
 <para> the Visual or <link linkend="NULL:CAPS"><literal>NULL</literal></link> if there is no appropriate Visual for
 <parameter>surface</parameter>
 .</para>
-<para></para>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-xlib-surface-get-width" role="function" condition="since:1.2">
 <title>cairo_xlib_surface_get_width&#160;()</title>
 <indexterm zone="cairo-xlib-surface-get-width" role="1.2"><primary sortas="xlib_surface_get_width">cairo_xlib_surface_get_width</primary></indexterm>
 <programlisting language="C"><link linkend="int"><returnvalue>int</returnvalue></link>
 cairo_xlib_surface_get_width (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *surface</parameter>);</programlisting>
 <para>Get the width of the X Drawable underlying the surface in pixels.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xlib-surface-get-width.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -371,18 +358,17 @@ cairo_xlib_surface_get_width (<parameter><link linkend="cairo-surface-t"><type>c
 <entry role="parameter_description"><para>a <link linkend="cairo-xlib-surface-t"><type>cairo_xlib_surface_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-xlib-surface-get-width.returns" role="returns">
 <title>Returns</title>
 <para> the width of the surface in pixels.</para>
-<para></para>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-xlib-surface-get-height" role="function" condition="since:1.2">
 <title>cairo_xlib_surface_get_height&#160;()</title>
 <indexterm zone="cairo-xlib-surface-get-height" role="1.2"><primary sortas="xlib_surface_get_height">cairo_xlib_surface_get_height</primary></indexterm>
 <programlisting language="C"><link linkend="int"><returnvalue>int</returnvalue></link>
 cairo_xlib_surface_get_height (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *surface</parameter>);</programlisting>
 <para>Get the height of the X Drawable underlying the surface in pixels.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xlib-surface-get-height.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -394,18 +380,17 @@ cairo_xlib_surface_get_height (<parameter><link linkend="cairo-surface-t"><type>
 <entry role="parameter_description"><para>a <link linkend="cairo-xlib-surface-t"><type>cairo_xlib_surface_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-xlib-surface-get-height.returns" role="returns">
 <title>Returns</title>
 <para> the height of the surface in pixels.</para>
-<para></para>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-xlib-surface-get-depth" role="function" condition="since:1.2">
 <title>cairo_xlib_surface_get_depth&#160;()</title>
 <indexterm zone="cairo-xlib-surface-get-depth" role="1.2"><primary sortas="xlib_surface_get_depth">cairo_xlib_surface_get_depth</primary></indexterm>
 <programlisting language="C"><link linkend="int"><returnvalue>int</returnvalue></link>
 cairo_xlib_surface_get_depth (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *surface</parameter>);</programlisting>
 <para>Get the number of bits used to represent each pixel value.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xlib-surface-get-depth.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -417,11 +402,10 @@ cairo_xlib_surface_get_depth (<parameter><link linkend="cairo-surface-t"><type>c
 <entry role="parameter_description"><para>a <link linkend="cairo-xlib-surface-t"><type>cairo_xlib_surface_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-xlib-surface-get-depth.returns" role="returns">
 <title>Returns</title>
 <para> the depth of the surface in bits.</para>
-<para></para>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-xlib-device-debug-cap-xrender-version" role="function" condition="since:1.12">
 <title>cairo_xlib_device_debug_cap_xrender_version&#160;()</title>
 <indexterm zone="cairo-xlib-device-debug-cap-xrender-version" role="1.12"><primary sortas="xlib_device_debug_cap_xrender_version">cairo_xlib_device_debug_cap_xrender_version</primary></indexterm>
@@ -435,7 +419,7 @@ of the RENDER extension. This function exists solely for debugging purpose.
 It lets you find out how cairo would behave with an older version of
 the RENDER extension.</para>
 <para>Use the special values -1 and -1 for disabling the RENDER extension.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xlib-device-debug-cap-xrender-version.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -453,14 +437,14 @@ the RENDER extension.</para>
 <entry role="parameter_description"><para>minor version to restrict to</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-xlib-device-debug-get-precision" role="function" condition="since:1.12">
 <title>cairo_xlib_device_debug_get_precision&#160;()</title>
 <indexterm zone="cairo-xlib-device-debug-get-precision" role="1.12"><primary sortas="xlib_device_debug_get_precision">cairo_xlib_device_debug_get_precision</primary></indexterm>
 <programlisting language="C"><link linkend="int"><returnvalue>int</returnvalue></link>
 cairo_xlib_device_debug_get_precision (<parameter><link linkend="cairo-device-t"><type>cairo_device_t</type></link> *device</parameter>);</programlisting>
 <para>Get the Xrender precision mode.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xlib-device-debug-get-precision.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -472,11 +456,10 @@ cairo_xlib_device_debug_get_precision (<parameter><link linkend="cairo-device-t"
 <entry role="parameter_description"><para>a <link linkend="cairo-device-t"><type>cairo_device_t</type></link> for the Xlib backend</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-xlib-device-debug-get-precision.returns" role="returns">
 <title>Returns</title>
 <para> the render precision mode</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-xlib-device-debug-set-precision" role="function" condition="since:1.12">
 <title>cairo_xlib_device_debug_set_precision&#160;()</title>
 <indexterm zone="cairo-xlib-device-debug-set-precision" role="1.12"><primary sortas="xlib_device_debug_set_precision">cairo_xlib_device_debug_set_precision</primary></indexterm>
@@ -485,7 +468,7 @@ cairo_xlib_device_debug_set_precision (<parameter><link linkend="cairo-device-t"
                                        <parameter><link linkend="int"><type>int</type></link> precision</parameter>);</programlisting>
 <para>Render supports two modes of precision when rendering trapezoids. Set
 the precision to the desired mode.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xlib-device-debug-set-precision.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -500,7 +483,7 @@ the precision to the desired mode.</para>
 <entry role="parameter_description"><para>the precision to use</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-XLib-Surfaces.other_details" role="details">
@@ -512,7 +495,7 @@ the precision to the desired mode.</para>
 </programlisting>
 <para>Defined if the Xlib surface backend is available.
 This macro can be used to conditionally compile backend-specific code.</para>
-<para role="since">Since 1.0</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-XLib-Surfaces.see-also">

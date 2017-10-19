@@ -1193,9 +1193,16 @@ void AudioContext::suspend(Promise&& promise)
     lazyInitialize();
 
     RefPtr<AudioContext> strongThis(this);
+#if !PLATFORM(WKC)
     m_destinationNode->suspend([strongThis] {
         strongThis->setState(State::Suspended);
     });
+#else
+    std::function<void()> p(std::allocator_arg, WTF::voidFuncAllocator(), [strongThis] {
+        strongThis->setState(State::Suspended);
+    });
+    m_destinationNode->suspend(p);
+#endif
 }
 
 void AudioContext::resume(Promise&& promise)
@@ -1223,9 +1230,16 @@ void AudioContext::resume(Promise&& promise)
     lazyInitialize();
 
     RefPtr<AudioContext> strongThis(this);
+#if !PLATFORM(WKC)
     m_destinationNode->resume([strongThis] {
         strongThis->setState(State::Running);
     });
+#else
+    std::function<void()> p(std::allocator_arg, WTF::voidFuncAllocator(), [strongThis] {
+        strongThis->setState(State::Running);
+    });
+    m_destinationNode->resume(p);
+#endif
 }
 
 void AudioContext::close(Promise&& promise)
@@ -1245,10 +1259,18 @@ void AudioContext::close(Promise&& promise)
     lazyInitialize();
 
     RefPtr<AudioContext> strongThis(this);
+#if !PLATFORM(WKC)
     m_destinationNode->close([strongThis] {
         strongThis->setState(State::Closed);
         strongThis->uninitialize();
     });
+#else
+    std::function<void()> p(std::allocator_arg, WTF::voidFuncAllocator(), [strongThis] {
+        strongThis->setState(State::Closed);
+        strongThis->uninitialize();
+    });
+    m_destinationNode->close(p);
+#endif
 }
 
 
@@ -1266,10 +1288,18 @@ void AudioContext::suspendPlayback()
     lazyInitialize();
 
     RefPtr<AudioContext> strongThis(this);
+#if !PLATFORM(WKC)
     m_destinationNode->suspend([strongThis] {
         bool interrupted = strongThis->m_mediaSession->state() == PlatformMediaSession::Interrupted;
         strongThis->setState(interrupted ? State::Interrupted : State::Suspended);
     });
+#else
+    std::function<void()> p(std::allocator_arg, WTF::voidFuncAllocator(), [strongThis] {
+        bool interrupted = strongThis->m_mediaSession->state() == PlatformMediaSession::Interrupted;
+        strongThis->setState(interrupted ? State::Interrupted : State::Suspended);
+    });
+    m_destinationNode->suspend(p);
+#endif
 }
 
 void AudioContext::mayResumePlayback(bool shouldResume)
@@ -1288,9 +1318,16 @@ void AudioContext::mayResumePlayback(bool shouldResume)
     lazyInitialize();
 
     RefPtr<AudioContext> strongThis(this);
+#if !PLATFORM(WKC)
     m_destinationNode->resume([strongThis] {
         strongThis->setState(State::Running);
     });
+#else
+    std::function<void()> p(std::allocator_arg, WTF::voidFuncAllocator(), [strongThis] {
+        strongThis->setState(State::Running);
+    });
+    m_destinationNode->resume(p);
+#endif
 }
 
 

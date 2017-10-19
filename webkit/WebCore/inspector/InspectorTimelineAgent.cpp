@@ -45,7 +45,6 @@
 #include "ScriptState.h"
 #include "TimelineRecordFactory.h"
 #include <inspector/ScriptBreakpoint.h>
-#include <profiler/LegacyProfiler.h>
 #include <wtf/Stopwatch.h>
 
 #if PLATFORM(IOS)
@@ -229,82 +228,19 @@ void InspectorTimelineAgent::setPageScriptDebugServer(PageScriptDebugServer* scr
     m_scriptDebugServer = scriptDebugServer;
 }
 
-static inline void startProfiling(JSC::ExecState* exec, const String& title, PassRefPtr<Stopwatch> stopwatch)
+void InspectorTimelineAgent::startFromConsole(JSC::ExecState*, const String&)
 {
-    JSC::LegacyProfiler::profiler()->startProfiling(exec, title, stopwatch);
+    // FIXME: <https://webkit.org/b/153499> Web Inspector: console.profile should use the new Sampling Profiler
 }
 
-static inline PassRefPtr<JSC::Profile> stopProfiling(JSC::ExecState* exec, const String& title)
+void InspectorTimelineAgent::stopFromConsole(JSC::ExecState*, const String&)
 {
-    return JSC::LegacyProfiler::profiler()->stopProfiling(exec, title);
-}
-
-static inline void startProfiling(Frame* frame, const String& title, PassRefPtr<Stopwatch> stopwatch)
-{
-    startProfiling(toJSDOMWindow(frame, debuggerWorld())->globalExec(), title, stopwatch);
-}
-
-static inline PassRefPtr<JSC::Profile> stopProfiling(Frame* frame, const String& title)
-{
-    return stopProfiling(toJSDOMWindow(frame, debuggerWorld())->globalExec(), title);
-}
-
-void InspectorTimelineAgent::startFromConsole(JSC::ExecState* exec, const String &title)
-{
-    // Only allow recording of a profile if it is anonymous (empty title) or does not match
-    // the title of an already recording profile.
-    if (!title.isEmpty()) {
-        for (const TimelineRecordEntry& record : m_pendingConsoleProfileRecords) {
-            String recordTitle;
-            record.data->getString(ASCIILiteral("title"), recordTitle);
-            if (recordTitle == title)
-                return;
-        }
-    }
-
-    if (!m_enabled && m_pendingConsoleProfileRecords.isEmpty())
-        internalStart();
-
-    startProfiling(exec, title, m_instrumentingAgents->inspectorEnvironment().executionStopwatch());
-
-    m_pendingConsoleProfileRecords.append(createRecordEntry(TimelineRecordFactory::createConsoleProfileData(title), TimelineRecordType::ConsoleProfile, true, frameFromExecState(exec)));
-}
-
-PassRefPtr<JSC::Profile> InspectorTimelineAgent::stopFromConsole(JSC::ExecState* exec, const String& title)
-{
-    // Stop profiles in reverse order. If the title is empty, then stop the last profile.
-    // Otherwise, match the title of the profile to stop.
-    for (ptrdiff_t i = m_pendingConsoleProfileRecords.size() - 1; i >= 0; --i) {
-        const TimelineRecordEntry& record = m_pendingConsoleProfileRecords[i];
-
-        String recordTitle;
-        record.data->getString(ASCIILiteral("title"), recordTitle);
-
-        if (title.isEmpty() || recordTitle == title) {
-            RefPtr<JSC::Profile> profile = stopProfiling(exec, title);
-            if (profile)
-                TimelineRecordFactory::appendProfile(record.data.get(), profile.copyRef());
-
-            didCompleteRecordEntry(record);
-
-            m_pendingConsoleProfileRecords.remove(i);
-
-            if (!m_enabledFromFrontend && m_pendingConsoleProfileRecords.isEmpty())
-                internalStop();
-
-            return WTF::move(profile);
-        }
-    }
-
-    return nullptr;
+    // FIXME: <https://webkit.org/b/153499> Web Inspector: console.profile should use the new Sampling Profiler
 }
 
 void InspectorTimelineAgent::willCallFunction(const String& scriptName, int scriptLine, Frame* frame)
 {
     pushCurrentRecord(TimelineRecordFactory::createFunctionCallData(scriptName, scriptLine), TimelineRecordType::FunctionCall, true, frame);
-
-    if (frame && !m_callStackDepth)
-        startProfiling(frame, ASCIILiteral("Timeline FunctionCall"), m_instrumentingAgents->inspectorEnvironment().executionStopwatch());
 
     ++m_callStackDepth;
 }
@@ -321,10 +257,6 @@ void InspectorTimelineAgent::didCallFunction(Frame* frame)
 
             TimelineRecordEntry& entry = m_recordStack.last();
             ASSERT(entry.type == TimelineRecordType::FunctionCall);
-
-            RefPtr<JSC::Profile> profile = stopProfiling(frame, ASCIILiteral("Timeline FunctionCall"));
-            if (profile)
-                TimelineRecordFactory::appendProfile(entry.data.get(), profile.release());
         }
     }
 
@@ -466,7 +398,6 @@ void InspectorTimelineAgent::willEvaluateScript(const String& url, int lineNumbe
 
     if (!m_callStackDepth) {
         ++m_callStackDepth;
-        startProfiling(&frame, ASCIILiteral("Timeline EvaluateScript"), m_instrumentingAgents->inspectorEnvironment().executionStopwatch());
     }
 }
 
@@ -482,10 +413,6 @@ void InspectorTimelineAgent::didEvaluateScript(Frame& frame)
 
             TimelineRecordEntry& entry = m_recordStack.last();
             ASSERT(entry.type == TimelineRecordType::EvaluateScript);
-
-            RefPtr<JSC::Profile> profile = stopProfiling(&frame, ASCIILiteral("Timeline EvaluateScript"));
-            if (profile)
-                TimelineRecordFactory::appendProfile(entry.data.get(), profile.release());
         }
     }
 

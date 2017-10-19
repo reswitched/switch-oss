@@ -99,8 +99,15 @@ private:
 
 // Determines if it's safe to execute a node within the given abstract state. This may
 // return false conservatively. If it returns true, then you can hoist the given node
-// up to the given point and expect that it will not crash. This doesn't guarantee that
-// the node will produce the result you wanted other than not crashing.
+// up to the given point and expect that it will not crash. It also guarantees that the
+// node will not produce a malformed JSValue or object pointer when executed in the
+// given state. But this doesn't guarantee that the node will produce the result you
+// wanted. For example, you may have a GetByOffset from a prototype that only makes
+// semantic sense if you've also checked that some nearer prototype doesn't also have
+// a property of the same name. This could still return true even if that check hadn't
+// been performed in the given abstract state. That's fine though: the load can still
+// safely execute before that check, so long as that check continues to guard any
+// user-observable things done to the loaded value.
 template<typename AbstractStateType>
 bool safeToExecute(AbstractStateType& state, Graph& graph, Node* node)
 {
@@ -172,6 +179,7 @@ bool safeToExecute(AbstractStateType& state, Graph& graph, Node* node)
     case Arrayify:
     case ArrayifyToStructure:
     case GetScope:
+    case LoadArrowFunctionThis:
     case SkipScope:
     case GetClosureVar:
     case PutClosureVar:
@@ -191,8 +199,11 @@ bool safeToExecute(AbstractStateType& state, Graph& graph, Node* node)
     case CompareEqConstant:
     case CompareStrictEq:
     case Call:
+    case TailCallInlinedCaller:
     case Construct:
     case CallVarargs:
+    case TailCallVarargsInlinedCaller:
+    case TailCallForwardVarargsInlinedCaller:
     case ConstructVarargs:
     case LoadVarargs:
     case CallForwardVarargs:
@@ -203,12 +214,11 @@ bool safeToExecute(AbstractStateType& state, Graph& graph, Node* node)
     case NewArrayBuffer:
     case NewRegexp:
     case Breakpoint:
-    case ProfileWillCall:
-    case ProfileDidCall:
     case ProfileType:
     case ProfileControlFlow:
     case CheckHasInstance:
     case InstanceOf:
+    case IsJSArray:
     case IsUndefined:
     case IsBoolean:
     case IsNumber:
@@ -230,11 +240,15 @@ bool safeToExecute(AbstractStateType& state, Graph& graph, Node* node)
     case CreateClonedArguments:
     case GetFromArguments:
     case PutToArguments:
+    case NewArrowFunction:
     case NewFunction:
     case Jump:
     case Branch:
     case Switch:
     case Return:
+    case TailCall:
+    case TailCallVarargs:
+    case TailCallForwardVarargs:
     case Throw:
     case ThrowReferenceError:
     case CountExecution:
@@ -255,7 +269,6 @@ bool safeToExecute(AbstractStateType& state, Graph& graph, Node* node)
     case CheckInBounds:
     case ConstantStoragePointer:
     case Check:
-    case MultiGetByOffset:
     case MultiPutByOffset:
     case ValueRep:
     case DoubleRep:
@@ -322,10 +335,18 @@ bool safeToExecute(AbstractStateType& state, Graph& graph, Node* node)
     case GetByOffset:
     case GetGetterSetterByOffset:
     case PutByOffset: {
+        PropertyOffset offset = node->storageAccessData().offset;
+
+        if (state.structureClobberState() == StructuresAreWatched) {
+            if (JSObject* knownBase = node->child1()->dynamicCastConstant<JSObject*>()) {
+                if (graph.isSafeToLoad(knownBase, offset))
+                    return true;
+            }
+        }
+        
         StructureAbstractValue& value = state.forNode(node->child1()).m_structure;
         if (value.isTop())
             return false;
-        PropertyOffset offset = node->storageAccessData().offset;
         for (unsigned i = value.size(); i--;) {
             if (!value[i]->isValidOffset(offset))
                 return false;
@@ -333,6 +354,34 @@ bool safeToExecute(AbstractStateType& state, Graph& graph, Node* node)
         return true;
     }
         
+    case MultiGetByOffset: {
+        // We can't always guarantee that the MultiGetByOffset is safe to execute if it
+        // contains loads from prototypes. If the load requires a check in IR, which is rare, then
+        // we currently claim that we don't know if it's safe to execute because finding that
+        // check in the abstract state would be hard. If the load requires watchpoints, we just
+        // check if we're not in a clobbered state (i.e. in between a side effect and an
+        // invalidation point).
+        for (const MultiGetByOffsetCase& getCase : node->multiGetByOffsetData().cases) {
+            GetByOffsetMethod method = getCase.method();
+            switch (method.kind()) {
+            case GetByOffsetMethod::Invalid:
+                RELEASE_ASSERT_NOT_REACHED();
+                break;
+            case GetByOffsetMethod::Constant: // OK because constants are always safe to execute.
+            case GetByOffsetMethod::Load: // OK because the MultiGetByOffset has its own checks for loading from self.
+                break;
+            case GetByOffsetMethod::LoadFromPrototype:
+                // Only OK if the state isn't clobbered. That's almost always the case.
+                if (state.structureClobberState() != StructuresAreWatched)
+                    return false;
+                if (!graph.isSafeToLoad(method.prototype()->cast<JSObject*>(), method.offset()))
+                    return false;
+                break;
+            }
+        }
+        return true;
+    }
+
     case LastNodeType:
         RELEASE_ASSERT_NOT_REACHED();
         return false;

@@ -215,7 +215,7 @@ AC_DEFUN([CAIRO_CHECK_ATOMIC_OP_NEEDS_MEMORY_BARRIER],
 		case $host_cpu in
 		    i?86)	cairo_cv_atomic_op_needs_memory_barrier="no"  ;;
 		    x86_64)	cairo_cv_atomic_op_needs_memory_barrier="no"  ;;
-		    arm*)	cairo_cv_atomic_op_needs_memory_barrier="no"  ;;
+		    arm*)	cairo_cv_atomic_op_needs_memory_barrier="yes"  ;;
 		    *)		cairo_cv_atomic_op_needs_memory_barrier="yes" ;;
 		esac
 	])

@@ -66,11 +66,11 @@ static cairo_test_status_t
 draw (cairo_t *cr, int width, int height)
 {
     /* Once there was a bug that choked when selecting the same font twice. */
-    cairo_select_font_face (cr, "sans",
+    cairo_select_font_face (cr, CAIRO_TEST_FONT_FAMILY " Sans",
 			    CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size (cr, 40.0);
 
-    cairo_select_font_face (cr, "sans",
+    cairo_select_font_face (cr, CAIRO_TEST_FONT_FAMILY " Sans",
 			    CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size (cr, 40.0);
     cairo_move_to (cr, 10, 50);

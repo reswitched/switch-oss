@@ -127,7 +127,7 @@ _user_font_face_create (cairo_font_face_t **out)
     /* This also happens to be default font face on cairo_t, so does
      * not make much sense here.  For demonstration only.
      */
-    fallback_font_face = cairo_toy_font_face_create ("",
+    fallback_font_face = cairo_toy_font_face_create (CAIRO_TEST_FONT_FAMILY " Sans",
 						     CAIRO_FONT_SLANT_NORMAL,
 						     CAIRO_FONT_WEIGHT_NORMAL);
 

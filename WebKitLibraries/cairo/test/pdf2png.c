@@ -49,7 +49,9 @@ int main (int argc, char *argv[])
     if (argc != 4)
 	FAIL ("usage: pdf2png input_file.pdf output_file.png page");
 
+#if !GLIB_CHECK_VERSION(2,36,0)
     g_type_init ();
+#endif
 
     if (g_path_is_absolute(filename)) {
 	absolute = g_strdup (filename);

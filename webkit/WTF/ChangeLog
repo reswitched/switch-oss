@@ -1,3 +1,35 @@
+2017-06-05  Jer Noble  <jer.noble@apple.com>
+
+        Allow clients to specify a list of codecs which should require hardware decode support.
+        https://bugs.webkit.org/show_bug.cgi?id=172787
+
+        Reviewed by Alex Christensen.
+
+        Add a couple of convenience methods:
+        - a String::split() that returns a vector (rather than taking an out-reference to a vector).
+        - A Vector::map() template which takes a Callable and returns a Vector of a different type.
+
+        * wtf/Vector.h:
+        (WTF::Vector::map):
+        * wtf/text/WTFString.h:
+        (WTF::String::split):
+
+2017-09-12  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r221917. rdar://problem/34404461
+
+    2017-09-12  Brent Fulgham  <bfulgham@apple.com>
+
+            Show punycode to user if a URL mixes Armenian Seh or Vo with other scripts
+            https://bugs.webkit.org/show_bug.cgi?id=176578
+            <rdar://problem/33906231>
+
+            Reviewed by Alex Christensen.
+
+            * wtf/ASCIICType.h:
+            (WTF::isASCIIDigitOrPunctuation): Added helper function to recognize ASCII digits
+            and punctuation characters.
+
 2017-04-07  Ting-Wei Lan  <lantw44@gmail.com>
 
         Include cstdio before using sscanf and stderr

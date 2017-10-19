@@ -62,7 +62,7 @@ FormAssociatedElement::~FormAssociatedElement()
 void FormAssociatedElement::didMoveToNewDocument(Document* oldDocument)
 {
     HTMLElement& element = asHTMLElement();
-    if (oldDocument && element.fastHasAttribute(formAttr))
+    if (oldDocument && element.fastHasAttribute(formAttr) && element.inDocument())
         resetFormAttributeTargetObserver();
 }
 

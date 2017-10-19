@@ -310,7 +310,7 @@ fill_rectangles (void			*_dst,
     } else {
 	pixman_image_t *src = _pixman_image_for_color (color);
 	if (unlikely (src == NULL))
-		return _cairo_error (CAIRO_STATUS_NO_MEMORY);
+	    return _cairo_error (CAIRO_STATUS_NO_MEMORY);
 
 	op = _pixman_operator (op);
 	for (i = 0; i < num_rects; i++) {
@@ -359,7 +359,7 @@ fill_boxes (void		*_dst,
     {
 	pixman_image_t *src = _pixman_image_for_color (color);
 	if (unlikely (src == NULL))
-		return _cairo_error (CAIRO_STATUS_NO_MEMORY);
+	    return _cairo_error (CAIRO_STATUS_NO_MEMORY);
 
 	op = _pixman_operator (op);
 	for (chunk = &boxes->chunks; chunk; chunk = chunk->next) {
@@ -513,7 +513,7 @@ composite_boxes (void			*_dst,
 #else
 	    free_src = src = _pixman_image_for_color (CAIRO_COLOR_WHITE);
 	    if (unlikely (src == NULL))
-		    return _cairo_error (CAIRO_STATUS_NO_MEMORY);
+		return _cairo_error (CAIRO_STATUS_NO_MEMORY);
 	    op = PIXMAN_OP_OUT_REVERSE;
 #endif
 	} else if (op == CAIRO_OPERATOR_SOURCE) {
@@ -2237,8 +2237,10 @@ _fill_xrgb32_lerp_opaque_spans (void *abstract_renderer, int y, int h,
 	    if (a) {
 		int len = spans[1].x - spans[0].x;
 		uint32_t *d = (uint32_t*)(r->u.fill.data + r->u.fill.stride*y + spans[0].x*4);
+#ifdef WKC_CAIRO_CUSTOMIZE
         if (len<0)
             return CAIRO_STATUS_SUCCESS;
+#endif
 		if (a == 0xff) {
 		    if (len > 31) {
 			pixman_fill ((uint32_t *)r->u.fill.data, r->u.fill.stride / sizeof(uint32_t), 32,
@@ -2917,7 +2919,9 @@ inplace_renderer_init (cairo_image_span_renderer_t	*r,
 	    buf = malloc (width);
 	    if (unlikely (buf == NULL)) {
 		pixman_image_unref (r->src);
+#ifdef WKC_CAIRO_CUSTOMIZE
 		r->src = NULL;
+#endif
 		return _cairo_error (CAIRO_STATUS_NO_MEMORY);
 	    }
 	}

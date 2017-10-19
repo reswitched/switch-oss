@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-Version-Information.top_of_page">Version Information</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>Version Information</refname>
@@ -50,11 +48,6 @@
 </tbody>
 </tgroup>
 </informaltable>
-</refsect1>
-<refsect1 id="cairo-Version-Information.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
 </refsect1>
 
 
@@ -157,7 +150,7 @@ if (cairo_version() &gt;= CAIRO_VERSION_ENCODE(1, 0, 0))
 returned by <link linkend="CAIRO-VERSION:CAPS"><literal>CAIRO_VERSION</literal></link> and <link linkend="cairo-version"><function>cairo_version()</function></link> are encoded using this macro.
 Two encoded version numbers can be compared as integers.  The encoding ensures
 that later versions compare greater than earlier versions.</para>
-<refsect3 role="parameters">
+<refsect3 id="CAIRO-VERSION-ENCODE.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -175,11 +168,10 @@ that later versions compare greater than earlier versions.</para>
 <entry role="parameter_description"><para>the micro component of the version number</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="CAIRO-VERSION-ENCODE.returns" role="returns">
 <title>Returns</title>
 <para> the encoded version.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="CAIRO-VERSION-STRINGIZE:CAPS" role="macro" condition="since:1.8">
 <title>CAIRO_VERSION_STRINGIZE()</title>
 <indexterm zone="CAIRO-VERSION-STRINGIZE:CAPS" role="1.8"><primary sortas="VERSION_STRINGIZE">CAIRO_VERSION_STRINGIZE</primary></indexterm>
@@ -187,7 +179,7 @@ that later versions compare greater than earlier versions.</para>
 <para>This macro encodes the given cairo version into an string.  The numbers
 returned by <link linkend="CAIRO-VERSION-STRING:CAPS"><literal>CAIRO_VERSION_STRING</literal></link> and <link linkend="cairo-version-string"><function>cairo_version_string()</function></link> are encoded using this macro.
 The parameters to this macro must expand to numerical literals.</para>
-<refsect3 role="parameters">
+<refsect3 id="CAIRO-VERSION-STRINGIZE.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -205,11 +197,10 @@ The parameters to this macro must expand to numerical literals.</para>
 <entry role="parameter_description"><para>the micro component of the version number</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="CAIRO-VERSION-STRINGIZE.returns" role="returns">
 <title>Returns</title>
 <para> a string literal containing the version.</para>
-<para></para>
-</refsect3><para role="since">Since 1.8</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.8">1.8</link></para></refsect2>
 <refsect2 id="cairo-version" role="function" condition="since:1.0">
 <title>cairo_version&#160;()</title>
 <indexterm zone="cairo-version" role="1.0"><primary sortas="version">cairo_version</primary></indexterm>
@@ -225,11 +216,10 @@ if (cairo_version() &gt;= CAIRO_VERSION_ENCODE(X,Y,Z)) {...}
 </programlisting></informalexample>
 <para>See also <link linkend="cairo-version-string"><function>cairo_version_string()</function></link> as well as the compile-time
 equivalents <link linkend="CAIRO-VERSION:CAPS"><literal>CAIRO_VERSION</literal></link> and <link linkend="CAIRO-VERSION-STRING:CAPS"><literal>CAIRO_VERSION_STRING</literal></link>.</para>
-<refsect3 role="returns">
+<refsect3 id="cairo-version.returns" role="returns">
 <title>Returns</title>
 <para> the encoded version.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-version-string" role="function" condition="since:1.0">
 <title>cairo_version_string&#160;()</title>
 <indexterm zone="cairo-version-string" role="1.0"><primary sortas="version_string">cairo_version_string</primary></indexterm>
@@ -239,11 +229,10 @@ cairo_version_string (<parameter><type>void</type></parameter>);</programlisting
 of the form "X.Y.Z".</para>
 <para>See also <link linkend="cairo-version"><function>cairo_version()</function></link> as well as the compile-time equivalents
 <link linkend="CAIRO-VERSION-STRING:CAPS"><literal>CAIRO_VERSION_STRING</literal></link> and <link linkend="CAIRO-VERSION:CAPS"><literal>CAIRO_VERSION</literal></link>.</para>
-<refsect3 role="returns">
+<refsect3 id="cairo-version-string.returns" role="returns">
 <title>Returns</title>
 <para> a string containing the version.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-Version-Information.other_details" role="details">
@@ -254,35 +243,35 @@ of the form "X.Y.Z".</para>
 <programlisting language="C">#define             CAIRO_VERSION</programlisting>
 <para>The version of cairo available at compile-time, encoded using
 <link linkend="CAIRO-VERSION-ENCODE:CAPS"><function>CAIRO_VERSION_ENCODE()</function></link>.</para>
-<para role="since">Since 1.0</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="CAIRO-VERSION-MAJOR:CAPS" role="macro" condition="since:1.0">
 <title>CAIRO_VERSION_MAJOR</title>
 <indexterm zone="CAIRO-VERSION-MAJOR:CAPS" role="1.0"><primary sortas="VERSION_MAJOR">CAIRO_VERSION_MAJOR</primary></indexterm>
 <programlisting language="C">#define CAIRO_VERSION_MAJOR USE_cairo_version_OR_cairo_version_string_INSTEAD
 </programlisting>
 <para>The major component of the version of cairo available at compile-time.</para>
-<para role="since">Since 1.0</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="CAIRO-VERSION-MINOR:CAPS" role="macro" condition="since:1.0">
 <title>CAIRO_VERSION_MINOR</title>
 <indexterm zone="CAIRO-VERSION-MINOR:CAPS" role="1.0"><primary sortas="VERSION_MINOR">CAIRO_VERSION_MINOR</primary></indexterm>
 <programlisting language="C">#define CAIRO_VERSION_MINOR USE_cairo_version_OR_cairo_version_string_INSTEAD
 </programlisting>
 <para>The minor component of the version of cairo available at compile-time.</para>
-<para role="since">Since 1.0</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="CAIRO-VERSION-MICRO:CAPS" role="macro" condition="since:1.0">
 <title>CAIRO_VERSION_MICRO</title>
 <indexterm zone="CAIRO-VERSION-MICRO:CAPS" role="1.0"><primary sortas="VERSION_MICRO">CAIRO_VERSION_MICRO</primary></indexterm>
 <programlisting language="C">#define CAIRO_VERSION_MICRO USE_cairo_version_OR_cairo_version_string_INSTEAD
 </programlisting>
 <para>The micro component of the version of cairo available at compile-time.</para>
-<para role="since">Since 1.0</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="CAIRO-VERSION-STRING:CAPS" role="macro" condition="since:1.8">
 <title>CAIRO_VERSION_STRING</title>
 <indexterm zone="CAIRO-VERSION-STRING:CAPS" role="1.8"><primary sortas="VERSION_STRING">CAIRO_VERSION_STRING</primary></indexterm>
 <programlisting language="C">#define             CAIRO_VERSION_STRING</programlisting>
 <para>A human-readable string literal containing the version of cairo available
 at compile-time, in the form of "X.Y.Z".</para>
-<para role="since">Since 1.8</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.8">1.8</link></para></refsect2>
 
 </refsect1>
 

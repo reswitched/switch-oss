@@ -80,6 +80,7 @@
 #include "HTMLHeadElement.h"
 #include "HTMLIFrameElement.h"
 #include "HTMLImageElement.h"
+#include "HTMLInputElement.h"
 #include "HTMLLinkElement.h"
 #include "HTMLMediaElement.h"
 #include "HTMLNameCollection.h"
@@ -109,6 +110,7 @@
 #include "MouseEventWithHitTestResults.h"
 #include "NameNodeList.h"
 #include "NestingLevelIncrementer.h"
+#include "NoEventDispatchAssertion.h"
 #include "NodeIterator.h"
 #include "NodeRareData.h"
 #include "NodeWithIndex.h"
@@ -165,7 +167,6 @@
 #include "XPathNSResolver.h"
 #include "XPathResult.h"
 #include "htmlediting.h"
-#include <JavaScriptCore/profiler/Profile.h>
 #include <inspector/ScriptCallStack.h>
 #include <wtf/CurrentTime.h>
 #include <wtf/TemporaryChange.h>
@@ -454,7 +455,6 @@ Document::Document(Frame* frame, const URL& url, unsigned documentClasses, unsig
     , m_gotoAnchorNeededAfterStylesheetsLoad(false)
     , m_frameElementsShouldIgnoreScrolling(false)
     , m_updateFocusAppearanceRestoresSelection(false)
-    , m_ignoreDestructiveWriteCount(0)
     , m_titleSetExplicitly(false)
     , m_markers(std::make_unique<DocumentMarkerController>())
     , m_updateFocusAppearanceTimer(*this, &Document::updateFocusAppearanceTimerFired)
@@ -473,7 +473,6 @@ Document::Document(Frame* frame, const URL& url, unsigned documentClasses, unsig
     , m_annotatedRegionsDirty(false)
 #endif
     , m_createRenderers(true)
-    , m_inPageCache(false)
     , m_accessKeyMapValid(false)
     , m_documentClasses(documentClasses)
     , m_isSynthesized(constructionFlags & Synthesized)
@@ -582,7 +581,7 @@ Document::~Document()
     allDocuments().remove(this);
 
     ASSERT(!renderView());
-    ASSERT(!m_inPageCache);
+    ASSERT(m_pageCacheState != InPageCache);
     ASSERT(m_ranges.isEmpty());
     ASSERT(!m_parentTreeScope);
     ASSERT(!m_disabledFieldsetElementsCount);
@@ -1004,9 +1003,11 @@ RefPtr<Node> Document::adoptNode(PassRefPtr<Node> source, ExceptionCode& ec)
             }
         }
         if (source->parentNode()) {
-            source->parentNode()->removeChild(source.get(), ec);
+            source->parentNode()->removeChild(*source, ec);
             if (ec)
                 return nullptr;
+            ASSERT_WITH_SECURITY_IMPLICATION(!source->inDocument());
+            ASSERT_WITH_SECURITY_IMPLICATION(!source->parentNode());
         }
     }
 
@@ -1532,7 +1533,7 @@ void Document::setTitle(const String& title)
     else if (!m_titleElement) {
         if (HTMLElement* headElement = head()) {
             m_titleElement = createElement(titleTag, false);
-            headElement->appendChild(m_titleElement, ASSERT_NO_EXCEPTION);
+            headElement->appendChild(*m_titleElement, ASSERT_NO_EXCEPTION);
         }
     }
 
@@ -1858,7 +1859,7 @@ void Document::updateStyleIfNeeded()
     ASSERT(isMainThread());
     ASSERT(!view() || !view()->isPainting());
 
-    if (!view() || view()->isInLayout())
+    if (!view() || view()->isInRenderTreeLayout())
         return;
 
     if (m_optimizedStyleSheetUpdateTimer.isActive())
@@ -1875,7 +1876,7 @@ void Document::updateLayout()
     ASSERT(isMainThread());
 
     FrameView* frameView = view();
-    if (frameView && frameView->isInLayout()) {
+    if (frameView && frameView->isInRenderTreeLayout()) {
         // View layout should not be re-entrant.
         ASSERT_NOT_REACHED();
         return;
@@ -1955,7 +1956,7 @@ bool Document::updateLayoutIfDimensionsOutOfDate(Element& element, DimensionsChe
     
     // Check for re-entrancy and assert (same code that is in updateLayout()).
     FrameView* frameView = view();
-    if (frameView && frameView->isInLayout()) {
+    if (frameView && frameView->isInRenderTreeLayout()) {
         // View layout should not be re-entrant.
         ASSERT_NOT_REACHED();
         return true;
@@ -2129,7 +2130,7 @@ void Document::clearStyleResolver()
 void Document::createRenderTree()
 {
     ASSERT(!renderView());
-    ASSERT(!m_inPageCache);
+    ASSERT(m_pageCacheState != InPageCache);
     ASSERT(!m_axObjectCache || this != &topDocument());
 
     if (m_isNonRenderedPlaceholder)
@@ -2199,7 +2200,7 @@ void Document::disconnectFromFrame()
 void Document::destroyRenderTree()
 {
     ASSERT(hasLivingRenderTree());
-    ASSERT(!m_inPageCache);
+    ASSERT(m_pageCacheState != InPageCache);
 
     TemporaryChange<bool> change(m_renderTreeBeingDestroyed, true);
 
@@ -2255,8 +2256,12 @@ void Document::prepareForDestruction()
             cache->clearTextMarkerNodesInUse(this);
     }
 #endif
-    
-    disconnectDescendantFrames();
+
+    {
+        NavigationDisabler navigationDisabler;
+        disconnectDescendantFrames();
+    }
+
     if (m_domWindow && m_frame)
         m_domWindow->willDetachDocumentFromFrame();
 
@@ -2310,6 +2315,11 @@ void Document::prepareForDestruction()
     disconnectFromFrame();
 
     m_hasPreparedForDestruction = true;
+
+    // Note that m_pageCacheState can be Document::AboutToEnterPageCache if our frame
+    // was removed in an onpagehide event handler fired when the top-level frame is
+    // about to enter the page cache.
+    ASSERT_WITH_SECURITY_IMPLICATION(m_pageCacheState != Document::InPageCache);
 }
 
 void Document::removeAllEventListeners()
@@ -2431,6 +2441,9 @@ ScriptableDocumentParser* Document::scriptableDocumentParser() const
 
 void Document::open(Document* ownerDocument)
 {
+    if (m_ignoreOpensDuringUnloadCount)
+        return;
+
     if (ownerDocument) {
         setURL(ownerDocument->url());
         setCookieURL(ownerDocument->cookieURL());
@@ -2536,11 +2549,10 @@ void Document::setBodyOrFrameset(PassRefPtr<HTMLElement> prpNewBody, ExceptionCo
         newBody = downcast<HTMLElement>(node.get());
     }
 
-    HTMLElement* b = bodyOrFrameset();
-    if (!b)
-        documentElement()->appendChild(newBody.release(), ec);
+    if (auto* body = bodyOrFrameset())
+        documentElement()->replaceChild(newBody.releaseNonNull(), *body, ec);
     else
-        documentElement()->replaceChild(newBody.release(), b, ec);
+        documentElement()->appendChild(newBody.releaseNonNull(), ec);
 }
 
 HTMLHeadElement* Document::head()
@@ -2773,7 +2785,7 @@ void Document::write(const SegmentedString& text, Document* ownerDocument)
 #endif
 
     bool hasInsertionPoint = m_parser && m_parser->hasInsertionPoint();
-    if (!hasInsertionPoint && m_ignoreDestructiveWriteCount)
+    if (!hasInsertionPoint && (m_ignoreOpensDuringUnloadCount || m_ignoreDestructiveWriteCount))
         return;
 
     if (!hasInsertionPoint)
@@ -2954,6 +2966,9 @@ void Document::disableEval(const String& errorMessage)
 bool Document::canNavigate(Frame* targetFrame)
 {
     if (!m_frame)
+        return false;
+
+    if (pageCacheState() != Document::NotInPageCache)
         return false;
 
     // FIXME: We shouldn't call this function without a target frame, but
@@ -3362,90 +3377,78 @@ bool Document::childTypeAllowed(NodeType type) const
     return false;
 }
 
-bool Document::canReplaceChild(Node* newChild, Node* oldChild)
+bool Document::canAcceptChild(const Node& newChild, const Node* refChild, AcceptChildOperation operation) const
 {
-    if (!oldChild)
-        // ContainerNode::replaceChild will raise a NOT_FOUND_ERR.
+    if (operation == AcceptChildOperation::Replace && refChild->nodeType() == newChild.nodeType())
         return true;
 
-    if (oldChild->nodeType() == newChild->nodeType())
+    switch (newChild.nodeType()) {
+    case ATTRIBUTE_NODE:
+    case CDATA_SECTION_NODE:
+    case DOCUMENT_NODE:
+    case ENTITY_NODE:
+    case ENTITY_REFERENCE_NODE:
+    case TEXT_NODE:
+    case XPATH_NAMESPACE_NODE:
+        return false;
+    case COMMENT_NODE:
+    case PROCESSING_INSTRUCTION_NODE:
         return true;
-
-    int numDoctypes = 0;
-    int numElements = 0;
-
-    // First, check how many doctypes and elements we have, not counting
-    // the child we're about to remove.
-    for (Node* c = firstChild(); c; c = c->nextSibling()) {
-        if (c == oldChild)
-            continue;
-        
-        switch (c->nodeType()) {
-        case DOCUMENT_TYPE_NODE:
-            numDoctypes++;
-            break;
-        case ELEMENT_NODE:
-            numElements++;
-            break;
-        default:
-            break;
-        }
-    }
-    
-    // Then, see how many doctypes and elements might be added by the new child.
-    if (newChild->isDocumentFragment()) {
-        for (Node* c = newChild->firstChild(); c; c = c->nextSibling()) {
-            switch (c->nodeType()) {
-            case ATTRIBUTE_NODE:
-            case CDATA_SECTION_NODE:
-            case DOCUMENT_FRAGMENT_NODE:
-            case DOCUMENT_NODE:
-            case ENTITY_NODE:
-            case ENTITY_REFERENCE_NODE:
-            case TEXT_NODE:
-            case XPATH_NAMESPACE_NODE:
+    case DOCUMENT_FRAGMENT_NODE: {
+        bool hasSeenElementChild = false;
+        for (auto* node = downcast<DocumentFragment>(newChild).firstChild(); node; node = node->nextSibling()) {
+            if (is<Element>(*node)) {
+                if (hasSeenElementChild)
+                    return false;
+                hasSeenElementChild = true;
+            }
+            if (!canAcceptChild(*node, refChild, operation))
                 return false;
-            case COMMENT_NODE:
-            case PROCESSING_INSTRUCTION_NODE:
-                break;
-            case DOCUMENT_TYPE_NODE:
-                numDoctypes++;
-                break;
-            case ELEMENT_NODE:
-                numElements++;
-                break;
+        }
+        break;
+    }
+    case DOCUMENT_TYPE_NODE: {
+        auto* existingDocType = childrenOfType<DocumentType>(*this).first();
+        if (operation == AcceptChildOperation::Replace) {
+            //  parent has a doctype child that is not child, or an element is preceding child.
+            if (existingDocType && existingDocType != refChild)
+                return false;
+            if (refChild->previousElementSibling())
+                return false;
+        } else {
+            ASSERT(operation == AcceptChildOperation::InsertOrAdd);
+            if (existingDocType)
+                return false;
+            if ((refChild && refChild->previousElementSibling()) || (!refChild && firstElementChild()))
+                return false;
+        }
+        break;
+    }
+    case ELEMENT_NODE: {
+        auto* existingElementChild = firstElementChild();
+        if (operation == AcceptChildOperation::Replace) {
+            if (existingElementChild && existingElementChild != refChild)
+                return false;
+            for (auto* child = refChild->nextSibling(); child; child = child->nextSibling()) {
+                if (is<DocumentType>(*child))
+                    return false;
+            }
+        } else {
+            ASSERT(operation == AcceptChildOperation::InsertOrAdd);
+            if (existingElementChild)
+                return false;
+            for (auto* child = refChild; child; child = child->nextSibling()) {
+                if (is<DocumentType>(*child))
+                    return false;
             }
         }
-    } else {
-        switch (newChild->nodeType()) {
-        case ATTRIBUTE_NODE:
-        case CDATA_SECTION_NODE:
-        case DOCUMENT_FRAGMENT_NODE:
-        case DOCUMENT_NODE:
-        case ENTITY_NODE:
-        case ENTITY_REFERENCE_NODE:
-        case TEXT_NODE:
-        case XPATH_NAMESPACE_NODE:
-            return false;
-        case COMMENT_NODE:
-        case PROCESSING_INSTRUCTION_NODE:
-            return true;
-        case DOCUMENT_TYPE_NODE:
-            numDoctypes++;
-            break;
-        case ELEMENT_NODE:
-            numElements++;
-            break;
-        }                
+        break;
     }
-        
-    if (numElements > 1 || numDoctypes > 1)
-        return false;
-    
+    }
     return true;
 }
 
-RefPtr<Node> Document::cloneNodeInternal(Document&, CloningOperation type)
+Ref<Node> Document::cloneNodeInternal(Document&, CloningOperation type)
 {
     Ref<Document> clone = cloneDocumentWithoutChildren();
     clone->cloneDataFromDocument(*this);
@@ -3454,7 +3457,7 @@ RefPtr<Node> Document::cloneNodeInternal(Document&, CloningOperation type)
     case CloningOperation::SelfWithTemplateContent:
         break;
     case CloningOperation::Everything:
-        cloneChildNodes(clone.ptr());
+        cloneChildNodes(clone);
         break;
     }
     return WTF::move(clone);
@@ -3561,11 +3564,23 @@ void Document::removeAudioProducer(MediaProducer* audioProducer)
     updateIsPlayingMedia();
 }
 
+void Document::noteUserInteractionWithMediaElement()
+{
+    if (m_userHasInteractedWithMediaElement)
+        return;
+
+    m_userHasInteractedWithMediaElement = true;
+    updateIsPlayingMedia();
+}
+
 void Document::updateIsPlayingMedia()
 {
     MediaProducer::MediaStateFlags state = MediaProducer::IsNotPlaying;
     for (auto audioProducer : m_audioProducers)
         state |= audioProducer->mediaState();
+
+    if (m_userHasInteractedWithMediaElement)
+        state |= MediaProducer::HasUserInteractedWithMediaElement;
 
     if (state == m_mediaState)
         return;
@@ -3655,8 +3670,12 @@ void Document::removeFocusedNodeOfSubtree(Node* node, bool amongChildrenOnly)
     else
         nodeInSubtree = (focusedElement == node) || focusedElement->isDescendantOf(node);
     
-    if (nodeInSubtree)
-        setFocusedElement(nullptr);
+    if (nodeInSubtree) {
+        // FIXME: We should avoid synchronously updating the style inside setFocusedElement.
+        // FIXME: Object elements should avoid loading a frame synchronously in a post style recalc callback.
+        SubframeLoadingDisabler disabler(is<ContainerNode>(node) ? downcast<ContainerNode>(node) : nullptr);
+        setFocusedElement(nullptr, FocusDirectionNone, FocusRemovalEventsMode::DoNotDispatch);
+    }
 }
 
 void Document::hoveredElementDidDetach(Element* element)
@@ -3694,7 +3713,7 @@ void Document::setAnnotatedRegions(const Vector<AnnotatedRegionValue>& regions)
 }
 #endif
 
-bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, FocusDirection direction)
+bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, FocusDirection direction, FocusRemovalEventsMode eventsMode)
 {
     RefPtr<Element> newFocusedElement = prpNewFocusedElement;
 
@@ -3705,7 +3724,7 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
     if (m_focusedElement == newFocusedElement)
         return true;
 
-    if (m_inPageCache)
+    if (inPageCache())
         return false;
 
     bool focusChangeBlocked = false;
@@ -3718,33 +3737,42 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
 
         oldFocusedElement->setFocus(false);
 
-        // Dispatch a change event for form control elements that have been edited.
-        if (is<HTMLFormControlElement>(*oldFocusedElement)) {
-            HTMLFormControlElement& formControlElement = downcast<HTMLFormControlElement>(*oldFocusedElement);
-            if (formControlElement.wasChangedSinceLastFormControlChangeEvent())
-                formControlElement.dispatchFormControlChangeEvent();
+        if (eventsMode == FocusRemovalEventsMode::Dispatch) {
+            // Dispatch a change event for form control elements that have been edited.
+            if (is<HTMLFormControlElement>(*oldFocusedElement)) {
+                HTMLFormControlElement& formControlElement = downcast<HTMLFormControlElement>(*oldFocusedElement);
+                if (formControlElement.wasChangedSinceLastFormControlChangeEvent())
+                    formControlElement.dispatchFormControlChangeEvent();
+            }
+
+            // Dispatch the blur event and let the node do any other blur related activities (important for text fields)
+            oldFocusedElement->dispatchBlurEvent(newFocusedElement.copyRef());
+
+            if (m_focusedElement) {
+                // handler shifted focus
+                focusChangeBlocked = true;
+                newFocusedElement = nullptr;
+            }
+
+            oldFocusedElement->dispatchFocusOutEvent(eventNames().focusoutEvent, newFocusedElement.copyRef()); // DOM level 3 name for the bubbling blur event.
+            // FIXME: We should remove firing DOMFocusOutEvent event when we are sure no content depends
+            // on it, probably when <rdar://problem/8503958> is resolved.
+            oldFocusedElement->dispatchFocusOutEvent(eventNames().DOMFocusOutEvent, newFocusedElement.copyRef()); // DOM level 2 name for compatibility.
+
+            if (m_focusedElement) {
+                // handler shifted focus
+                focusChangeBlocked = true;
+                newFocusedElement = nullptr;
+            }
+        } else {
+            // Match the order in HTMLTextFormControlElement::dispatchBlurEvent.
+            if (is<HTMLInputElement>(*oldFocusedElement))
+                downcast<HTMLInputElement>(*oldFocusedElement).endEditing();
+            if (page())
+                page()->chrome().client().elementDidBlur(oldFocusedElement.get());
+            ASSERT(!m_focusedElement);
         }
 
-        // Dispatch the blur event and let the node do any other blur related activities (important for text fields)
-        oldFocusedElement->dispatchBlurEvent(newFocusedElement.copyRef());
-
-        if (m_focusedElement) {
-            // handler shifted focus
-            focusChangeBlocked = true;
-            newFocusedElement = nullptr;
-        }
-        
-        oldFocusedElement->dispatchFocusOutEvent(eventNames().focusoutEvent, newFocusedElement.copyRef()); // DOM level 3 name for the bubbling blur event.
-        // FIXME: We should remove firing DOMFocusOutEvent event when we are sure no content depends
-        // on it, probably when <rdar://problem/8503958> is resolved.
-        oldFocusedElement->dispatchFocusOutEvent(eventNames().DOMFocusOutEvent, newFocusedElement.copyRef()); // DOM level 2 name for compatibility.
-
-        if (m_focusedElement) {
-            // handler shifted focus
-            focusChangeBlocked = true;
-            newFocusedElement = nullptr;
-        }
-            
         if (oldFocusedElement->isRootEditableElement())
             frame()->editor().didEndEditing();
 
@@ -3753,6 +3781,15 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
                 oldWidget->setFocus(false);
             else
                 view()->setFocus(false);
+        }
+
+        if (is<HTMLInputElement>(oldFocusedElement.get())) {
+            // HTMLInputElement::didBlur just scrolls text fields back to the beginning.
+            // FIXME: This could be done asynchronusly.
+            // Updating style may dispatch events due to PostResolutionCallback
+            if (eventsMode == FocusRemovalEventsMode::Dispatch)
+                updateStyleIfNeeded();
+            downcast<HTMLInputElement>(*oldFocusedElement).didBlur();
         }
     }
 
@@ -3826,7 +3863,10 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
         page()->chrome().focusedElementChanged(m_focusedElement.get());
 
 SetFocusedNodeDone:
-    updateStyleIfNeeded();
+    // Updating style may dispatch events due to PostResolutionCallback
+    // FIXME: Why is synchronous style update needed here at all?
+    if (eventsMode == FocusRemovalEventsMode::Dispatch)
+        updateStyleIfNeeded();
     return !focusChangeBlocked;
 }
 
@@ -3922,6 +3962,14 @@ void Document::updateRangesAfterChildrenChanged(ContainerNode& container)
 
 void Document::nodeChildrenWillBeRemoved(ContainerNode& container)
 {
+    NoEventDispatchAssertion assertNoEventDispatch;
+
+    removeFocusedNodeOfSubtree(&container, true /* amongChildrenOnly */);
+
+#if ENABLE(FULLSCREEN_API)
+    removeFullScreenElementOfSubtree(&container, true /* amongChildrenOnly */);
+#endif
+
     for (auto* range : m_ranges)
         range->nodeChildrenWillBeRemoved(container);
 
@@ -3946,6 +3994,14 @@ void Document::nodeChildrenWillBeRemoved(ContainerNode& container)
 
 void Document::nodeWillBeRemoved(Node& n)
 {
+    NoEventDispatchAssertion assertNoEventDispatch;
+
+    removeFocusedNodeOfSubtree(&n);
+
+#if ENABLE(FULLSCREEN_API)
+    removeFullScreenElementOfSubtree(&n);
+#endif
+
     for (auto* it : m_nodeIterators)
         it->nodeWillBeRemoved(n);
 
@@ -4053,7 +4109,7 @@ EventListener* Document::getWindowAttributeEventListener(const AtomicString& eve
 
 void Document::dispatchWindowEvent(PassRefPtr<Event> event,  PassRefPtr<EventTarget> target)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!NoEventDispatchAssertion::isEventDispatchForbidden());
+    ASSERT_WITH_SECURITY_IMPLICATION(NoEventDispatchAssertion::isEventAllowedInMainThread());
     if (!m_domWindow)
         return;
     m_domWindow->dispatchEvent(event, target);
@@ -4061,7 +4117,7 @@ void Document::dispatchWindowEvent(PassRefPtr<Event> event,  PassRefPtr<EventTar
 
 void Document::dispatchWindowLoadEvent()
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!NoEventDispatchAssertion::isEventDispatchForbidden());
+    ASSERT_WITH_SECURITY_IMPLICATION(NoEventDispatchAssertion::isEventAllowedInMainThread());
     if (!m_domWindow)
         return;
     m_domWindow->dispatchLoadEvent();
@@ -4470,20 +4526,18 @@ URL Document::completeURL(const String& url) const
     return completeURL(url, m_baseURL);
 }
 
-void Document::setInPageCache(bool flag)
+void Document::setPageCacheState(PageCacheState state)
 {
-    if (m_inPageCache == flag)
+    if (m_pageCacheState == state)
         return;
 
-    m_inPageCache = flag;
+    m_pageCacheState = state;
 
     FrameView* v = view();
     Page* page = this->page();
 
-    if (page)
-        page->lockAllOverlayScrollbarsToHidden(flag);
-
-    if (flag) {
+    switch (state) {
+    case InPageCache:
         if (v) {
             // FIXME: There is some scrolling related work that needs to happen whenever a page goes into the
             // page cache and similar work that needs to occur when it comes out. This is where we do the work
@@ -4501,9 +4555,13 @@ void Document::setInPageCache(bool flag)
                 v->resetScrollbars();
         }
         m_styleRecalcTimer.stop();
-    } else {
+        break;
+    case NotInPageCache:
         if (childNeedsStyleRecalc())
             scheduleStyleRecalc();
+        break;
+    case AboutToEnterPageCache:
+        break;
     }
 }
 
@@ -4513,12 +4571,15 @@ void Document::documentWillBecomeInactive()
         renderView()->setIsInWindow(false);
 }
 
-void Document::documentWillSuspendForPageCache()
+void Document::suspend()
 {
+    if (m_isSuspended)
+        return;
+
     documentWillBecomeInactive();
 
     for (auto* element : m_documentSuspensionCallbackElements)
-        element->documentWillSuspendForPageCache();
+        element->prepareForDocumentSuspension();
 
 #ifndef NDEBUG
     // Clear the update flag to be able to check if the viewport arguments update
@@ -4526,18 +4587,35 @@ void Document::documentWillSuspendForPageCache()
     m_didDispatchViewportPropertiesChanged = false;
 #endif
 
+    ASSERT(page());
+    page()->lockAllOverlayScrollbarsToHidden(true);
+
     if (RenderView* view = renderView()) {
         if (view->usesCompositing())
             view->compositor().cancelCompositingLayerUpdate();
     }
+
+    suspendScriptedAnimationControllerCallbacks();
+    suspendActiveDOMObjects(ActiveDOMObject::PageCache);
+
+    ASSERT(m_frame);
+    m_frame->clearTimers();
+
+    m_visualUpdatesAllowed = false;
+    m_visualUpdatesSuppressionTimer.stop();
+
+    m_isSuspended = true;
 }
 
-void Document::documentDidResumeFromPageCache() 
+void Document::resume()
 {
+    if (!m_isSuspended)
+        return;
+
     Vector<Element*> elements;
     copyToVector(m_documentSuspensionCallbackElements, elements);
     for (auto* element : elements)
-        element->documentDidResumeFromPageCache();
+        element->resumeFromDocumentSuspension();
 
     if (renderView())
         renderView()->setIsInWindow(true);
@@ -4547,14 +4625,22 @@ void Document::documentDidResumeFromPageCache()
 
     ASSERT(m_frame);
     m_frame->loader().client().dispatchDidBecomeFrameset(isFrameSet());
+    m_frame->animation().resumeAnimationsForDocument(this);
+
+    resumeActiveDOMObjects(ActiveDOMObject::PageWillBeSuspended);
+    resumeScriptedAnimationControllerCallbacks();
+
+    m_visualUpdatesAllowed = true;
+
+    m_isSuspended = false;
 }
 
-void Document::registerForPageCacheSuspensionCallbacks(Element* e)
+void Document::registerForDocumentSuspensionCallbacks(Element* e)
 {
     m_documentSuspensionCallbackElements.add(e);
 }
 
-void Document::unregisterForPageCacheSuspensionCallbacks(Element* e)
+void Document::unregisterForDocumentSuspensionCallbacks(Element* e)
 {
     m_documentSuspensionCallbackElements.remove(e);
 }
@@ -4760,7 +4846,7 @@ Document& Document::topDocument() const
 {
     // FIXME: This special-casing avoids incorrectly determined top documents during the process
     // of AXObjectCache teardown or notification posting for cached or being-destroyed documents.
-    if (!m_inPageCache && !m_renderTreeBeingDestroyed) {
+    if (!inPageCache() && !m_renderTreeBeingDestroyed) {
         if (!m_frame)
             return const_cast<Document&>(*this);
         // This should always be non-null.

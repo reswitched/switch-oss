@@ -28,16 +28,17 @@ namespace JSC {
 class ArrayAllocationProfile;
 class ArrayPrototype;
 class JSArray;
+class GetterSetter;
 
 class ArrayConstructor : public InternalFunction {
 public:
     typedef InternalFunction Base;
     static const unsigned StructureFlags = OverridesGetOwnPropertySlot | InternalFunction::StructureFlags;
 
-    static ArrayConstructor* create(VM& vm, Structure* structure, ArrayPrototype* arrayPrototype)
+    static ArrayConstructor* create(VM& vm, JSGlobalObject* globalObject, Structure* structure, ArrayPrototype* arrayPrototype, GetterSetter* speciesSymbol)
     {
         ArrayConstructor* constructor = new (NotNull, allocateCell<ArrayConstructor>(vm.heap)) ArrayConstructor(vm, structure);
-        constructor->finishCreation(vm, arrayPrototype);
+        constructor->finishCreation(vm, globalObject, arrayPrototype, speciesSymbol);
         return constructor;
     }
 
@@ -49,7 +50,7 @@ public:
     }
 
 protected:
-    void finishCreation(VM&, ArrayPrototype*);
+    void finishCreation(VM&, JSGlobalObject*, ArrayPrototype*, GetterSetter* speciesSymbol);
 
 private:
     ArrayConstructor(VM&, Structure*);
@@ -59,7 +60,17 @@ private:
     static CallType getCallData(JSCell*, CallData&);
 };
 
-JSObject* constructArrayWithSizeQuirk(ExecState*, ArrayAllocationProfile*, JSGlobalObject*, JSValue);
+JSObject* constructArrayWithSizeQuirk(ExecState*, ArrayAllocationProfile*, JSGlobalObject*, JSValue length, JSValue prototype = JSValue());
+
+EncodedJSValue JSC_HOST_CALL arrayConstructorPrivateFuncIsArrayConstructor(ExecState*);
+
+inline bool isArrayConstructor(JSValue argumentValue)
+{
+    if (!argumentValue.isObject())
+        return false;
+
+    return jsCast<JSObject*>(argumentValue)->classInfo() == ArrayConstructor::info();
+}
 
 } // namespace JSC
 

@@ -34,7 +34,7 @@ public:
 
     Text& textNode() const { return downcast<Text>(nodeForNonAnonymous()); }
 
-    void combineText();
+    void combineTextIfNeeded();
     void adjustTextOrigin(FloatPoint& textOrigin, const FloatRect& boxRect) const;
     void getStringToRender(int, String&, int& length) const;
     bool isCombined() const { return m_isCombined; }

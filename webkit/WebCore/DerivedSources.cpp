@@ -313,8 +313,6 @@
 #include "JSRequestAnimationFrameCallback.cpp"
 #include "JSRGBColor.cpp"
 #include "JSScreen.cpp"
-#include "JSScriptProfile.cpp"
-#include "JSScriptProfileNode.cpp"
 #include "JSSQLError.cpp"
 #include "JSSQLException.cpp"
 #include "JSSQLResultSet.cpp"

@@ -37,6 +37,7 @@
 #include "DFGCommon.h"
 #include "DFGEpoch.h"
 #include "DFGLazyJSValue.h"
+#include "DFGMultiGetByOffsetData.h"
 #include "DFGNodeFlags.h"
 #include "DFGNodeOrigin.h"
 #include "DFGNodeType.h"
@@ -67,15 +68,6 @@ public:
 #endif
     PropertyOffset offset;
     unsigned identifierNumber;
-};
-
-struct MultiGetByOffsetData {
-#if PLATFORM(WKC)
-    WTF_MAKE_FAST_ALLOCATED;
-public:
-#endif
-    unsigned identifierNumber;
-    Vector<GetByIdVariant, 2> variants;
 };
 
 struct MultiPutByOffsetData {
@@ -632,7 +624,7 @@ struct Node {
 
     void convertToPhantomNewFunction()
     {
-        ASSERT(m_op == NewFunction);
+        ASSERT(m_op == NewFunction || m_op == NewArrowFunction);
         m_op = PhantomNewFunction;
         m_flags |= NodeMustGenerate;
         m_opInfo = 0;
@@ -768,7 +760,51 @@ struct Node {
         RELEASE_ASSERT(result);
         return result;
     }
-     
+
+    bool hasArgumentsChild()
+    {
+        switch (op()) {
+        case GetMyArgumentByVal:
+        case GetMyArgumentByValOutOfBounds:
+        case LoadVarargs:
+        case ForwardVarargs:
+        case CallVarargs:
+        case CallForwardVarargs:
+        case ConstructVarargs:
+        case ConstructForwardVarargs:
+        case TailCallVarargs:
+        case TailCallForwardVarargs:
+        case TailCallVarargsInlinedCaller:
+        case TailCallForwardVarargsInlinedCaller:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    Edge& argumentsChild()
+    {
+        switch (op()) {
+        case GetMyArgumentByVal:
+        case GetMyArgumentByValOutOfBounds:
+        case LoadVarargs:
+        case ForwardVarargs:
+            return child1();
+        case CallVarargs:
+        case CallForwardVarargs:
+        case ConstructVarargs:
+        case ConstructForwardVarargs:
+        case TailCallVarargs:
+        case TailCallForwardVarargs:
+        case TailCallVarargsInlinedCaller:
+        case TailCallForwardVarargsInlinedCaller:
+            return child3();
+        default:
+            RELEASE_ASSERT_NOT_REACHED();
+            return child1();
+        }
+    }
+
     bool containsMovHint()
     {
         switch (op()) {
@@ -1051,6 +1087,10 @@ struct Node {
         switch (op()) {
         case CallVarargs:
         case CallForwardVarargs:
+        case TailCallVarargs:
+        case TailCallForwardVarargs:
+        case TailCallVarargsInlinedCaller:
+        case TailCallForwardVarargsInlinedCaller:
         case ConstructVarargs:
         case ConstructForwardVarargs:
             return true;
@@ -1148,6 +1188,9 @@ struct Node {
         case Branch:
         case Switch:
         case Return:
+        case TailCall:
+        case TailCallVarargs:
+        case TailCallForwardVarargs:
         case Unreachable:
             return true;
         default:
@@ -1298,12 +1341,15 @@ struct Node {
         case GetByIdFlush:
         case GetByVal:
         case Call:
+        case TailCallInlinedCaller:
         case Construct:
         case CallVarargs:
+        case TailCallVarargsInlinedCaller:
         case ConstructVarargs:
         case CallForwardVarargs:
         case NativeCall:
         case NativeConstruct:
+        case TailCallForwardVarargsInlinedCaller:
         case GetByOffset:
         case MultiGetByOffset:
         case GetClosureVar:
@@ -1338,6 +1384,7 @@ struct Node {
         case NativeConstruct:
         case NativeCall:
         case NewFunction:
+        case NewArrowFunction:
         case CreateActivation:
         case MaterializeCreateActivation:
             return true;
@@ -1548,6 +1595,7 @@ struct Node {
     bool isFunctionAllocation()
     {
         switch (op()) {
+        case NewArrowFunction:
         case NewFunction:
             return true;
         default:

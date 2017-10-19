@@ -86,15 +86,8 @@ public:
                     break;
                     
                 case MultiGetByOffset:
-                    for (unsigned i = node->multiGetByOffsetData().variants.size(); i--;) {
-                        GetByIdVariant& variant = node->multiGetByOffsetData().variants[i];
-                        registerStructures(variant.structureSet());
-                        // Don't need to watch anything in the structure chain because that would
-                        // have been decomposed into CheckStructure's. Don't need to watch the
-                        // callLinkStatus because we wouldn't use MultiGetByOffset if any of the
-                        // variants did that.
-                        ASSERT(!variant.callLinkStatus());
-                    }
+                    for (const MultiGetByOffsetCase& getCase : node->multiGetByOffsetData().cases)
+                        registerStructures(getCase.set());
                     break;
                     
                 case MultiPutByOffset:
@@ -135,7 +128,9 @@ public:
                 case NewRegexp:
                     registerStructure(m_graph.globalObjectFor(node->origin.semantic)->regExpStructure());
                     break;
-                    
+                case NewArrowFunction:
+                    registerStructure(m_graph.globalObjectFor(node->origin.semantic)->arrowFunctionStructure());
+                    break;
                 case NewFunction:
                     registerStructure(m_graph.globalObjectFor(node->origin.semantic)->functionStructure());
                     break;

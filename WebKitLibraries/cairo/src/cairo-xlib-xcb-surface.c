@@ -447,7 +447,8 @@ _cairo_xlib_xcb_surface_create (void *dpy,
     _cairo_surface_init (&surface->base,
 			 &_cairo_xlib_xcb_surface_backend,
 			 _cairo_xlib_xcb_device_create (dpy, xcb->device),
-			 xcb->content);
+			 xcb->content,
+			 FALSE); /* is_vector */
 
     /* _cairo_surface_init() got another reference to the device, drop ours */
     cairo_device_destroy (surface->base.device);

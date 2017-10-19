@@ -304,7 +304,7 @@ traps_to_operand (void *_dst,
     }
 
     /* GLES2 only supports RGB/RGBA when uploading */
-    if (_cairo_gl_get_flavor () == CAIRO_GL_FLAVOR_ES) {
+    if (_cairo_gl_get_flavor () == CAIRO_GL_FLAVOR_ES2) {
 	cairo_surface_pattern_t pattern;
 	cairo_surface_t *rgba_image;
 

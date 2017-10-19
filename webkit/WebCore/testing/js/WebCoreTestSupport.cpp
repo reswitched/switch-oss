@@ -35,7 +35,6 @@
 #include "WheelEventTestTrigger.h"
 #include <JavaScriptCore/APICast.h>
 #include <JavaScriptCore/JSValueRef.h>
-#include <JavaScriptCore/Profile.h>
 #include <interpreter/CallFrame.h>
 #include <runtime/IdentifierInlines.h>
 

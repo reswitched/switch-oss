@@ -205,9 +205,16 @@ void AudioScheduledSourceNode::finish()
     }
 
     if (m_hasEndedListener) {
+#if !PLATFORM(WKC)
         callOnMainThread([this] {
             dispatchEvent(Event::create(eventNames().endedEvent, false, false));
         });
+#else
+        std::function<void()> p(std::allocator_arg, WTF::voidFuncAllocator(), [this] {
+            dispatchEvent(Event::create(eventNames().endedEvent, false, false));
+        });
+        callOnMainThread(p);
+#endif
     }
 }
 

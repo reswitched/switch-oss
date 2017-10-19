@@ -323,6 +323,7 @@ CLEANFILES +=					\
 	ps-surface-source.out.ps		\
 	pdf-features.pdf			\
 	pdf-mime-data.out*			\
+	pdf-tagged-text.out*                    \
 	ps-features.ps				\
 	svg-clip.svg				\
 	svg-surface.svg				\

@@ -68,6 +68,9 @@ WorkerMessagingProxy::WorkerMessagingProxy(Worker* workerObject)
     ASSERT(m_workerObject);
     ASSERT((is<Document>(*m_scriptExecutionContext) && isMainThread())
         || (is<WorkerGlobalScope>(*m_scriptExecutionContext) && currentThread() == downcast<WorkerGlobalScope>(*m_scriptExecutionContext).thread().threadID()));
+
+    // Nobody outside this class ref counts this object. The original ref
+    // is balanced by the deref in workerGlobalScopeDestroyedInternal.
 }
 
 WorkerMessagingProxy::~WorkerMessagingProxy()
@@ -369,8 +372,9 @@ void WorkerMessagingProxy::workerGlobalScopeDestroyedInternal()
 
     InspectorInstrumentation::workerGlobalScopeTerminated(m_scriptExecutionContext.get(), this);
 
+    // This balances the original ref in construction.
     if (m_mayBeDestroyed)
-        delete this;
+        deref();
 }
 
 void WorkerMessagingProxy::terminateWorkerGlobalScope()
@@ -395,7 +399,7 @@ void WorkerMessagingProxy::postMessageToPageInspector(const String& message)
     });
 #else
     std::function<void(ScriptExecutionContext&)> p(std::allocator_arg, WTF::voidScriptExecutionContextFuncAllocator(), [this, capturedMessage](ScriptExecutionContext&) {
-        if (m_pageInspector)
+        if (m_pageInspector && !m_mayBeDestroyed)
             m_pageInspector->dispatchMessageFromWorker(capturedMessage.string());
     });
     m_scriptExecutionContext->postTask(p);

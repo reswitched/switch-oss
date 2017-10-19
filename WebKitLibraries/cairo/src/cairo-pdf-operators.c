@@ -319,7 +319,8 @@ _word_wrap_stream_write (cairo_output_stream_t  *base,
 	    if (*data == '\n' || stream->column >= stream->max_column) {
 		_cairo_output_stream_printf (stream->output, "\n");
 		stream->column = 0;
-	    } else if (*data == '<') {
+	    }
+	    if (*data == '<') {
 		stream->state = WRAP_STATE_HEXSTRING;
 	    } else if (*data == '(') {
 		stream->state = WRAP_STATE_STRING;
@@ -1492,9 +1493,6 @@ _cairo_pdf_operators_show_text_glyphs (cairo_pdf_operators_t	  *pdf_operators,
     cairo_matrix_init_scale (&invert_y_axis, 1, -1);
     text_matrix = scaled_font->scale;
 
-    /* Invert y axis in font space  */
-    cairo_matrix_multiply (&text_matrix, &text_matrix, &invert_y_axis);
-
     /* Invert y axis in device space  */
     cairo_matrix_multiply (&text_matrix, &invert_y_axis, &text_matrix);
 
@@ -1553,6 +1551,43 @@ _cairo_pdf_operators_show_text_glyphs (cairo_pdf_operators_t	  *pdf_operators,
 		return status;
 	}
     }
+
+    return _cairo_output_stream_get_status (pdf_operators->stream);
+}
+
+cairo_int_status_t
+_cairo_pdf_operators_tag_begin (cairo_pdf_operators_t *pdf_operators,
+				const char            *tag_name,
+				int                    mcid)
+{
+    cairo_status_t status;
+
+    if (pdf_operators->in_text_object) {
+	status = _cairo_pdf_operators_end_text (pdf_operators);
+	if (unlikely (status))
+	    return status;
+    }
+
+    _cairo_output_stream_printf (pdf_operators->stream,
+				 "/%s << /MCID %d >> BDC\n",
+				 tag_name,
+				 mcid);
+
+    return _cairo_output_stream_get_status (pdf_operators->stream);
+}
+
+cairo_int_status_t
+_cairo_pdf_operators_tag_end (cairo_pdf_operators_t *pdf_operators)
+{
+    cairo_status_t status;
+
+    if (pdf_operators->in_text_object) {
+	status = _cairo_pdf_operators_end_text (pdf_operators);
+	if (unlikely (status))
+	    return status;
+    }
+
+    _cairo_output_stream_printf (pdf_operators->stream, "EMC\n");
 
     return _cairo_output_stream_get_status (pdf_operators->stream);
 }

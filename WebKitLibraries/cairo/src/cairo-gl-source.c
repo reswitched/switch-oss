@@ -76,7 +76,8 @@ _cairo_gl_pattern_to_source (cairo_surface_t *dst,
     _cairo_surface_init (&source->base,
 			 &cairo_gl_source_backend,
 			 NULL, /* device */
-			 CAIRO_CONTENT_COLOR_ALPHA);
+			 CAIRO_CONTENT_COLOR_ALPHA,
+			 FALSE); /* is_vector */
 
     *src_x = *src_y = 0;
     status = _cairo_gl_operand_init (&source->operand, pattern,
@@ -103,7 +104,8 @@ _cairo_gl_white_source (void)
     _cairo_surface_init (&source->base,
 			 &cairo_gl_source_backend,
 			 NULL, /* device */
-			 CAIRO_CONTENT_COLOR_ALPHA);
+			 CAIRO_CONTENT_COLOR_ALPHA,
+			 FALSE); /* is_vector */
 
     _cairo_gl_solid_operand_init (&source->operand, CAIRO_COLOR_WHITE);
 

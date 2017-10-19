@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-SVG-Surfaces.top_of_page">SVG Surfaces</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>SVG Surfaces</refname>
@@ -52,11 +50,6 @@
 </tgroup>
 </informaltable>
 </refsect1>
-<refsect1 id="cairo-SVG-Surfaces.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
-</refsect1>
 
 
 <refsect1 id="cairo-SVG-Surfaces.description" role="desc">
@@ -90,7 +83,7 @@ correctness of URI is left to the client code.</para>
 <para>If <link linkend="CAIRO-MIME-TYPE-URI:CAPS"><literal>CAIRO_MIME_TYPE_URI</literal></link> is not present, but <link linkend="CAIRO-MIME-TYPE-JPEG:CAPS"><literal>CAIRO_MIME_TYPE_JPEG</literal></link>
 or <link linkend="CAIRO-MIME-TYPE-PNG:CAPS"><literal>CAIRO_MIME_TYPE_PNG</literal></link> is specified, the corresponding data is
 Base64-encoded and emitted.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-svg-surface-create.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -111,7 +104,7 @@ temporary file.</para></entry>
 <entry role="parameter_description"><para>height of the surface, in points (1 point == 1/72.0 inch)</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-svg-surface-create.returns" role="returns">
 <title>Returns</title>
 <para> a pointer to the newly created surface. The caller
 owns the surface and should call <link linkend="cairo-surface-destroy"><function>cairo_surface_destroy()</function></link> when done
@@ -119,8 +112,7 @@ with it.</para>
 <para>This function always returns a valid pointer, but it will return a
 pointer to a "nil" surface if an error such as out of memory
 occurs. You can use <link linkend="cairo-surface-status"><function>cairo_surface_status()</function></link> to check for this.</para>
-<para></para>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-svg-surface-create-for-stream" role="function" condition="since:1.2">
 <title>cairo_svg_surface_create_for_stream&#160;()</title>
 <indexterm zone="cairo-svg-surface-create-for-stream" role="1.2"><primary sortas="svg_surface_create_for_stream">cairo_svg_surface_create_for_stream</primary></indexterm>
@@ -133,7 +125,7 @@ cairo_svg_surface_create_for_stream (<parameter><link linkend="cairo-write-func-
 incrementally to the stream represented by <parameter>write_func</parameter>
  and <parameter>closure</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-svg-surface-create-for-stream.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -160,7 +152,7 @@ generating any temporary files.</para></entry>
 <entry role="parameter_description"><para>height of the surface, in points (1 point == 1/72.0 inch)</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-svg-surface-create-for-stream.returns" role="returns">
 <title>Returns</title>
 <para> a pointer to the newly created surface. The caller
 owns the surface and should call <link linkend="cairo-surface-destroy"><function>cairo_surface_destroy()</function></link> when done
@@ -168,8 +160,7 @@ with it.</para>
 <para>This function always returns a valid pointer, but it will return a
 pointer to a "nil" surface if an error such as out of memory
 occurs. You can use <link linkend="cairo-surface-status"><function>cairo_surface_status()</function></link> to check for this.</para>
-<para></para>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-svg-surface-restrict-to-version" role="function" condition="since:1.2">
 <title>cairo_svg_surface_restrict_to_version&#160;()</title>
 <indexterm zone="cairo-svg-surface-restrict-to-version" role="1.2"><primary sortas="svg_surface_restrict_to_version">cairo_svg_surface_restrict_to_version</primary></indexterm>
@@ -183,7 +174,7 @@ for a list of available version values that can be used here.</para>
 have been performed on the given surface. The simplest way to do
 this is to call this function immediately after creating the
 surface.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-svg-surface-restrict-to-version.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -198,7 +189,7 @@ surface.</para>
 <entry role="parameter_description"><para>SVG version</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-svg-get-versions" role="function" condition="since:1.2">
 <title>cairo_svg_get_versions&#160;()</title>
 <indexterm zone="cairo-svg-get-versions" role="1.2"><primary sortas="svg_get_versions">cairo_svg_get_versions</primary></indexterm>
@@ -207,7 +198,7 @@ cairo_svg_get_versions (<parameter><link linkend="cairo-svg-version-t"><type>cai
                         <parameter><link linkend="int"><type>int</type></link> *num_versions</parameter>);</programlisting>
 <para>Used to retrieve the list of supported versions. See
 <link linkend="cairo-svg-surface-restrict-to-version"><function>cairo_svg_surface_restrict_to_version()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-svg-get-versions.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -222,7 +213,7 @@ cairo_svg_get_versions (<parameter><link linkend="cairo-svg-version-t"><type>cai
 <entry role="parameter_description"><para>list length</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-svg-version-to-string" role="function" condition="since:1.2">
 <title>cairo_svg_version_to_string&#160;()</title>
 <indexterm zone="cairo-svg-version-to-string" role="1.2"><primary sortas="svg_version_to_string">cairo_svg_version_to_string</primary></indexterm>
@@ -233,7 +224,7 @@ cairo_svg_version_to_string (<parameter><link linkend="cairo-svg-version-t"><typ
 will return <link linkend="NULL:CAPS"><literal>NULL</literal></link> if <parameter>version</parameter>
  isn't valid. See <link linkend="cairo-svg-get-versions"><function>cairo_svg_get_versions()</function></link>
 for a way to get the list of valid version ids.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-svg-version-to-string.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -245,11 +236,10 @@ for a way to get the list of valid version ids.</para>
 <entry role="parameter_description"><para>a version id</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-svg-version-to-string.returns" role="returns">
 <title>Returns</title>
 <para> the string associated to given version.</para>
-<para></para>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-SVG-Surfaces.other_details" role="details">
@@ -261,13 +251,13 @@ for a way to get the list of valid version ids.</para>
 </programlisting>
 <para>Defined if the SVG surface backend is available.
 This macro can be used to conditionally compile backend-specific code.</para>
-<para role="since">Since 1.2</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-svg-version-t" role="enum" condition="since:1.2">
 <title>enum cairo_svg_version_t</title>
 <indexterm zone="cairo-svg-version-t" role="1.2"><primary sortas="svg_version_t">cairo_svg_version_t</primary></indexterm>
 <para><link linkend="cairo-svg-version-t"><type>cairo_svg_version_t</type></link> is used to describe the version number of the SVG
 specification that a generated SVG file will conform to.</para>
-<refsect3 role="enum_members">
+<refsect3 id="cairo-svg-version-t.members" role="enum_members">
 <title>Members</title>
 <informaltable role="enum_members_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -286,7 +276,7 @@ specification that a generated SVG file will conform to.</para>
 <entry role="enum_member_annotations"></entry>
 </row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-SVG-Surfaces.see-also">

@@ -710,7 +710,9 @@ public:
     String selectedStylesheetSet() const;
     void setSelectedStylesheetSet(const String&);
 
-    WEBCORE_EXPORT bool setFocusedElement(PassRefPtr<Element>, FocusDirection = FocusDirectionNone);
+    enum class FocusRemovalEventsMode { Dispatch, DoNotDispatch };
+    WEBCORE_EXPORT bool setFocusedElement(PassRefPtr<Element>, FocusDirection = FocusDirectionNone,
+        FocusRemovalEventsMode = FocusRemovalEventsMode::Dispatch);
     Element* focusedElement() const { return m_focusedElement.get(); }
     UserActionElementSet& userActionElements()  { return m_userActionElements; }
     const UserActionElementSet& userActionElements() const { return m_userActionElements; }
@@ -755,7 +757,8 @@ public:
     void nodeChildrenWillBeRemoved(ContainerNode&);
     // nodeWillBeRemoved is only safe when removing one node at a time.
     void nodeWillBeRemoved(Node&);
-    bool canReplaceChild(Node* newChild, Node* oldChild);
+    enum class AcceptChildOperation { Replace, InsertOrAdd };
+    bool canAcceptChild(const Node& newChild, const Node* refChild, AcceptChildOperation) const;
 
     void textInserted(Node*, unsigned offset, unsigned length);
     void textRemoved(Node*, unsigned offset, unsigned length);
@@ -987,17 +990,22 @@ public:
 
     void finishedParsing();
 
-    bool inPageCache() const { return m_inPageCache; }
-    void setInPageCache(bool flag);
+    enum PageCacheState { NotInPageCache, AboutToEnterPageCache, InPageCache };
 
-    // Elements can register themselves for the "documentWillSuspendForPageCache()" and  
-    // "documentDidResumeFromPageCache()" callbacks
-    void registerForPageCacheSuspensionCallbacks(Element*);
-    void unregisterForPageCacheSuspensionCallbacks(Element*);
+    PageCacheState pageCacheState() const { return m_pageCacheState; }
+    void setPageCacheState(PageCacheState);
+
+    // FIXME: Update callers to use pageCacheState() instead.
+    bool inPageCache() const { return m_pageCacheState != NotInPageCache; }
+
+    // Elements can register themselves for the "suspend()" and
+    // "resume()" callbacks
+    void registerForDocumentSuspensionCallbacks(Element*);
+    void unregisterForDocumentSuspensionCallbacks(Element*);
 
     void documentWillBecomeInactive();
-    void documentWillSuspendForPageCache();
-    void documentDidResumeFromPageCache();
+    void suspend();
+    void resume();
 
     void registerForMediaVolumeCallbacks(Element*);
     void unregisterForMediaVolumeCallbacks(Element*);
@@ -1276,6 +1284,7 @@ public:
     WEBCORE_EXPORT void addAudioProducer(MediaProducer*);
     WEBCORE_EXPORT void removeAudioProducer(MediaProducer*);
     MediaProducer::MediaStateFlags mediaState() const { return m_mediaState; }
+    void noteUserInteractionWithMediaElement();
     WEBCORE_EXPORT void updateIsPlayingMedia();
     void pageMutedStateDidChange();
     WeakPtr<Document> createWeakPtr() { return m_weakFactory.createWeakPtr(); }
@@ -1308,6 +1317,7 @@ protected:
 private:
     friend class Node;
     friend class IgnoreDestructiveWriteCountIncrementer;
+    friend class IgnoreOpensDuringUnloadCountIncrementer;
 
     void commonTeardown();
 
@@ -1330,7 +1340,7 @@ private:
     virtual String nodeName() const override final;
     virtual NodeType nodeType() const override final;
     virtual bool childTypeAllowed(NodeType) const override final;
-    virtual RefPtr<Node> cloneNodeInternal(Document&, CloningOperation) override final;
+    virtual Ref<Node> cloneNodeInternal(Document&, CloningOperation) override final;
     void cloneDataFromDocument(const Document&);
 
     virtual void refScriptExecutionContext() override final { ref(); }
@@ -1497,8 +1507,11 @@ private:
     bool m_frameElementsShouldIgnoreScrolling;
     bool m_updateFocusAppearanceRestoresSelection;
 
-    // http://www.whatwg.org/specs/web-apps/current-work/#ignore-destructive-writes-counter
-    unsigned m_ignoreDestructiveWriteCount;
+    // https://html.spec.whatwg.org/multipage/webappapis.html#ignore-destructive-writes-counter
+    unsigned m_ignoreDestructiveWriteCount { 0 };
+
+    // https://html.spec.whatwg.org/multipage/webappapis.html#ignore-opens-during-unload-counter
+    unsigned m_ignoreOpensDuringUnloadCount { 0 };
 
     unsigned m_styleRecalcCount { 0 };
 
@@ -1562,7 +1575,7 @@ private:
     HashMap<String, RefPtr<HTMLCanvasElement>> m_cssCanvasElements;
 
     bool m_createRenderers;
-    bool m_inPageCache;
+    PageCacheState m_pageCacheState { NotInPageCache };
 
     HashSet<Element*> m_documentSuspensionCallbackElements;
     HashSet<Element*> m_mediaVolumeCallbackElements;
@@ -1744,9 +1757,11 @@ private:
 
     bool m_hasStyleWithViewportUnits;
     bool m_isTimerThrottlingEnabled { false };
+    bool m_isSuspended { false };
 
     HashSet<MediaProducer*> m_audioProducers;
     MediaProducer::MediaStateFlags m_mediaState { MediaProducer::IsNotPlaying };
+    bool m_userHasInteractedWithMediaElement { false };
 
 #if ENABLE(WIRELESS_PLAYBACK_TARGET)
     typedef HashMap<uint64_t, WebCore::MediaPlaybackTargetClient*> TargetIdToClientMap;

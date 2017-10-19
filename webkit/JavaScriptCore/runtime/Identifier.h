@@ -228,6 +228,7 @@ template <> ALWAYS_INLINE bool Identifier::canUseSingleCharacterString(UChar c)
     return (c <= maxSingleCharacterString);
 }
 
+#if !PLATFORM(WKC)
 template <typename T>
 Ref<StringImpl> Identifier::add(VM* vm, const T* s, int length)
 {
@@ -241,6 +242,7 @@ Ref<StringImpl> Identifier::add(VM* vm, const T* s, int length)
 
     return *AtomicStringImpl::add(s, length);
 }
+#endif
 
 inline bool operator==(const Identifier& a, const Identifier& b)
 {

@@ -33,6 +33,9 @@
 #include "DateInstanceCache.h"
 #include "ExecutableAllocator.h"
 #include "FunctionHasExecutedCache.h"
+#if ENABLE(JIT)
+#include "GPRInfo.h"
+#endif
 #include "Heap.h"
 #include "Intrinsic.h"
 #include "JITThunks.h"
@@ -73,8 +76,8 @@
 
 namespace JSC {
 
-class ArityCheckFailReturnThunks;
 class BuiltinExecutables;
+class BytecodeIntrinsicRegistry;
 class CodeBlock;
 class CodeCache;
 class CommonIdentifiers;
@@ -89,9 +92,9 @@ class JSGlobalObject;
 class JSObject;
 class Keywords;
 class LLIntOffsetsExtractor;
-class LegacyProfiler;
 class NativeExecutable;
 class RegExpCache;
+class RegisterAtOffsetList;
 class ScriptExecutable;
 class SourceProvider;
 class SourceProviderCache;
@@ -307,11 +310,6 @@ public:
         return m_inDefineOwnProperty;
     }
 
-    LegacyProfiler* enabledProfiler() { return m_enabledProfiler; }
-    void setEnabledProfiler(LegacyProfiler*);
-
-    void* enabledProfilerAddress() { return &m_enabledProfiler; }
-
 #if ENABLE(JIT)
     bool canUseJIT() { return m_canUseJIT; }
 #else
@@ -334,14 +332,26 @@ public:
     std::unique_ptr<Keywords> keywords;
     Interpreter* interpreter;
 #if ENABLE(JIT)
+#if NUMBER_OF_CALLEE_SAVES_REGISTERS > 0
+    intptr_t calleeSaveRegistersBuffer[NUMBER_OF_CALLEE_SAVES_REGISTERS];
+
+    static ptrdiff_t calleeSaveRegistersBufferOffset()
+    {
+        return OBJECT_OFFSETOF(VM, calleeSaveRegistersBuffer);
+    }
+#endif // NUMBER_OF_CALLEE_SAVES_REGISTERS > 0
+
     std::unique_ptr<JITThunks> jitStubs;
     MacroAssemblerCodeRef getCTIStub(ThunkGenerator generator)
     {
         return jitStubs->ctiStub(this, generator);
     }
     NativeExecutable* getHostFunction(NativeFunction, Intrinsic);
+    
+    std::unique_ptr<RegisterAtOffsetList> allCalleeSaveRegisterOffsets;
+    
+    RegisterAtOffsetList* getAllCalleeSaveRegisterOffsets() { return allCalleeSaveRegisterOffsets.get(); }
 
-    std::unique_ptr<ArityCheckFailReturnThunks> arityCheckFailReturnThunks;
 #endif // ENABLE(JIT)
     std::unique_ptr<CommonSlowPaths::ArityCheckData> arityCheckData;
 #if ENABLE(FTL_JIT)
@@ -518,6 +528,7 @@ public:
     JS_EXPORT_PRIVATE void discardAllCode();
 
     void registerWatchpointForImpureProperty(const Identifier&, Watchpoint*);
+    
     // FIXME: Use AtomicString once it got merged with Identifier.
     JS_EXPORT_PRIVATE void addImpureProperty(const String&);
 
@@ -534,6 +545,8 @@ public:
     ControlFlowProfiler* controlFlowProfiler() { return m_controlFlowProfiler.get(); }
     bool enableControlFlowProfiler();
     bool disableControlFlowProfiler();
+
+    BytecodeIntrinsicRegistry& bytecodeIntrinsicRegistry() { return *m_bytecodeIntrinsicRegistry; }
 
 private:
     friend class LLIntOffsetsExtractor;
@@ -581,7 +594,6 @@ private:
     bool m_failNextNewCodeBlock { false };
     bool m_inDefineOwnProperty;
     std::unique_ptr<CodeCache> m_codeCache;
-    LegacyProfiler* m_enabledProfiler;
     std::unique_ptr<BuiltinExecutables> m_builtinExecutables;
     HashMap<String, RefPtr<WatchpointSet>> m_impurePropertyWatchpointSets;
     std::unique_ptr<TypeProfiler> m_typeProfiler;
@@ -590,6 +602,7 @@ private:
     FunctionHasExecutedCache m_functionHasExecutedCache;
     std::unique_ptr<ControlFlowProfiler> m_controlFlowProfiler;
     unsigned m_controlFlowProfilerEnabledCount;
+    std::unique_ptr<BytecodeIntrinsicRegistry> m_bytecodeIntrinsicRegistry;
 };
 
 #if ENABLE(GC_VALIDATION)

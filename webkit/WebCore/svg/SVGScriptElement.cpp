@@ -90,7 +90,7 @@ void SVGScriptElement::finishedInsertingSubtree()
 void SVGScriptElement::childrenChanged(const ChildChange& change)
 {
     SVGElement::childrenChanged(change);
-    ScriptElement::childrenChanged();
+    ScriptElement::childrenChanged(change);
 }
 
 bool SVGScriptElement::isURLAttribute(const Attribute& attribute) const
@@ -156,9 +156,9 @@ bool SVGScriptElement::hasSourceAttribute() const
     return hasAttribute(XLinkNames::hrefAttr);
 }
 
-RefPtr<Element> SVGScriptElement::cloneElementWithoutAttributesAndChildren(Document& targetDocument)
+Ref<Element> SVGScriptElement::cloneElementWithoutAttributesAndChildren(Document& targetDocument)
 {
-    return adoptRef(new SVGScriptElement(tagQName(), targetDocument, false, alreadyStarted()));
+    return adoptRef(*new SVGScriptElement(tagQName(), targetDocument, false, alreadyStarted()));
 }
 
 #ifndef NDEBUG

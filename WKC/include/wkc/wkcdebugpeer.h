@@ -1,7 +1,7 @@
 /*
  *  wkcdebugpeer.h
  *
- *  Copyright(c) 2016 ACCESS CO., LTD. All rights reserved.
+ *  Copyright(c) 2016-2017 ACCESS CO., LTD. All rights reserved.
  */
 
 #ifndef _WKC_DEBUGPEER_H_
@@ -23,6 +23,11 @@ extern "C" {
 @param "callback" ErrorCallback
 */
 WKC_PEER_API void wkcNetSetSocketErrorCallbackPeer(void(*callback)(int));
+/**
+@brief Report if 'this' is used in an arrow function.
+*/
+WKC_PEER_API void wkcReportArrowFunctionThisPeer();
+WKC_PEER_API void wkcSetReportArrowFunctionThisCallbackPeer(void(*callback)());
 
 #ifdef __cplusplus
 }

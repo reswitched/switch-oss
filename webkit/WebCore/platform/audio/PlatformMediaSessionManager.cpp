@@ -190,7 +190,9 @@ bool PlatformMediaSessionManager::sessionWillBeginPlayback(PlatformMediaSession&
     for (auto* oneSession : sessions) {
         if (oneSession == &session)
             continue;
-        if (oneSession->mediaType() == sessionType && restrictions & ConcurrentPlaybackNotPermitted)
+        if (oneSession->mediaType() == sessionType
+            && restrictions & ConcurrentPlaybackNotPermitted
+            && oneSession->state() == PlatformMediaSession::Playing)
             oneSession->pauseSession();
     }
 
@@ -278,6 +280,12 @@ bool PlatformMediaSessionManager::sessionCanLoadMedia(const PlatformMediaSession
 void PlatformMediaSessionManager::applicationWillEnterBackground() const
 {
     LOG(Media, "PlatformMediaSessionManager::applicationWillEnterBackground");
+
+    if (m_isApplicationInBackground)
+        return;
+
+    m_isApplicationInBackground = true;
+    
     Vector<PlatformMediaSession*> sessions = m_sessions;
     for (auto* session : sessions) {
         if (m_restrictions[session->mediaType()] & BackgroundProcessPlaybackRestricted)
@@ -285,28 +293,29 @@ void PlatformMediaSessionManager::applicationWillEnterBackground() const
     }
 }
 
-void PlatformMediaSessionManager::applicationDidEnterBackground(bool isSuspendedUnderLock) const
-{
-    LOG(Media, "PlatformMediaSessionManager::applicationDidEnterBackground");
-
-    if (!isSuspendedUnderLock)
-        return;
-
-    Vector<PlatformMediaSession*> sessions = m_sessions;
-    for (auto* session : sessions) {
-        if (m_restrictions[session->mediaType()] & BackgroundProcessPlaybackRestricted)
-            session->forceInterruption(PlatformMediaSession::EnteringBackground);
-    }
-}
-
 void PlatformMediaSessionManager::applicationWillEnterForeground() const
 {
     LOG(Media, "PlatformMediaSessionManager::applicationWillEnterForeground");
+
+    if (!m_isApplicationInBackground)
+        return;
+
+    m_isApplicationInBackground = false;
+
     Vector<PlatformMediaSession*> sessions = m_sessions;
     for (auto* session : sessions) {
         if (m_restrictions[session->mediaType()] & BackgroundProcessPlaybackRestricted)
             session->endInterruption(PlatformMediaSession::MayResumePlaying);
     }
+}
+
+void PlatformMediaSessionManager::sessionIsPlayingToWirelessPlaybackTargetChanged(PlatformMediaSession& session)
+{
+    if (!m_isApplicationInBackground || !(m_restrictions[session.mediaType()] & BackgroundProcessPlaybackRestricted))
+        return;
+
+    if (session.state() != PlatformMediaSession::Interrupted)
+        session.beginInterruption(PlatformMediaSession::EnteringBackground);
 }
 
 #if !PLATFORM(COCOA)

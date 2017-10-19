@@ -1,3 +1,251 @@
+Release 1.15.6     (2017-06-13 Bryce Harrington <bryce@osg.samsung.com>)
+========================================================================
+This new snapshot incorporates changes over the past half-year since the
+1.15.4 snapshot, including all the fixes from the 1.14 release series.
+
+The PDF code continues to be enhanced, and we're restored MacOSX 10.4
+support.  Font-related fixes and improved error handling for X round out
+the release.
+
+For a complete log of changes, please see
+
+    http://cairographics.org/releases/ChangeLog.1.15.6
+
+
+Features and Enhancements
+-------------------------
+* Detect if variable fonts have	synthesized bold/italic	or non-default
+  variants, and	     use a fallback font where needed.
+
+* Restore MacOSX 10.4 support.	    Cairo had dropped 10.4 support when
+  moving to the CoreText API.  Now we automatically detect which API to
+  use via dynamic linking, so can resume supporting this older version
+  of MacOSX.
+
+
+API Changes
+-----------
+None
+
+Dependency Changes
+------------------
+None
+
+Performance Optimizations
+-------------------------
+None
+
+Bug Fixes
+---------
+* Fix error reporting in the xcb backend if fallback fails.  Instead of
+  returning NULL when the X11 server can't do some operation, return a
+  surface in an error state.
+
+* Call XSync in the xlib backend before setting the error handler to
+  ignore errors for certain requests, to make sure all pending errors
+  are handled first.
+
+* Fix text-glyph-range for quartz-font.	 Use 0xFFFF instead of 0 for
+  invalid index	       tracking.
+
+* Fix handling of Supplementary Multilingual Plane (SMP) Unicode
+  characters in quartz-font.
+
+* Fix various issues in the drm backend	including updating API usage and
+  general code cleanup.
+
+* Clarify documentation	regarding device scale inheritance and the units
+  used in cairo_surface_create_similar_image.
+  Bug #99094.
+
+
+Release 1.15.4     (2016-12-9 Bryce Harrington <bryce@osg.samsung.com>)
+=======================================================================
+This new snapshot incorporates changes over the past year since the
+1.15.2 snapshot, including all the fixes from the 1.14 release series.
+
+Of particular note in this snapshot is a wealth of work by Adrian
+Johnson to enhance PDF support, as well as numerous bug fixes provided
+by him and other contributors.
+
+For a complete log of changes since the last release, please see:
+
+    http://cairographics.org/releases/ChangeLog.1.15.4
+
+Features
+--------
+* The PDF backend has gained support for a range of widely used
+  features, including thumbnails, page labels, metadata, document
+  outlines, structured text, hyperlinks, and tags.  Tags permit adding
+  logical info such as headings, tables, figures, etc. that facilitates
+  indexing, accessibility, text reflow, searching, and extraction of the
+  tagged items to other software.  For details on this new PDF
+  functionality, see:
+
+    https://lists.cairographics.org/archives/cairo/2016-June/027427.html
+
+
+API Changes
+-----------
+
+  cairo_win32_surface_create_with_format
+
+    Added a cairo API to set up Win32 surfaces for HDC with alpha channels.
+
+  cairo_pdf_surface_add_outline
+  cairo_pdf_surface_set_metadata
+  cairo_pdf_surface_set_page_label
+  cairo_pdf_surface_set_thumbnail_size
+  cairo_tag_begin
+  cairo_tag_end
+  CAIRO_STATUS_TAG_ERROR
+
+    New API for added PDF functionality (see above), and new error
+    status item for problems relating to PDF tagging.
+
+  CAIRO_STATUS_WIN32_GDI_ERROR
+  CAIRO_STATUS_FREETYPE_ERROR
+  CAIRO_STATUS_PNG_ERROR
+
+    New error status items for handling of GDI, libfreetype, and libpng
+    errors, respectively.
+
+Dependency Changes
+------------------
+None
+
+Performance Optimizations
+-------------------------
+None
+
+Bug Fixes
+---------
+* Bug fixes from 1.15.2 (see the 1.15.2 NEWS for details)
+
+* Fix playback of recording surfaces into PDF surfaces, where objects
+  with negative coordinates were not getting drawn.  To address this,
+  the coordinate systems for PDF and PS have been changed to match
+  cairo's coordinate system.  This allows recording surfaces to be
+  emitted in cairo coordinates, and results in the same origin being
+  used for all operations when using the recording surface XObject.
+  Test cases for PDF and PS have also been updated accordingly.
+  (Bug #89232)
+
+* Fix "invalidfont" error on some printers when printing PDFs with
+  embedded fonts that have glyphs (such as spaces) with
+  num_contours == 0.  (Bug #79897)
+
+* Fix missing glyphs such as thin dashes, which get scaled to 0 in
+  userspace and thus have their drawing operations culled.  (Bug #94615)
+
+* Fix other oddities caused by variously idiosyncratic fonts.
+
+* Fix deadlock when destruction of a scaled font indirectly triggers
+  destruction of a second scaled font, causing the global cache to be
+  locked twice.  (Bug #93891)
+
+* Fix X errors reported to applications when shmdt() is called before
+  the Attach request is processed, due to missing xcb and xlib calls.
+
+* Fix random failure in record-paint-alpha-clip-mast test case, caused
+  by an incorrect assumption that a deferred clear can be skipped.
+  (Bug #84330)
+
+* Fix crash when dealing with an XShmGetImage() failure, caused by a
+  double free in _get_image_surface().  (Bug #91967)
+
+* Fix invalid execution of ASCII85 data by the PS interpreter that the
+  image operator didn't use, by flushing the extraneous data after
+  drawing the image.  (Bug #84811)
+
+* Fix decoding of Adobe Photoshop's inverted CMYK JPEG files in PDF
+  export.
+
+* Fix unbounded surface assertion in win32-print code.
+
+* Fix a data race in freed_pool discovered by Firefox's cairo usage.
+  The patch adads atomic int load and store functions, with relaxed
+  memory ordering.  (Bug #90318)
+
+* Cleanup debugging text sent to stdout instead of log.  (Bug #95227)
+
+* Fix build issue when using non-GNU strings utility.  (Bug #88639)
+
+* Fix build of cairo modules as regular modules, not as versioned shared
+  libaries.  (Bug #29319)
+
+* Fix build on win32 using gcc 5.4.
+
+* Fix build of script backend to require zlib.
+
+* Update test suite reference images using Debian Jessie 64-bit and
+  poppler current as of June, 2016.
+
+* Various improvements to documentation and tests, compiler warning
+  fixes, and an assortment of code refactoring and cleanup.
+
+
+Release 1.15.2     (2015-12-10 Bryce Harrington <bryce@osg.samsung.com>)
+========================================================================
+This release is largely a rollup to include a variety of fixes that
+didn't make the cut for the stable 1.14.2 and 1.14.4 releases, as well
+as all the fixes from those releases.  Notably this includes a highly
+requested new API for Win32 surfaces.
+
+For a complete log of changes since the last release, please see:
+
+    http://cairographics.org/releases/ChangeLog.1.15.2
+
+Features
+--------
+None
+
+API Changes
+-----------
+
+  cairo_win32_surface_create_with_format
+
+    Added a cairo API to set up Win32 surfaces for HDC with alpha channels.
+
+Dependency Changes
+------------------
+None
+
+Performance Optimizations
+-------------------------
+None
+
+Bug Fixes
+---------
+* All the bug fixes from 1.14.2, 1.14.4, and 1.14.6
+
+* Fix xcb/xlib compilation and calls.  Make image boxes behave when SHM
+  is not available.
+
+* Fix various issues with printing and transparent images on Win32.
+
+* Fix thin lines that don't show up when printing in Inkscape due to
+  overly aggressive culling.
+  (Bug #77298)
+
+* Fix broken printing via pdf when glyph 0 is used for rendering,
+  resulting in missing spaces and letters.
+  (Bug #89082)
+
+* Fix crash for certain glyphs in opentype fonts.
+  (Bug #91902)
+
+* Fix incorrect rendering of SVG paths with more than one subpath.  If
+  more than one trap is passed in then it's guaranteed that the returned
+  traps will have their left edge to the left of their right edge, but
+  if only one trap is passed in then the function always returns without
+  doing anything.
+  (Bug #90984)
+
+* Improve rendering with Quartz to better match pixman's blending and
+  filtering behavior.
+
+
 Release 1.14.6    (2015-12-09  Bryce Harrington <bryce@osg.samsung.com>)
 ========================================================================
 Simple bugfix release to fix one Windows issue.
@@ -39,9 +287,8 @@ cleanup of warnings and memory leaks, correction of misspellings,
 updates to documentation, etc.
 
 For a complete log of changes since 1.14.2, please see:
-
+ 
     http://cairographics.org/releases/ChangeLog.cairo-1.14.4
-
 
 Features
 --------
@@ -117,7 +364,7 @@ Bug Fixes
   with XCB.
 
 
-Release 1.14.2 (2014-03-09 Bryce Harrington <bryce@osg.samsung.com>)
+Release 1.14.2 (2015-03-09 Bryce Harrington <bryce@osg.samsung.com>)
 ====================================================================
 This release provides collected bug fixes, along with one feature
 enhancement for the xcb backend, and a small performance improvement for
@@ -191,6 +438,7 @@ Bug Fixes
  * Fix several build issues on AIX
    (fdo bugs #89338, #89340, #89356, #89354)
  * Fix various documentation warnings and errors
+
 
 Release 1.14.0 (2014-10-13 Bryce Harrington <bryce@osg.samsung.com>)
 ====================================================================
@@ -693,7 +941,7 @@ Bug fixes
  and then back again to user coordinates (cairo_copy_path,
  cairo_append_path)
  https://bugs.freedesktop.org/show_bug.cgi?id=54732
- 
+
  Fix extents computations for a degenerate path consisting only of a
  move-to
  https://bugs.freedesktop.org/show_bug.cgi?id=54549
@@ -701,7 +949,7 @@ Bug fixes
  Prevent crashing on a degenerate project edge after polygon
  intersection
  https://bugs.freedesktop.org/show_bug.cgi?id=54822
- 
+
 
 
 Release 1.12.2 (2012-04-29 Chris Wilson <chris@chris-wilson.co.uk>)
@@ -721,7 +969,7 @@ Bug fixes
 
  Allow applications to create 0x0 xlib surfaces, such as used by LibreOffice.
  https://bugs.freedesktop.org/show_bug.cgi?id=49118
- 
+
  Trim composite extents for SOURCE/CLEAR operators to the mask.
 
  Use fallback fonts in PDF for unhandled computed glyph widths
@@ -1035,7 +1283,7 @@ drawing commands made by an application. This can be used to inspecting
 applications to understand issues and as a means for profiling
 real-world usage of cairo.
 
-The traces generated by cairo-trace have been collected in 
+The traces generated by cairo-trace have been collected in
 
   git://git.cairographics.org/git/cairo-traces
 
@@ -1251,7 +1499,7 @@ API additions
     The Cairo region API was actually added a couple of snapshots ago, but we
     forgot to mention it at the time. A simple API for the handling of
     rectangular pixel-aligned regions by Soeren Sandmann.
-  
+
 
 Backend-specific improvements
 -----------------------------
@@ -1456,10 +1704,10 @@ New experimental backends:
    QT
 
    OpenVG - The initial work was done by Øyvind Kolås, and made ready for
-            inclusion by Pierre Tardy.
+	    inclusion by Pierre Tardy.
 
    OpenGL - An advanced OpenGL compositor. The aim is to write a integrate
-            directed rendering using OpenGL at a high-level into Cairo. In
+	    directed rendering using OpenGL at a high-level into Cairo. In
 	    contrast to the previous attempt using Glitz which tried to
 	    implement the RENDER protocol on top of OpenGL, using the
 	    high-level interface should permit greater flexibility and
@@ -2898,7 +3146,7 @@ Rename ATSUI font backend to Quartz font backend. This affects the
 following usage:
 
 	--enable-atsui		-> --enable-quartz-font
-	CAIRO_HAS_ATSUI_FONT 	-> CAIRO_HAS_QUARTZ_FONT
+	CAIRO_HAS_ATSUI_FONT	-> CAIRO_HAS_QUARTZ_FONT
 	CAIRO_FONT_TYPE_ATSUI	-> CAIRO_FONT_TYPE_QUARTZ
 
 	cairo_atsui_font_face_create_for_atsu_font_id ->
@@ -3711,8 +3959,8 @@ complain that some cleanup work is already done, but there you have
 it.) This fixes the bug causing OpenOffice.org to crash as described
 here:
 
-        XError on right click menus in OOo.
-        https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=243811
+	XError on right click menus in OOo.
+	https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=243811
 
 Use IncludeInferiors when using xlib surface as a source (Ryan Lortie)
 ----------------------------------------------------------------------
@@ -3892,16 +4140,16 @@ notes on using it:
 
     To build, do:
 
-        make malloc-stats.so
+	make malloc-stats.so
 
     inside util/, and to use, run:
 
-        LD_PRELOAD=malloc-stats.so some-program
+	LD_PRELOAD=malloc-stats.so some-program
 
     For binaries managed by libtool, eg, cairo-perf, do:
 
-        ../libtool --mode=execute /bin/true ./cairo-perf
-        LD_PRELOAD="../util/malloc-stats.so" .libs/lt-cairo-perf
+	../libtool --mode=execute /bin/true ./cairo-perf
+	LD_PRELOAD="../util/malloc-stats.so" .libs/lt-cairo-perf
 
 Finally, the cairo-perf-diff-files utility was enhanced to allow for
 generating performance reports from several runs of the same backend
@@ -5744,9 +5992,9 @@ support this use case, we have added 4 new function calls that are
 specific to the PostScript backend:
 
 	cairo_ps_surface_set_size
-        cairo_ps_surface_dsc_comment
-        cairo_ps_surface_dsc_begin_setup
-        cairo_ps_surface_dsc_begin_page_setup
+	cairo_ps_surface_dsc_comment
+	cairo_ps_surface_dsc_begin_setup
+	cairo_ps_surface_dsc_begin_page_setup
 
 These functions allow variation of the page size/orientation from one
 page to the next in the PostScript output. They also allow the toolkit
@@ -7032,23 +7280,23 @@ Major API changes
 	cc `pkg-config --cflags --libs cairo` -o foo foo.c
 
    IMPORTANT: Users with old versions of cairo installed will need to
-              manually remove cairo.h and cairo-features.h from the
-              system include directories in order to prevent the old
-              headers from being used in preference to the new ones.
+	      manually remove cairo.h and cairo-features.h from the
+	      system include directories in order to prevent the old
+	      headers from being used in preference to the new ones.
 
 2) The backend-specific portions of the old monolithic cairo.h have
    been split out into individual public header files. The new files
    are:
 
 	cairo-atsui.h
-        cairo-ft.h
-        cairo-glitz.h
-        cairo-pdf.h
-        cairo-png.h
-        cairo-ps.h
+	cairo-ft.h
+	cairo-glitz.h
+	cairo-pdf.h
+	cairo-png.h
+	cairo-ps.h
 	cairo-quartz.h
-        cairo-xcb.h
-        cairo-xlib.h
+	cairo-xcb.h
+	cairo-xlib.h
 
    Applications will need to be modified to explicitly include the new
    header files where appropriate.
@@ -7412,10 +7660,10 @@ Better text support
 This snapshot provides much better text support by implementing the
 following four functions:
 
-        cairo_text_extents
-        cairo_glyph_extents
-        cairo_text_path
-        cairo_glyph_path
+	cairo_text_extents
+	cairo_glyph_extents
+	cairo_text_path
+	cairo_glyph_path
 
 The text/glyph_extents functions can be used to determine the bounding
 box (and advance) for text as if drawn by show_text/glyphs.

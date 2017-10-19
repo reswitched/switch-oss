@@ -255,15 +255,12 @@ public:
     void insertAuthorCSS(const String&, ExceptionCode&) const;
     void insertUserCSS(const String&, ExceptionCode&) const;
 
-    const ProfilesArray& consoleProfiles() const;
-
     unsigned numberOfLiveNodes() const;
     unsigned numberOfLiveDocuments() const;
 
     Vector<String> consoleMessageArgumentCounts() const;
     PassRefPtr<DOMWindow> openDummyInspectorFrontend(const String& url);
     void closeDummyInspectorFrontend();
-    void setJavaScriptProfilingEnabled(bool enabled, ExceptionCode&);
     void setInspectorIsUnderTest(bool isUnderTest, ExceptionCode&);
 
     String counterValue(Element*);
@@ -313,6 +310,7 @@ public:
     void startTrackingStyleRecalcs(ExceptionCode&);
     unsigned long styleRecalcCount(ExceptionCode&);
 
+    void setPrinting(int width, int height);
     void startTrackingCompositingUpdates(ExceptionCode&);
     unsigned long compositingUpdateCount(ExceptionCode&);
 
@@ -381,7 +379,7 @@ public:
 #endif
 
 #if ENABLE(VIDEO)
-    void beginMediaSessionInterruption();
+    void beginMediaSessionInterruption(const String&, ExceptionCode&);
     void endMediaSessionInterruption(const String&);
     void applicationWillEnterForeground() const;
     void applicationWillEnterBackground() const;

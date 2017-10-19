@@ -58,6 +58,7 @@
 #include FT_BITMAP_H
 #include FT_TRUETYPE_TABLES_H
 #include FT_XFREE86_H
+#include FT_MULTIPLE_MASTERS_H
 #if HAVE_FT_GLYPHSLOT_EMBOLDEN
 #include FT_SYNTHESIS_H
 #endif
@@ -223,7 +224,10 @@ _ft_to_cairo_error (FT_Error error)
    * Populate as needed. */
   switch (error)
   {
-  default:		return CAIRO_STATUS_NO_MEMORY;
+  case FT_Err_Out_Of_Memory:
+      return CAIRO_STATUS_NO_MEMORY;
+  default:
+      return CAIRO_STATUS_FREETYPE_ERROR;
   }
 }
 
@@ -2206,6 +2210,55 @@ _cairo_ft_scaled_glyph_vertical_layout_bearing_fix (void        *abstract_font,
 }
 
 static cairo_int_status_t
+_cairo_ft_scaled_glyph_load_glyph (cairo_ft_scaled_font_t *scaled_font,
+				   cairo_scaled_glyph_t   *scaled_glyph,
+				   FT_Face                 face,
+				   int                     load_flags,
+				   cairo_bool_t            use_em_size,
+				   cairo_bool_t            vertical_layout)
+{
+    FT_Error error;
+    cairo_status_t status;
+
+    if (use_em_size) {
+	cairo_matrix_t em_size;
+	cairo_matrix_init_scale (&em_size, face->units_per_EM, face->units_per_EM);
+	status = _cairo_ft_unscaled_font_set_scale (scaled_font->unscaled, &em_size);
+    } else {
+	status = _cairo_ft_unscaled_font_set_scale (scaled_font->unscaled,
+						    &scaled_font->base.scale);
+    }
+    if (unlikely (status))
+	return status;
+
+    error = FT_Load_Glyph (face,
+			   _cairo_scaled_glyph_index(scaled_glyph),
+			   load_flags);
+    /* XXX ignoring all other errors for now.  They are not fatal, typically
+     * just a glyph-not-found. */
+    if (error == FT_Err_Out_Of_Memory)
+	return  _cairo_error (CAIRO_STATUS_NO_MEMORY);
+
+    /*
+     * synthesize glyphs if requested
+     */
+#if HAVE_FT_GLYPHSLOT_EMBOLDEN
+    if (scaled_font->ft_options.synth_flags & CAIRO_FT_SYNTHESIZE_BOLD)
+	FT_GlyphSlot_Embolden (face->glyph);
+#endif
+
+#if HAVE_FT_GLYPHSLOT_OBLIQUE
+    if (scaled_font->ft_options.synth_flags & CAIRO_FT_SYNTHESIZE_OBLIQUE)
+	FT_GlyphSlot_Oblique (face->glyph);
+#endif
+
+    if (vertical_layout)
+	_cairo_ft_scaled_glyph_vertical_layout_bearing_fix (scaled_font, face->glyph);
+
+    return CAIRO_STATUS_SUCCESS;
+}
+
+static cairo_int_status_t
 _cairo_ft_scaled_glyph_init (void			*abstract_font,
 			     cairo_scaled_glyph_t	*scaled_glyph,
 			     cairo_scaled_glyph_info_t	 info)
@@ -2215,21 +2268,16 @@ _cairo_ft_scaled_glyph_init (void			*abstract_font,
     cairo_ft_unscaled_font_t *unscaled = scaled_font->unscaled;
     FT_GlyphSlot glyph;
     FT_Face face;
-    FT_Error error;
     int load_flags = scaled_font->ft_options.load_flags;
     FT_Glyph_Metrics *metrics;
     double x_factor, y_factor;
     cairo_bool_t vertical_layout = FALSE;
-    cairo_status_t status;
+    cairo_status_t status = CAIRO_STATUS_SUCCESS;
+    cairo_bool_t scaled_glyph_loaded = FALSE;
 
     face = _cairo_ft_unscaled_font_lock_face (unscaled);
     if (!face)
 	return _cairo_error (CAIRO_STATUS_NO_MEMORY);
-
-    status = _cairo_ft_unscaled_font_set_scale (scaled_font->unscaled,
-				                &scaled_font->base.scale);
-    if (unlikely (status))
-	goto FAIL;
 
     /* Ignore global advance unconditionally */
     load_flags |= FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH;
@@ -2261,37 +2309,23 @@ _cairo_ft_scaled_glyph_init (void			*abstract_font,
     /* load_flags |= FT_LOAD_COLOR; */
 #endif
 
-    error = FT_Load_Glyph (face,
-			   _cairo_scaled_glyph_index(scaled_glyph),
-			   load_flags);
-    /* XXX ignoring all other errors for now.  They are not fatal, typically
-     * just a glyph-not-found. */
-    if (error == FT_Err_Out_Of_Memory) {
-	status = _cairo_error (CAIRO_STATUS_NO_MEMORY);
-	goto FAIL;
-    }
-
-    glyph = face->glyph;
-
-    /*
-     * synthesize glyphs if requested
-     */
-#if HAVE_FT_GLYPHSLOT_EMBOLDEN
-    if (scaled_font->ft_options.synth_flags & CAIRO_FT_SYNTHESIZE_BOLD)
-	FT_GlyphSlot_Embolden (glyph);
-#endif
-
-#if HAVE_FT_GLYPHSLOT_OBLIQUE
-    if (scaled_font->ft_options.synth_flags & CAIRO_FT_SYNTHESIZE_OBLIQUE)
-	FT_GlyphSlot_Oblique (glyph);
-#endif
-
-    if (vertical_layout)
-	_cairo_ft_scaled_glyph_vertical_layout_bearing_fix (scaled_font, glyph);
 
     if (info & CAIRO_SCALED_GLYPH_INFO_METRICS) {
 
 	cairo_bool_t hint_metrics = scaled_font->base.options.hint_metrics != CAIRO_HINT_METRICS_OFF;
+
+	status = _cairo_ft_scaled_glyph_load_glyph (scaled_font,
+						    scaled_glyph,
+						    face,
+						    load_flags,
+						    !hint_metrics,
+						    vertical_layout);
+	if (unlikely (status))
+	    goto FAIL;
+
+	glyph = face->glyph;
+	scaled_glyph_loaded = hint_metrics;
+
 	/*
 	 * Compute font-space metrics
 	 */
@@ -2389,6 +2423,20 @@ _cairo_ft_scaled_glyph_init (void			*abstract_font,
     if ((info & CAIRO_SCALED_GLYPH_INFO_SURFACE) != 0) {
 	cairo_image_surface_t	*surface;
 
+	if (!scaled_glyph_loaded) {
+	    status = _cairo_ft_scaled_glyph_load_glyph (scaled_font,
+							scaled_glyph,
+							face,
+							load_flags,
+							FALSE,
+							vertical_layout);
+	    if (unlikely (status))
+		goto FAIL;
+
+	    glyph = face->glyph;
+	    scaled_glyph_loaded = TRUE;
+	}
+
 	if (glyph->format == FT_GLYPH_FORMAT_OUTLINE) {
 	    status = _render_glyph_outline (face, &scaled_font->ft_options.base,
 					    &surface);
@@ -2420,27 +2468,23 @@ _cairo_ft_scaled_glyph_init (void			*abstract_font,
 	 * so reload it. This will probably never occur though
 	 */
 	if ((info & CAIRO_SCALED_GLYPH_INFO_SURFACE) != 0) {
-	    error = FT_Load_Glyph (face,
-				   _cairo_scaled_glyph_index(scaled_glyph),
-				   load_flags | FT_LOAD_NO_BITMAP);
-	    /* XXX ignoring all other errors for now.  They are not fatal, typically
-	     * just a glyph-not-found. */
-	    if (error == FT_Err_Out_Of_Memory) {
-		status = _cairo_error (CAIRO_STATUS_NO_MEMORY);
-		goto FAIL;
-	    }
-#if HAVE_FT_GLYPHSLOT_EMBOLDEN
-	    if (scaled_font->ft_options.synth_flags & CAIRO_FT_SYNTHESIZE_BOLD)
-		FT_GlyphSlot_Embolden (glyph);
-#endif
-#if HAVE_FT_GLYPHSLOT_OBLIQUE
-	    if (scaled_font->ft_options.synth_flags & CAIRO_FT_SYNTHESIZE_OBLIQUE)
-		FT_GlyphSlot_Oblique (glyph);
-#endif
-	    if (vertical_layout)
-		_cairo_ft_scaled_glyph_vertical_layout_bearing_fix (scaled_font, glyph);
-
+	    scaled_glyph_loaded = FALSE;
+	    load_flags |= FT_LOAD_NO_BITMAP;
 	}
+
+	if (!scaled_glyph_loaded) {
+	    status = _cairo_ft_scaled_glyph_load_glyph (scaled_font,
+							scaled_glyph,
+							face,
+							load_flags,
+							FALSE,
+							vertical_layout);
+	    if (unlikely (status))
+		goto FAIL;
+
+	    glyph = face->glyph;
+	}
+
 	if (glyph->format == FT_GLYPH_FORMAT_OUTLINE)
 	    status = _decompose_glyph_outline (face, &scaled_font->ft_options.base,
 					       &path);
@@ -2552,11 +2596,71 @@ _cairo_ft_index_to_ucs4(void	        *abstract_font,
     return CAIRO_STATUS_SUCCESS;
 }
 
-static cairo_bool_t
-_cairo_ft_is_synthetic (void	        *abstract_font)
+static cairo_int_status_t
+_cairo_ft_is_synthetic (void	        *abstract_font,
+			cairo_bool_t    *is_synthetic)
 {
+    cairo_int_status_t status = CAIRO_STATUS_SUCCESS;
     cairo_ft_scaled_font_t *scaled_font = abstract_font;
-    return scaled_font->ft_options.synth_flags != 0;
+    cairo_ft_unscaled_font_t *unscaled = scaled_font->unscaled;
+    FT_Face face;
+    FT_Error error;
+
+    if (scaled_font->ft_options.synth_flags != 0) {
+	*is_synthetic = TRUE;
+	return status;
+    }
+
+    *is_synthetic = FALSE;
+    face = _cairo_ft_unscaled_font_lock_face (unscaled);
+    if (!face)
+	return _cairo_error (CAIRO_STATUS_NO_MEMORY);
+
+    if (face->face_flags & FT_FACE_FLAG_MULTIPLE_MASTERS) {
+	FT_MM_Var *mm_var = NULL;
+	FT_Fixed *coords = NULL;
+	int num_axis, i;
+
+	/* If this is an MM or variable font we can't assume the current outlines
+	 * are the same as the font tables */
+	*is_synthetic = TRUE;
+
+	error = FT_Get_MM_Var (face, &mm_var);
+	if (error) {
+	    status = _cairo_error (_ft_to_cairo_error (error));
+	    goto cleanup;
+	}
+
+	num_axis = mm_var->num_axis;
+	coords = _cairo_malloc_ab (num_axis, sizeof(FT_Fixed));
+	if (!coords) {
+	    status = _cairo_error (CAIRO_STATUS_NO_MEMORY);
+	    goto cleanup;
+	}
+
+#if FREETYPE_MAJOR > 2 || ( FREETYPE_MAJOR == 2 &&  FREETYPE_MINOR >= 8)
+	/* If FT_Get_Var_Design_Coordinates() is available, we can check if the
+	 * current design coordinates are the default coordinates. In this case
+	 * the current outlines match the font tables.
+	 */
+	FT_Get_Var_Design_Coordinates (face, num_axis, coords);
+	*is_synthetic = FALSE;
+	for (i = 0; i < num_axis; i++) {
+	    if (coords[i] != mm_var->axis[i].def) {
+		*is_synthetic = TRUE;
+		break;
+	    }
+	}
+#endif
+
+      cleanup:
+	free (coords);
+	free (mm_var);
+    }
+
+    _cairo_ft_unscaled_font_unlock_face (unscaled);
+
+    return status;
 }
 
 static cairo_int_status_t

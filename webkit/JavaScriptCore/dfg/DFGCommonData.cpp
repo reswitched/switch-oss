@@ -31,6 +31,7 @@
 #include "CodeBlock.h"
 #include "DFGNode.h"
 #include "DFGPlan.h"
+#include "InlineCallFrame.h"
 #include "JSCInlines.h"
 #include "TrackedReferences.h"
 #include "VM.h"
@@ -89,6 +90,9 @@ void CommonData::validateReferences(const TrackedReferences& trackedReferences)
                 trackedReferences.check(inlineCallFrame->calleeRecovery.constant());
         }
     }
+    
+    for (AdaptiveStructureWatchpoint* watchpoint : adaptiveStructureWatchpoints)
+        watchpoint->key().validateReferences(trackedReferences);
 }
 
 } } // namespace JSC::DFG

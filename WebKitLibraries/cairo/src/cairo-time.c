@@ -158,9 +158,6 @@ _cairo_time_get (void)
 
 #else
 #include <sys/time.h>
-#ifdef __WKC__
-#include <wkc/wkcclib.h>
-#endif
 
 static cairo_always_inline double
 _cairo_time_1s (void)
@@ -174,11 +171,7 @@ _cairo_time_get (void)
     struct timeval t;
     cairo_time_t r;
 
-#ifndef __WKC__
     gettimeofday (&t, NULL);
-#else
-    wkc_gettimeofday (&t, NULL);
-#endif
 
     r = _cairo_double_to_int64 (_cairo_time_1s ());
     r = _cairo_int64_mul (r, _cairo_int32_to_int64 (t.tv_sec));

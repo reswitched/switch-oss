@@ -96,6 +96,12 @@ private:
 
     void notifyDone();
 
+#if PLATFORM(WKC)
+    virtual bool shouldFailOnPartialFile() override;
+    virtual void wkcRef() override { ref(); }
+    virtual void wkcDeref() override { deref(); }
+#endif
+
     enum SubresourceLoaderState {
         Uninitialized,
         Initialized,

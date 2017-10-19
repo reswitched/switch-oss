@@ -203,8 +203,8 @@ public:
 
     virtual String nodeName() const override;
 
-    RefPtr<Element> cloneElementWithChildren(Document&);
-    RefPtr<Element> cloneElementWithoutChildren(Document&);
+    Ref<Element> cloneElementWithChildren(Document&);
+    Ref<Element> cloneElementWithoutChildren(Document&);
 
     void normalizeAttributes();
     String nodeNamePreservingCase() const;
@@ -346,8 +346,8 @@ public:
     void setMinimumSizeForResizing(const LayoutSize&);
 
     // Use Document::registerForDocumentActivationCallbacks() to subscribe to these
-    virtual void documentWillSuspendForPageCache() { }
-    virtual void documentDidResumeFromPageCache() { }
+    virtual void prepareForDocumentSuspension() { }
+    virtual void resumeFromDocumentSuspension() { }
 
     // Use Document::registerForMediaVolumeCallbacks() to subscribe to this
     virtual void mediaVolumeDidChange() { }
@@ -489,6 +489,8 @@ public:
 
     WEBCORE_EXPORT URL absoluteLinkURL() const;
 
+    virtual void isVisibleInViewportChanged() { }
+
 protected:
     Element(const QualifiedName&, Document&, ConstructionType);
 
@@ -567,8 +569,8 @@ private:
 
     // cloneNode is private so that non-virtual cloneElementWithChildren and cloneElementWithoutChildren
     // are used instead.
-    virtual RefPtr<Node> cloneNodeInternal(Document&, CloningOperation) override;
-    virtual RefPtr<Element> cloneElementWithoutAttributesAndChildren(Document&);
+    virtual Ref<Node> cloneNodeInternal(Document&, CloningOperation) override;
+    virtual Ref<Element> cloneElementWithoutAttributesAndChildren(Document&);
 
     void addShadowRoot(Ref<ShadowRoot>&&);
     void removeShadowRoot();

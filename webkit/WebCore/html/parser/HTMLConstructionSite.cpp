@@ -159,6 +159,7 @@ static inline void executeTakeAllChildrenAndReparentTask(HTMLConstructionSiteTas
     auto* furthestBlock = task.oldParent();
     task.parent->takeAllChildrenFrom(furthestBlock);
 
+    RELEASE_ASSERT(!task.parent->parentNode());
     furthestBlock->parserAppendChild(task.parent);
 }
 

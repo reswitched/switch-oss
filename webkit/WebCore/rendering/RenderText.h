@@ -172,6 +172,8 @@ protected:
     virtual void setRenderedText(const String&);
     virtual UChar previousCharacter() const;
 
+    RenderTextLineBoxes m_lineBoxes;
+
 private:
     RenderText(Node&, const String&);
 
@@ -226,8 +228,6 @@ private:
     float m_endMinWidth;
 
     String m_text;
-
-    RenderTextLineBoxes m_lineBoxes;
 };
 
 inline UChar RenderText::uncheckedCharacterAt(unsigned i) const

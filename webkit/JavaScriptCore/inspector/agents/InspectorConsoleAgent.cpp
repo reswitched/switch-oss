@@ -28,6 +28,7 @@
 
 #include "ConsoleMessage.h"
 #include "InjectedScriptManager.h"
+#include "InspectorFrontendRouter.h"
 #include "ScriptArguments.h"
 #include "ScriptCallFrame.h"
 #include "ScriptCallStack.h"
@@ -68,6 +69,11 @@ void InspectorConsoleAgent::willDestroyFrontendAndBackend(DisconnectReason)
 
     String errorString;
     disable(errorString);
+}
+
+void InspectorConsoleAgent::discardValues()
+{
+    m_consoleMessages.clear();
 }
 
 void InspectorConsoleAgent::enable(ErrorString&)

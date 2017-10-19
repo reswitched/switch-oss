@@ -456,6 +456,8 @@ void FrameView::setFrameRect(const IntRect& newRect)
     IntRect oldRect = frameRect();
     if (newRect == oldRect)
         return;
+    // Every scroll that happens as the result of frame size change is programmatic.
+    TemporaryChange<bool> changeInProgrammaticScroll(m_inProgrammaticScroll, true);
 
 #if ENABLE(TEXT_AUTOSIZING)
     // Autosized font sizes depend on the width of the viewing area.
@@ -1117,6 +1119,8 @@ void FrameView::topContentInsetDidChange(float newTopContentInset)
         platformSetTopContentInset(newTopContentInset);
     
     layout();
+    // Every scroll that happens as the result of content inset change is programmatic.
+    TemporaryChange<bool> changeInProgrammaticScroll(m_inProgrammaticScroll, true);
 
     updateScrollbars(scrollOffset());
     if (renderView->usesCompositing())
@@ -1214,7 +1218,7 @@ inline void FrameView::forceLayoutParentViewIfNeeded()
 
 void FrameView::layout(bool allowSubtree)
 {
-    if (isInLayout())
+    if (isInRenderTreeLayout())
         return;
 
     if (layoutDisallowed())
@@ -1292,8 +1296,9 @@ void FrameView::layout(bool allowSubtree)
             document.styleResolverChanged(DeferRecalcStyle);
             // FIXME: This instrumentation event is not strictly accurate since cached media query results do not persist across StyleResolver rebuilds.
             InspectorInstrumentation::mediaQueryResultChanged(document);
-        } else
-            document.evaluateMediaQueryList();
+        }
+        
+        document.evaluateMediaQueryList();
 
         // If there is any pagination to apply, it will affect the RenderView's style, so we should
         // take care of that now.
@@ -1409,11 +1414,11 @@ void FrameView::layout(bool allowSubtree)
         RenderView::RepaintRegionAccumulator repaintRegionAccumulator(&root->view());
 
         ASSERT(m_layoutPhase == InPreLayout);
-        m_layoutPhase = InLayout;
+        m_layoutPhase = InRenderTreeLayout;
 
         forceLayoutParentViewIfNeeded();
 
-        ASSERT(m_layoutPhase == InLayout);
+        ASSERT(m_layoutPhase == InRenderTreeLayout);
 
         root->layout();
 #if ENABLE(IOS_TEXT_AUTOSIZING)
@@ -1432,7 +1437,7 @@ void FrameView::layout(bool allowSubtree)
             root->layout();
 #endif
 
-        ASSERT(m_layoutPhase == InLayout);
+        ASSERT(m_layoutPhase == InRenderTreeLayout);
 
         if (subtree)
             root->view().popLayoutState(*root);
@@ -1886,6 +1891,9 @@ void FrameView::viewportContentsChanged()
     applyRecursivelyWithVisibleRect([] (FrameView& frameView, const IntRect& visibleRect) {
         frameView.resumeVisibleImageAnimations(visibleRect);
         frameView.updateScriptedAnimationsAndTimersThrottlingState(visibleRect);
+
+        if (auto* renderView = frameView.frame().contentRenderer())
+            renderView->updateVisibleViewportRect(visibleRect);
     });
 }
 
@@ -3083,6 +3091,25 @@ void FrameView::flushAnyPendingPostLayoutTasks()
         updateEmbeddedObjectsTimerFired();
 }
 
+void FrameView::queuePostLayoutCallback(std::function<void()> callback)
+{
+    m_postLayoutCallbackQueue.append(callback);
+}
+
+void FrameView::flushPostLayoutTasksQueue()
+{
+    if (m_nestedLayoutCount > 1)
+        return;
+
+    if (!m_postLayoutCallbackQueue.size())
+        return;
+
+    const auto queue = m_postLayoutCallbackQueue;
+    m_postLayoutCallbackQueue.clear();
+    for (size_t i = 0; i < queue.size(); ++i)
+        queue[i]();
+}
+
 void FrameView::performPostLayoutTasks()
 {
     // FIXME: We should not run any JavaScript code in this function.
@@ -3090,6 +3117,8 @@ void FrameView::performPostLayoutTasks()
     m_postLayoutTasksTimer.stop();
 
     frame().selection().updateAppearanceAfterLayout();
+
+    flushPostLayoutTasksQueue();
 
     if (m_nestedLayoutCount <= 1 && frame().document()->documentElement())
         fireLayoutRelatedMilestonesIfNeeded();
@@ -3141,6 +3170,9 @@ void FrameView::performPostLayoutTasks()
     viewportContentsChanged();
 
     updateScrollSnapState();
+
+    if (AXObjectCache* cache = frame().document()->existingAXObjectCache())
+        cache->performDeferredCacheUpdate();
 }
 
 IntSize FrameView::sizeForResizeEvent() const
@@ -3156,7 +3188,7 @@ IntSize FrameView::sizeForResizeEvent() const
 
 void FrameView::sendResizeEventIfNeeded()
 {
-    if (isInLayout() || needsLayout())
+    if (isInRenderTreeLayout() || needsLayout())
         return;
 
     RenderView* renderView = this->renderView();
@@ -4039,7 +4071,7 @@ void FrameView::didPaintContents(GraphicsContext* context, const IntRect& dirtyR
     }
 }
 
-void FrameView::paintContents(GraphicsContext* context, const IntRect& dirtyRect)
+void FrameView::paintContents(GraphicsContext* context, const IntRect& dirtyRect, SecurityOriginPaintPolicy securityOriginPaintPolicy)
 {
 #ifndef NDEBUG
     bool fillWithRed;
@@ -4093,7 +4125,7 @@ void FrameView::paintContents(GraphicsContext* context, const IntRect& dirtyRect
     while (is<RenderInline>(renderer) && !downcast<RenderInline>(*renderer).firstLineBox())
         renderer = renderer->parent();
 
-    rootLayer->paint(context, dirtyRect, LayoutSize(), m_paintBehavior, renderer);
+    rootLayer->paint(context, dirtyRect, LayoutSize(), m_paintBehavior, renderer, 0, securityOriginPaintPolicy == SecurityOriginPaintPolicy::AnyOrigin ? RenderLayer::SecurityOriginPaintPolicy::AnyOrigin : RenderLayer::SecurityOriginPaintPolicy::AccessibleOriginOnly);
     if (rootLayer->containsDirtyOverlayScrollbars())
         rootLayer->paintOverlayScrollbars(context, dirtyRect, m_paintBehavior, renderer);
 

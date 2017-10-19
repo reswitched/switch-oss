@@ -26,6 +26,7 @@
 #include "config.h"
 #include "DFGOperations.h"
 
+#include "ArrayConstructor.h"
 #include "ButterflyInlines.h"
 #include "ClonedArguments.h"
 #include "CodeBlock.h"
@@ -1276,7 +1277,7 @@ extern "C" void JIT_OPERATION triggerReoptimizationNow(CodeBlock* codeBlock, OSR
     ASSERT(JITCode::isOptimizingJIT(optimizedCodeBlock->jitType()));
     
     bool didTryToEnterIntoInlinedLoops = false;
-    for (InlineCallFrame* inlineCallFrame = exit->m_codeOrigin.inlineCallFrame; inlineCallFrame; inlineCallFrame = inlineCallFrame->caller.inlineCallFrame) {
+    for (InlineCallFrame* inlineCallFrame = exit->m_codeOrigin.inlineCallFrame; inlineCallFrame; inlineCallFrame = inlineCallFrame->directCaller.inlineCallFrame) {
         if (inlineCallFrame->executable->didTryToEnterInLoop()) {
             didTryToEnterIntoInlinedLoops = true;
             break;

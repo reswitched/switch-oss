@@ -140,9 +140,9 @@ preamble (cairo_test_context_t *ctx)
     cairo_surface_destroy (image);
 
     if (status) {
-        free (filename);
 	cairo_test_log (ctx, "Failed to create pdf surface for file %s: %s\n",
 			filename, cairo_status_to_string (status));
+        free (filename);
 	return CAIRO_TEST_FAILURE;
     }
 

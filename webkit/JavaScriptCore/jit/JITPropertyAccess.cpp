@@ -483,7 +483,7 @@ void JIT::emit_op_get_by_id(Instruction* currentInstruction)
         emitArrayProfilingSiteForBytecodeIndexWithCell(regT0, regT1, m_bytecodeOffset);
 
     JITGetByIdGenerator gen(
-        m_codeBlock, CodeOrigin(m_bytecodeOffset), RegisterSet::specialRegisters(),
+        m_codeBlock, CodeOrigin(m_bytecodeOffset), RegisterSet::stubUnavailableRegisters(),
         JSValueRegs(regT0), JSValueRegs(regT0), DontSpill);
     gen.generateFastPath(*this);
     addSlowCase(gen.slowPathJump());
@@ -530,7 +530,7 @@ void JIT::emit_op_put_by_id(Instruction* currentInstruction)
     emitJumpSlowCaseIfNotJSCell(regT0, baseVReg);
 
     JITPutByIdGenerator gen(
-        m_codeBlock, CodeOrigin(m_bytecodeOffset), RegisterSet::specialRegisters(),
+        m_codeBlock, CodeOrigin(m_bytecodeOffset), RegisterSet::stubUnavailableRegisters(),
         JSValueRegs(regT0), JSValueRegs(regT1), regT2, DontSpill, m_codeBlock->ecmaMode(),
         direct ? Direct : NotDirect);
     

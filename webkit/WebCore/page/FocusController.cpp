@@ -736,11 +736,12 @@ static Element* hitTestAtPoint(Frame* mainFrame, IntPoint hitPoint)
         if (!renderView)
             break;
 
+        IntPoint point = hitPoint;
         if (frame->view())
-            hitPoint = frame->view()->windowToContents(hitPoint);
+            point = frame->view()->windowToContents(hitPoint);
 
         HitTestRequest request(WebCore::HitTestRequest::ReadOnly | WebCore::HitTestRequest::Active | HitTestRequest::IgnoreClipping | HitTestRequest::DisallowShadowContent);
-        HitTestResult result(hitPoint);
+        HitTestResult result(point);
 
         renderView->hitTest(request, result);
         result.setToNonShadowAncestor(); // if disallowsShadowContent

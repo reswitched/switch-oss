@@ -102,6 +102,7 @@ public:
     void updateVisibleValidationMessage();
     void hideVisibleValidationMessage();
     bool checkValidity(Vector<RefPtr<FormAssociatedElement>>* unhandledInvalidControls = 0);
+    bool isShowingValidationMessage() const;
     // This must be called when a validation constraint or control value is changed.
     void updateValidity();
     virtual void setCustomValidity(const String&) override;

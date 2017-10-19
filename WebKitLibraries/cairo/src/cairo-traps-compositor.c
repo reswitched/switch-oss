@@ -314,7 +314,7 @@ __clip_to_surface (const cairo_traps_compositor_t *compositor,
 					  NULL);
     if (unlikely (mask->status)) {
 	_cairo_traps_fini (&traps);
-#if WKC_CAIRO_CUSTOMIZE
+#ifdef WKC_CAIRO_CUSTOMIZE
 	return mask->status;
 #else
 	return status;

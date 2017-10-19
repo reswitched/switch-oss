@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-XCB-Surfaces.top_of_page">XCB Surfaces</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>XCB Surfaces</refname>
@@ -62,11 +60,6 @@
 </tgroup>
 </informaltable>
 </refsect1>
-<refsect1 id="cairo-XCB-Surfaces.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
-</refsect1>
 
 
 <refsect1 id="cairo-XCB-Surfaces.description" role="desc">
@@ -100,7 +93,7 @@ window changes.</para>
 the created surface will be clipped by those child windows.  When
 the created surface is used as a source, the contents of the
 children will be included.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xcb-surface-create.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -129,7 +122,7 @@ Currently, only TrueColor visuals are fully supported.</para></entry>
 </para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-xcb-surface-create.returns" role="returns">
 <title>Returns</title>
 <para> a pointer to the newly created surface. The caller
 owns the surface and should call <link linkend="cairo-surface-destroy"><function>cairo_surface_destroy()</function></link> when done
@@ -137,8 +130,7 @@ with it.</para>
 <para>This function always returns a valid pointer, but it will return a
 pointer to a "nil" surface if an error such as out of memory
 occurs. You can use <link linkend="cairo-surface-status"><function>cairo_surface_status()</function></link> to check for this.</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-xcb-surface-create-for-bitmap" role="function" condition="since:1.12">
 <title>cairo_xcb_surface_create_for_bitmap&#160;()</title>
 <indexterm zone="cairo-xcb-surface-create-for-bitmap" role="1.12"><primary sortas="xcb_surface_create_for_bitmap">cairo_xcb_surface_create_for_bitmap</primary></indexterm>
@@ -150,7 +142,7 @@ cairo_xcb_surface_create_for_bitmap (<parameter><link linkend="xcb-connection-t"
                                      <parameter><link linkend="int"><type>int</type></link> height</parameter>);</programlisting>
 <para>Creates an XCB surface that draws to the given bitmap.
 This will be drawn to as a <link linkend="CAIRO-FORMAT-A1:CAPS"><literal>CAIRO_FORMAT_A1</literal></link> object.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xcb-surface-create-for-bitmap.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -177,7 +169,7 @@ This will be drawn to as a <link linkend="CAIRO-FORMAT-A1:CAPS"><literal>CAIRO_F
 </para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-xcb-surface-create-for-bitmap.returns" role="returns">
 <title>Returns</title>
 <para> a pointer to the newly created surface. The caller
 owns the surface and should call <link linkend="cairo-surface-destroy"><function>cairo_surface_destroy()</function></link> when done
@@ -185,8 +177,7 @@ with it.</para>
 <para>This function always returns a valid pointer, but it will return a
 pointer to a "nil" surface if an error such as out of memory
 occurs. You can use <link linkend="cairo-surface-status"><function>cairo_surface_status()</function></link> to check for this.</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-xcb-surface-create-with-xrender-format" role="function" condition="since:1.12">
 <title>cairo_xcb_surface_create_with_xrender_format&#160;()</title>
 <indexterm zone="cairo-xcb-surface-create-with-xrender-format" role="1.12"><primary sortas="xcb_surface_create_with_xrender_format">cairo_xcb_surface_create_with_xrender_format</primary></indexterm>
@@ -210,7 +201,7 @@ window changes.</para>
 the created surface will be clipped by those child windows.  When
 the created surface is used as a source, the contents of the
 children will be included.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xcb-surface-create-with-xrender-format.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -243,7 +234,7 @@ mush match the depth of the drawable.</para></entry>
 </para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-xcb-surface-create-with-xrender-format.returns" role="returns">
 <title>Returns</title>
 <para> a pointer to the newly created surface. The caller
 owns the surface and should call <link linkend="cairo-surface-destroy"><function>cairo_surface_destroy()</function></link> when done
@@ -251,8 +242,7 @@ with it.</para>
 <para>This function always returns a valid pointer, but it will return a
 pointer to a "nil" surface if an error such as out of memory
 occurs. You can use <link linkend="cairo-surface-status"><function>cairo_surface_status()</function></link> to check for this.</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-xcb-surface-set-size" role="function" condition="since:1.12">
 <title>cairo_xcb_surface_set_size&#160;()</title>
 <indexterm zone="cairo-xcb-surface-set-size" role="1.12"><primary sortas="xcb_surface_set_size">cairo_xcb_surface_set_size</primary></indexterm>
@@ -270,7 +260,7 @@ ConfigureNotify events.)</para>
 this function on a surface created for a pixmap.</para>
 <para>If <link linkend="cairo-surface-flush"><function>cairo_surface_flush()</function></link> wasn't called, some pending operations
 might be discarded.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xcb-surface-set-size.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -288,7 +278,7 @@ might be discarded.</para>
 <entry role="parameter_description"><para>the new height of the surface</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-xcb-surface-set-drawable" role="function" condition="since:1.12">
 <title>cairo_xcb_surface_set_drawable&#160;()</title>
 <indexterm zone="cairo-xcb-surface-set-drawable" role="1.12"><primary sortas="xcb_surface_set_drawable">cairo_xcb_surface_set_drawable</primary></indexterm>
@@ -301,7 +291,7 @@ cairo_xcb_surface_set_drawable (<parameter><link linkend="cairo-surface-t"><type
 surface.</para>
 <para>If <link linkend="cairo-surface-flush"><function>cairo_surface_flush()</function></link> wasn't called, some pending operations
 might be discarded.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xcb-surface-set-drawable.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -322,14 +312,14 @@ might be discarded.</para>
 <entry role="parameter_description"><para>the new height of the surface</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-xcb-device-get-connection" role="function" condition="since:1.12">
 <title>cairo_xcb_device_get_connection&#160;()</title>
 <indexterm zone="cairo-xcb-device-get-connection" role="1.12"><primary sortas="xcb_device_get_connection">cairo_xcb_device_get_connection</primary></indexterm>
 <programlisting language="C"><link linkend="xcb-connection-t"><returnvalue>xcb_connection_t</returnvalue></link>&#160;*
 cairo_xcb_device_get_connection (<parameter><link linkend="cairo-device-t"><type>cairo_device_t</type></link> *device</parameter>);</programlisting>
 <para>Get the connection for the XCB device.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xcb-device-get-connection.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -341,11 +331,10 @@ cairo_xcb_device_get_connection (<parameter><link linkend="cairo-device-t"><type
 <entry role="parameter_description"><para>a <link linkend="cairo-device-t"><type>cairo_device_t</type></link> for the XCB backend</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-xcb-device-get-connection.returns" role="returns">
 <title>Returns</title>
 <para> the <link linkend="xcb-connection-t"><type>xcb_connection_t</type></link> for the connection</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-xcb-device-debug-cap-xrender-version" role="function" condition="since:1.12">
 <title>cairo_xcb_device_debug_cap_xrender_version&#160;()</title>
 <indexterm zone="cairo-xcb-device-debug-cap-xrender-version" role="1.12"><primary sortas="xcb_device_debug_cap_xrender_version">cairo_xcb_device_debug_cap_xrender_version</primary></indexterm>
@@ -359,7 +348,7 @@ of the RENDER extension. This function exists solely for debugging purpose.
 It let's you find out how cairo would behave with an older version of
 the RENDER extension.</para>
 <para>Use the special values -1 and -1 for disabling the RENDER extension.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xcb-device-debug-cap-xrender-version.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -377,7 +366,7 @@ the RENDER extension.</para>
 <entry role="parameter_description"><para>minor version to restrict to</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-xcb-device-debug-cap-xshm-version" role="function" condition="since:1.12">
 <title>cairo_xcb_device_debug_cap_xshm_version&#160;()</title>
 <indexterm zone="cairo-xcb-device-debug-cap-xshm-version" role="1.12"><primary sortas="xcb_device_debug_cap_xshm_version">cairo_xcb_device_debug_cap_xshm_version</primary></indexterm>
@@ -391,7 +380,7 @@ of the SHM extension. This function exists solely for debugging purpose.
 It let's you find out how cairo would behave with an older version of
 the SHM extension.</para>
 <para>Use the special values -1 and -1 for disabling the SHM extension.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xcb-device-debug-cap-xshm-version.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -409,14 +398,14 @@ the SHM extension.</para>
 <entry role="parameter_description"><para>minor version to restrict to</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-xcb-device-debug-get-precision" role="function" condition="since:1.12">
 <title>cairo_xcb_device_debug_get_precision&#160;()</title>
 <indexterm zone="cairo-xcb-device-debug-get-precision" role="1.12"><primary sortas="xcb_device_debug_get_precision">cairo_xcb_device_debug_get_precision</primary></indexterm>
 <programlisting language="C"><link linkend="int"><returnvalue>int</returnvalue></link>
 cairo_xcb_device_debug_get_precision (<parameter><link linkend="cairo-device-t"><type>cairo_device_t</type></link> *device</parameter>);</programlisting>
 <para>Get the Xrender precision mode.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xcb-device-debug-get-precision.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -428,11 +417,10 @@ cairo_xcb_device_debug_get_precision (<parameter><link linkend="cairo-device-t">
 <entry role="parameter_description"><para>a <link linkend="cairo-device-t"><type>cairo_device_t</type></link> for the XCB backend</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-xcb-device-debug-get-precision.returns" role="returns">
 <title>Returns</title>
 <para> the render precision mode</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-xcb-device-debug-set-precision" role="function" condition="since:1.12">
 <title>cairo_xcb_device_debug_set_precision&#160;()</title>
 <indexterm zone="cairo-xcb-device-debug-set-precision" role="1.12"><primary sortas="xcb_device_debug_set_precision">cairo_xcb_device_debug_set_precision</primary></indexterm>
@@ -441,7 +429,7 @@ cairo_xcb_device_debug_set_precision (<parameter><link linkend="cairo-device-t">
                                       <parameter><link linkend="int"><type>int</type></link> precision</parameter>);</programlisting>
 <para>Render supports two modes of precision when rendering trapezoids. Set
 the precision to the desired mode.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-xcb-device-debug-set-precision.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -456,7 +444,7 @@ the precision to the desired mode.</para>
 <entry role="parameter_description"><para>the precision to use</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-XCB-Surfaces.other_details" role="details">
@@ -468,7 +456,7 @@ the precision to the desired mode.</para>
 </programlisting>
 <para>Defined if the xcb surface backend is available.
 This macro can be used to conditionally compile backend-specific code.</para>
-<para role="since">Since 1.12</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="CAIRO-HAS-XCB-SHM-FUNCTIONS:CAPS" role="macro">
 <title>CAIRO_HAS_XCB_SHM_FUNCTIONS</title>
 <indexterm zone="CAIRO-HAS-XCB-SHM-FUNCTIONS:CAPS"><primary sortas="HAS_XCB_SHM_FUNCTIONS">CAIRO_HAS_XCB_SHM_FUNCTIONS</primary></indexterm>

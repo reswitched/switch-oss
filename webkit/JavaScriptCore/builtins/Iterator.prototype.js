@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-function SymbolIterator()
+function SymbolIteratorGetter()
 {
     'use strict';
     return this;

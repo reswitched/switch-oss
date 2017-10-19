@@ -128,6 +128,14 @@ void AudioNode::connect(AudioNode* destination, unsigned outputIndex, unsigned i
     ASSERT(isMainThread()); 
     AudioContext::AutoLocker locker(*context());
 
+#if PLATFORM(WKC)
+    if (nodeType() != NodeTypeAudioBufferSource
+     && nodeType() != NodeTypeGain) {
+        ec = NOT_SUPPORTED_ERR;
+        return;
+    }
+#endif
+
     if (!destination) {
         ec = SYNTAX_ERR;
         return;
@@ -161,6 +169,14 @@ void AudioNode::connect(AudioParam* param, unsigned outputIndex, ExceptionCode& 
 {
     ASSERT(isMainThread());
     AudioContext::AutoLocker locker(*context());
+
+#if PLATFORM(WKC)
+    if (nodeType() != NodeTypeAudioBufferSource
+     && nodeType() != NodeTypeGain) {
+        ec = NOT_SUPPORTED_ERR;
+        return;
+    }
+#endif
 
     if (!param) {
         ec = SYNTAX_ERR;

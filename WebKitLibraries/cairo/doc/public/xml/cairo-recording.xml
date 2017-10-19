@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-Recording-Surfaces.top_of_page">Recording Surfaces</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>Recording Surfaces</refname>
@@ -46,11 +44,6 @@
 </tbody>
 </tgroup>
 </informaltable>
-</refsect1>
-<refsect1 id="cairo-Recording-Surfaces.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
 </refsect1>
 
 
@@ -101,7 +94,7 @@ any target surface by using it as a source to drawing operations.</para>
 <para>The recording phase of the recording surface is careful to snapshot all
 necessary objects (paths, patterns, etc.), in order to achieve
 accurate replay.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-recording-surface-create.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -117,13 +110,12 @@ accurate replay.</para>
 unbounded operations.</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-recording-surface-create.returns" role="returns">
 <title>Returns</title>
 <para> a pointer to the newly created surface. The caller
 owns the surface and should call <link linkend="cairo-surface-destroy"><function>cairo_surface_destroy()</function></link> when done
 with it.</para>
-<para></para>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-recording-surface-ink-extents" role="function" condition="since:1.10">
 <title>cairo_recording_surface_ink_extents&#160;()</title>
 <indexterm zone="cairo-recording-surface-ink-extents" role="1.10"><primary sortas="recording_surface_ink_extents">cairo_recording_surface_ink_extents</primary></indexterm>
@@ -136,7 +128,7 @@ cairo_recording_surface_ink_extents (<parameter><link linkend="cairo-surface-t">
 <para>Measures the extents of the operations stored within the recording-surface.
 This is useful to compute the required size of an image surface (or
 equivalent) into which to replay the full sequence of drawing operations.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-recording-surface-ink-extents.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -160,7 +152,7 @@ equivalent) into which to replay the full sequence of drawing operations.</para>
 <entry role="parameter_description"><para>the height of the ink bounding box</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.10</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 <refsect2 id="cairo-recording-surface-get-extents" role="function" condition="since:1.12">
 <title>cairo_recording_surface_get_extents&#160;()</title>
 <indexterm zone="cairo-recording-surface-get-extents" role="1.12"><primary sortas="recording_surface_get_extents">cairo_recording_surface_get_extents</primary></indexterm>
@@ -168,7 +160,7 @@ equivalent) into which to replay the full sequence of drawing operations.</para>
 cairo_recording_surface_get_extents (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *surface</parameter>,
                                      <parameter><link linkend="cairo-rectangle-t"><type>cairo_rectangle_t</type></link> *extents</parameter>);</programlisting>
 <para>Get the extents of the recording-surface.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-recording-surface-get-extents.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -183,12 +175,11 @@ cairo_recording_surface_get_extents (<parameter><link linkend="cairo-surface-t">
 <entry role="parameter_description"><para>the <link linkend="cairo-rectangle-t"><type>cairo_rectangle_t</type></link> to be assigned the extents</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-recording-surface-get-extents.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="TRUE:CAPS"><literal>TRUE</literal></link> if the surface is bounded, of recording type, and
 not in an error state, otherwise <link linkend="FALSE:CAPS"><literal>FALSE</literal></link></para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-Recording-Surfaces.other_details" role="details">
@@ -201,7 +192,7 @@ not in an error state, otherwise <link linkend="FALSE:CAPS"><literal>FALSE</lite
 <para>Defined if the recording surface backend is available.
 The recording surface backend is always built in.
 This macro was added for completeness in cairo 1.10.</para>
-<para role="since">Since 1.10</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.10">1.10</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-Recording-Surfaces.see-also">

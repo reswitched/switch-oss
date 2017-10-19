@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-Script-Surfaces.top_of_page">Script Surfaces</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>Script Surfaces</refname>
@@ -58,11 +56,6 @@
 </tgroup>
 </informaltable>
 </refsect1>
-<refsect1 id="cairo-Script-Surfaces.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
-</refsect1>
 
 
 <refsect1 id="cairo-Script-Surfaces.description" role="desc">
@@ -82,7 +75,7 @@ or with cairo-perf-trace.</para>
 cairo_script_create (<parameter>const <link linkend="char"><type>char</type></link> *filename</parameter>);</programlisting>
 <para>Creates a output device for emitting the script, used when
 creating the individual surfaces.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-script-create.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -94,7 +87,7 @@ creating the individual surfaces.</para>
 <entry role="parameter_description"><para>the name (path) of the file to write the script to</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-script-create.returns" role="returns">
 <title>Returns</title>
 <para> a pointer to the newly created device. The caller
 owns the surface and should call <link linkend="cairo-device-destroy"><function>cairo_device_destroy()</function></link> when done
@@ -102,8 +95,7 @@ with it.</para>
 <para>This function always returns a valid pointer, but it will return a
 pointer to a "nil" device if an error such as out of memory
 occurs. You can use <link linkend="cairo-device-status"><function>cairo_device_status()</function></link> to check for this.</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-script-create-for-stream" role="function" condition="since:1.12">
 <title>cairo_script_create_for_stream&#160;()</title>
 <indexterm zone="cairo-script-create-for-stream" role="1.12"><primary sortas="script_create_for_stream">cairo_script_create_for_stream</primary></indexterm>
@@ -112,7 +104,7 @@ cairo_script_create_for_stream (<parameter><link linkend="cairo-write-func-t"><t
                                 <parameter><link linkend="void"><type>void</type></link> *closure</parameter>);</programlisting>
 <para>Creates a output device for emitting the script, used when
 creating the individual surfaces.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-script-create-for-stream.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -127,7 +119,7 @@ creating the individual surfaces.</para>
 <entry role="parameter_description"><para>user data to be passed to the callback</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-script-create-for-stream.returns" role="returns">
 <title>Returns</title>
 <para> a pointer to the newly created device. The caller
 owns the surface and should call <link linkend="cairo-device-destroy"><function>cairo_device_destroy()</function></link> when done
@@ -135,8 +127,7 @@ with it.</para>
 <para>This function always returns a valid pointer, but it will return a
 pointer to a "nil" device if an error such as out of memory
 occurs. You can use <link linkend="cairo-device-status"><function>cairo_device_status()</function></link> to check for this.</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-script-from-recording-surface" role="function" condition="since:1.12">
 <title>cairo_script_from_recording_surface&#160;()</title>
 <indexterm zone="cairo-script-from-recording-surface" role="1.12"><primary sortas="script_from_recording_surface">cairo_script_from_recording_surface</primary></indexterm>
@@ -145,7 +136,7 @@ cairo_script_from_recording_surface (<parameter><link linkend="cairo-device-t"><
                                      <parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *recording_surface</parameter>);</programlisting>
 <para>Converts the record operations in <parameter>recording_surface</parameter>
  into a script.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-script-from-recording-surface.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -160,18 +151,17 @@ cairo_script_from_recording_surface (<parameter><link linkend="cairo-device-t"><
 <entry role="parameter_description"><para>the recording surface to replay</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-script-from-recording-surface.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><type>CAIRO_STATUS_SUCCESS</type></link> on successful completion or an error code.</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-script-get-mode" role="function" condition="since:1.12">
 <title>cairo_script_get_mode&#160;()</title>
 <indexterm zone="cairo-script-get-mode" role="1.12"><primary sortas="script_get_mode">cairo_script_get_mode</primary></indexterm>
 <programlisting language="C"><link linkend="cairo-script-mode-t"><returnvalue>cairo_script_mode_t</returnvalue></link>
 cairo_script_get_mode (<parameter><link linkend="cairo-device-t"><type>cairo_device_t</type></link> *script</parameter>);</programlisting>
 <para>Queries the script for its current output mode.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-script-get-mode.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -183,11 +173,10 @@ cairo_script_get_mode (<parameter><link linkend="cairo-device-t"><type>cairo_dev
 <entry role="parameter_description"><para>The script (output device) to query</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-script-get-mode.returns" role="returns">
 <title>Returns</title>
 <para> the current output mode of the script</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-script-set-mode" role="function" condition="since:1.12">
 <title>cairo_script_set_mode&#160;()</title>
 <indexterm zone="cairo-script-set-mode" role="1.12"><primary sortas="script_set_mode">cairo_script_set_mode</primary></indexterm>
@@ -195,7 +184,7 @@ cairo_script_get_mode (<parameter><link linkend="cairo-device-t"><type>cairo_dev
 cairo_script_set_mode (<parameter><link linkend="cairo-device-t"><type>cairo_device_t</type></link> *script</parameter>,
                        <parameter><link linkend="cairo-script-mode-t"><type>cairo_script_mode_t</type></link> mode</parameter>);</programlisting>
 <para>Change the output mode of the script</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-script-set-mode.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -210,7 +199,7 @@ cairo_script_set_mode (<parameter><link linkend="cairo-device-t"><type>cairo_dev
 <entry role="parameter_description"><para>the new mode</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-script-surface-create" role="function" condition="since:1.12">
 <title>cairo_script_surface_create&#160;()</title>
 <indexterm zone="cairo-script-surface-create" role="1.12"><primary sortas="script_surface_create">cairo_script_surface_create</primary></indexterm>
@@ -221,7 +210,7 @@ cairo_script_surface_create (<parameter><link linkend="cairo-device-t"><type>cai
                              <parameter><link linkend="double"><type>double</type></link> height</parameter>);</programlisting>
 <para>Create a new surface that will emit its rendering through <parameter>script</parameter>
 </para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-script-surface-create.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -242,7 +231,7 @@ cairo_script_surface_create (<parameter><link linkend="cairo-device-t"><type>cai
 <entry role="parameter_description"><para>height in pixels</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-script-surface-create.returns" role="returns">
 <title>Returns</title>
 <para> a pointer to the newly created surface. The caller
 owns the surface and should call <link linkend="cairo-surface-destroy"><function>cairo_surface_destroy()</function></link> when done
@@ -250,8 +239,7 @@ with it.</para>
 <para>This function always returns a valid pointer, but it will return a
 pointer to a "nil" surface if an error such as out of memory
 occurs. You can use <link linkend="cairo-surface-status"><function>cairo_surface_status()</function></link> to check for this.</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-script-surface-create-for-target" role="function" condition="since:1.12">
 <title>cairo_script_surface_create_for_target&#160;()</title>
 <indexterm zone="cairo-script-surface-create-for-target" role="1.12"><primary sortas="script_surface_create_for_target">cairo_script_surface_create_for_target</primary></indexterm>
@@ -263,7 +251,7 @@ cairo_script_surface_create_for_target
  and record
 the operations to <parameter>device</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-script-surface-create-for-target.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -278,7 +266,7 @@ the operations to <parameter>device</parameter>
 <entry role="parameter_description"><para>a target surface to wrap</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-script-surface-create-for-target.returns" role="returns">
 <title>Returns</title>
 <para> a pointer to the newly created surface. The caller
 owns the surface and should call <link linkend="cairo-surface-destroy"><function>cairo_surface_destroy()</function></link> when done
@@ -286,8 +274,7 @@ with it.</para>
 <para>This function always returns a valid pointer, but it will return a
 pointer to a "nil" surface if an error such as out of memory
 occurs. You can use <link linkend="cairo-surface-status"><function>cairo_surface_status()</function></link> to check for this.</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-script-write-comment" role="function" condition="since:1.12">
 <title>cairo_script_write_comment&#160;()</title>
 <indexterm zone="cairo-script-write-comment" role="1.12"><primary sortas="script_write_comment">cairo_script_write_comment</primary></indexterm>
@@ -296,7 +283,7 @@ cairo_script_write_comment (<parameter><link linkend="cairo-device-t"><type>cair
                             <parameter>const <link linkend="char"><type>char</type></link> *comment</parameter>,
                             <parameter><link linkend="int"><type>int</type></link> len</parameter>);</programlisting>
 <para>Emit a string verbatim into the script.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-script-write-comment.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -314,7 +301,7 @@ cairo_script_write_comment (<parameter><link linkend="cairo-device-t"><type>cair
 <entry role="parameter_description"><para>the length of the sting to write, or -1 to use <link linkend="strlen"><function>strlen()</function></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-Script-Surfaces.other_details" role="details">
@@ -326,12 +313,12 @@ cairo_script_write_comment (<parameter><link linkend="cairo-device-t"><type>cair
 </programlisting>
 <para>Defined if the script surface backend is available.
 The script surface backend is always built in since 1.12.</para>
-<para role="since">Since 1.12</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-script-mode-t" role="enum" condition="since:1.12">
 <title>enum cairo_script_mode_t</title>
 <indexterm zone="cairo-script-mode-t" role="1.12"><primary sortas="script_mode_t">cairo_script_mode_t</primary></indexterm>
 <para>A set of script output variants.</para>
-<refsect3 role="enum_members">
+<refsect3 id="cairo-script-mode-t.members" role="enum_members">
 <title>Members</title>
 <informaltable role="enum_members_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -350,7 +337,7 @@ The script surface backend is always built in since 1.12.</para>
 <entry role="enum_member_annotations"></entry>
 </row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-Script-Surfaces.see-also">

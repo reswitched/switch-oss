@@ -46,6 +46,7 @@
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
 #include "TextEncoding.h"
+#include "NoEventDispatchAssertion.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/RandomNumber.h>
 
@@ -205,23 +206,22 @@ Ref<FormSubmission> FormSubmission::create(HTMLFormElement* form, const Attribut
     Vector<std::pair<String, String>> formValues;
 
     bool containsPasswordData = false;
-    {
-        NoEventDispatchAssertion noEventDispatchAssertion;
+    auto protectedAssociatedElements = form->associatedElements().map([](FormAssociatedElement* rawElement) -> Ref<FormAssociatedElement> {
+        return *rawElement;
+    });
 
-        for (auto& control : form->associatedElements()) {
-            auto& element = control->asHTMLElement();
-            if (!element.isDisabledFormControl())
-                control->appendFormData(*domFormData, isMultiPartForm);
-            if (is<HTMLInputElement>(element)) {
-                auto& input = downcast<HTMLInputElement>(element);
-                if (input.isTextField()) {
-                    // formValues.append({ input.name().string(), input.value() });
-                    formValues.append(std::pair<String, String>(input.name().string(), input.value()));
-                    input.addSearchResult();
-                }
-                if (input.isPasswordField() && !input.value().isEmpty())
-                    containsPasswordData = true;
+    for (auto& control : protectedAssociatedElements) {
+        auto& element = control->asHTMLElement();
+        if (!element.isDisabledFormControl())
+            control->appendFormData(*domFormData.get(), isMultiPartForm);
+        if (is<HTMLInputElement>(element)) {
+            auto& input = downcast<HTMLInputElement>(element);
+            if (input.isTextField()) {
+                formValues.append({ input.name(), input.value() });
+                input.addSearchResult();
             }
+            if (input.isPasswordField() && !input.value().isEmpty())
+                containsPasswordData = true;
         }
     }
 

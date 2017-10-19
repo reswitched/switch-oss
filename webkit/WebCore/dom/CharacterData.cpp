@@ -29,6 +29,7 @@
 #include "MutationEvent.h"
 #include "MutationObserverInterestGroup.h"
 #include "MutationRecord.h"
+#include "NoEventDispatchAssertion.h"
 #include "ProcessingInstruction.h"
 #include "RenderText.h"
 #include "StyleInheritedData.h"
@@ -95,6 +96,9 @@ unsigned CharacterData::parserAppendData(const String& string, unsigned offset, 
     // We don't call dispatchModifiedEvent here because we don't want the
     // parser to dispatch DOM mutation events.
     if (parentNode()) {
+#if PLATFORM(WKC)
+        NoEventDispatchAssertion assertNoEventDispatch;
+#endif
         ContainerNode::ChildChange change = {
             ContainerNode::TextChanged,
             ElementTraversal::previousSibling(*this),
@@ -215,6 +219,9 @@ void CharacterData::dispatchModifiedEvent(const String& oldData)
 
     if (!isInShadowTree()) {
         if (parentNode()) {
+#if PLATFORM(WKC)
+            NoEventDispatchAssertion assertNoEventDispatch;
+#endif
             ContainerNode::ChildChange change = {
                 ContainerNode::TextChanged,
                 ElementTraversal::previousSibling(*this),

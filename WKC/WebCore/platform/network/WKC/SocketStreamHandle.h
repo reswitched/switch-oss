@@ -111,6 +111,8 @@ namespace WebCore {
         void* m_multiHandle; // CURLM handle
 
         Ref<NetworkingContext> m_networkingContext;
+
+        int m_sendAgainTimeout;
     };
 
 }  // namespace WebCore

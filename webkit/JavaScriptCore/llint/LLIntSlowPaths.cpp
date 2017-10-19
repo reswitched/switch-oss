@@ -38,6 +38,7 @@
 #include "Interpreter.h"
 #include "JIT.h"
 #include "JITExceptions.h"
+#include "JSArrowFunction.h"
 #include "JSLexicalEnvironment.h"
 #include "JSCInlines.h"
 #include "JSCJSValue.h"
@@ -48,7 +49,6 @@
 #include "JSWithScope.h"
 #include "LLIntCommon.h"
 #include "LLIntExceptions.h"
-#include "LegacyProfiler.h"
 #include "LowLevelInterpreter.h"
 #include "ObjectConstructor.h"
 #include "ProtoCallFrame.h"
@@ -170,7 +170,7 @@ namespace JSC { namespace LLInt {
         ExecState* __rcf_exec = (execCallee);                           \
         LLINT_RETURN_TWO(pc, __rcf_exec);                               \
     } while (false)
-
+    
 extern "C" SlowPathReturnType llint_trace_operand(ExecState* exec, Instruction* pc, int fromWhere, int operand)
 {
     LLINT_BEGIN();
@@ -483,8 +483,8 @@ LLINT_SLOW_PATH_DECL(stack_check)
 
     vm.topCallFrame = exec;
     ErrorHandlingScope errorScope(vm);
-    CommonSlowPaths::interpreterThrowInCaller(exec, createStackOverflowError(exec));
-    pc = returnToThrowForThrownException(exec);
+    vm.throwException(exec, createStackOverflowError(exec));
+    pc = returnToThrow(exec);
     LLINT_RETURN_TWO(pc, exec);
 }
 
@@ -1024,12 +1024,24 @@ LLINT_SLOW_PATH_DECL(slow_path_new_func)
 LLINT_SLOW_PATH_DECL(slow_path_new_func_exp)
 {
     LLINT_BEGIN();
+    
     CodeBlock* codeBlock = exec->codeBlock();
     JSScope* scope = exec->uncheckedR(pc[2].u.operand).Register::scope();
-    FunctionExecutable* function = codeBlock->functionExpr(pc[3].u.operand);
-    JSFunction* func = JSFunction::create(vm, function, scope);
+    FunctionExecutable* executable = codeBlock->functionExpr(pc[3].u.operand);
     
-    LLINT_RETURN(func);
+    LLINT_RETURN(JSFunction::create(vm, executable, scope));
+}
+
+LLINT_SLOW_PATH_DECL(slow_path_new_arrow_func_exp)
+{
+    LLINT_BEGIN();
+
+    JSValue thisValue = LLINT_OP_C(4).jsValue();
+    CodeBlock* codeBlock = exec->codeBlock();
+    JSScope* scope = exec->uncheckedR(pc[2].u.operand).Register::scope();
+    FunctionExecutable* executable = codeBlock->functionExpr(pc[3].u.operand);
+    
+    LLINT_RETURN(JSArrowFunction::create(vm, executable, scope, thisValue));
 }
 
 static SlowPathReturnType handleHostCall(ExecState* execCallee, Instruction* pc, JSValue callee, CodeSpecializationKind kind)
@@ -1107,7 +1119,7 @@ inline SlowPathReturnType setUpCall(ExecState* execCallee, Instruction* pc, Code
     JSScope* scope = callee->scopeUnchecked();
     VM& vm = *scope->vm();
     ExecutableBase* executable = callee->executable();
-    
+
     MacroAssemblerCodePtr codePtr;
     CodeBlock* codeBlock = 0;
     if (executable->isHostFunction())
@@ -1200,47 +1212,69 @@ LLINT_SLOW_PATH_DECL(slow_path_size_frame_for_varargs)
     LLINT_RETURN_CALLEE_FRAME(execCallee);
 }
 
-LLINT_SLOW_PATH_DECL(slow_path_call_varargs)
+LLINT_SLOW_PATH_DECL(slow_path_size_frame_for_forward_arguments)
+{
+    LLINT_BEGIN();
+    // This needs to:
+    // - Set up a call frame with the same arguments as the current frame.
+
+    unsigned numUsedStackSlots = -pc[5].u.operand;
+
+    unsigned arguments = sizeFrameForForwardArguments(exec, &vm.interpreter->stack(), numUsedStackSlots);
+    LLINT_CALL_CHECK_EXCEPTION(exec, exec);
+
+    ExecState* execCallee = calleeFrameForVarargs(exec, numUsedStackSlots, arguments + 1);
+
+    vm.varargsLength = arguments;
+    vm.newCallFrameReturnValue = execCallee;
+
+    LLINT_RETURN_CALLEE_FRAME(execCallee);
+}
+
+enum class SetArgumentsWith {
+    Object,
+    CurrentArguments
+};
+
+inline SlowPathReturnType varargsSetup(ExecState* exec, Instruction* pc, CodeSpecializationKind kind, SetArgumentsWith set)
 {
     LLINT_BEGIN_NO_SET_PC();
     // This needs to:
     // - Figure out what to call and compile it if necessary.
     // - Return a tuple of machine code address to call and the new call frame.
-    
+
     JSValue calleeAsValue = LLINT_OP_C(2).jsValue();
-    
+
     ExecState* execCallee = vm.newCallFrameReturnValue;
 
-    setupVarargsFrameAndSetThis(exec, execCallee, LLINT_OP_C(3).jsValue(), LLINT_OP_C(4).jsValue(), pc[6].u.operand, vm.varargsLength);
-    LLINT_CALL_CHECK_EXCEPTION(exec, exec);
-    
-    execCallee->uncheckedR(JSStack::Callee) = calleeAsValue;
+    if (set == SetArgumentsWith::Object) {
+        setupVarargsFrameAndSetThis(exec, execCallee, LLINT_OP_C(3).jsValue(), LLINT_OP_C(4).jsValue(), pc[6].u.operand, vm.varargsLength);
+        LLINT_CALL_CHECK_EXCEPTION(exec, exec);
+    } else
+        setupForwardArgumentsFrameAndSetThis(exec, execCallee, LLINT_OP_C(3).jsValue(), vm.varargsLength);
+
     execCallee->setCallerFrame(exec);
+    execCallee->uncheckedR(JSStack::Callee) = calleeAsValue;
     exec->setCurrentVPC(pc);
-    
-    return setUpCall(execCallee, pc, CodeForCall, calleeAsValue);
+
+    return setUpCall(execCallee, pc, kind, calleeAsValue);
 }
-    
+
+LLINT_SLOW_PATH_DECL(slow_path_call_varargs)
+{
+    return varargsSetup(exec, pc, CodeForCall, SetArgumentsWith::Object);
+}
+
+LLINT_SLOW_PATH_DECL(slow_path_tail_call_forward_arguments)
+{
+    return varargsSetup(exec, pc, CodeForCall, SetArgumentsWith::CurrentArguments);
+}
+
 LLINT_SLOW_PATH_DECL(slow_path_construct_varargs)
 {
-    LLINT_BEGIN_NO_SET_PC();
-    // This needs to:
-    // - Figure out what to call and compile it if necessary.
-    // - Return a tuple of machine code address to call and the new call frame.
-    
-    JSValue calleeAsValue = LLINT_OP_C(2).jsValue();
-    
-    ExecState* execCallee = vm.newCallFrameReturnValue;
-    
-    setupVarargsFrameAndSetThis(exec, execCallee, LLINT_OP_C(3).jsValue(), LLINT_OP_C(4).jsValue(), pc[6].u.operand, vm.varargsLength);
-    LLINT_CALL_CHECK_EXCEPTION(exec, exec);
-    
-    execCallee->uncheckedR(JSStack::Callee) = calleeAsValue;
-    execCallee->setCallerFrame(exec);
-    exec->setCurrentVPC(pc);
-    
-    return setUpCall(execCallee, pc, CodeForConstruct, calleeAsValue);
+    return varargsSetup(exec, pc, CodeForConstruct, SetArgumentsWith::Object);
 }
+
     
 LLINT_SLOW_PATH_DECL(slow_path_call_eval)
 {
@@ -1344,22 +1378,6 @@ LLINT_SLOW_PATH_DECL(slow_path_debug)
     int debugHookID = pc[1].u.operand;
     vm.interpreter->debug(exec, static_cast<DebugHookID>(debugHookID));
     
-    LLINT_END();
-}
-
-LLINT_SLOW_PATH_DECL(slow_path_profile_will_call)
-{
-    LLINT_BEGIN();
-    if (LegacyProfiler* profiler = vm.enabledProfiler())
-        profiler->willExecute(exec, LLINT_OP(1).jsValue());
-    LLINT_END();
-}
-
-LLINT_SLOW_PATH_DECL(slow_path_profile_did_call)
-{
-    LLINT_BEGIN();
-    if (LegacyProfiler* profiler = vm.enabledProfiler())
-        profiler->didExecute(exec, LLINT_OP(1).jsValue());
     LLINT_END();
 }
 

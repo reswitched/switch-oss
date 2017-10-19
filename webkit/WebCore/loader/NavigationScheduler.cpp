@@ -56,9 +56,9 @@
 namespace WebCore {
 
 #if !PLATFORM(WKC)
-unsigned NavigationDisablerForBeforeUnload::s_navigationDisableCount = 0;
+unsigned NavigationDisabler::s_navigationDisableCount = 0;
 #else
-WKC_DEFINE_GLOBAL_CLASS_OBJ(unsigned, NavigationDisablerForBeforeUnload, s_navigationDisableCount, 0);
+    WKC_DEFINE_GLOBAL_CLASS_OBJ(unsigned, NavigationDisabler, s_navigationDisableCount, 0);
 #endif
 
 class ScheduledNavigation {
@@ -113,16 +113,6 @@ protected:
     {
         if (initiatingDocument)
             m_shouldOpenExternalURLsPolicy = initiatingDocument->shouldOpenExternalURLsPolicyToPropagate();
-    }
-
-    virtual void fire(Frame& frame) override
-    {
-        UserGestureIndicator gestureIndicator(wasUserGesture() ? DefinitelyProcessingUserGesture : DefinitelyNotProcessingUserGesture);
-
-        ResourceRequest resourceRequest(m_url, m_referrer, UseProtocolCachePolicy);
-        FrameLoadRequest frameRequest(m_securityOrigin.get(), resourceRequest, "_self", lockHistory(), lockBackForwardList(), MaybeSendReferrer, AllowNavigationToInvalidURL::Yes, NewFrameOpenerPolicy::Allow, m_shouldOpenExternalURLsPolicy);
-
-        frame.loader().changeLocation(frameRequest);
     }
 
     virtual void didStartTimer(Frame& frame, Timer& timer) override
@@ -180,7 +170,7 @@ public:
         ResourceRequest resourceRequest(url(), referrer(), refresh ? ReloadIgnoringCacheData : UseProtocolCachePolicy);
         FrameLoadRequest frameRequest(securityOrigin(), resourceRequest, "_self", lockHistory(), lockBackForwardList(), MaybeSendReferrer, AllowNavigationToInvalidURL::No, NewFrameOpenerPolicy::Allow, m_shouldOpenExternalURLsPolicy);
 
-        frame.loader().changeLocation(frameRequest);
+        frame.loader().performClientRedirect(WTF::move(frameRequest));
     }
 };
 
@@ -195,7 +185,7 @@ public:
 
         ResourceRequest resourceRequest(url(), referrer(), UseProtocolCachePolicy);
         FrameLoadRequest frameRequest(securityOrigin(), resourceRequest, "_self", lockHistory(), lockBackForwardList(), MaybeSendReferrer, AllowNavigationToInvalidURL::No, NewFrameOpenerPolicy::Allow, m_shouldOpenExternalURLsPolicy);
-        frame.loader().changeLocation(frameRequest);
+        frame.loader().performClientRedirect(WTF::move(frameRequest));
     }
 };
 
@@ -386,7 +376,7 @@ inline bool NavigationScheduler::shouldScheduleNavigation(const URL& url) const
         return false;
     if (protocolIsJavaScript(url))
         return true;
-    return NavigationDisablerForBeforeUnload::isNavigationAllowed();
+    return NavigationDisabler::isNavigationAllowed();
 }
 
 void NavigationScheduler::scheduleRedirect(Document* initiatingDocument, double delay, const URL& url)

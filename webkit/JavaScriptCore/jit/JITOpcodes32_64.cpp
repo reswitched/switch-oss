@@ -35,6 +35,7 @@
 #include "Exception.h"
 #include "JITInlines.h"
 #include "JSArray.h"
+#include "JSArrowFunction.h"
 #include "JSCell.h"
 #include "JSEnvironmentRecord.h"
 #include "JSFunction.h"
@@ -148,7 +149,8 @@ void JIT::emit_op_mov(Instruction* currentInstruction)
 void JIT::emit_op_end(Instruction* currentInstruction)
 {
     ASSERT(returnValueGPR != callFrameRegister);
-    emitLoad(currentInstruction[1].u.operand, regT1, regT0);
+    emitLoad(currentInstruction[1].u.operand, regT1, returnValueGPR);
+    emitRestoreCalleeSaves();
     emitFunctionEpilogue();
     ret();
 }
@@ -165,9 +167,9 @@ void JIT::emit_op_new_object(Instruction* currentInstruction)
     size_t allocationSize = JSFinalObject::allocationSize(structure->inlineCapacity());
     MarkedAllocator* allocator = &m_vm->heap.allocatorForObjectWithoutDestructor(allocationSize);
 
-    RegisterID resultReg = regT0;
+    RegisterID resultReg = returnValueGPR;
     RegisterID allocatorReg = regT1;
-    RegisterID scratchReg = regT2;
+    RegisterID scratchReg = regT3;
 
     move(TrustedImmPtr(allocator), allocatorReg);
     emitAllocateJSObject(allocatorReg, TrustedImmPtr(structure), resultReg, scratchReg);
@@ -328,6 +330,24 @@ void JIT::emit_op_is_string(Instruction* currentInstruction)
     isNotCell.link(this);
     move(TrustedImm32(0), regT0);
     
+    done.link(this);
+    emitStoreBool(dst, regT0);
+}
+
+void JIT::emit_op_is_jsarray(Instruction* currentInstruction)
+{
+    int dst = currentInstruction[1].u.operand;
+    int value = currentInstruction[2].u.operand;
+
+    emitLoad(value, regT1, regT0);
+    Jump isNotCell = branch32(NotEqual, regT1, TrustedImm32(JSValue::CellTag));
+
+    compare8(Equal, Address(regT0, JSCell::typeInfoTypeOffset()), TrustedImm32(ArrayType), regT0);
+    Jump done = jump();
+
+    isNotCell.link(this);
+    move(TrustedImm32(0), regT0);
+
     done.link(this);
     emitStoreBool(dst, regT0);
 }
@@ -742,6 +762,7 @@ void JIT::emit_op_neq_null(Instruction* currentInstruction)
 void JIT::emit_op_throw(Instruction* currentInstruction)
 {
     ASSERT(regT0 == returnValueGPR);
+    copyCalleeSavesToVMCalleeSavesBuffer();
     emitLoad(currentInstruction[1].u.operand, regT1, regT0);
     callOperationNoExceptionCheck(operationThrow, regT1, regT0);
     jumpToExceptionHandler();
@@ -821,6 +842,8 @@ void JIT::emit_op_push_name_scope(Instruction* currentInstruction)
 
 void JIT::emit_op_catch(Instruction* currentInstruction)
 {
+    restoreCalleeSavesFromVMCalleeSavesBuffer();
+
     move(TrustedImmPtr(m_vm), regT3);
     // operationThrow returns the callFrame for the handler.
     load32(Address(regT3, VM::callFrameForThrowOffset()), callFrameRegister);
@@ -938,6 +961,14 @@ void JIT::emit_op_get_scope(Instruction* currentInstruction)
     emitStoreCell(dst, regT0);
 }
 
+void JIT::emit_op_load_arrowfunction_this(Instruction* currentInstruction)
+{
+    int dst = currentInstruction[1].u.operand;
+    emitGetFromCallFrameHeaderPtr(JSStack::Callee, regT0);
+    loadPtr(Address(regT0, JSArrowFunction::offsetOfThisValue()), regT0);
+    emitStoreCell(dst, regT0);
+}
+
 void JIT::emit_op_create_this(Instruction* currentInstruction)
 {
     int callee = currentInstruction[2].u.operand;
@@ -1011,24 +1042,6 @@ void JIT::emitSlow_op_check_tdz(Instruction* currentInstruction, Vector<SlowCase
     linkSlowCase(iter);
     JITSlowPathCall slowPathCall(this, currentInstruction, slow_path_throw_tdz_error);
     slowPathCall.call();
-}
-
-void JIT::emit_op_profile_will_call(Instruction* currentInstruction)
-{
-    load32(m_vm->enabledProfilerAddress(), regT0);
-    Jump profilerDone = branchTestPtr(Zero, regT0);
-    emitLoad(currentInstruction[1].u.operand, regT1, regT0);
-    callOperation(operationProfileWillCall, regT1, regT0);
-    profilerDone.link(this);
-}
-
-void JIT::emit_op_profile_did_call(Instruction* currentInstruction)
-{
-    load32(m_vm->enabledProfilerAddress(), regT0);
-    Jump profilerDone = branchTestPtr(Zero, regT0);
-    emitLoad(currentInstruction[1].u.operand, regT1, regT0);
-    callOperation(operationProfileDidCall, regT1, regT0);
-    profilerDone.link(this);
 }
 
 void JIT::emit_op_has_structure_property(Instruction* currentInstruction)

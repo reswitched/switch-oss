@@ -93,7 +93,8 @@ _cairo_xcb_pixmap_create (cairo_xcb_surface_t *target,
     _cairo_surface_init (&surface->base,
 			 &_cairo_xcb_pixmap_backend,
 			 NULL,
-			 target->base.content);
+			 target->base.content,
+			 FALSE); /* is_vector */
 
     surface->connection = target->connection;
     surface->screen = target->screen;
@@ -126,7 +127,8 @@ _cairo_xcb_pixmap_copy (cairo_xcb_surface_t *target)
     _cairo_surface_init (&surface->base,
 			 &_cairo_xcb_pixmap_backend,
 			 NULL,
-			 target->base.content);
+			 target->base.content,
+			 FALSE); /* is_vector */
 
     surface->connection = target->connection;
     surface->screen = target->screen;

@@ -73,6 +73,7 @@ static String restrictionName(MediaElementSession::BehaviorRestrictions restrict
     CASE(WirelessVideoPlaybackDisabled);
 #endif
     CASE(RequireUserGestureForAudioRateChange);
+    CASE(InvisibleAutoplayNotPermitted);
 
     return restrictionBuilder.toString();
 }
@@ -124,10 +125,35 @@ void MediaElementSession::removeBehaviorRestriction(BehaviorRestrictions restric
     m_restrictions &= ~restriction;
 }
 
+#if PLATFORM(MAC)
+static bool needsDocumentLevelMediaUserGestureQuirk(Document& document)
+{
+    if (!document.settings().needsSiteSpecificQuirks())
+        return false;
+
+    String host = document.topDocument().url().host();
+    if (equalLettersIgnoringASCIICase(host, "slate.com") || host.endsWithIgnoringASCIICase(".slate.com"))
+        return true;
+
+    if (equalLettersIgnoringASCIICase(host, "ign.com") || host.endsWithIgnoringASCIICase(".ign.com"))
+        return true;
+
+    if (equalLettersIgnoringASCIICase(host, "washingtonpost.com") || host.endsWithIgnoringASCIICase(".washingtonpost.com"))
+        return true;
+
+    return false;
+}
+#endif // PLATFORM(MAC)
+
 bool MediaElementSession::playbackPermitted(const HTMLMediaElement& element) const
 {
     if (pageExplicitlyAllowsElementToAutoplayInline(element))
         return true;
+
+#if PLATFORM(MAC)
+    if (element.document().topDocument().mediaState() & MediaProducer::HasUserInteractedWithMediaElement && needsDocumentLevelMediaUserGestureQuirk(element.document()))
+        return{};
+#endif
 
     if (m_restrictions & RequireUserGestureForRateChange && !ScriptController::processingUserGesture()) {
         LOG(Media, "MediaElementSession::playbackPermitted - returning FALSE");

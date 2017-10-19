@@ -30,9 +30,9 @@
 #include "VM.h"
 
 #include "ArgList.h"
-#include "ArityCheckFailReturnThunks.h"
 #include "ArrayBufferNeuteringWatchpoint.h"
 #include "BuiltinExecutables.h"
+#include "BytecodeIntrinsicRegistry.h"
 #include "CodeBlock.h"
 #include "CodeCache.h"
 #include "CommonIdentifiers.h"
@@ -76,6 +76,7 @@
 #include "PropertyMapHashTable.h"
 #include "RegExpCache.h"
 #include "RegExpObject.h"
+#include "RegisterAtOffsetList.h"
 #include "RuntimeType.h"
 #include "SimpleTypedArrayController.h"
 #include "SourceProviderCache.h"
@@ -187,7 +188,6 @@ VM::VM(VMType vmType, HeapType heapType)
 #endif
     , m_inDefineOwnProperty(false)
     , m_codeCache(std::make_unique<CodeCache>())
-    , m_enabledProfiler(nullptr)
     , m_builtinExecutables(std::make_unique<BuiltinExecutables>(*this))
     , m_typeProfilerEnabledCount(0)
     , m_controlFlowProfilerEnabledCount(0)
@@ -246,7 +246,7 @@ VM::VM(VMType vmType, HeapType heapType)
 
 #if ENABLE(JIT)
     jitStubs = std::make_unique<JITThunks>();
-    arityCheckFailReturnThunks = std::make_unique<ArityCheckFailReturnThunks>();
+    allCalleeSaveRegisterOffsets = std::make_unique<RegisterAtOffsetList>(RegisterSet::vmCalleeSaveRegisters(), RegisterAtOffsetList::ZeroBased);
 #endif
     arityCheckData = std::make_unique<CommonSlowPaths::ArityCheckData>();
 
@@ -264,7 +264,7 @@ VM::VM(VMType vmType, HeapType heapType)
     
     LLInt::Data::performAssertions(*this);
     
-    if (Options::enableProfiler()) {
+    if (Options::useProfiler()) {
         m_perBytecodeProfiler = std::make_unique<Profiler::Database>(*this);
 
         StringPrintStream pathOut;
@@ -284,9 +284,11 @@ VM::VM(VMType vmType, HeapType heapType)
     // won't use this.
     m_typedArrayController = adoptRef(new SimpleTypedArrayController());
 
-    if (Options::enableTypeProfiler())
+    m_bytecodeIntrinsicRegistry = std::make_unique<BytecodeIntrinsicRegistry>(*this);
+
+    if (Options::useTypeProfiler())
         enableTypeProfiler();
-    if (Options::enableControlFlowProfiler())
+    if (Options::useControlFlowProfiler())
         enableControlFlowProfiler();
 }
 
@@ -739,26 +741,6 @@ void VM::addImpureProperty(const String& propertyName)
 {
     if (RefPtr<WatchpointSet> watchpointSet = m_impurePropertyWatchpointSets.take(propertyName))
         watchpointSet->fireAll("Impure property added");
-}
-
-class SetEnabledProfilerFunctor {
-public:
-    bool operator()(CodeBlock* codeBlock)
-    {
-        if (JITCode::isOptimizingJIT(codeBlock->jitType()))
-            codeBlock->jettison(Profiler::JettisonDueToLegacyProfiler);
-        return false;
-    }
-};
-
-void VM::setEnabledProfiler(LegacyProfiler* profiler)
-{
-    m_enabledProfiler = profiler;
-    if (m_enabledProfiler) {
-        prepareToDiscardCode();
-        SetEnabledProfilerFunctor functor;
-        heap.forEachCodeBlock(functor);
-    }
 }
 
 static bool enableProfilerWithRespectToCount(unsigned& counter, std::function<void()> doEnableWork)

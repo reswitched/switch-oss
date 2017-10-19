@@ -756,7 +756,7 @@ PassRefPtr<DocumentFragment> Range::processContents(ActionType action, Exception
     // (or just delete the stuff in between)
 
     if ((action == Extract || action == Clone) && leftContents)
-        fragment->appendChild(leftContents, ec);
+        fragment->appendChild(*leftContents, ec);
 
     if (processStart) {
         NodeVector nodes;
@@ -766,7 +766,7 @@ PassRefPtr<DocumentFragment> Range::processContents(ActionType action, Exception
     }
 
     if ((action == Extract || action == Clone) && rightContents)
-        fragment->appendChild(rightContents, ec);
+        fragment->appendChild(*rightContents, ec);
 
     return fragment.release();
 }
@@ -793,7 +793,7 @@ PassRefPtr<Node> Range::processContentsBetweenOffsets(ActionType action, PassRef
         endOffset = std::min(endOffset, static_cast<CharacterData*>(container)->length());
         startOffset = std::min(startOffset, endOffset);
         if (action == Extract || action == Clone) {
-            RefPtr<CharacterData> c = static_pointer_cast<CharacterData>(container->cloneNode(true));
+            RefPtr<CharacterData> c = static_cast<CharacterData*>(container->cloneNode(true).ptr());
             deleteCharacterData(c, startOffset, endOffset, ec);
             if (fragment) {
                 result = fragment;
@@ -808,7 +808,7 @@ PassRefPtr<Node> Range::processContentsBetweenOffsets(ActionType action, PassRef
         endOffset = std::min(endOffset, static_cast<ProcessingInstruction*>(container)->data().length());
         startOffset = std::min(startOffset, endOffset);
         if (action == Extract || action == Clone) {
-            RefPtr<ProcessingInstruction> c = static_pointer_cast<ProcessingInstruction>(container->cloneNode(true));
+            RefPtr<ProcessingInstruction> c = static_cast<ProcessingInstruction*>(container->cloneNode(true).ptr());
             c->setData(c->data().substring(startOffset, endOffset - startOffset), ec);
             if (fragment) {
                 result = fragment;
@@ -1037,7 +1037,7 @@ void Range::insertNode(PassRefPtr<Node> prpNewNode, ExceptionCode& ec)
             return;
         
         container = m_start.container();
-        container->parentNode()->insertBefore(newNode.release(), newText.get(), ec);
+        container->parentNode()->insertBefore(newNode.releaseNonNull(), newText.get(), ec);
         if (ec)
             return;
 
@@ -1465,7 +1465,7 @@ void Range::surroundContents(PassRefPtr<Node> passNewParent, ExceptionCode& ec)
 
     ec = 0;
     while (Node* n = newParent->firstChild()) {
-        downcast<ContainerNode>(*newParent).removeChild(n, ec);
+        downcast<ContainerNode>(*newParent).removeChild(*n, ec);
         if (ec)
             return;
     }

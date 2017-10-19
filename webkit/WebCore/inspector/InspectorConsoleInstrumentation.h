@@ -32,7 +32,6 @@
 #define InspectorConsoleInstrumentation_h
 
 #include "InspectorInstrumentation.h"
-#include "ScriptProfile.h"
 #include <inspector/ScriptArguments.h>
 #include <inspector/ScriptCallStack.h>
 
@@ -81,11 +80,10 @@ inline void InspectorInstrumentation::startProfiling(Page& page, JSC::ExecState*
         startProfilingImpl(*instrumentingAgents, exec, title);
 }
 
-inline RefPtr<JSC::Profile> InspectorInstrumentation::stopProfiling(Page& page, JSC::ExecState* exec, const String &title)
+inline void InspectorInstrumentation::stopProfiling(Page& page, JSC::ExecState* exec, const String &title)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
-        return stopProfilingImpl(*instrumentingAgents, exec, title);
-    return nullptr;
+        stopProfilingImpl(*instrumentingAgents, exec, title);
 }
 
 } // namespace WebCore

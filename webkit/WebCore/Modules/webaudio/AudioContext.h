@@ -36,6 +36,7 @@
 #include "MediaProducer.h"
 #include "PlatformMediaSession.h"
 #include <atomic>
+#include <runtime/Float32Array.h>
 #include <wtf/HashSet.h>
 #include <wtf/MainThread.h>
 #include <wtf/PassRefPtr.h>
@@ -330,7 +331,7 @@ private:
     virtual bool canReceiveRemoteControlCommands() const override { return false; }
     void didReceiveRemoteControlCommand(PlatformMediaSession::RemoteControlCommandType, const PlatformMediaSession::RemoteCommandArgument*) override { }
     bool supportsSeeking() const override { return false; }
-    virtual bool overrideBackgroundPlaybackRestriction() const override { return false; }
+    bool shouldOverrideBackgroundPlaybackRestriction(PlatformMediaSession::InterruptionType) const override { return false; }
     String sourceApplicationIdentifier() const override;
 
     // EventTarget

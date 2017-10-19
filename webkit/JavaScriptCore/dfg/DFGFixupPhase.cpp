@@ -958,7 +958,12 @@ private:
             speculateForBarrier(node->child2());
             break;
         }
-            
+
+        case LoadArrowFunctionThis: {
+            fixEdge<KnownCellUse>(node->child1());
+            break;
+        }
+
         case SkipScope:
         case GetScope:
         case GetGetter:
@@ -1130,7 +1135,6 @@ private:
         case PhantomCreateActivation:
         case PhantomDirectArguments:
         case PhantomClonedArguments:
-        case ForwardVarargs:
         case GetMyArgumentByVal:
         case PutHint:
         case CheckStructureImmediate:
@@ -1272,7 +1276,13 @@ private:
             fixEdge<CellUse>(node->child1());
             break;
         }
-            
+
+        case NewArrowFunction: {
+            fixEdge<CellUse>(node->child1());
+            fixEdge<CellUse>(node->child2());
+            break;
+        }
+
 #if !ASSERT_DISABLED
         // Have these no-op cases here to ensure that nobody forgets to add handlers for new opcodes.
         case SetArgument:
@@ -1288,20 +1298,24 @@ private:
         case NotifyWrite:
         case VarInjectionWatchpoint:
         case Call:
+        case TailCallInlinedCaller:
         case Construct:
         case CallVarargs:
+        case TailCallVarargsInlinedCaller:
         case ConstructVarargs:
         case CallForwardVarargs:
         case ConstructForwardVarargs:
+        case TailCallForwardVarargs:
+        case TailCallForwardVarargsInlinedCaller:
         case LoadVarargs:
+        case ForwardVarargs:
         case ProfileControlFlow:
         case NativeCall:
         case NativeConstruct:
         case NewObject:
         case NewRegexp:
         case Breakpoint:
-        case ProfileWillCall:
-        case ProfileDidCall:
+        case IsJSArray:
         case IsUndefined:
         case IsBoolean:
         case IsNumber:
@@ -1311,6 +1325,8 @@ private:
         case CreateClonedArguments:
         case Jump:
         case Return:
+        case TailCall:
+        case TailCallVarargs:
         case Throw:
         case ThrowReferenceError:
         case CountExecution:

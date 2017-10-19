@@ -679,6 +679,15 @@ public:
     DesiredIdentifiers& identifiers() { return m_plan.identifiers; }
     DesiredWatchpoints& watchpoints() { return m_plan.watchpoints; }
     
+    // Returns false if the key is already invalid or unwatchable. If this is a Presence condition,
+    // this also makes it cheap to query if the condition holds. Also makes sure that the GC knows
+    // what's going on.
+    bool watchCondition(const ObjectPropertyCondition&);
+
+    // Checks if it's known that loading from the given object at the given offset is fine. This is
+    // computed by tracking which conditions we track with watchCondition().
+    bool isSafeToLoad(JSObject* base, PropertyOffset);
+    
     FullBytecodeLiveness& livenessFor(CodeBlock*);
     FullBytecodeLiveness& livenessFor(InlineCallFrame*);
     
@@ -698,9 +707,11 @@ public:
         // call, both callee and caller will see the variables live.
         VirtualRegister exclusionStart;
         VirtualRegister exclusionEnd;
+
+        CodeOrigin* codeOriginPtr = &codeOrigin;
         
         for (;;) {
-            InlineCallFrame* inlineCallFrame = codeOrigin.inlineCallFrame;
+            InlineCallFrame* inlineCallFrame = codeOriginPtr->inlineCallFrame;
             VirtualRegister stackOffset(inlineCallFrame ? inlineCallFrame->stackOffset : 0);
             
             if (inlineCallFrame) {
@@ -712,7 +723,7 @@ public:
             
             CodeBlock* codeBlock = baselineCodeBlockFor(inlineCallFrame);
             FullBytecodeLiveness& fullLiveness = livenessFor(codeBlock);
-            const FastBitVector& liveness = fullLiveness.getLiveness(codeOrigin.bytecodeIndex);
+            const FastBitVector& liveness = fullLiveness.getLiveness(codeOriginPtr->bytecodeIndex);
             for (unsigned relativeLocal = codeBlock->m_numCalleeRegisters; relativeLocal--;) {
                 VirtualRegister reg = stackOffset + virtualRegisterForLocal(relativeLocal);
                 
@@ -739,7 +750,11 @@ public:
             for (VirtualRegister reg = exclusionStart; reg < exclusionEnd; reg += 1)
                 functor(reg);
             
-            codeOrigin = inlineCallFrame->caller;
+            codeOriginPtr = inlineCallFrame->getCallerSkippingDeadFrames();
+
+            // The first inline call frame could be an inline tail call
+            if (!codeOriginPtr)
+                break;
         }
     }
     
@@ -858,6 +873,7 @@ public:
     Vector<InlineVariableData, 4> m_inlineVariableData;
     HashMap<CodeBlock*, std::unique_ptr<FullBytecodeLiveness>> m_bytecodeLiveness;
     HashMap<CodeBlock*, std::unique_ptr<BytecodeKills>> m_bytecodeKills;
+    HashSet<std::pair<JSObject*, PropertyOffset>> m_safeToLoad;
     Dominators m_dominators;
     PrePostNumbering m_prePostNumbering;
     NaturalLoops m_naturalLoops;

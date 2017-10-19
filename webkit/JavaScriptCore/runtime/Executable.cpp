@@ -249,10 +249,9 @@ RefPtr<CodeBlock> ScriptExecutable::newCodeBlockFor(
     JSGlobalObject* globalObject = scope->globalObject();
     ParserError error;
     DebuggerMode debuggerMode = globalObject->hasDebugger() ? DebuggerOn : DebuggerOff;
-    ProfilerMode profilerMode = globalObject->hasProfiler() ? ProfilerOn : ProfilerOff;
     UnlinkedFunctionCodeBlock* unlinkedCodeBlock =
         executable->m_unlinkedExecutable->codeBlockFor(
-            *vm, executable->m_source, kind, debuggerMode, profilerMode, error);
+            *vm, executable->m_source, kind, debuggerMode, error, executable->isArrowFunction());
     recordParse(executable->m_unlinkedExecutable->features(), executable->m_unlinkedExecutable->hasCapturedVariables(), firstLine(), lastLine(), startColumn(), endColumn()); 
     if (!unlinkedCodeBlock) {
         exception = vm->throwException(
@@ -492,7 +491,7 @@ JSObject* ProgramExecutable::checkSyntax(ExecState* exec)
     VM* vm = &exec->vm();
     JSGlobalObject* lexicalGlobalObject = exec->lexicalGlobalObject();
     std::unique_ptr<ProgramNode> programNode = parse<ProgramNode>(
-        vm, m_source, 0, Identifier(), JSParserBuiltinMode::NotBuiltin, 
+        vm, m_source, Identifier(), JSParserBuiltinMode::NotBuiltin, 
         JSParserStrictMode::NotStrict, JSParserCodeType::Program, error);
     if (programNode)
         return 0;

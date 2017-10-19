@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-cairo-scaled-font-t.top_of_page">cairo_scaled_font_t</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>cairo_scaled_font_t</refname>
@@ -77,11 +75,6 @@
 </tgroup>
 </informaltable>
 </refsect1>
-<refsect1 id="cairo-cairo-scaled-font-t.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
-</refsect1>
 
 
 <refsect1 id="cairo-cairo-scaled-font-t.description" role="desc">
@@ -103,7 +96,7 @@ cairo_scaled_font_create (<parameter><link linkend="cairo-font-face-t"><type>cai
 <para>Creates a <link linkend="cairo-scaled-font-t"><type>cairo_scaled_font_t</type></link> object from a font face and matrices that
 describe the size of the font and the environment in which it will
 be used.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-scaled-font-create.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -130,12 +123,11 @@ be used.</para></entry>
 rendering with it.</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-scaled-font-create.returns" role="returns">
 <title>Returns</title>
 <para> a newly created <link linkend="cairo-scaled-font-t"><type>cairo_scaled_font_t</type></link>. Destroy with
 <link linkend="cairo-scaled-font-destroy"><function>cairo_scaled_font_destroy()</function></link></para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-scaled-font-reference" role="function" condition="since:1.0">
 <title>cairo_scaled_font_reference&#160;()</title>
 <indexterm zone="cairo-scaled-font-reference" role="1.0"><primary sortas="scaled_font_reference">cairo_scaled_font_reference</primary></indexterm>
@@ -146,9 +138,9 @@ cairo_scaled_font_reference (<parameter><link linkend="cairo-scaled-font-t"><typ
 <parameter>scaled_font</parameter>
  from being destroyed until a matching call to
 <link linkend="cairo-scaled-font-destroy"><function>cairo_scaled_font_destroy()</function></link> is made.</para>
-<para>The number of references to a <link linkend="cairo-scaled-font-t"><type>cairo_scaled_font_t</type></link> can be get using
-<link linkend="cairo-scaled-font-get-reference-count"><function>cairo_scaled_font_get_reference_count()</function></link>.</para>
-<refsect3 role="parameters">
+<para>Use <link linkend="cairo-scaled-font-get-reference-count"><function>cairo_scaled_font_get_reference_count()</function></link> to get the number of
+references to a <link linkend="cairo-scaled-font-t"><type>cairo_scaled_font_t</type></link>.</para>
+<refsect3 id="cairo-scaled-font-reference.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -161,11 +153,10 @@ cairo_scaled_font_reference (<parameter><link linkend="cairo-scaled-font-t"><typ
 this function does nothing)</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-scaled-font-reference.returns" role="returns">
 <title>Returns</title>
 <para> the referenced <link linkend="cairo-scaled-font-t"><type>cairo_scaled_font_t</type></link></para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-scaled-font-destroy" role="function" condition="since:1.0">
 <title>cairo_scaled_font_destroy&#160;()</title>
 <indexterm zone="cairo-scaled-font-destroy" role="1.0"><primary sortas="scaled_font_destroy">cairo_scaled_font_destroy</primary></indexterm>
@@ -176,7 +167,7 @@ cairo_scaled_font_destroy (<parameter><link linkend="cairo-scaled-font-t"><type>
 is zero, then <parameter>font</parameter>
  and all associated resources are freed.
 See <link linkend="cairo-scaled-font-reference"><function>cairo_scaled_font_reference()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-scaled-font-destroy.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -188,7 +179,7 @@ See <link linkend="cairo-scaled-font-reference"><function>cairo_scaled_font_refe
 <entry role="parameter_description"><para>a <link linkend="cairo-scaled-font-t"><type>cairo_scaled_font_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-scaled-font-status" role="function" condition="since:1.0">
 <title>cairo_scaled_font_status&#160;()</title>
 <indexterm zone="cairo-scaled-font-status" role="1.0"><primary sortas="scaled_font_status">cairo_scaled_font_status</primary></indexterm>
@@ -196,7 +187,7 @@ See <link linkend="cairo-scaled-font-reference"><function>cairo_scaled_font_refe
 cairo_scaled_font_status (<parameter><link linkend="cairo-scaled-font-t"><type>cairo_scaled_font_t</type></link> *scaled_font</parameter>);</programlisting>
 <para>Checks whether an error has previously occurred for this
 scaled_font.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-scaled-font-status.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -208,12 +199,11 @@ scaled_font.</para>
 <entry role="parameter_description"><para>a <link linkend="cairo-scaled-font-t"><type>cairo_scaled_font_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-scaled-font-status.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> or another error such as
 <link linkend="CAIRO-STATUS-NO-MEMORY:CAPS"><literal>CAIRO_STATUS_NO_MEMORY</literal></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-scaled-font-extents" role="function" condition="since:1.0">
 <title>cairo_scaled_font_extents&#160;()</title>
 <indexterm zone="cairo-scaled-font-extents" role="1.0"><primary sortas="scaled_font_extents">cairo_scaled_font_extents</primary></indexterm>
@@ -221,7 +211,7 @@ scaled_font.</para>
 cairo_scaled_font_extents (<parameter><link linkend="cairo-scaled-font-t"><type>cairo_scaled_font_t</type></link> *scaled_font</parameter>,
                            <parameter><link linkend="cairo-font-extents-t"><type>cairo_font_extents_t</type></link> *extents</parameter>);</programlisting>
 <para>Gets the metrics for a <link linkend="cairo-scaled-font-t"><type>cairo_scaled_font_t</type></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-scaled-font-extents.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -236,7 +226,7 @@ cairo_scaled_font_extents (<parameter><link linkend="cairo-scaled-font-t"><type>
 <entry role="parameter_description"><para>a <link linkend="cairo-font-extents-t"><type>cairo_font_extents_t</type></link> which to store the retrieved extents.</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-scaled-font-text-extents" role="function" condition="since:1.2">
 <title>cairo_scaled_font_text_extents&#160;()</title>
 <indexterm zone="cairo-scaled-font-text-extents" role="1.2"><primary sortas="scaled_font_text_extents">cairo_scaled_font_text_extents</primary></indexterm>
@@ -258,7 +248,7 @@ contribute indirectly by changing the position of non-whitespace
 characters. In particular, trailing whitespace characters are
 likely to not affect the size of the rectangle, though they will
 affect the x_advance and y_advance values.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-scaled-font-text-extents.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -276,7 +266,7 @@ affect the x_advance and y_advance values.</para>
 <entry role="parameter_description"><para>a <link linkend="cairo-text-extents-t"><type>cairo_text_extents_t</type></link> which to store the retrieved extents.</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-scaled-font-glyph-extents" role="function" condition="since:1.0">
 <title>cairo_scaled_font_glyph_extents&#160;()</title>
 <indexterm zone="cairo-scaled-font-glyph-extents" role="1.0"><primary sortas="scaled_font_glyph_extents">cairo_scaled_font_glyph_extents</primary></indexterm>
@@ -295,7 +285,7 @@ y_advance values indicate the amount by which the current point
 would be advanced by <link linkend="cairo-show-glyphs"><function>cairo_show_glyphs()</function></link>.</para>
 <para>Note that whitespace glyphs do not contribute to the size of the
 rectangle (extents.width and extents.height).</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-scaled-font-glyph-extents.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -317,7 +307,7 @@ array</para></entry>
 <entry role="parameter_description"><para>a <link linkend="cairo-text-extents-t"><type>cairo_text_extents_t</type></link> which to store the retrieved extents.</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-scaled-font-text-to-glyphs" role="function" condition="since:1.8">
 <title>cairo_scaled_font_text_to_glyphs&#160;()</title>
 <indexterm zone="cairo-scaled-font-text-to-glyphs" role="1.8"><primary sortas="scaled_font_text_to_glyphs">cairo_scaled_font_text_to_glyphs</primary></indexterm>
@@ -458,7 +448,7 @@ UTF-8 text to the output glyphs see <link linkend="cairo-show-text-glyphs"><func
 <link linkend="cairo-show-glyphs"><function>cairo_show_glyphs()</function></link>, or related functions, assuming that the exact
 same <parameter>scaled_font</parameter>
  is used for the operation.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-scaled-font-text-to-glyphs.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -500,15 +490,14 @@ output <parameter>clusters</parameter>
 , or <link linkend="NULL:CAPS"><literal>NULL</literal></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-scaled-font-text-to-glyphs.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> upon success, or an error status
 if the input values are wrong or if conversion failed.  If the input
 values are correct but the conversion failed, the error status is also
 set on <parameter>scaled_font</parameter>
 .</para>
-<para></para>
-</refsect3><para role="since">Since 1.8</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.8">1.8</link></para></refsect2>
 <refsect2 id="cairo-scaled-font-get-font-face" role="function" condition="since:1.2">
 <title>cairo_scaled_font_get_font_face&#160;()</title>
 <indexterm zone="cairo-scaled-font-get-font-face" role="1.2"><primary sortas="scaled_font_get_font_face">cairo_scaled_font_get_font_face</primary></indexterm>
@@ -517,7 +506,7 @@ cairo_scaled_font_get_font_face (<parameter><link linkend="cairo-scaled-font-t">
 <para>Gets the font face that this scaled font uses.  This might be the
 font face passed to <link linkend="cairo-scaled-font-create"><function>cairo_scaled_font_create()</function></link>, but this does not
 hold true for all possible cases.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-scaled-font-get-font-face.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -529,14 +518,13 @@ hold true for all possible cases.</para>
 <entry role="parameter_description"><para>a <link linkend="cairo-scaled-font-t"><type>cairo_scaled_font_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-scaled-font-get-font-face.returns" role="returns">
 <title>Returns</title>
 <para> The <link linkend="cairo-font-face-t"><type>cairo_font_face_t</type></link> with which <parameter>scaled_font</parameter>
 was
 created.  This object is owned by cairo. To keep a reference to it,
 you must call <link linkend="cairo-scaled-font-reference"><function>cairo_scaled_font_reference()</function></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-scaled-font-get-font-options" role="function" condition="since:1.2">
 <title>cairo_scaled_font_get_font_options&#160;()</title>
 <indexterm zone="cairo-scaled-font-get-font-options" role="1.2"><primary sortas="scaled_font_get_font_options">cairo_scaled_font_get_font_options</primary></indexterm>
@@ -547,7 +535,7 @@ cairo_scaled_font_get_font_options (<parameter><link linkend="cairo-scaled-font-
  was created into
 <parameter>options</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-scaled-font-get-font-options.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -562,7 +550,7 @@ cairo_scaled_font_get_font_options (<parameter><link linkend="cairo-scaled-font-
 <entry role="parameter_description"><para>return value for the font options</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-scaled-font-get-font-matrix" role="function" condition="since:1.2">
 <title>cairo_scaled_font_get_font_matrix&#160;()</title>
 <indexterm zone="cairo-scaled-font-get-font-matrix" role="1.2"><primary sortas="scaled_font_get_font_matrix">cairo_scaled_font_get_font_matrix</primary></indexterm>
@@ -573,7 +561,7 @@ cairo_scaled_font_get_font_matrix (<parameter><link linkend="cairo-scaled-font-t
  was created into
 <parameter>matrix</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-scaled-font-get-font-matrix.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -588,7 +576,7 @@ cairo_scaled_font_get_font_matrix (<parameter><link linkend="cairo-scaled-font-t
 <entry role="parameter_description"><para>return value for the matrix</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-scaled-font-get-ctm" role="function" condition="since:1.2">
 <title>cairo_scaled_font_get_ctm&#160;()</title>
 <indexterm zone="cairo-scaled-font-get-ctm" role="1.2"><primary sortas="scaled_font_get_ctm">cairo_scaled_font_get_ctm</primary></indexterm>
@@ -601,7 +589,7 @@ cairo_scaled_font_get_ctm (<parameter><link linkend="cairo-scaled-font-t"><type>
 Note that the translation offsets (x0, y0) of the CTM are ignored
 by <link linkend="cairo-scaled-font-create"><function>cairo_scaled_font_create()</function></link>.  So, the matrix this
 function returns always has 0,0 as x0,y0.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-scaled-font-get-ctm.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -616,7 +604,7 @@ function returns always has 0,0 as x0,y0.</para>
 <entry role="parameter_description"><para>return value for the CTM</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-scaled-font-get-scale-matrix" role="function" condition="since:1.8">
 <title>cairo_scaled_font_get_scale_matrix&#160;()</title>
 <indexterm zone="cairo-scaled-font-get-scale-matrix" role="1.8"><primary sortas="scaled_font_get_scale_matrix">cairo_scaled_font_get_scale_matrix</primary></indexterm>
@@ -629,7 +617,7 @@ cairo_scaled_font_get_scale_matrix (<parameter><link linkend="cairo-scaled-font-
 The scale matrix is product of the font matrix and the ctm
 associated with the scaled font, and hence is the matrix mapping from
 font space to device space.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-scaled-font-get-scale-matrix.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -644,7 +632,7 @@ font space to device space.</para>
 <entry role="parameter_description"><para>return value for the matrix</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.8</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.8">1.8</link></para></refsect2>
 <refsect2 id="cairo-scaled-font-get-type" role="function" condition="since:1.2">
 <title>cairo_scaled_font_get_type&#160;()</title>
 <indexterm zone="cairo-scaled-font-get-type" role="1.2"><primary sortas="scaled_font_get_type">cairo_scaled_font_get_type</primary></indexterm>
@@ -653,7 +641,7 @@ cairo_scaled_font_get_type (<parameter><link linkend="cairo-scaled-font-t"><type
 <para>This function returns the type of the backend used to create
 a scaled font. See <link linkend="cairo-font-type-t"><type>cairo_font_type_t</type></link> for available types.
 However, this function never returns <link linkend="CAIRO-FONT-TYPE-TOY:CAPS"><literal>CAIRO_FONT_TYPE_TOY</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-scaled-font-get-type.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -665,12 +653,11 @@ However, this function never returns <link linkend="CAIRO-FONT-TYPE-TOY:CAPS"><l
 <entry role="parameter_description"><para>a <link linkend="cairo-scaled-font-t"><type>cairo_scaled_font_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-scaled-font-get-type.returns" role="returns">
 <title>Returns</title>
 <para> The type of <parameter>scaled_font</parameter>
 .</para>
-<para></para>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-scaled-font-get-reference-count" role="function" condition="since:1.4">
 <title>cairo_scaled_font_get_reference_count&#160;()</title>
 <indexterm zone="cairo-scaled-font-get-reference-count" role="1.4"><primary sortas="scaled_font_get_reference_count">cairo_scaled_font_get_reference_count</primary></indexterm>
@@ -678,7 +665,7 @@ However, this function never returns <link linkend="CAIRO-FONT-TYPE-TOY:CAPS"><l
 cairo_scaled_font_get_reference_count (<parameter><link linkend="cairo-scaled-font-t"><type>cairo_scaled_font_t</type></link> *scaled_font</parameter>);</programlisting>
 <para>Returns the current reference count of <parameter>scaled_font</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-scaled-font-get-reference-count.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -690,13 +677,12 @@ cairo_scaled_font_get_reference_count (<parameter><link linkend="cairo-scaled-fo
 <entry role="parameter_description"><para>a <link linkend="cairo-scaled-font-t"><type>cairo_scaled_font_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-scaled-font-get-reference-count.returns" role="returns">
 <title>Returns</title>
 <para> the current reference count of <parameter>scaled_font</parameter>
 .  If the
 object is a nil object, 0 will be returned.</para>
-<para></para>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 <refsect2 id="cairo-scaled-font-set-user-data" role="function" condition="since:1.4">
 <title>cairo_scaled_font_set_user_data&#160;()</title>
 <indexterm zone="cairo-scaled-font-set-user-data" role="1.4"><primary sortas="scaled_font_set_user_data">cairo_scaled_font_set_user_data</primary></indexterm>
@@ -710,7 +696,7 @@ cairo_scaled_font_set_user_data (<parameter><link linkend="cairo-scaled-font-t">
 call this function with the key that was used to set it and <link linkend="NULL:CAPS"><literal>NULL</literal></link>
 for <parameter>data</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-scaled-font-set-user-data.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -733,12 +719,11 @@ for <parameter>data</parameter>
 same key.</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-scaled-font-set-user-data.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> or <link linkend="CAIRO-STATUS-NO-MEMORY:CAPS"><literal>CAIRO_STATUS_NO_MEMORY</literal></link> if a
 slot could not be allocated for the user data.</para>
-<para></para>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 <refsect2 id="cairo-scaled-font-get-user-data" role="function" condition="since:1.4">
 <title>cairo_scaled_font_get_user_data&#160;()</title>
 <indexterm zone="cairo-scaled-font-get-user-data" role="1.4"><primary sortas="scaled_font_get_user_data">cairo_scaled_font_get_user_data</primary></indexterm>
@@ -749,7 +734,7 @@ cairo_scaled_font_get_user_data (<parameter><link linkend="cairo-scaled-font-t">
  using the
 specified key.  If no user data has been attached with the given
 key this function returns <link linkend="NULL:CAPS"><literal>NULL</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-scaled-font-get-user-data.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -765,11 +750,10 @@ key this function returns <link linkend="NULL:CAPS"><literal>NULL</literal></lin
 attached to</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-scaled-font-get-user-data.returns" role="returns">
 <title>Returns</title>
 <para> the user data previously attached or <link linkend="NULL:CAPS"><literal>NULL</literal></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-cairo-scaled-font-t.other_details" role="details">
@@ -788,7 +772,7 @@ to a scaled font to speed up the computation of metrics.</para>
 scaled font can be queried using <link linkend="cairo-scaled-font-get-type"><function>cairo_scaled_font_get_type()</function></link>.</para>
 <para>Memory management of <link linkend="cairo-scaled-font-t"><type>cairo_scaled_font_t</type></link> is done with
 <link linkend="cairo-scaled-font-reference"><function>cairo_scaled_font_reference()</function></link> and <link linkend="cairo-scaled-font-destroy"><function>cairo_scaled_font_destroy()</function></link>.</para>
-<para role="since">Since 1.0</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-font-extents-t" role="struct" condition="since:1.0">
 <title>cairo_font_extents_t</title>
 <indexterm zone="cairo-font-extents-t" role="1.0"><primary sortas="font_extents_t">cairo_font_extents_t</primary></indexterm>
@@ -810,7 +794,7 @@ text will be drawn twice as big, but the reported text extents will
 not be doubled. They will change slightly due to hinting (so you
 can't assume that metrics are independent of the transformation
 matrix), but otherwise will remain unchanged.</para>
-<refsect3 role="struct_members">
+<refsect3 id="cairo-font-extents-t.members" role="struct_members">
 <title>Members</title>
 <informaltable role="struct_members_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -818,12 +802,7 @@ matrix), but otherwise will remain unchanged.</para>
 <colspec colname="struct_members_description"/>
 <colspec colname="struct_members_annotations" colwidth="200px"/>
 <tbody>
-<row><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-font-extents-t.ascent">ascent</structfield>;</para></entry>
-<listitem><para>the distance that the font extends above the baseline.
-Note that this is not always exactly equal to the maximum
-of the extents of all the glyphs in the font, but rather
-is picked to express the font designer's intent as to
-how the font should align with elements above it.</para></listitem>
+<row role="member"><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-font-extents-t.ascent">ascent</structfield>;</para></entry>
 <entry role="struct_member_description"><para>the distance that the font extends above the baseline.
 Note that this is not always exactly equal to the maximum
 of the extents of all the glyphs in the font, but rather
@@ -831,14 +810,7 @@ is picked to express the font designer's intent as to
 how the font should align with elements above it.</para></entry>
 <entry role="struct_member_annotations"></entry>
 </row>
-<row><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-font-extents-t.descent">descent</structfield>;</para></entry>
-<listitem><para>the distance that the font extends below the baseline.
-This value is positive for typical fonts that include
-portions below the baseline. Note that this is not always
-exactly equal to the maximum of the extents of all the
-glyphs in the font, but rather is picked to express the
-font designer's intent as to how the font should
-align with elements below it.</para></listitem>
+<row role="member"><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-font-extents-t.descent">descent</structfield>;</para></entry>
 <entry role="struct_member_description"><para>the distance that the font extends below the baseline.
 This value is positive for typical fonts that include
 portions below the baseline. Note that this is not always
@@ -848,18 +820,7 @@ font designer's intent as to how the font should
 align with elements below it.</para></entry>
 <entry role="struct_member_annotations"></entry>
 </row>
-<row><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-font-extents-t.height">height</structfield>;</para></entry>
-<listitem><para>the recommended vertical distance between baselines when
-setting consecutive lines of text with the font. This
-is greater than <parameter>ascent</parameter>
-+<parameter>descent</parameter>
-by a
-quantity known as the <firstterm>line spacing</firstterm>
-or <firstterm>external leading</firstterm>. When space
-is at a premium, most fonts can be set with only
-a distance of <parameter>ascent</parameter>
-+<parameter>descent</parameter>
-between lines.</para></listitem>
+<row role="member"><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-font-extents-t.height">height</structfield>;</para></entry>
 <entry role="struct_member_description"><para>the recommended vertical distance between baselines when
 setting consecutive lines of text with the font. This
 is greater than <parameter>ascent</parameter>
@@ -873,19 +834,12 @@ a distance of <parameter>ascent</parameter>
 between lines.</para></entry>
 <entry role="struct_member_annotations"></entry>
 </row>
-<row><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-font-extents-t.max-x-advance">max_x_advance</structfield>;</para></entry>
-<listitem><para>the maximum distance in the X direction that
-the origin is advanced for any glyph in the font.</para></listitem>
+<row role="member"><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-font-extents-t.max-x-advance">max_x_advance</structfield>;</para></entry>
 <entry role="struct_member_description"><para>the maximum distance in the X direction that
 the origin is advanced for any glyph in the font.</para></entry>
 <entry role="struct_member_annotations"></entry>
 </row>
-<row><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-font-extents-t.max-y-advance">max_y_advance</structfield>;</para></entry>
-<listitem><para>the maximum distance in the Y direction that
-the origin is advanced for any glyph in the font.
-This will be zero for normal fonts used for horizontal
-writing. (The scripts of East Asia are sometimes written
-vertically.)</para></listitem>
+<row role="member"><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-font-extents-t.max-y-advance">max_y_advance</structfield>;</para></entry>
 <entry role="struct_member_description"><para>the maximum distance in the Y direction that
 the origin is advanced for any glyph in the font.
 This will be zero for normal fonts used for horizontal
@@ -895,7 +849,7 @@ vertically.)</para></entry>
 </row>
 </tbody></tgroup></informaltable>
 </refsect3>
-<para role="since">Since 1.0</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-text-extents-t" role="struct" condition="since:1.0">
 <title>cairo_text_extents_t</title>
 <indexterm zone="cairo-text-extents-t" role="1.0"><primary sortas="text_extents_t">cairo_text_extents_t</primary></indexterm>
@@ -917,7 +871,7 @@ be drawn twice as big, but the reported text extents will not be
 doubled. They will change slightly due to hinting (so you can't
 assume that metrics are independent of the transformation matrix),
 but otherwise will remain unchanged.</para>
-<refsect3 role="struct_members">
+<refsect3 id="cairo-text-extents-t.members" role="struct_members">
 <title>Members</title>
 <informaltable role="struct_members_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -925,47 +879,33 @@ but otherwise will remain unchanged.</para>
 <colspec colname="struct_members_description"/>
 <colspec colname="struct_members_annotations" colwidth="200px"/>
 <tbody>
-<row><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-text-extents-t.x-bearing">x_bearing</structfield>;</para></entry>
-<listitem><para>the horizontal distance from the origin to the
-leftmost part of the glyphs as drawn. Positive if the
-glyphs lie entirely to the right of the origin.</para></listitem>
+<row role="member"><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-text-extents-t.x-bearing">x_bearing</structfield>;</para></entry>
 <entry role="struct_member_description"><para>the horizontal distance from the origin to the
 leftmost part of the glyphs as drawn. Positive if the
 glyphs lie entirely to the right of the origin.</para></entry>
 <entry role="struct_member_annotations"></entry>
 </row>
-<row><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-text-extents-t.y-bearing">y_bearing</structfield>;</para></entry>
-<listitem><para>the vertical distance from the origin to the
-topmost part of the glyphs as drawn. Positive only if the
-glyphs lie completely below the origin; will usually be
-negative.</para></listitem>
+<row role="member"><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-text-extents-t.y-bearing">y_bearing</structfield>;</para></entry>
 <entry role="struct_member_description"><para>the vertical distance from the origin to the
 topmost part of the glyphs as drawn. Positive only if the
 glyphs lie completely below the origin; will usually be
 negative.</para></entry>
 <entry role="struct_member_annotations"></entry>
 </row>
-<row><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-text-extents-t.width">width</structfield>;</para></entry>
-<listitem><para>width of the glyphs as drawn</para></listitem>
+<row role="member"><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-text-extents-t.width">width</structfield>;</para></entry>
 <entry role="struct_member_description"><para>width of the glyphs as drawn</para></entry>
 <entry role="struct_member_annotations"></entry>
 </row>
-<row><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-text-extents-t.height">height</structfield>;</para></entry>
-<listitem><para>height of the glyphs as drawn</para></listitem>
+<row role="member"><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-text-extents-t.height">height</structfield>;</para></entry>
 <entry role="struct_member_description"><para>height of the glyphs as drawn</para></entry>
 <entry role="struct_member_annotations"></entry>
 </row>
-<row><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-text-extents-t.x-advance">x_advance</structfield>;</para></entry>
-<listitem><para>distance to advance in the X direction
-after drawing these glyphs</para></listitem>
+<row role="member"><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-text-extents-t.x-advance">x_advance</structfield>;</para></entry>
 <entry role="struct_member_description"><para>distance to advance in the X direction
 after drawing these glyphs</para></entry>
 <entry role="struct_member_annotations"></entry>
 </row>
-<row><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-text-extents-t.y-advance">y_advance</structfield>;</para></entry>
-<listitem><para>distance to advance in the Y direction
-after drawing these glyphs. Will typically be zero except
-for vertical text layout as found in East-Asian languages.</para></listitem>
+<row role="member"><entry role="struct_member_name"><para><link linkend="double"><type>double</type></link>&#160;<structfield id="cairo-text-extents-t.y-advance">y_advance</structfield>;</para></entry>
 <entry role="struct_member_description"><para>distance to advance in the Y direction
 after drawing these glyphs. Will typically be zero except
 for vertical text layout as found in East-Asian languages.</para></entry>
@@ -973,7 +913,7 @@ for vertical text layout as found in East-Asian languages.</para></entry>
 </row>
 </tbody></tgroup></informaltable>
 </refsect3>
-<para role="since">Since 1.0</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-cairo-scaled-font-t.see-also">

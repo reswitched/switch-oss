@@ -197,6 +197,7 @@ namespace JSC { namespace DFG {
     macro(MultiPutByOffset, NodeMustGenerate) \
     macro(GetArrayLength, NodeResultInt32) \
     macro(GetTypedArrayByteOffset, NodeResultInt32) \
+    macro(LoadArrowFunctionThis, NodeResultJS) \
     macro(GetScope, NodeResultJS) \
     macro(SkipScope, NodeResultJS) \
     macro(GetClosureVar, NodeResultJS) \
@@ -241,6 +242,9 @@ namespace JSC { namespace DFG {
     macro(ConstructForwardVarargs, NodeResultJS | NodeMustGenerate) \
     macro(NativeCall, NodeResultJS | NodeMustGenerate | NodeHasVarArgs) \
     macro(NativeConstruct, NodeResultJS | NodeMustGenerate | NodeHasVarArgs) \
+    macro(TailCallInlinedCaller, NodeResultJS | NodeMustGenerate | NodeHasVarArgs) \
+    macro(TailCallVarargsInlinedCaller, NodeResultJS | NodeMustGenerate) \
+    macro(TailCallForwardVarargsInlinedCaller, NodeResultJS | NodeMustGenerate) \
     \
     /* Allocations. */\
     macro(NewObject, NodeResultJS) \
@@ -261,10 +265,10 @@ namespace JSC { namespace DFG {
     \
     /* Nodes for misc operations. */\
     macro(Breakpoint, NodeMustGenerate) \
-    macro(ProfileWillCall, NodeMustGenerate) \
-    macro(ProfileDidCall, NodeMustGenerate) \
     macro(CheckHasInstance, NodeMustGenerate) \
     macro(InstanceOf, NodeResultBoolean) \
+    \
+    macro(IsJSArray, NodeResultBoolean) \
     macro(IsUndefined, NodeResultBoolean) \
     macro(IsBoolean, NodeResultBoolean) \
     macro(IsNumber, NodeResultBoolean) \
@@ -295,6 +299,8 @@ namespace JSC { namespace DFG {
     \
     macro(NewFunction, NodeResultJS) \
     \
+    macro(NewArrowFunction, NodeResultJS) \
+    \
     /* These aren't terminals but always exit */ \
     macro(Throw, NodeMustGenerate) \
     macro(ThrowReferenceError, NodeMustGenerate) \
@@ -304,6 +310,9 @@ namespace JSC { namespace DFG {
     macro(Branch, NodeMustGenerate) \
     macro(Switch, NodeMustGenerate) \
     macro(Return, NodeMustGenerate) \
+    macro(TailCall, NodeMustGenerate | NodeHasVarArgs) \
+    macro(TailCallVarargs, NodeMustGenerate) \
+    macro(TailCallForwardVarargs, NodeMustGenerate) \
     macro(Unreachable, NodeMustGenerate) \
     \
     /* Count execution. */\

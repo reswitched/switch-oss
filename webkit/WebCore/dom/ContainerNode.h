@@ -31,6 +31,7 @@
 namespace WebCore {
 
 class HTMLCollection;
+class NodeOrString;
 class QualifiedName;
 class RenderElement;
 
@@ -39,56 +40,6 @@ typedef void (*NodeCallback)(Node&, unsigned);
 namespace Private { 
     template<class GenericNode, class GenericNodeContainer>
     void addChildNodesToDeletionQueue(GenericNode*& head, GenericNode*& tail, GenericNodeContainer&);
-};
-
-class NoEventDispatchAssertion {
-#if PLATFORM(WKC)
-    WTF_MAKE_FAST_ALLOCATED;
-#endif
-public:
-    NoEventDispatchAssertion()
-    {
-#if !ASSERT_DISABLED
-        if (!isMainThread())
-            return;
-        ++s_count;
-#endif
-    }
-
-    NoEventDispatchAssertion(const NoEventDispatchAssertion&)
-        : NoEventDispatchAssertion()
-    {
-    }
-
-    ~NoEventDispatchAssertion()
-    {
-#if !ASSERT_DISABLED
-        if (!isMainThread())
-            return;
-        ASSERT(s_count);
-        s_count--;
-#endif
-    }
-
-    static bool isEventDispatchForbidden()
-    {
-#if ASSERT_DISABLED
-        return false;
-#else
-        return isMainThread() && s_count;
-#endif
-    }
-
-#if !ASSERT_DISABLED
-
-private:
-#if !PLATFORM(WKC)
-    WEBCORE_EXPORT static unsigned s_count;
-#else
-    WKC_DEFINE_GLOBAL_CLASS_OBJ_ENTRY(unsigned, s_count);
-#endif
-
-#endif
 };
 
 class ContainerNode : public Node {
@@ -107,10 +58,10 @@ public:
     WEBCORE_EXPORT unsigned countChildNodes() const;
     WEBCORE_EXPORT Node* traverseToChildAt(unsigned) const;
 
-    bool insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionCode& = ASSERT_NO_EXCEPTION);
-    bool replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionCode& = ASSERT_NO_EXCEPTION);
-    WEBCORE_EXPORT bool removeChild(Node* child, ExceptionCode& = ASSERT_NO_EXCEPTION);
-    WEBCORE_EXPORT bool appendChild(PassRefPtr<Node> newChild, ExceptionCode& = ASSERT_NO_EXCEPTION);
+    bool insertBefore(Ref<Node>&& newChild, Node* refChild, ExceptionCode& = ASSERT_NO_EXCEPTION);
+    bool replaceChild(Ref<Node>&& newChild, Node& oldChild, ExceptionCode& = ASSERT_NO_EXCEPTION);
+    WEBCORE_EXPORT bool removeChild(Node& child, ExceptionCode& = ASSERT_NO_EXCEPTION);
+    WEBCORE_EXPORT bool appendChild(Ref<Node>&& newChild, ExceptionCode& = ASSERT_NO_EXCEPTION);
 
     // These methods are only used during parsing.
     // They don't send DOM mutation events or handle reparenting.
@@ -122,9 +73,9 @@ public:
     void removeChildren();
     void takeAllChildrenFrom(ContainerNode*);
 
-    void cloneChildNodes(ContainerNode* clone);
+    void cloneChildNodes(ContainerNode& clone);
 
-    enum ChildChangeType { ElementInserted, ElementRemoved, TextInserted, TextRemoved, TextChanged, AllChildrenRemoved, NonContentsChildChanged };
+    enum ChildChangeType { ElementInserted, ElementRemoved, TextInserted, TextRemoved, TextChanged, AllChildrenRemoved, NonContentsChildRemoved, NonContentsChildInserted, AllChildrenReplaced };
     enum ChildChangeSource { ChildChangeSourceParser, ChildChangeSourceAPI };
     struct ChildChange {
 #if PLATFORM(WKC)
@@ -135,6 +86,25 @@ public:
         Element* previousSiblingElement;
         Element* nextSiblingElement;
         ChildChangeSource source;
+
+        bool isInsertion() const
+        {
+            switch (type) {
+            case ElementInserted:
+            case TextInserted:
+            case NonContentsChildInserted:
+            case AllChildrenReplaced:
+                return true;
+            case ElementRemoved:
+            case TextRemoved:
+            case TextChanged:
+            case AllChildrenRemoved:
+            case NonContentsChildRemoved:
+                return false;
+            }
+            ASSERT_NOT_REACHED();
+            return false;
+        }
     };
     virtual void childrenChanged(const ChildChange&);
 
@@ -163,6 +133,8 @@ public:
     Element* firstElementChild() const;
     Element* lastElementChild() const;
     unsigned childElementCount() const;
+    void append(Vector<NodeOrString>&&, ExceptionCode&);
+    void prepend(Vector<NodeOrString>&&, ExceptionCode&);
 
     bool ensurePreInsertionValidity(Node& newChild, Node* refChild, ExceptionCode&);
 
@@ -184,6 +156,7 @@ protected:
 
 private:
     void removeBetween(Node* previousChild, Node* nextChild, Node& oldChild);
+    bool appendChildWithoutPreInsertionValidityCheck(Ref<Node>&&, ExceptionCode&);
     void insertBeforeCommon(Node& nextChild, Node& oldChild);
 
     void notifyChildInserted(Node& child, ChildChangeSource);
@@ -192,8 +165,6 @@ private:
     void updateTreeAfterInsertion(Node& child);
 
     bool isContainerNode() const  = delete;
-
-    void willRemoveChild(Node& child);
 
     Node* m_firstChild;
     Node* m_lastChild;

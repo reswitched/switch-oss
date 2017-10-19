@@ -1,3 +1,3226 @@
+2015-09-18  Dean Jackson  <dino@apple.com>
+
+        Null dereference loading Blink layout test svg/filters/feImage-failed-load-crash.html
+        https://bugs.webkit.org/show_bug.cgi?id=149316
+        <rdar://problem/22749532>
+
+        Reviewed by Tim Horton.
+
+        If an feImage triggered loading a resource, and then was removed from the document,
+        we'd still try to notify its parent when the resource arrived (or failed).
+
+        Merge Blink commit:
+        https://chromium.googlesource.com/chromium/blink/+/9cbcfd7866bbaff0c4b3c4c8508b7c97b46d6e6a
+
+        Test: svg/filters/feImage-failed-load-crash.html
+
+        * svg/SVGFEImageElement.cpp:
+        (WebCore::SVGFEImageElement::notifyFinished): Add a null check to the parent element
+        before sending the notification.
+
+2015-10-21  Dean Jackson  <dino@apple.com>
+
+        Null dereference loading Blink layout test svg/filters/display-none-filter-primitive.html
+        https://bugs.webkit.org/show_bug.cgi?id=150212
+        <rdar://problem/23137376>
+
+        Reviewed by Brent Fulgham.
+
+        * svg/filters/display-none-filter-primitive-expected.txt: Added.
+        * svg/filters/display-none-filter-primitive.html: Added.
+
+2016-01-21  Said Abou-Hallawa  <sabouhallawa@apple.com>
+
+        A crash reproducible in Path::isEmpty() under RenderSVGShape::paint()
+        https://bugs.webkit.org/show_bug.cgi?id=149613
+
+        Reviewed by Darin Adler.
+
+        When RenderSVGRoot::layout() realizes its layout size has changed and
+        it has resources which have relative sizes, it marks all the clients of
+        the resources for invalidates regardless whether they belong to the
+        same RenderSVGRoot or not. But it reruns the layout only for its children.
+        If one of these clients comes before the current RenderSVGRoot in the render
+        tree, ee end up having renderer marked for invalidation at rendering time.
+        This also prevents scheduling the layout if the same renderer is marked
+        for another invalidation later. We prevent this because we do not want
+        to schedule another layout for a renderer which is already marked for
+        invalidation. This can cause crash if the renderer is an RenderSVGPath.
+        
+        The fix is to mark "only" the clients of a resource which belong to the
+        same RenderSVGRoot of the resource. Also we need to run the layout for
+        all the resources which belong to different RenderSVGRoots before running
+        the layout for an SVG renderer.
+         
+        Tests: svg/custom/filter-update-different-root.html
+               svg/custom/pattern-update-different-root.html
+
+        * rendering/svg/RenderSVGResourceContainer.cpp:
+        (WebCore::RenderSVGResourceContainer::markAllClientsForInvalidation):
+        We should not mark any client outside the current root for invalidation
+        
+        * rendering/svg/RenderSVGResourceContainer.h: Remove unneeded private keyword.
+        
+        * rendering/svg/RenderSVGRoot.cpp:
+        (WebCore::RenderSVGRoot::addResourceForClientInvalidation):
+        Code clean up; use findTreeRootObject() instead of repeating the same code.
+        
+        * rendering/svg/RenderSVGShape.cpp:
+        (WebCore::RenderSVGShape::isEmpty): Avoid crashing if RenderSVGShape::isEmpty()
+        is called before calling RenderSVGShape::layout().
+         
+        * rendering/svg/RenderSVGText.cpp:
+        (WebCore::RenderSVGText::layout): findTreeRootObject() now returns a pointer.
+        
+        * rendering/svg/SVGRenderSupport.cpp:
+        (WebCore::SVGRenderSupport::findTreeRootObject): I do think nothing 
+        guarantees that an SVG renderer has to have an RenderSVGRoot in its
+        ancestors. So change this function to return a pointer. Also Provide
+        the non-const version of this function.
+         
+        (WebCore::SVGRenderSupport::layoutDifferentRootIfNeeded): Runs the layout
+        if needed for all the resources which belong to different RenderSVGRoots.
+        
+        (WebCore::SVGRenderSupport::layoutChildren): Make sure all the renderer's
+        resources which belong to different RenderSVGRoots are laid out before
+        running the layout for this renderer.
+        
+        * rendering/svg/SVGRenderSupport.h: Remove a mysterious comment.
+        
+        * rendering/svg/SVGResources.cpp:
+        (WebCore::SVGResources::layoutDifferentRootIfNeeded): Run the layout for
+        all the resources which belong to different RenderSVGRoots outside the
+        context of their RenderSVGRoots.
+        
+        * rendering/svg/SVGResources.h:
+        (WebCore::SVGResources::clipper):
+        (WebCore::SVGResources::markerStart):
+        (WebCore::SVGResources::markerMid):
+        (WebCore::SVGResources::markerEnd):
+        (WebCore::SVGResources::masker):
+        (WebCore::SVGResources::filter):
+        (WebCore::SVGResources::fill):
+        (WebCore::SVGResources::stroke):
+        Code clean up; use nullptr instead of 0.
+
+2015-09-18  Dean Jackson  <dino@apple.com>
+
+        Null dereference loading Blink layout test svg/custom/use-href-attr-removal-crash.html
+        https://bugs.webkit.org/show_bug.cgi?id=149315
+        <rdar://problem/22749358>
+
+        Reviewed by Tim Horton.
+
+        We were not checking if the corresponding element referenced from
+        the SVG <use> actually existed before trying to set attributes on it.
+        The original Blink change is a little more detailed:
+        https://chromium.googlesource.com/chromium/blink/+/e2f1087f32bb088160ab7d59a715a1403ef267c7
+        However, we've significantly diverged at this point.
+
+        Tests: svg/custom/use-href-attr-removal-crash.html
+               svg/custom/use-href-attr-removal-crash2.svg
+               svg/custom/use-href-change-local-to-invalid-remote.html
+
+        * svg/SVGUseElement.cpp:
+        (WebCore::SVGUseElement::transferSizeAttributesToTargetClone):
+
+2017-09-19  Zalan Bujtas  <zalan@apple.com>
+
+        Attempt to fix Linux build.
+
+        * rendering/RenderText.cpp:
+
+2017-09-19  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r222226. rdar://problem/34534758
+
+    2017-09-19  Zalan Bujtas  <zalan@apple.com>
+
+            AXObjectCache::performDeferredCacheUpdate is called recursively through FrameView::layout.
+            https://bugs.webkit.org/show_bug.cgi?id=176218
+            <rdar://problem/34205612>
+
+            Reviewed by Simon Fraser.
+
+            There are certain cases when we might re-enter performDeferredCacheUpdate through recursive
+            layout calls (see webkit.org/b/177176) and mutate m_deferredTextChangedList multiple times.
+
+            Test: accessibility/crash-table-recursive-layout.html
+
+            * accessibility/AXObjectCache.cpp:
+            (WebCore::AXObjectCache::performDeferredCacheUpdate):
+            * accessibility/AXObjectCache.h:
+
+2017-09-19  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r222220. rdar://problem/34534766
+
+    2017-09-15  Wenson Hsieh  <wenson_hsieh@apple.com>
+
+            createMarkupInternal should protect its pointer to the Range's common ancestor
+            https://bugs.webkit.org/show_bug.cgi?id=177033
+            <rdar://problem/34265390>
+
+            Reviewed by Tim Horton.
+
+            Adds basic safeguarding to codepaths hit while executing an outdent command.
+
+            Test: editing/execCommand/outdent-with-media-query-listener-in-iframe.html
+
+            * editing/IndentOutdentCommand.cpp:
+            (WebCore::IndentOutdentCommand::outdentRegion):
+
+            Avoid an infinite loop if endOfCurrentParagraph is a null position.
+
+            * editing/markup.cpp:
+            (WebCore::createMarkupInternal):
+
+            Protect the raw pointer to the Range's common ancestor node.
+
+2017-09-19  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r222214. rdar://problem/34534751
+
+    2017-09-19  Zalan Bujtas  <zalan@apple.com>
+
+            Do not mutate RenderText content during layout.
+            https://bugs.webkit.org/show_bug.cgi?id=176219
+            <rdar://problem/34205724>
+
+            Reviewed by David Hyatt.
+
+            Update combined text when the style/content change as opposed to lazily, during layout.
+            -content mutation during layout might make the inline tree go out of sync.
+
+            Test: fast/text/international/dynamic-text-combine-crash.html
+
+            * rendering/RenderBlockFlow.cpp:
+            (WebCore::RenderBlockFlow::computeInlinePreferredLogicalWidths const):
+            * rendering/RenderCombineText.cpp:
+            (WebCore::RenderCombineText::styleDidChange):
+            (WebCore::RenderCombineText::setRenderedText):
+            (WebCore::RenderCombineText::combineTextIfNeeded):
+            (WebCore::RenderCombineText::combineText): Deleted.
+            * rendering/RenderCombineText.h:
+            * rendering/RenderText.h:
+            * rendering/line/BreakingContext.h:
+            (WebCore::BreakingContext::handleText):
+            * rendering/line/LineBreaker.cpp:
+            (WebCore::LineBreaker::skipLeadingWhitespace):
+
+2017-09-19  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r221978. rdar://problem/34508522
+
+    2017-09-13  Daniel Bates  <dabates@apple.com>
+
+            Make history.pushState()/replaceState() more closely aligned to the HTML standard
+            https://bugs.webkit.org/show_bug.cgi?id=176730
+            <rdar://problem/33839265>
+
+            Reviewed by Alex Christensen.
+
+            Update history.pushState()/replaceState() to more closely align with the algorithm
+            specified in <https://html.spec.whatwg.org/multipage/history.html#dom-history-pushstate-2> (9 September 2017).
+
+            Test: http/tests/security/history-pushState-replaceState-from-sandboxed-iframe.html
+
+            * page/History.cpp:
+            (WebCore::History::stateObjectAdded):
+            * page/SecurityOrigin.cpp:
+            (WebCore::SecurityOrigin::extractInnerURL): Use URL constructor that takes a base URL as opposed
+            to using the special ParsedURLString-variant because the latter can only be used to parse a string
+            returned from URL::string(). And the extracted inner URL does not meet this criterion. Using the
+            ParsedURLString-variant of the URL constructor with a string that is not the result of URL::string()
+            will cause an assertion failure in a debug build.
+
+2017-09-19  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r222167. rdar://problem/34508525
+
+    2017-09-18  Antti Koivisto  <antti@apple.com>
+
+            Avoid style resolution when clearing focused element.
+            https://bugs.webkit.org/show_bug.cgi?id=176224
+            <rdar://problem/34206409>
+
+            Reviewed by Zalan Bujtas.
+
+            Test: fast/dom/focus-style-resolution.html
+
+            * dom/Document.cpp:
+            (WebCore::Document::setFocusedElement):
+
+                Don't do synchronous style resolution with FocusRemovalEventsMode::DoNotDispatch.
+                Style resolution may dispatch events.
+
+            * html/HTMLInputElement.cpp:
+            (WebCore::HTMLInputElement::didBlur):
+
+                Move resolveStyleIfNeeded call to setFocusedElement. It is the only client for didBlur.
+
+2016-10-18  Ryosuke Niwa  <rniwa@webkit.org>
+
+        REGRESSION (r201471): Keyboard remains visible when swiping back on twitter.com
+        https://bugs.webkit.org/show_bug.cgi?id=163581
+        <rdar://problem/27739558>
+
+        Reviewed by Simon Fraser.
+
+        The bug was caused by Chrome::elementDidBlur not getting called, which resulted in
+        StopAssistingNode not getting sent to the UI process.
+
+        Test: fast/forms/ios/hide-keyboard-on-node-removal.html
+
+        * dom/Document.cpp:
+        (WebCore::Document::setFocusedElement): Restore the behavior prior to r201471 by calling
+        Chrome::elementDidBlur explicitly.
+        * html/HTMLTextFormControlElement.cpp:
+        (WebCore::HTMLTextFormControlElement::dispatchBlurEvent): Added a comment about ordering.
+
+2016-06-28  Ryosuke Niwa  <rniwa@webkit.org>
+
+        REGRESSION(r201471): FormClient.textFieldDidEndEditing is no longer called when a text field is removed
+        https://bugs.webkit.org/show_bug.cgi?id=159199
+        <rdar://problem/26748189>
+
+        Reviewed by Alexey Proskuryakov.
+
+        The bug was caused by HTMLInputElement's endEditing no longer getting called due to the behavior change.
+        Preserve the WebKit2 API semantics by manually calling HTMLInputElement::endEditing in setFocusedElement.
+
+        Tests: WebKit2TextFieldDidBeginAndEndEditing
+
+        * dom/Document.cpp:
+        (WebCore::Document::setFocusedElement):
+
+2016-05-26  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Crash in TreeScope::focusedElement
+        https://bugs.webkit.org/show_bug.cgi?id=158108
+
+        Reviewed by Enrica Casucci.
+
+        The bug was caused by a flawed sequence of steps we took to remove an element. When an element is removed,
+        willRemoveChild and willRemoveChildren fire blur events on removed focused element and its ancestors and
+        unload event on any removed iframes. However, it was possible to focus an element on which we had fired blur
+        during an unload event, leaving m_focusedElement point to an element that's not in the document anymore.
+
+        Changing the order doesn't help because that would make it possible to insert the removed iframes back into
+        the document inside a event listener of the blur event, which was specifically fixed by r127534 four years ago.
+
+        Instead, fix the bug by not firing blur and change events on removed nodes. New behavior matches Firefox and HTML5
+        specification: https://html.spec.whatwg.org/multipage/interaction.html#focus-fixup-rule-one
+
+        Test: fast/shadow-dom/shadow-root-active-element-crash.html
+
+        * dom/ContainerNode.cpp:
+        (WebCore::willRemoveChild): Made this function static local since it didn't need to have access to any private
+        member variables. Call Document::nodeWillBeRemoved after disconnecting iframes since unload event handler could
+        allocate new Ranges just like mutation events.
+        (WebCore::willRemoveChildren): Ditto.
+        (WebCore::ContainerNode::removeChild): Removed the calls to removeFullScreenElementOfSubtree and
+        removeFocusedNodeOfSubtree as they're now called in Document::nodeWillBeRemoved.
+        (WebCore::ContainerNode::removeChildren): Ditto.
+        * dom/ContainerNode.h:
+        * dom/Document.cpp:
+        (WebCore::Document::removeFocusedNodeOfSubtree): Don't dispatch blur and change events when a node is removed.
+        (WebCore::Document::setFocusedElement): Added FocusRemovalEventsMode as the third argument. Avoid dispatching blur
+        and change events when FocusRemovalEventsMode::Dispatch is set.
+        (WebCore::Document::nodeChildrenWillBeRemoved): Added calls to removeFullScreenElementOfSubtree and
+        removeFocusedNodeOfSubtree. Also assert that no events are fired within this function. If we ever fire an event here,
+        "unloaded" iframes can be inserted back into a document before ContainerNode::removeChild actually removes them.
+        (WebCore::Document::nodeWillBeRemoved): Ditto.
+        * dom/Document.h:
+        * dom/TreeScope.cpp:
+        (WebCore::TreeScope::focusedElement): Added a release assertion to make sure the focused element is in the document
+        of the tree scope, and added an explicit type check just in case.
+
+2017-09-19  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r222163. rdar://problem/34508516
+
+    2017-09-18  Per Arne Vollan  <pvollan@apple.com>
+
+            [WK1] Layout Test fast/events/beforeunload-dom-manipulation-crash.html is crashing.
+            https://bugs.webkit.org/show_bug.cgi?id=177071
+
+            Reviewed by Brent Fulgham.
+
+            The Page pointer in the history controller's frame is null. Add a null pointer check before
+            accessing the page.
+
+            No new tests, covered by exiting tests.
+
+            * loader/HistoryController.cpp:
+            (WebCore::HistoryController::updateForStandardLoad):
+            (WebCore::HistoryController::updateForRedirectWithLockedBackForwardList):
+            (WebCore::HistoryController::updateForClientRedirect):
+
+2017-09-19  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r222114. rdar://problem/34508510
+
+    2017-09-15  Wenson Hsieh  <wenson_hsieh@apple.com>
+
+            Avoid style recomputation when forwarding a focus event to an text field's input type
+            https://bugs.webkit.org/show_bug.cgi?id=176160
+            <rdar://problem/34184820>
+
+            Reviewed by Ryosuke Niwa.
+
+            Currently, TextFieldInputType::forwardEvent synchronously triggers style recomputation, for the purpose of
+            scrolling to the origin upon handling a blur event, and also for updating caps lock state after a blur or focus.
+            In synchronously triggering style recomputation, we may end up running arbitrary JavaScript, which may change
+            the HTMLInputElement's type and cause the current TextFieldInputType to be destroyed.
+
+            To mitigate this, we only update caps lock state when forwarding a focus or blur event to the InputType, and
+            instead scroll blurred text fields to the origin later, in HTMLInputElement::didBlur (invoked from
+            Document::setFocusedElement after blur and focusout events have fired). Instead of having the InputType update
+            style, lift the call to Document::updateStyleIfNeeded up into HTMLInputElement so that we gracefully handle the
+            case where the page destroys and sets a new InputType within the scope of this style update.
+
+            Test: fast/forms/change-input-type-in-focus-handler.html
+
+            * dom/Document.cpp:
+            (WebCore::Document::setFocusedElement):
+            * html/HTMLInputElement.cpp:
+            (WebCore::HTMLInputElement::didBlur):
+            * html/HTMLInputElement.h:
+            * html/InputType.h:
+            (WebCore::InputType::elementDidBlur):
+            * html/TextFieldInputType.cpp:
+            (WebCore::TextFieldInputType::forwardEvent):
+            (WebCore::TextFieldInputType::elementDidBlur):
+            * html/TextFieldInputType.h:
+
+2017-09-13  Carlos Alberto Lopez Perez  <clopez@igalia.com>
+
+        [GTK] Fails to build because 'Float32Array' has not been declared in AudioContext.h
+        https://bugs.webkit.org/show_bug.cgi?id=176870
+
+        Reviewed by Konstantin Tokarev.
+
+        Add missing include of Float32Array.h
+
+        No new tests, its a build fix.
+
+        * Modules/webaudio/AudioContext.h:
+
+2017-08-25  Miguel Gomez  <magomez@igalia.com>
+
+        [GTK] Completely garbled display in Transifex in accelerated compositing mode
+        https://bugs.webkit.org/show_bug.cgi?id=174632
+
+        Reviewed by Michael Catanzaro.
+
+        Remove the copy constructor from PlatformContextCairo::State. This is because it will be used by WTF::Vector
+        to copy the instances around when allocating new memory, but it doesn't copy the m_imageMaskInformation
+        attribute, so it will be lost when the Vector reallocates its contents. When this happens, renderings that use
+        GraphicsContext::clipToImageBuffer() fail to render properly.
+
+        Covered by existent tests.
+
+        * platform/graphics/cairo/PlatformContextCairo.cpp:
+        (WebCore::PlatformContextCairo::State::State):
+        (WebCore::PlatformContextCairo::save):
+
+2017-08-22  Zan Dobersek  <zdobersek@igalia.com>
+
+        GLContext: zero-initialize the GLContext pointer in ThreadGlobalGLContext
+        https://bugs.webkit.org/show_bug.cgi?id=175819
+
+        Reviewed by Xabier Rodriguez-Calvar.
+
+        * platform/graphics/GLContext.cpp: The ThreadGlobalGLContext object is
+        allocated on heap, so the embedded GLContext pointer can contain a
+        non-null value that can cause problems when e.g. checking for a current
+        GLContext on some specific thread on which a GLContext hasn't yet been
+        made current. Zero-initializing this pointer will avoid false positives
+        that can occur in these circumstances.
+
+2017-09-14  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r222008. rdar://problem/34426473
+
+    2017-09-13  Zalan Bujtas  <zalan@apple.com>
+
+            Switch multicolumn's spanner map from raw over to weak pointers.
+            https://bugs.webkit.org/show_bug.cgi?id=176367
+            <rdar://problem/34254896>
+
+            Reviewed by Antti Koivisto.
+
+            Test: fast/multicol/spanner-crash-when-adding-summary.html
+
+            * rendering/RenderMultiColumnFlowThread.cpp:
+            (WebCore::RenderMultiColumnFlowThread::evacuateAndDestroy):
+            (WebCore::RenderMultiColumnFlowThread::flowThreadDescendantInserted):
+            (WebCore::RenderMultiColumnFlowThread::handleSpannerRemoval):
+            * rendering/RenderMultiColumnFlowThread.h:
+            * rendering/RenderMultiColumnSet.cpp:
+            (WebCore::RenderMultiColumnSet::firstRendererInFlowThread const):
+            (WebCore::RenderMultiColumnSet::lastRendererInFlowThread const):
+            * rendering/RenderMultiColumnSpannerPlaceholder.cpp:
+            (WebCore::RenderMultiColumnSpannerPlaceholder::RenderMultiColumnSpannerPlaceholder):
+            * rendering/RenderMultiColumnSpannerPlaceholder.h:
+
+2017-09-14  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r222005. rdar://problem/34426487
+
+    2017-09-13  Wenson Hsieh  <wenson_hsieh@apple.com>
+
+            Submitting a form can cause HTMLFormElement's associated elements vector to be mutated during iteration
+            https://bugs.webkit.org/show_bug.cgi?id=176368
+            <rdar://problem/34254998>
+
+            Reviewed by Ryosuke Niwa.
+
+            In the process of iterating over form.associatedElements() during form submission in FormSubmission::create, the
+            page may cause us to clobber the vector of FormAssociatedElements* we're currently iterating over by inserting
+            new form controls beneath the form element we're in the process of submitting. This happens because
+            FormSubmission::create calls HTMLTextAreaElement::appendFormData, which requires layout to be up to date, which
+            in turn makes us updateLayout() and set focus, which fires a `change` event, upon which the page's JavaScript
+            inserts additonal DOM nodes into the form, modifying the vector of associated elements.
+
+            To mitigate this, instead of iterating over HTMLFormElement::associatedElements(), which returns a reference to
+            the HTMLFormElement's actual m_associatedElements vector, we iterate over a new vector of
+            Ref<FormAssociatedElement>s created from m_associatedElements.
+
+            This patch also removes an event dispatch assertion added in r212026. This assertion was added to catch any
+            other events dispatched in this scope, since dispatching events there would have had security implications, but
+            after making iteration over associated elements robust, this NoEventDispatchAssertion is no longer useful.
+
+            Test: fast/forms/append-children-during-form-submission.html
+
+            * loader/FormSubmission.cpp:
+            (WebCore::FormSubmission::create):
+
+2017-09-10  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r221014. rdar://problem/34169683
+
+    2017-08-21  Matt Rajca  <mrajca@apple.com>
+
+            Call updateIsPlayingMedia whenever m_userHasInteractedWithMediaElement changes
+            https://bugs.webkit.org/show_bug.cgi?id=175796
+
+            Reviewed by Eric Carlson.
+
+            Test: media/video-user-gesture-tracking.html
+
+            The page media state depends on m_userHasInteractedWithMediaElement, so force it to update
+            as soon as m_userHasInteractedWithMediaElement changes. This fixes an issue where the media
+            state would not reflect the user interaction flag until a call to updateIsPlayingMedia was made.
+
+            * dom/Document.cpp:
+            (WebCore::Document::noteUserInteractionWithMediaElement):
+            * dom/Document.h:
+            (WebCore::Document::noteUserInteractionWithMediaElement): Deleted.
+            * testing/Internals.cpp:
+            (WebCore::Internals::pageMediaState):
+
+2017-08-02  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r220085. rdar://problem/33687398
+
+    2017-07-31  Matt Rajca  <mrajca@apple.com>
+
+            Support quirk for letting media autoplay if the user interacted with at least one media element.
+            https://bugs.webkit.org/show_bug.cgi?id=175005
+            <rdar://problem/33476038>
+
+            Reviewed by Eric Carlson.
+
+            If the user has interacted with at least one media element, let other media elements auto-play
+            as a quirk.
+
+            * dom/Document.cpp:
+            (WebCore::Document::updateIsPlayingMedia):
+            * dom/Document.h:
+            (WebCore::Document::noteUserInteractionWithMediaElement):
+            * html/HTMLMediaElement.cpp:
+            (WebCore::HTMLMediaElement::removeBehaviorsRestrictionsAfterFirstUserGesture):
+            * html/MediaElementSession.cpp:
+            (WebCore::needsDocumentLevelMediaUserGestureQuirk):
+            (WebCore::MediaElementSession::playbackPermitted const):
+            * page/MediaProducer.h:
+
+2017-02-09  Matthew Hanson  <matthew_hanson@apple.com>
+
+        Merge r211965. rdar://problem/30149422
+
+    2017-02-09  Ryosuke Niwa  <rniwa@webkit.org>
+
+            Adopting a child node of a script element can run script
+            https://bugs.webkit.org/show_bug.cgi?id=167318
+
+            Reviewed by Darin Adler.
+
+            The bug was caused by ScriptElement::childrenChanged indiscriminately running the script.
+            Do this only if some node has been inserted as spec'ed:
+
+            https://html.spec.whatwg.org/multipage/scripting.html#script-processing-model
+            "The script element is connected and a node or document fragment is inserted into
+            the script element, after any script elements inserted at that time."
+
+            Split NonContentsChildChanged into NonContentsChildInserted and NonContentsChildRemoved to disambiguate
+            non-contents child such as text and element being removed or inserted. New behavior matches that of
+            Gecko and Chrome as well as the latest HTML5 specification.
+
+            Also deploy NoEventDispatchAssertion in more places. Unfortunately, this results in some DOM trees
+            internal to WebKit to be mutated while there is NoEventDispatchAssertion in the stack. Added a new RAII
+            object "EventAllowedScope" to temporarily disable this assertion within such a tree. CachedSVGFont's
+            ensureCustomFontData used to completely disable this assertion but we no longer have to do this either.
+
+            To clarify the new semantics, renamed isEventDispatchForbidden to isEventAllowedInMainThread with
+            the negated boolean value, and added a new variant isEventDispatchAllowedInSubtree, which checks
+            isEventDispatchForbidden() is true or if the node was one of an internal DOM node or its descendent
+            held by EventAllowedScope.
+
+            Inspired by https://chromium.googlesource.com/chromium/src/+/604e798ec6ee30f44d57a5c4a44ce3dab3a871ed
+
+            Tests: fast/html/script-must-not-run-when-child-is-adopted.html
+                   fast/html/script-must-not-run-when-child-is-removed.html
+
+            * dom/CharacterData.cpp:
+            (WebCore::CharacterData::notifyParentAfterChange): Added NoEventDispatchAssertion.
+            * dom/ContainerNode.cpp:
+            (WebCore::ContainerNode::insertBefore): Added NoEventDispatchAssertion around TreeScope's adoptIfNeeded
+            and insertBeforeCommon as done elsewhere.
+            (WebCore::ContainerNode::appendChildCommon): Added NoEventDispatchAssertion.
+            (WebCore::ContainerNode::changeForChildInsertion): Use NonContentsChildInserted here.
+            (WebCore::ContainerNode::notifyChildRemoved): Added NoEventDispatchAssertion.
+            (WebCore::ContainerNode::replaceChild): Moved adoptIfNeeded into NoEventDispatchAssertion.
+            (WebCore::ContainerNode::removeChild): Added NoEventDispatchAssertion.
+            (WebCore::ContainerNode::parserRemoveChild): Added NoEventDispatchAssertion.
+            (WebCore::ContainerNode::removeChildren): Call childrenChanged in NoEventDispatchAssertion.
+            (WebCore::ContainerNode::appendChildWithoutPreInsertionValidityCheck): Moved adoptIfNeeded into
+            NoEventDispatchAssertion.
+            (WebCore::dispatchChildInsertionEvents): Check the forbidden-ness more precisely.
+            (WebCore::dispatchChildRemovalEvents): Ditto.
+            * dom/ContainerNode.h:
+            (WebCore::ContainerNode::ChildChange::isInsertion): Added.
+            * dom/ContainerNodeAlgorithms.cpp:
+            (WebCore::notifyChildNodeInserted): Check the forbidden-ness more precisely. Here, we check against
+            insertionPoint since EventAllowedScope checks against the root node.
+            * dom/Document.cpp:
+            (WebCore::Document::adoptNode): Assert the node to be adopted has not been inserted back, or else
+            remove() had resulted in an exception before calling TreeScope::adoptIfNeeded.
+            * dom/Element.cpp:
+            (WebCore::Element::childrenChanged):
+            * dom/NoEventDispatchAssertion.h:
+            (WebCore::NoEventDispatchAssertion::isEventDispatchForbidden): Added a new variant that takes a node.
+            If this node is a descendent of a node "marked as safe" by EventAllowedScope, then we don't consider
+            the event dispatch to be forbidden.
+            (WebCore::NoEventDispatchAssertion::dropTemporarily): Deleted.
+            (WebCore::NoEventDispatchAssertion::restoreDropped): Deleted.
+            (WebCore::NoEventDispatchAssertion::EventAllowedScope): Added. A RAII object which marks descendants of
+            a given node as "safe" for the purpose of checking isEventDispatchForbidden.
+            (WebCore::NoEventDispatchAssertion::EventAllowedScope::EventAllowedScope): Added. There can be a chain
+            of EventAllowedScope objects in the stack. s_currentScope points to the most recently instantiated
+            RAII object, and each instance remembers prior instance.
+            (WebCore::NoEventDispatchAssertion::EventAllowedScope::~EventAllowedScope): Added.
+            (WebCore::NoEventDispatchAssertion::EventAllowedScope::isAllowedNode): Added. Returns true if the given
+            node is a descendent of any node held by instances of EventAllowedScope.
+            (WebCore::NoEventDispatchAssertion::EventAllowedScope::isAllowedNodeInternal): Added. A helper function
+            for isAllowedNode.
+            * dom/Node.cpp:
+            (WebCore::Node::dispatchSubtreeModifiedEvent): Check the forbidden-ness more precisely.
+            * dom/ScriptElement.cpp:
+            (WebCore::ScriptElement::childrenChanged): Only prepare the script if we've inserted nodes.
+            (WebCore::ScriptElement::executeClassicScript): Assert isEventDispatchForbidden is false since running
+            arbitrary author scripts can, indeed, result dispatch any events.
+            * dom/ScriptElement.h:
+            * html/HTMLElement.cpp:
+            (WebCore::textToFragment): Made this a static local function and not return an exception since there
+            is no way appendChild called in this function can throw an exception.
+            (WebCore::HTMLElement::setInnerText): Create EventAllowedScope for the fragment. It's called called by
+            HTMLTextAreaElement's childrenChanged to update its UA shadow tree, and it's dispatching as event on
+            a new fragment can't execute arbitrary scripts since it has never been exposed to author scripts.
+            Because of the precise-ness of this check, this does not disable the assertion for "this" element.
+            HTMLTextFormControlElement::setInnerTextValue explicitly creates another EventAllowedScope to mark
+            the shadow tree into which the fragment is inserted safe.
+            (WebCore::HTMLElement::setOuterText):
+            * html/HTMLElement.h:
+            * html/HTMLScriptElement.cpp:
+            (WebCore::HTMLScriptElement::childrenChanged):
+            * html/HTMLTextFormControlElement.cpp:
+            (WebCore::HTMLTextFormControlElement::setInnerTextValue): See above (setInnerText).
+            * html/track/VTTCue.cpp:
+            (WebCore::VTTCue::createCueRenderingTree): Create EventAllowedScope for the cloned fragment here since
+            the VTT tree is never exposed to author scripts.
+            (WebCore::VTTCue::updateDisplayTree): Ditto.
+            * loader/cache/CachedSVGFont.cpp:
+            (WebCore::CachedSVGFont::ensureCustomFontData): Use EventAllowedScope to disable assertions only on
+            the new SVG document we just created instead of disabling for all DOM trees.
+            * svg/SVGScriptElement.cpp:
+            (WebCore::SVGScriptElement::childrenChanged):
+
+2017-08-13  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r220551. rdar://problem/33843388
+
+    2017-08-10  Nan Wang  <n_wang@apple.com>
+
+            AX: crash at WebCore::AccessibilityObject::supportsARIALiveRegion() const + 24
+            https://bugs.webkit.org/show_bug.cgi?id=175340
+            <rdar://problem/33782159>
+
+            Reviewed by Chris Fleizach.
+
+            The issue here is that we manualy set the parent object of the AccessibilitySVGRoot object
+            and there are chances that the parent doesn't detach it properly during the parent's destroying
+            process. Accessing the stale parent object will lead to a crash.
+            Fixed this by making the parent object a weak pointer so we don't access an invalid memory.
+
+            Test: accessibility/add-children-pseudo-element.html
+
+            * accessibility/AccessibilityRenderObject.cpp:
+            (WebCore::AccessibilityRenderObject::AccessibilityRenderObject):
+            * accessibility/AccessibilityRenderObject.h:
+            (WebCore::AccessibilityRenderObject::createWeakPtr):
+            * accessibility/AccessibilitySVGRoot.cpp:
+            (WebCore::AccessibilitySVGRoot::AccessibilitySVGRoot):
+            (WebCore::AccessibilitySVGRoot::setParent):
+            (WebCore::AccessibilitySVGRoot::parentObject const):
+            * accessibility/AccessibilitySVGRoot.h:
+
+2017-08-09  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r220289. rdar://problem/33810941
+
+    2017-08-04  Said Abou-Hallawa  <sabouhallawa@apple.com>
+
+            RenderImageResourceStyleImage::image() should return the nullImage() if the image is not available
+            https://bugs.webkit.org/show_bug.cgi?id=174874
+            <rdar://problem/33530130>
+
+            Reviewed by Simon Fraser.
+
+            If an <img> element has a non-CachedImage content data, e.g. -webkit-named-image,
+            RenderImageResourceStyleImage will be created and  attached to the RenderImage.
+            RenderImageResourceStyleImage::m_cachedImage will be set to null at the
+            beginning because the m_styleImage->isCachedImage() is false in this case.
+            When ImageLoader finishes loading the url of the src attribute,
+            RenderImageResource::setCachedImage() will be called to set m_cachedImage.
+
+            A crash will happen when the RenderImage is destroyed. Destroying the
+            RenderImage calls RenderImageResourceStyleImage::shutdown() which checks
+            m_cachedImage and finds it not null, so it calls RenderImageResourceStyleImage::image()
+            which ends up calling CSSNamedImageValue::image() which returns a null pointer
+            because the size is empty. RenderImageResourceStyleImage::shutdown() calls
+            image()->stopAnimation() without checking the return value of image().
+
+            Another crash will happen later when deleting the CachedImage from the memory
+            cache if CachedImage::canDestroyDecodedData() is called because the client
+            it gets from m_clients is a freed pointer. This happens because RenderImageResourceStyleImage
+            has m_styleImage of type StyleGeneratedImage but its m_cachedImage is set
+            by RenderImageResource::setCachedImage(). When RenderImageResourceStyleImage::shutdown()
+            is called, it calls  StyleGeneratedImage::removeClient() which does not
+            know anything about RenderImageResourceStyleImage::m_cachedImage. So we
+            end up having a freed pointer in the m_clients of the CachedImage.
+
+            Test: fast/images/image-element-image-content-data.html
+
+            * rendering/RenderImageResourceStyleImage.cpp:
+            (WebCore::RenderImageResourceStyleImage::shutdown):  Revert back the changes
+            of r208511 in this function. Add a call to image()->stopAnimation() without
+            checking the return of image() since it will return the nullImage() if
+            the image not available. There is no need to check m_cachedImage before
+            calling image() because image() does not check or access m_cachedImage.
+
+            If m_styleImage is not a CachedStyleImage but m_cachedImage is not null,
+            we need to remove m_renderer from the set of the clients of this m_cachedImage.
+
+            (WebCore::RenderImageResourceStyleImage::image const): The base class method
+            RenderImageResource::image() returns the nullImage() if the image not
+            available. This is because CachedImage::imageForRenderer() returns
+            the nullImage() if the image is not available; see CachedImage.h. We should
+            do the same for the derived class for consistency.
+
+2017-07-31  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r220048. rdar://problem/33619591
+
+    2017-07-30  Said Abou-Hallawa  <sabouhallawa@apple.com>
+
+            RenderImageResourceStyleImage::image() should return the nullImage() if the image is not available
+            https://bugs.webkit.org/show_bug.cgi?id=174874
+            <rdar://problem/33530130>
+
+            Reviewed by Darin Adler.
+
+            If an <img> element has image content data for a none cached image, e.g.
+            -webkit-named-image, RenderImageResourceStyleImage will be created and
+            attached to the RenderImage. RenderImageResourceStyleImage::m_cachedImage
+            will be set to null because the m_styleImage->isCachedImage() is false in
+            this case. When ImageLoader finishes loading the url of the src attribute,
+            RenderImageResource::setCachedImage() will be called to set m_cachedImage.
+
+            A crash will happen when the RenderImage is destroyed. Destroying the
+            RenderImage calls RenderImageResourceStyleImage::shutdown() which checks
+            m_cachedImage and finds it not null, so it calls RenderImageResourceStyleImage::image()
+            which ends up calling CSSNamedImageValue::image() which returns a null pointer
+            because the size is empty. RenderImageResourceStyleImage::shutdown() calls
+            image()->stopAnimation() without checking the return value of image().
+
+            Like the base class virtual method RenderImageResource::image(),
+            RenderImageResourceStyleImage::image() should return the nullImage() if
+            the image is not available.
+
+            Test: fast/images/image-element-image-content-data.html
+
+            * css/CSSCrossfadeValue.cpp:
+            * css/CSSFilterImageValue.cpp:
+            * page/EventHandler.cpp:
+            * page/PageSerializer.cpp:
+            * rendering/RenderElement.cpp:
+            * rendering/RenderImageResource.cpp:
+            * rendering/RenderImageResourceStyleImage.cpp:
+            (WebCore::RenderImageResourceStyleImage::initialize):
+
+            (WebCore::RenderImageResourceStyleImage::shutdown): Revert back the changes
+            of r208511 in this function. Add a call to image()->stopAnimation() without
+            checking the return of image() since it will return the nullImage() if
+            the image not available. There is no need to check m_cachedImage before
+            calling image() because image() does not check or access m_cachedImage.
+
+            (WebCore::RenderImageResourceStyleImage::image): The base class method
+            RenderImageResource::image() returns the nullImage() if the image not
+            available. This is because CachedImage::imageForRenderer() returns
+            the nullImage() if the image is not available; see CachedImage.h. We should
+            do the same for the derived class for consistency.
+
+            * rendering/style/ContentData.cpp:
+            * rendering/style/StyleCachedImage.cpp:
+            * style/StylePendingResources.cpp:
+
+2017-07-31  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r220042. rdar://problem/33619586
+
+    2017-07-29  Nan Wang  <n_wang@apple.com>
+
+            AX: findMatchingObjects doesn't work when the startObject is ignored
+            https://bugs.webkit.org/show_bug.cgi?id=174965
+
+            Reviewed by Chris Fleizach.
+
+            findMatchingObjects would return a wrong element if we pass in an ignored
+            start object. To fix this, we should use the closest accessible sibling as
+            the start object.
+
+            Test: accessibility/mac/search-predicate-from-ignored-element.html
+
+            * accessibility/AccessibilityObject.cpp:
+            (WebCore::appendChildrenToArray):
+
+2017-07-26  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r219751. rdar://problem/33523861
+
+    2017-07-21  Nan Wang  <n_wang@apple.com>
+
+            AX: Expose form validation on iOS as hint
+            https://bugs.webkit.org/show_bug.cgi?id=174722
+            <rdar://problem/33459761>
+
+            Reviewed by Chris Fleizach.
+
+            Adding the validation message to the hint of the form control element.
+
+            Test: accessibility/ios-simulator/form-control-validation-message.html
+
+            * accessibility/AccessibilityObject.cpp:
+            (WebCore::AccessibilityObject::isShowingValidationMessage):
+            (WebCore::AccessibilityObject::validationMessage):
+            * accessibility/AccessibilityObject.h:
+            * accessibility/ios/WebAccessibilityObjectWrapperIOS.mm:
+            (-[WebAccessibilityObjectWrapper accessibilityHint]):
+            (-[WebAccessibilityObjectWrapper accessibilityIsShowingValidationMessage]):
+            * html/HTMLFormControlElement.cpp:
+            (WebCore::HTMLFormControlElement::isShowingValidationMessage):
+            * html/HTMLFormControlElement.h:
+
+
+2017-07-26  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r219736. rdar://problem/33523835
+
+    2017-07-21  Jeremy Jones  <jeremyj@apple.com>
+
+            Noise when AudioChannel lengths don't match.
+            https://bugs.webkit.org/show_bug.cgi?id=174706
+            rdar://problem/33389856
+
+            Reviewed by Eric Carlson.
+
+            When AudioChannel lengths don't match, copyFrom() returns early leaving uninitialized data in the audio buffer.
+            This change zeros out the data, so there isn't objectionable noise sent to the speaker.
+
+            * platform/audio/AudioChannel.cpp:
+            (WebCore::AudioChannel::copyFrom):
+
+2017-07-22  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r219709. rdar://problem/33462692
+
+    2017-07-20  David Quesada  <david_quesada@apple.com>
+
+            Add SPI to notify WKNavigationDelegate about client redirects
+            https://bugs.webkit.org/show_bug.cgi?id=174680
+            rdar://problem/33184886
+
+            Reviewed by Brady Eidson.
+
+            * loader/FrameLoader.cpp:
+            (WebCore::FrameLoader::performClientRedirect):
+            * loader/FrameLoader.h:
+            Add a convenience method for NavigationScheduler that handles a FrameLoadRequest
+            as a client redirect. Currently this means loading the request and informing the
+            client about it.
+
+            * loader/FrameLoaderClient.h:
+            Add FrameLoaderClient::dispatchDidPerformClientRedirect() to inform the client when
+            a client redirect occurs.
+
+            * loader/NavigationScheduler.cpp:
+            Removed ScheduledURLNavigation::fire(). This class was never instantiated directly,
+            and all subclasses override fire(), so this was unused code.
+            For ScheduledRedirects and ScheduledLocationChange, use FrameLoader's new method to
+            load the request as a client redirect.
+
+2017-07-22  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r219661. rdar://problem/33465132
+
+    2017-07-19  Nan Wang  <n_wang@apple.com>
+
+            AX: Web page reloaded when a node is labelling multiple childnodes
+            https://bugs.webkit.org/show_bug.cgi?id=174655
+
+            Reviewed by Chris Fleizach.
+
+            When we are asking for the aria-labelledby attribute of a node and its
+            sibling is also labelled by the same node, we get into an infinite loop
+            in textUnderElement since we only ignore one child. Added checks for
+            siblings to avoid such loop.
+
+            Test: accessibility/mac/aria-labelledby-multiple-child-crash.html
+
+            * accessibility/AccessibilityNodeObject.cpp:
+            (WebCore::AccessibilityNodeObject::textUnderElement):
+
+2017-07-22  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r219645. rdar://problem/33464440
+
+    2017-07-18  Zalan Bujtas  <zalan@apple.com>
+
+            Media controls are missing content in fullscreen when document has scroll offset.
+            https://bugs.webkit.org/show_bug.cgi?id=174644
+            <rdar://problem/32415323>
+
+            Reviewed by Simon Fraser.
+
+            If a non-user initiated scrolling (result of resize for example) is processed asynchronously, it might
+            leapfrog other, programatic scrollings and trigger unintentional scroll offsets (and turn into unwanted clippings).
+            This patch ensures that both resize and top content inset change are translated into programatic scrolling.
+
+            Unable to test full screen video.
+
+            * page/FrameView.cpp:
+            (WebCore::FrameView::setFrameRect):
+            (WebCore::FrameView::topContentInsetDidChange):
+
+2017-07-22  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r219641. rdar://problem/33464325
+
+    2017-07-18  Chris Dumez  <cdumez@apple.com>
+
+            HysteresisActivity cannot be used in the UIProcess
+            https://bugs.webkit.org/show_bug.cgi?id=174643
+            <rdar://problem/33086442>
+
+            Reviewed by Tim Horton.
+
+            Port HysteresisActivity to RunLoop::Timer so that it can safely be used in
+            the UIProcess as well.
+
+            * platform/HysteresisActivity.h:
+
+2017-07-17  Wenson Hsieh  <wenson_hsieh@apple.com>
+
+        [iOS DnD] Web process uses too much memory when beginning a drag on a very large image
+        https://bugs.webkit.org/show_bug.cgi?id=174585
+        <rdar://problem/33302541>
+
+        Reviewed by Tim Horton.
+
+        Currently, attempting to drag a very large image fails, either due to us telling CoreGraphics to create an image
+        buffer that is too large, or because the web process exceeds its memory limit and gets jetsamed. There are two
+        places where we can optimize our memory use during the drag initialization sequence, and this patch improves
+        both.
+
+        First, on iOS, we attempt to encode and send over a WebCore::Image in the PasteboardImage when writing to the
+        item providers upon starting a drag. Currently, this Image is only used in the drag and drop codepath, in
+        PlatformPasteboard::writeObjectRepresentations, to grab the size of the image being written for the purpose of
+        specifying estimated display size. Serializing and deserializing an Image calls into Image::nativeImage, which
+        attempts to draw the contents of the image into a buffer so that it can be shipped across to the UI process.
+        Instead, we can simply compute the size in the web process while we already have the Image, and simply send that
+        across. For copy/paste, this doesn't result in any behavior change, since we don't use the PasteboardImage's
+        image in the first place.
+
+        Secondly, when starting a drag, we try to allocate create an image buffer the size of the WebCore::Image for the
+        purpose of generating the drag preview. Instead, this patch establishes a limit on the size of this drag preview
+        image, such that if the Image's size is larger, we'll scale down the drag preview image to be the maximum
+        allowed size.
+
+        Test: DataInteractionTests.CanStartDragOnEnormousImage.
+
+        * editing/ios/EditorIOS.mm:
+        (WebCore::Editor::writeImageToPasteboard):
+        * platform/Pasteboard.h:
+        * platform/graphics/GeometryUtilities.cpp:
+        (WebCore::sizeWithAreaAndAspectRatio):
+
+        Introduce a new helper function to compute a size with the given aspect ratio and area.
+
+        * platform/graphics/GeometryUtilities.h:
+        * platform/ios/DragImageIOS.mm:
+        (WebCore::createDragImageFromImage):
+        * platform/ios/PlatformPasteboardIOS.mm:
+        (WebCore::PlatformPasteboard::writeObjectRepresentations):
+
+2017-01-17  Joseph Pecoraro  <pecoraro@apple.com>
+
+        Crash when closing tab with debugger paused
+        https://bugs.webkit.org/show_bug.cgi?id=161746
+        <rdar://problem/15607819>
+
+        Reviewed by Brian Burg and Brent Fulgham.
+
+        * page/Page.h:
+        (WebCore::Page::incrementNestedRunLoopCount):
+        (WebCore::Page::decrementNestedRunLoopCount):
+        (WebCore::Page::insideNestedRunLoop):
+        Keep track of whether or not this Page is inside of a nested run loop.
+        Currently the only nested run loop we know about is EventLoop used
+        by Web Inspector when debugging JavaScript.
+
+        (WebCore::Page::whenUnnested):
+        Callback that can be called when we are no longer inside of a nested
+        run loop.
+
+        (WebCore::Page::~Page):
+        Ensure we are not in a known nested run loop when destructing, since
+        that could be unsafe.
+
+        * inspector/PageScriptDebugServer.cpp:
+        (WebCore::PageScriptDebugServer::runEventLoopWhilePausedInternal):
+        Increment and decrement as we go into or leave the nested runloop.
+
+        * inspector/InspectorController.cpp:
+        (WebCore::InspectorController::inspectedPageDestroyed):
+        (WebCore::InspectorController::disconnectAllFrontends):
+        Rework destruction to allow disconnectAllFrontends to happen earlier
+        if necessary. WebKit clients may use this to disconnect remote
+        frontends when closing a Page.
+
+2016-10-31  Joseph Pecoraro  <pecoraro@apple.com>
+
+        Web Inspector: Provide an opportunity to clear ScriptValues associated with debugged target
+        https://bugs.webkit.org/show_bug.cgi?id=164167
+        <rdar://problem/29010148>
+
+        Reviewed by Mark Lam.
+
+        * inspector/InspectorController.cpp:
+        (WebCore::InspectorController::inspectedPageDestroyed):
+        Page is going away, discard values.
+
+        * inspector/WorkerInspectorController.h:
+        * inspector/WorkerInspectorController.cpp:
+        (WebCore::WorkerInspectorController::workerTerminating):
+        Worker is going away, discard values.
+
+2015-09-04  Brian Burg  <bburg@apple.com>
+
+        Web Inspector: InspectorController should support multiple frontend channels
+        https://bugs.webkit.org/show_bug.cgi?id=148538
+
+        Reviewed by Joseph Pecoraro.
+
+        No new tests, no behavior change from this patch. Teardown scenarios are
+        covered by existing protocol and inspector tests running under DRT and WKTR.
+
+        * ForwardingHeaders/inspector/InspectorFrontendRouter.h: Added.
+        * WebCore.vcxproj/WebCore.vcxproj:
+        * inspector/InspectorClient.h: Stop using forwarded types.
+        * inspector/InspectorController.cpp:
+        (WebCore::InspectorController::InspectorController):
+        (WebCore::InspectorController::inspectedPageDestroyed):
+        (WebCore::InspectorController::hasLocalFrontend):
+        (WebCore::InspectorController::hasRemoteFrontend):
+        (WebCore::InspectorController::connectFrontend):
+        (WebCore::InspectorController::disconnectFrontend):
+        (WebCore::InspectorController::disconnectAllFrontends): Added. Disconnects all
+        frontends and signals DisconnectReason::InspectedTargetDestroyed.
+
+        (WebCore::InspectorController::show):
+        (WebCore::InspectorController::close):
+        (WebCore::InspectorController::dispatchMessageFromFrontend):
+        * inspector/InspectorController.h: Add default value for isAutomaticInspection.
+        * inspector/InspectorDatabaseAgent.cpp:
+        * inspector/InspectorIndexedDBAgent.cpp:
+        * inspector/InspectorResourceAgent.cpp:
+        * inspector/WorkerInspectorController.cpp: Use a router with a singleton channel
+        that forwards messages over to the main page.
+
+        (WebCore::WorkerInspectorController::WorkerInspectorController):
+        (WebCore::WorkerInspectorController::connectFrontend):
+        (WebCore::WorkerInspectorController::disconnectFrontend):
+        (WebCore::WorkerInspectorController::dispatchMessageFromFrontend):
+        * inspector/WorkerInspectorController.h:
+        * page/PageDebuggable.cpp:
+        (WebCore::PageDebuggable::disconnect):
+        * page/PageDebuggable.h:
+        * testing/Internals.cpp: Clear the frontend client before disconnecting frontend channel.
+        (WebCore::Internals::openDummyInspectorFrontend):
+        (WebCore::Internals::closeDummyInspectorFrontend):
+
+2015-08-27  Brian Burg  <bburg@apple.com>
+
+        Web Inspector: FrontendChannel should know its own connection type
+        https://bugs.webkit.org/show_bug.cgi?id=148482
+
+        Reviewed by Joseph Pecoraro.
+
+        To prepare for multiple attached frontends, the frontend connection should
+        be able to report its type rather than explicitly setting connection type
+        via a getter.
+
+        No behavior change, no new tests.
+
+        * inspector/InspectorController.cpp:
+        (WebCore::InspectorController::hasLocalFrontend): Ask the channel what it is.
+        (WebCore::InspectorController::hasRemoteFrontend): Ask the channel what it is.
+        (WebCore::InspectorController::connectFrontend): Use hasRemoteFrotend().
+        (WebCore::InspectorController::disconnectFrontend): Use hasRemoteFrontend().
+        (WebCore::InspectorController::InspectorController): Deleted.
+        * inspector/InspectorController.h: Initialize a few members here.
+        (WebCore::InspectorController::hasFrontend): Deleted, it was unused.
+        (WebCore::InspectorController::setHasRemoteFrontend): Deleted.
+        * inspector/WorkerInspectorController.cpp:
+        * page/PageDebuggable.cpp:
+        (WebCore::PageDebuggable::connect):
+        (WebCore::PageDebuggable::disconnect):
+        * testing/Internals.cpp: Add connectionType().
+
+2017-02-12  Ryosuke Niwa  <rniwa@webkit.org>
+
+        parserRemoveChild should unload subframes
+        https://bugs.webkit.org/show_bug.cgi?id=168151
+
+        Reviewed by Darin Adler.
+
+        Fix the bug that the adoption agency algorithm does not unload subframes as it disconnects nodes.
+
+        Also moved calls to nodeWillBeRemoved inside NoEventDispatchAssertion to expand on r211965.
+
+        Tests: fast/parser/adoption-agency-clear-focus-range.html
+               fast/parser/adoption-agency-unload-iframe-1.html
+               fast/parser/adoption-agency-unload-iframe-2.html
+
+        * dom/ContainerNode.cpp:
+        (WebCore::ContainerNode::takeAllChildrenFrom): Rewritten using idioms used in removeChildren and parserAppendChild.
+
+        Disconnect all subframes first since this can synchronously dispatch an unload event. Then update DOM ranges,
+        the focused element, and other states in the document.
+
+        Second, use the regular removeBetween, notifyChildNodeRemoved, childrenChanged sequence of calls to disconnect nodes
+        instead of a single call to removeDetachedChildren to properly disconnect child nodes since those nodes may have
+        already come live due to execution of synchronous scripts prior to the adoption agency algorithm has run, or in
+        response to the unload event we just dispatched.
+
+        Third, append these nodes using parserAppendChild to avoid dispatching mutation events.
+
+        (WebCore::willRemoveChild): Removed the call to nodeWillBeRemoved. It's now called within NoEventDispatchAssertion
+        in each call site of willRemoveChild and willRemoveChildren.
+        (WebCore::willRemoveChildren): Ditto.
+        (WebCore::ContainerNode::removeChild): Call nodeWillBeRemoved inside NoEventDispatchAssertion.
+        (WebCore::ContainerNode::replaceAllChildren): Call nodeWillBeRemoved inside NoEventDispatchAssertion.
+        (WebCore::ContainerNode::parserRemoveChild): Disconnect subframes and update document's states.
+
+        * html/parser/HTMLConstructionSite.cpp:
+        (WebCore::executeTakeAllChildrenAndReparentTask): Add a release assert that new parent does not already have a parent. 
+
+2016-02-14  Gavin Barraclough  <barraclough@apple.com>
+
+        Organize, deduplicate & comment JSDOMWindowCustom getOwnPropertySlot
+        https://bugs.webkit.org/show_bug.cgi?id=154224
+
+        Reviewed by Chris Dumez.
+
+        * bindings/js/JSDOMWindowCustom.cpp:
+        (WebCore::jsDOMWindowGetOwnPropertySlotRestrictedAccess):
+        (WebCore::jsDOMWindowGetOwnPropertySlotNamedItemGetter):
+        (WebCore::JSDOMWindow::getOwnPropertySlot):
+        (WebCore::JSDOMWindow::getOwnPropertySlotByIndex):
+            - organized property access sequence into a more logical order, removed
+              duplicated code & added comments.
+        (WebCore::namedItemGetter): Deleted.
+            - there was no need for a custom callback here; merged functionality into
+              jsDOMWindowGetOwnPropertySlotNamedItemGetter.
+        (WebCore::jsDOMWindowGetOwnPropertySlotCrossOrigin): Deleted.
+            - renamed to jsDOMWindowGetOwnPropertySlotRestrictedAccess
+              (this now also handles frameless access).
+
+2016-02-12  Gavin Barraclough  <barraclough@apple.com>
+
+        Separate out !allowsAccess path in JSDOMWindowCustom getOwnPropertySlot
+        https://bugs.webkit.org/show_bug.cgi?id=154156
+
+        Reviewed by Chris Dumez.
+
+        JSDOMWindowCustom getOwnPropertySlot currently allows cross-origin access to all
+        static properties, relying on the property to perform the access check. This is
+        a little insecure, since it is error prone - someone could easily add a property
+        to the static table without realizing it would be automatcially exposed.
+
+        Instead, add a hard-coded filter to restrict access. As a future implementation
+        we might consider autogenerating this (the properties are already tagged in IDL,
+        we might be able to track this in a flag on the static table).
+
+        By separating out the handling of the same- and cross-origin access we can
+        simplify & make the policy being enforced much clearer.
+
+        * bindings/js/JSDOMBinding.cpp:
+        (WebCore::objectToStringFunctionGetter): Deleted.
+            - removed objectToStringFunctionGetter - this duplicated functionality of
+              nonCachingStaticFunctionGetter.
+        * bindings/js/JSDOMBinding.h:
+        (WebCore::objectToStringFunctionGetter): Deleted.
+            - removed objectToStringFunctionGetter - this duplicated functionality of
+              nonCachingStaticFunctionGetter.
+        * bindings/js/JSDOMWindowCustom.cpp:
+        (WebCore::jsDOMWindowGetOwnPropertySlotDisallowAccess):
+            - explicitly handle providing access to only the things we do want to allow cross-origin.
+        (WebCore::JSDOMWindow::getOwnPropertySlot):
+        (WebCore::JSDOMWindow::getOwnPropertySlotByIndex):
+            - push all !allowsAccess handling to jsDOMWindowGetOwnPropertySlotDisallowAccess
+        (WebCore::childFrameGetter): Deleted.
+            - this was just a deoptimiztion - moving access into a callback saved very
+              little & caused more work to be duplicated.
+
+2017-01-06  Daniel Bates  <dabates@apple.com>
+
+        Ensure navigation only allowed for documents not in the page cache
+        https://bugs.webkit.org/show_bug.cgi?id=166773
+        <rdar://problem/29762809>
+
+        Reviewed by Brent Fulgham.
+
+        It is wise to ensure that navigation is only allowed when initiated from a document that
+        is not in- or about to be put in- the page cache. Such a navigation would surprise a
+        person that had navigated away from the initiating document among other issues.
+
+        * dom/Document.cpp:
+        (WebCore::Document::canNavigate): Only allow navigation if the document is not in the
+        page cache.
+        * html/HTMLAnchorElement.cpp:
+        (WebCore::HTMLAnchorElement::handleClick): Ditto.
+        * html/HTMLLinkElement.cpp:
+        (WebCore::HTMLLinkElement::handleClick): Ditto.
+        * loader/FrameLoader.cpp:
+        (WebCore::FrameLoader::urlSelected): Assert triggering event's document is not in the
+        page cache.
+        (WebCore::FrameLoader::submitForm): Allow submission if the document is not in the
+        page cache.
+        (WebCore::FrameLoader::loadFrameRequest): Assert triggering event's document is not in
+        the page cache.
+        * mathml/MathMLElement.cpp:
+        (WebCore::MathMLElement::defaultEventHandler): Only allow navigation if the document is
+        not in the page cache.
+        * svg/SVGAElement.cpp:
+        (WebCore::SVGAElement::defaultEventHandler): Ditto.
+
+2016-05-17  Dave Hyatt  <hyatt@apple.com>
+
+        Optimize layer repaint rect computation and painting.
+        https://bugs.webkit.org/show_bug.cgi?id=157631
+
+        Reviewed by Zalan Bujtas.
+
+        This patch changes the computation of repaint rects to be for self-painting layers
+        only. In addition, hasBoxDecorations() has been changed to hasVisibleBoxDecorations(),
+        and it will no longer be set for transparent borders.
+
+        For scrolling layer position updating, visually empty layers have their repaint rects
+        cleared, and we don't compute repaint rects during the scroll. We would like to do this
+        all the time, but computeRepaintRects can be called at times when the visually empty
+        state is stale/unknown. For now we limit it to scrolling, since we know that the layer's
+        visually empty state is correct.
+
+        * rendering/InlineFlowBox.cpp:
+        (WebCore::InlineFlowBox::paintBoxDecorations):
+        * rendering/RenderBlock.cpp:
+        (WebCore::RenderBlock::paintObject):
+        * rendering/RenderBlockLineLayout.cpp:
+        (WebCore::RenderBlockFlow::layoutRunsAndFloats):
+        * rendering/RenderBox.cpp:
+        (WebCore::RenderBox::updateFromStyle):
+        (WebCore::RenderBox::paintBoxDecorations):
+        * rendering/RenderBoxModelObject.cpp:
+        (WebCore::RenderBoxModelObject::willBeDestroyed):
+        (WebCore::RenderBoxModelObject::hasVisibleBoxDecorationStyle):
+        (WebCore::RenderBoxModelObject::updateFromStyle):
+        (WebCore::RenderBoxModelObject::hasBoxDecorationStyle): Deleted.
+        * rendering/RenderBoxModelObject.h:
+        * rendering/RenderElement.cpp:
+        (WebCore::RenderElement::styleWillChange):
+        (WebCore::mustRepaintBackgroundOrBorder):
+        * rendering/RenderImage.cpp:
+        (WebCore::RenderImage::imageChanged):
+        * rendering/RenderInline.cpp:
+        (WebCore::RenderInline::styleDidChange):
+        * rendering/RenderLayer.cpp:
+        (WebCore::RenderLayer::RenderLayer):
+        (WebCore::RenderLayer::updateLayerPositions):
+        (WebCore::RenderLayer::repaintRectIncludingNonCompositingDescendants):
+        (WebCore::RenderLayer::computeRepaintRects):
+        (WebCore::RenderLayer::clearRepaintRects):
+        (WebCore::RenderLayer::updateLayerPositionsAfterScroll):
+        (WebCore::RenderLayer::scrollTo):
+        (WebCore::RenderLayer::calculateClipRects):
+        * rendering/RenderLayer.h:
+        * rendering/RenderLayerBacking.cpp:
+        (WebCore::RenderLayerBacking::updateDrawsContent):
+        (WebCore::RenderLayerBacking::compositingOpacity):
+        (WebCore::hasVisibleBoxDecorations):
+        (WebCore::canCreateTiledImage):
+        (WebCore::hasVisibleBoxDecorationsOrBackgroundImage):
+        (WebCore::supportsDirectBoxDecorationsComposition):
+        (WebCore::RenderLayerBacking::isSimpleContainerCompositingLayer):
+        (WebCore::RenderLayerBacking::containsPaintedContent):
+        (WebCore::RenderLayerBacking::isDirectlyCompositedImage):
+        (WebCore::hasBoxDecorations): Deleted.
+        (WebCore::hasBoxDecorationsOrBackgroundImage): Deleted.
+        * rendering/RenderLayerModelObject.cpp:
+        (WebCore::RenderLayerModelObject::styleDidChange):
+        * rendering/RenderNamedFlowFragment.cpp:
+        (WebCore::RenderNamedFlowFragment::setObjectStyleInRegion):
+        * rendering/RenderObject.h:
+        (WebCore::RenderObject::hasVisibleBoxDecorations):
+        (WebCore::RenderObject::setFloating):
+        (WebCore::RenderObject::setInline):
+        (WebCore::RenderObject::computeBackgroundIsKnownToBeObscured):
+        (WebCore::RenderObject::setSelectionStateIfNeeded):
+        (WebCore::RenderObject::setHasVisibleBoxDecorations):
+        (WebCore::RenderObject::invalidateBackgroundObscurationStatus):
+        (WebCore::RenderObject::hasBoxDecorations): Deleted.
+        (WebCore::RenderObject::setHasBoxDecorations): Deleted.
+        * rendering/RenderReplaced.cpp:
+        (WebCore::RenderReplaced::paint):
+        * rendering/RenderTable.cpp:
+        (WebCore::RenderTable::paintObject):
+        (WebCore::RenderTable::paintBoxDecorations):
+        * rendering/RenderTableCell.cpp:
+        (WebCore::RenderTableCell::styleDidChange):
+        * rendering/RenderWidget.cpp:
+        (WebCore::RenderWidget::paint):
+        * rendering/style/BorderData.h:
+        (WebCore::BorderData::hasBorder):
+        (WebCore::BorderData::hasVisibleBorder):
+        (WebCore::BorderData::hasFill):
+        (WebCore::BorderData::hasBorderRadius):
+        * rendering/style/RenderStyle.h:
+        * rendering/svg/RenderSVGRoot.cpp:
+        (WebCore::RenderSVGRoot::layout):
+        (WebCore::RenderSVGRoot::styleDidChange):
+
+2015-10-09  Antoine Quint  <graouts@apple.com>
+
+        Dynamic background color changes do not update until a layout is forced
+        https://bugs.webkit.org/show_bug.cgi?id=131623
+
+        Compute correct repaint rect for decorated RenderSVGRoots.
+
+        The current implementation of clippedOverflowRectForRepaint() uses the
+        generic repaint-rect calculations in SVGRenderSupport. Those in turn make
+        use of repaintRectInLocalCoordinates(), which for RenderSVGRoot is the
+        union of the painted children (w/ some expansion). If there're no children,
+        or they do not fill the entire content box, then a repaint would not
+        repaint the correct parts.
+        Fix by calculating the union of the border-box and the SVG content
+        when the SVG root is decorated (has background/border/etc.)
+
+        Adapted from a Chromium patch by fs@opera.com
+        https://src.chromium.org/viewvc/blink?revision=170890&view=revision
+
+        Reviewed by Darin Adler.
+
+        Tests: svg/repaint/add-background-property-on-root.html
+               svg/repaint/add-border-property-on-root.html
+               svg/repaint/add-outline-property-on-root.html
+               svg/repaint/change-background-color.html
+               svg/repaint/remove-background-property-on-root.html
+               svg/repaint/remove-border-property-on-root.html
+               svg/repaint/remove-outline-property-on-root.html
+
+        * rendering/svg/RenderSVGRoot.cpp:
+        (WebCore::RenderSVGRoot::layout):
+        (WebCore::RenderSVGRoot::styleDidChange):
+        (WebCore::RenderSVGRoot::clippedOverflowRectForRepaint):
+
+2015-10-07  Zalan Bujtas  <zalan@apple.com>
+
+        RenderObject::computeRectForRepaint/computeFloatRectForRepaint should return the computed rectangle.
+        https://bugs.webkit.org/show_bug.cgi?id=149883
+
+        Reviewed by Simon Fraser.
+
+        Reduces code complexity at the calling sites.
+ 
+        No change in functionality.
+
+        * rendering/RenderBox.cpp:
+        (WebCore::RenderBox::clippedOverflowRectForRepaint):
+        (WebCore::RenderBox::computeRectForRepaint):
+        * rendering/RenderBox.h:
+        * rendering/RenderInline.cpp:
+        (WebCore::RenderInline::clippedOverflowRectForRepaint):
+        (WebCore::RenderInline::computeRectForRepaint):
+        * rendering/RenderInline.h:
+        * rendering/RenderListMarker.cpp:
+        (WebCore::RenderListMarker::selectionRectForRepaint):
+        * rendering/RenderObject.cpp:
+        (WebCore::RenderObject::repaintRectangle):
+        (WebCore::RenderObject::computeRectForRepaint):
+        (WebCore::RenderObject::computeFloatRectForRepaint):
+        * rendering/RenderObject.h:
+        (WebCore::RenderObject::computeAbsoluteRepaintRect):
+        * rendering/RenderReplaced.cpp:
+        (WebCore::RenderReplaced::selectionRectForRepaint):
+        (WebCore::RenderReplaced::clippedOverflowRectForRepaint):
+        * rendering/RenderTableCell.cpp:
+        (WebCore::RenderTableCell::clippedOverflowRectForRepaint):
+        (WebCore::RenderTableCell::computeRectForRepaint):
+        * rendering/RenderTableCell.h:
+        * rendering/RenderText.cpp:
+        (WebCore::RenderText::collectSelectionRectsForLineBoxes):
+        * rendering/RenderView.cpp:
+        (WebCore::RenderView::computeRectForRepaint):
+        * rendering/RenderView.h:
+        * rendering/svg/RenderSVGForeignObject.cpp:
+        (WebCore::RenderSVGForeignObject::computeFloatRectForRepaint):
+        (WebCore::RenderSVGForeignObject::computeRectForRepaint):
+        * rendering/svg/RenderSVGForeignObject.h:
+        * rendering/svg/RenderSVGInline.cpp:
+        (WebCore::RenderSVGInline::computeFloatRectForRepaint):
+        * rendering/svg/RenderSVGInline.h:
+        * rendering/svg/RenderSVGModelObject.cpp:
+        (WebCore::RenderSVGModelObject::computeFloatRectForRepaint):
+        * rendering/svg/RenderSVGModelObject.h:
+        * rendering/svg/RenderSVGRoot.cpp:
+        (WebCore::RenderSVGRoot::computeFloatRectForRepaint):
+        * rendering/svg/RenderSVGRoot.h:
+        * rendering/svg/RenderSVGText.cpp:
+        (WebCore::RenderSVGText::computeRectForRepaint):
+        (WebCore::RenderSVGText::computeFloatRectForRepaint):
+        * rendering/svg/RenderSVGText.h:
+        * rendering/svg/SVGRenderSupport.cpp:
+        (WebCore::SVGRenderSupport::clippedOverflowRectForRepaint):
+        (WebCore::SVGRenderSupport::computeFloatRectForRepaint):
+        * rendering/svg/SVGRenderSupport.h:
+
+2015-10-06  Zalan Bujtas  <zalan@apple.com>
+
+        Paint artifacts when hovering on http://jsfiddle.net/Sherbrow/T87Mn/
+        https://bugs.webkit.org/show_bug.cgi?id=149535
+        rdar://problem/22874920
+
+        Reviewed by Simon Fraser.
+
+        When due to some style change, a renderer's self-painting layer is getting destroyed 
+        and the parent's overflow is no longer set to visible, we don't clean up the overflow part.
+
+        When a renderer has a self-painting layer, the parent stops tracking the child's 
+        visual overflow rect. All overflow painting is delegated to the self-painting layer.
+        However when this layer gets destroyed, no-one issues repaint to clean up
+        the overflow bits.
+        This patch ensures that we issue a repaint when the self-painting layer is destroyed
+        and the triggering style change requires full repaint.
+
+        Test: fast/repaint/overflow-hidden-with-self-painting-child-layer.html
+
+        * rendering/RenderLayer.h:
+        * rendering/RenderLayerModelObject.cpp:
+        (WebCore::RenderLayerModelObject::styleDidChange):
+
+2015-10-26  Zalan Bujtas  <zalan@apple.com>
+
+        Floating box is misplaced after content change.
+        https://bugs.webkit.org/show_bug.cgi?id=150271
+
+        Reviewed by David Hyatt.
+
+        Collapse anonymous block when as the result of a sibling removal only floating siblings are left.
+
+        Test: fast/block/collapse-anon-block-with-float-siblings-only.html
+
+        * rendering/RenderBlock.cpp:
+        (WebCore::canCollapseAnonymousBlock):
+        (WebCore::canMergeContiguousAnonymousBlocks):
+        (WebCore::RenderBlock::collapseAnonymousBoxChild):
+        (WebCore::RenderBlock::removeChild):
+        (WebCore::canMergeAnonymousBlock): Deleted.
+        * rendering/RenderBlock.h:
+        * rendering/RenderElement.cpp:
+        (WebCore::RenderElement::removeAnonymousWrappersForInlinesIfNecessary):
+
+2016-08-10  Chris Dumez  <cdumez@apple.com>
+
+        Optimization in Node.insertBefore() is not spec-compliant
+        https://bugs.webkit.org/show_bug.cgi?id=160746
+
+        Reviewed by Ryosuke Niwa.
+
+        We have an optimization in Node.insertBefore(newNode, refChild) to avoid
+        doing any work when newNode == refChild or newNode.nextSibling == refChild.
+
+        This optimization is not in the specification:
+        - https://dom.spec.whatwg.org/#concept-node-replace
+
+        The issue is that this optimization is observable with DOM mutation
+        observers / listeners or DOM ranges.
+
+        This patch addresses the issue by dropping the optimization. This case
+        does not seem common enough to be worth optimizing for. However, if it
+        turns out to regress the performance of things we care about, we could
+        fallback to doing the optimization only when it is not observable.
+
+        Test: fast/dom/Node/insertBefore-no-op-mutationobserver.html
+
+        * dom/ContainerNode.cpp:
+        (WebCore::checkAcceptChild):
+        Move refChild->parent() == parent check from insertBefore() to our
+        pre-insertion check function, right after checking if newNode contains
+        parent. This was done in order to match more closely the specification
+        and to make sure that exception are thrown in the correct order:
+        - https://dom.spec.whatwg.org/#concept-node-ensure-pre-insertion-validity (steps 2 and 3)
+
+        (WebCore::ContainerNode::insertBefore):
+        1. Drop the (refChild->previousSibling() == &newChild || refChild == &newChild)
+           optimization as it is not spc-compliant.
+        2. If refChild is newNode, then set refChild to newChild.nextSibling as per:
+           - https://dom.spec.whatwg.org/#concept-node-pre-insert (step 3)
+
+2015-09-13  Chris Dumez  <cdumez@apple.com>
+
+        Improve Node pre-insertion validation when the parent is a Document
+        https://bugs.webkit.org/show_bug.cgi?id=149109
+        <rdar://problem/22560436>
+
+        Reviewed by Ryosuke Niwa.
+
+        Improve Node pre-insertion validation when the parent is a Document to
+        match the specification:
+        https://dom.spec.whatwg.org/#concept-node-ensure-pre-insertion-validity
+        https://dom.spec.whatwg.org/#concept-node-replace
+
+        This affects the following API: Node.insertBefore(), Node.appendChild(),
+        Node.replaceChild().
+
+        WebKit current fails to do the following checks whenever the parent is a
+        Document from pre-insertion validation:
+        1. If the inserted Node is a DocumentFragment, we should make sure it
+          contains only one Element.
+        -> This is because a Document can have only one child that is an
+           Element [1].
+        2.a. If an Element is inserted, we should make sure it is not inserted
+             before a DocumentType.
+        2.b. If a DocumentType is inserted, we should make sure it is not
+             inserted after an Element.
+        -> This is because the DocType must come before the optional Element
+           child [1].
+
+        Firefox and Chrome already match the specification here. This patch
+        aligns WebKit's behavior with those browsers and the specification.
+
+        [1] https://dom.spec.whatwg.org/#node-trees
+
+        No new tests, already covered by existing W3C tests.
+
+        * dom/ContainerNode.cpp:
+        (WebCore::checkAcceptChild):
+        (WebCore::checkAddChild):
+        (WebCore::checkReplaceChild):
+        (WebCore::ContainerNode::insertBefore):
+        (WebCore::ContainerNode::appendChild):
+        (WebCore::containsConsideringHostElements): Deleted.
+        (WebCore::checkAcceptChildGuaranteedNodeTypes): Deleted.
+        * dom/Document.cpp:
+        (WebCore::Document::canAcceptChild):
+        (WebCore::Document::cloneNodeInternal): Deleted.
+        * dom/Document.h:
+
+2015-09-10  Chris Dumez  <cdumez@apple.com>
+
+        Node.appendChild(null) / replaceChild(null, null) / removeChild(null) / insertBefore(null, ref) should throw a TypeError
+        https://bugs.webkit.org/show_bug.cgi?id=148971
+        <rdar://problem/22560883>
+        <rdar://problem/22559225>
+
+        Reviewed by Ryosuke Niwa.
+
+        Node.appendChild(null) / replaceChild(null, null) / removeChild(null)
+        and insertBefore(null, ref) should throw a TypeError instead of a
+        NotFoundError, as per the specification:
+        https://dom.spec.whatwg.org/#node
+
+        The parameters are not nullable so the Web IDL specification says
+        we should throw a TypeError in this case.
+
+        This patch moves the null-checking from ContainerNode to the methods
+        on Node. The null-checking is supposed to be done by the bindings code
+        but our generator currently does not support this so we do the null
+        checking as close to the bindings as possible. The bindings code is
+        calling the methods on Node. This also makes sure we throw a TypeError
+        for null-argument when the Node is not a ContainerNode. For e.g.
+        Text.appendChild(null) should throw a TypeError too.
+
+        The methods on ContainerNode now take references insteaad of pointer
+        parameters now that the null-checking is done at the call site in
+        Node. This lead to a lot of code update as those methods are used
+        a lot throughout the code base.
+
+        No new tests, already covered by pre-existing layout tests.
+
+2015-07-05  Sam Weinig  <sam@webkit.org>
+
+        DOM4: prepend, append, before, after & replace
+        https://bugs.webkit.org/show_bug.cgi?id=74648
+
+        Reviewed by Darin Adler.
+
+        - Adds support for ChildNode.before/after/replaceWith and ParentNode.prepend/append
+          which are new functions in https://dom.spec.whatwg.org
+        - Uses custom bindings rather than implementing support for union types in the code
+          generator as their uses seems isolated to just this spec at the moment. If more
+          uses come along, we should implement proper support for them in the generator and
+          remove the custom bindings added here.
+
+        Tests: fast/dom/ChildNode-after.html
+               fast/dom/ChildNode-before.html
+               fast/dom/ChildNode-replaceWith.html
+               fast/dom/ParentNode-append.html
+               fast/dom/ParentNode-prepend.html
+
+        * CMakeLists.txt:
+        * WebCore.vcxproj/WebCore.vcxproj:
+        * WebCore.xcodeproj/project.pbxproj:
+        * bindings/js/JSBindingsAllInOne.cpp:
+        Add new files.
+
+        * bindings/js/JSCharacterDataCustom.cpp: Added.
+        (WebCore::JSCharacterData::before):
+        (WebCore::JSCharacterData::after):
+        (WebCore::JSCharacterData::replaceWith):
+        * bindings/js/JSDocumentCustom.cpp:
+        (WebCore::JSDocument::prepend):
+        (WebCore::JSDocument::append):
+        (WebCore::JSDocument::createTouchList):
+        * bindings/js/JSDocumentFragmentCustom.cpp: Added.
+        (WebCore::JSDocumentFragment::prepend):
+        (WebCore::JSDocumentFragment::append):
+        * bindings/js/JSDocumentTypeCustom.cpp: Added.
+        (WebCore::JSDocumentType::before):
+        (WebCore::JSDocumentType::after):
+        (WebCore::JSDocumentType::replaceWith):
+        * bindings/js/JSElementCustom.cpp:
+        (WebCore::toJSNewlyCreated):
+        (WebCore::JSElement::before):
+        (WebCore::JSElement::after):
+        (WebCore::JSElement::replaceWith):
+        (WebCore::JSElement::prepend):
+        (WebCore::JSElement::append):
+        Add custom bindings to implement the use of variadic union types.
+
+        * bindings/js/JSNodeOrString.cpp: Added.
+        (WebCore::toNodeOrStringVector):
+        * bindings/js/JSNodeOrString.h: Added.
+        Adds a help function for converting an JS argument list into a Vector
+        of NodeOrString objects.
+
+        * dom/ChildNode.idl:
+        Expose before/after/replaceWith to JavaScript.
+
+        * dom/ContainerNode.cpp:
+        (WebCore::ContainerNode::append):
+        (WebCore::ContainerNode::prepend):
+        * dom/ContainerNode.h:
+        Add implementations of append and prepend.
+
+        * dom/Node.h:
+        * dom/Node.cpp:
+        (WebCore::nodeSetPreTransformedFromNodeOrStringVector):
+        (WebCore::firstPrecedingSiblingNotInNodeSet):
+        (WebCore::firstFollowingSiblingNotInNodeSet):
+        Helper functions for before, after and removeWith.
+
+        (WebCore::Node::before):
+        (WebCore::Node::after):
+        (WebCore::Node::replaceWith):
+        Add implementations of before, after and removeWith.
+
+        * dom/NodeOrString.cpp: Added.
+        (WebCore::convertNodesOrStringsIntoNode):
+        * dom/NodeOrString.h: Added.
+        (WebCore::NodeOrString::NodeOrString):
+        (WebCore::NodeOrString::~NodeOrString):
+        (WebCore::NodeOrString::type):
+        (WebCore::NodeOrString::node):
+        (WebCore::NodeOrString::string):
+        Custom union type representing the (Node or DOMString) IDL type.
+
+        * dom/ParentNode.idl:
+        Expose append/prepend to JavaScript.
+
+2016-04-04  Antti Koivisto  <antti@apple.com>
+
+        Enable assertions against DOM mutations in RenderTreeUpdater
+        https://bugs.webkit.org/show_bug.cgi?id=156156
+
+        Reviewed by Andreas Kling.
+
+        Ensure we don't mutate DOM or dispatch events during render tree updates.
+
+        * WebCore.xcodeproj/project.pbxproj:
+        * dom/ContainerNode.cpp:
+        * dom/ContainerNode.h:
+        (WebCore::NoEventDispatchAssertion::NoEventDispatchAssertion): Deleted.
+        (WebCore::NoEventDispatchAssertion::~NoEventDispatchAssertion): Deleted.
+        (WebCore::NoEventDispatchAssertion::isEventDispatchForbidden): Deleted.
+
+            Move NoEventDispatchAssertion to a header of its own.
+
+        * dom/NoEventDispatchAssertion.h: Added.
+        (WebCore::NoEventDispatchAssertion::NoEventDispatchAssertion):
+        (WebCore::NoEventDispatchAssertion::~NoEventDispatchAssertion):
+        (WebCore::NoEventDispatchAssertion::isEventDispatchForbidden):
+        (WebCore::NoEventDispatchAssertion::dropTemporarily):
+        (WebCore::NoEventDispatchAssertion::restoreDropped):
+
+            Add a way to disable event assertions temporarily.
+
+        * loader/cache/CachedSVGFont.cpp:
+        (WebCore::CachedSVGFont::ensureCustomFontData):
+
+            Temporary SVG font document may get constructed during render tree update. These can't run scripts or generally
+            affect anything outside the font document as it does not have a frame. Disable event assertions temporarily.
+
+            Tested by svg/W3C-SVG-1.1/fonts-elem-07-b.svg
+
+        * style/RenderTreeUpdater.cpp:
+        (WebCore::RenderTreeUpdater::updateRenderTree):
+
+            Enable assertions.
+
+2017-02-09  Chris Dumez  <cdumez@apple.com>
+
+        Crash under HTMLFormElement::registerFormElement()
+        https://bugs.webkit.org/show_bug.cgi?id=167162
+
+        Reviewed by Ryosuke Niwa.
+
+        didMoveToNewDocument() was re-registering FormAttributeTargetObserver
+        even if the element's inDocument was not set yet. As a result, it was
+        possible for FormAssociatedElement::resetFormOwner() to be called
+        when the element was in the tree but with its inDocument still being
+        false (because insertedInto() has not been called yet). This could
+        end up calling HTMLFormElement::registerFormElement() even though
+        the element is still recognized as detached. This is an issue because
+        HTMLFormElement::m_associatedElements's order and its corresponding
+        indexes (m_associatedElementsBeforeIndex / m_associatedElementsAfterIndex)
+        rely on the position of the element with regards to the form element
+        (before / inside / after).
+
+        To address the issue, we now only register the FormAttributeTargetObserver
+        in didMoveToNewDocument() if the inDocument flag is set to true. This
+        is similar to what is done at other call sites of
+        resetFormAttributeTargetObserver(). We also ignore the form content
+        attribute in HTMLFormElement::formElementIndex() if the element is
+        not connected.
+
+        As per the HTML specification [1], the form content attribute is only
+        taken if the element is connected (i.e. inDocument flag is true).
+
+        Note that FormAssociatedElement::findAssociatedForm() was already
+        ignoring the form content attribute if the element is disconnected.
+
+        [1] https://html.spec.whatwg.org/#reset-the-form-owner (step 3)
+
+        Test: fast/forms/registerFormElement-crash.html
+
+        * html/FormAssociatedElement.cpp:
+        (WebCore::FormAssociatedElement::didMoveToNewDocument):
+        Only call resetFormAttributeTargetObserver() if inDocument flag is set,
+        similarly to what is done at other call sites.
+
+        (WebCore::FormAssociatedElement::resetFormAttributeTargetObserver):
+        Add an assertion to make sure no one call this method on an element that
+        is not connected.
+
+        * html/HTMLFormElement.cpp:
+        (WebCore::HTMLFormElement::formElementIndex):
+        Ignore the form content attribute if the element is not connected, as
+        per the HTML specification [1].
+
+2016-11-10  John Wilander  <wilander@apple.com>
+
+        Add link information to data transfer pasteboard for drag and drop links
+        https://bugs.webkit.org/show_bug.cgi?id=163468
+        <rdar://problem/20634630>
+
+        Reviewed by Brent Fulgham.
+
+        Test: editing/pasteboard/drag-link-with-data-transfer-adds-trusted-link-to-pasteboard.html
+        This test ensures data transfers still work for types 'text' and 'url', i.e. that we don't
+        regress in-page use of the drag pasteboard.
+
+        * page/DragController.cpp:
+        (WebCore::DragController::startDrag):
+            Now adds trustworthy link information to the drag pasteboard.
+        * platform/Pasteboard.h:
+            New function declaration Pasteboard::writeTrustworthyWebURLsPboardType.
+        * platform/efl/PasteboardEfl.cpp:
+        (WebCore::Pasteboard::writeTrustworthyWebURLsPboardType):
+            Empty, i.e. not implemented.
+        * platform/gtk/PasteboardGtk.cpp:
+        (WebCore::Pasteboard::writeTrustworthyWebURLsPboardType):
+            Empty, i.e. not implemented.
+        * platform/ios/PasteboardIOS.mm:
+        (WebCore::Pasteboard::writeTrustworthyWebURLsPboardType):
+            Calls ASSERT_NOT_REACHED() to make sure we don't use this function before we have
+            decided on a trustrworthy URL pasteboard type on iOS. Currently not used since we
+            don't support drag & drop on iOS.
+        * platform/mac/PasteboardMac.mm:
+        (WebCore::Pasteboard::writeTrustworthyWebURLsPboardType):
+            Writes the given URL to the WebURLsWithTitlesPboardType. This pasteboard type
+            serves as a trusted drop source.
+        * platform/win/PasteboardWin.cpp:
+        (WebCore::Pasteboard::writeTrustworthyWebURLsPboardType):
+            Empty, i.e. not implemented.
+
+2015-07-22  Mark Dittmer  <mark.s.dittmer@gmail.com>
+
+        Fix toJSDOMWindow() in the case of an object that has the actual JS DOM window in its prototype chain.
+        https://bugs.webkit.org/show_bug.cgi?id=146785
+
+        Reviewed by Mark Lam.
+
+        * bindings/js/JSDOMWindowBase.cpp: toJSDOMWindow(): Walk the prototype chain of the given JSValue until a JSDOMWindow or JSDOMWindowShell is found.
+
+2017-03-31  Brent Fulgham  <bfulgham@apple.com>
+
+        Merge r214378. rdar://problem/31177657
+
+    2017-03-24  Brent Fulgham  <bfulgham@apple.com>
+
+            Handle recursive calls to ProcessingInstruction::checkStyleSheet
+            https://bugs.webkit.org/show_bug.cgi?id=169982
+            <rdar://problem/31083051>
+
+            Reviewed by Antti Koivisto.
+
+           See if we triggered a recursive load of the stylesheet during the 'beforeload'
+           event handler. If so, reset to a valid state before completing the load.
+
+           We should also check after 'beforeload' that we were not disconnected from (or
+           moved to a new) document.
+
+           I also looked for other cases of this pattern and fixed them, too.
+
+           Tests: fast/dom/beforeload/image-removed-during-before-load.html
+                   fast/dom/beforeload/recursive-css-pi-before-load.html
+                   fast/dom/beforeload/recursive-link-before-load.html
+                   fast/dom/beforeload/recursive-xsl-pi-before-load.html
+
+            * dom/ProcessingInstruction.cpp:
+            (WebCore::ProcessingInstruction::checkStyleSheet): Prevent recursive calls into
+            this function during 'beforeload' handling. Also, safely handle the case where
+            the element was disconnected in the 'beforeload' handler (similar to what
+            we do in HTMLLinkElement).
+            (WebCore::ProcessingInstruction::setCSSStyleSheet): Drive-by Fix: Protect the
+            current document to match what we do in setXSLStyleSheet.
+            * dom/ProcessingInstruction.h:
+            * html/HTMLLinkElement.cpp:
+            (WebCore::HTMLLinkElement::process): Prevent recursive calls into
+            this function during 'beforeload' handling.
+            * html/HTMLLinkElement.h:
+            * loader/ImageLoader.cpp:
+            (WebCore::ImageLoader::dispatchPendingBeforeLoadEvent): safely handle the case where
+            the element was disconnected in the 'beforeload' handler (similar to what
+            we do in HTMLLinkElement).
+
+2017-05-11  Zalan Bujtas  <zalan@apple.com>
+
+        AX: Defer text changes until after the tree is clean if needed.
+        https://bugs.webkit.org/show_bug.cgi?id=171546
+        <rdar://problem/31934942>
+
+        Reviewed by Simon Fraser.
+
+        While updating an accessibility object state, we might
+        trigger unintentional style updates. This style update could
+        end up destroying renderes that are still referenced by functions
+        on the callstack.
+        To avoid that, defer such changes and let AXObjectCache operate on a clean tree.         
+
+        Test: accessibility/crash-when-render-tree-is-not-clean.html
+
+        * accessibility/AXObjectCache.cpp:
+        (WebCore::AXObjectCache::remove):
+        (WebCore::AXObjectCache::handleAttributeChanged):
+        (WebCore::AXObjectCache::labelChanged):
+        (WebCore::AXObjectCache::performDeferredCacheUpdate):
+        (WebCore::AXObjectCache::deferRecomputeIsIgnored):
+        (WebCore::AXObjectCache::deferTextChangedIfNeeded):
+        (WebCore::AXObjectCache::recomputeDeferredIsIgnored): Deleted.
+        (WebCore::AXObjectCache::deferTextChanged): Deleted.
+        * accessibility/AXObjectCache.h: Decouple different type of changes.
+        (WebCore::AXObjectCache::deferRecomputeIsIgnored):
+        (WebCore::AXObjectCache::deferTextChangedIfNeeded):
+        (WebCore::AXObjectCache::recomputeDeferredIsIgnored): Deleted.
+        (WebCore::AXObjectCache::deferTextChanged): Deleted.
+        * rendering/RenderBlock.cpp:
+        (WebCore::RenderBlock::deleteLines):
+        * rendering/RenderBlockLineLayout.cpp:
+        (WebCore::RenderBlockFlow::createAndAppendRootInlineBox):
+        * rendering/RenderText.cpp:
+        (WebCore::RenderText::setText):
+
+2017-05-02  Zalan Bujtas  <zalan@apple.com>
+
+        Defer AX cache update when text content changes until after layout is finished.
+        https://bugs.webkit.org/show_bug.cgi?id=171429
+        <rdar://problem/31885984>
+
+        Reviewed by Simon Fraser.
+
+        When the content of the RenderText changes (even as the result of a text-transform change)
+        instead of updating the AX cache eagerly (and trigger layout on a half-backed render tree)
+        we should just defer it until after the subsequent layout is done. 
+
+        Test: accessibility/crash-while-adding-text-child-with-transform.html
+
+        * accessibility/AXObjectCache.cpp:
+        (WebCore::AXObjectCache::remove):
+        (WebCore::AXObjectCache::performDeferredCacheUpdate):
+        (WebCore::AXObjectCache::recomputeDeferredIsIgnored):
+        (WebCore::AXObjectCache::deferTextChanged):
+        (WebCore::AXObjectCache::performDeferredIsIgnoredChange): Deleted.
+        * accessibility/AXObjectCache.h:
+        (WebCore::AXObjectCache::deferTextChanged):
+        (WebCore::AXObjectCache::performDeferredCacheUpdate):
+        (WebCore::AXObjectCache::performDeferredIsIgnoredChange): Deleted.
+        * page/FrameView.cpp:
+        (WebCore::FrameView::performPostLayoutTasks):
+        * rendering/RenderText.cpp:
+        (WebCore::RenderText::setText):
+
+2016-12-16  Zalan Bujtas  <zalan@apple.com>
+
+        Defer certain accessibility callbacks until after layout is finished.
+        https://bugs.webkit.org/show_bug.cgi?id=165861
+        rdar://problem/29646301
+
+        Reviewed by Chris Fleizach.
+
+        Currently with certain AXObjectCache callbacks, we can end up in a layout while the render tree is being mutated.  
+        This patch ensures that such callbacks are deferred until after tree mutation/layout is finished.
+
+        Test: accessibility/accessibility-crash-with-dynamic-inline-content.html
+
+        * accessibility/AXObjectCache.cpp:
+        (WebCore::AXObjectCache::remove):
+        (WebCore::AXObjectCache::performDeferredIsIgnoredChange):
+        (WebCore::AXObjectCache::insertDeferredIsIgnoredChange):
+        * accessibility/AXObjectCache.h:
+        * page/FrameView.cpp:
+        (WebCore::FrameView::performPostLayoutTasks):
+        * rendering/RenderBlock.cpp:
+        (WebCore::RenderBlock::deleteLines):
+        * rendering/RenderBlockLineLayout.cpp:
+        (WebCore::RenderBlockFlow::createAndAppendRootInlineBox):
+
+2017-04-28  Per Arne Vollan  <pvollan@apple.com>
+
+        Crash under WebCore::AccessibilityRenderObject::handleAriaExpandedChanged().
+        https://bugs.webkit.org/show_bug.cgi?id=171427
+        rdar://problem/31863417
+
+        Reviewed by Brent Fulgham.
+
+        The AccessibilityRenderObject object might delete itself in handleAriaExpandedChanged() under the call
+        to the parentObject() method. This will cause a crash when accessing the object later in this method.
+        Protect the current object while executing arbitrary event code.
+
+        Test: accessibility/accessibility-crash-setattribute.html
+
+        * accessibility/AccessibilityRenderObject.cpp:
+        (WebCore::AccessibilityRenderObject::handleAriaExpandedChanged):
+
+2017-03-29  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Disconnecting a HTMLObjectElement does not always unload its content document
+        https://bugs.webkit.org/show_bug.cgi?id=169606
+
+        Reviewed by Andy Estes.
+
+        When removing a node, we first disconnect all subframes then update the focused element as we remove each child.
+        However, when the removed element is a focused object element with a content document, removeFocusedNodeOfSubtree
+        can update the style tree synchronously inside Document::setFocusedElement, and reload the document.
+
+        Avoid this by instantiating a SubframeLoadingDisabler on the parent of the focused element.
+
+        Test: fast/dom/removing-focused-object-element.html
+
+        * dom/Document.cpp:
+        (WebCore::Document::removeFocusedNodeOfSubtree):
+
+2017-03-24  Daniel Bates  <dabates@apple.com>
+
+        Prevent new navigations during document unload
+        https://bugs.webkit.org/show_bug.cgi?id=169934
+        <rdar://problem/31247584>
+
+        Reviewed by Chris Dumez.
+
+        Similar to our policy of preventing new navigations from onbeforeunload handlers
+        we should prevent new navigations that are initiated during the document unload
+        process.
+
+        The significant part of this change is the instantiation of the RAII object NavigationDisabler
+        in Document::prepareForDestruction(). The rest of this change just renames class
+        NavigationDisablerForBeforeUnload to NavigationDisabler now that this RAII class is
+        used to prevent navigation from both onbeforeunload event handlers and when unloading
+        a document.
+
+        Test: fast/frames/frame-unload-navigate-and-setTimeout-assert-fail.html
+
+        * dom/Document.cpp:
+        (WebCore::Document::prepareForDestruction): Disable new navigations when disconnecting
+        subframes. Also assert that the document is not in the page cache before we fall off
+        the end of the function.
+        * loader/FrameLoader.cpp:
+        (WebCore::FrameLoader::isNavigationAllowed): Update for renaming below.
+        (WebCore::FrameLoader::shouldClose): Ditto.
+        * loader/NavigationScheduler.cpp:
+        (WebCore::NavigationScheduler::shouldScheduleNavigation): Ditto.
+        * loader/NavigationScheduler.h:
+        (WebCore::NavigationDisabler::NavigationDisabler): Renamed class; formerly named NavigationDisablerForBeforeUnload.
+        (WebCore::NavigationDisabler::~NavigationDisabler): Ditto.
+        (WebCore::NavigationDisabler::isNavigationAllowed): Ditto.
+        (WebCore::NavigationDisablerForBeforeUnload::NavigationDisablerForBeforeUnload): Deleted.
+        (WebCore::NavigationDisablerForBeforeUnload::~NavigationDisablerForBeforeUnload): Deleted.
+        (WebCore::NavigationDisablerForBeforeUnload::isNavigationAllowed): Deleted.
+
+2017-03-16  Zalan Bujtas  <zalan@apple.com>
+
+        Stay inside the continuation while searching for a candidate ancestor for insertion.
+        https://bugs.webkit.org/show_bug.cgi?id=169768
+        <rdar://problem/30959936>
+
+        Reviewed by David Hyatt.
+
+        Test: fast/inline/continuation-crash-with-anon-ancestors.html
+
+        * rendering/RenderInline.cpp:
+        (WebCore::RenderInline::addChildToContinuation):
+
+2016-10-13  Zalan Bujtas  <zalan@apple.com>
+
+        [Clean RenderTree] LayoutTests/imported/blink/fast/table/crash-bad-child-table-continuation.html fails.
+        https://bugs.webkit.org/show_bug.cgi?id=163399
+
+        Reviewed by David Hyatt.
+
+        When we try to insert a renderer before a child whose direct parent is a (anonymus) RenderTable, continuation logic
+        should dismiss the RenderTable as the parent and find a more appropriate ancestor.
+        RenderTables assumes a certain descendant tree structure which might not be available in the continuation.
+
+        Will be testable with webkit.org/b/162834
+
+        * rendering/RenderInline.cpp:
+        (WebCore::canUseAsParentForContinuation):
+        (WebCore::RenderInline::addChildToContinuation):
+
+2015-11-10  Zalan Bujtas  <zalan@apple.com>
+
+        Continuations with anonymous wrappers inside misplaces child renderers.
+        https://bugs.webkit.org/show_bug.cgi?id=150908
+
+        When a child is appended to an inline container and the beforeChild is not a direct child, but 
+        it is inside a generated subtree, we need to special case the inline split to form continuation.
+
+        RenderInline::splitInlines() assumes that beforeChild is always a direct child of the current
+        inline container. However when beforeChild type requires wrapper content (such as table cells), the DOM and the
+        render tree get out of sync. In such cases, we need to ensure that both the beforeChild and its siblings end up
+        in the correct generated block.
+
+        Reviewed by Darin Adler and David Hyatt.
+
+        Test: fast/inline/continuation-with-anon-wrappers.html
+
+        * rendering/RenderInline.cpp:
+        (WebCore::RenderInline::splitInlines):
+        (WebCore::RenderInline::addChildToContinuation):
+
+2017-03-14  Wenson Hsieh  <wenson_hsieh@apple.com>
+
+        RenderElements should unregister for viewport visibility callbacks when they are destroyed
+        https://bugs.webkit.org/show_bug.cgi?id=169521
+        <rdar://problem/30959545>
+
+        Reviewed by Simon Fraser.
+
+        When registering a RenderElement for viewport visibility callbacks, we always need to make sure that it is unregistered
+        before it is destroyed. While we account for this in the destructor of RenderElement, we only unregister in the destructor
+        if we are already registered for visibility callbacks. In the call to RenderObject::willBeDestroyed(), we clear out rare
+        data, which holds RenderElement's viewport callback registration state, so upon entering the destructor of RenderElement,
+        we skip unregistration because RenderElement thinks that it is not registered.
+
+        We can mitigate this by unregistering the RenderElement earlier, in RenderElement::willBeDestroyed, prior to clearing out
+        the rare data. However, we'd ideally want to move the cleanup logic out of the destructor altogether and into willBeDestroyed
+        (see https://bugs.webkit.org/show_bug.cgi?id=169650).
+
+        Test: fast/media/video-element-in-details-collapse.html
+
+        * rendering/RenderElement.cpp:
+        (WebCore::RenderElement::willBeDestroyed):
+
+2015-12-02  Jer Noble  <jer.noble@apple.com>
+
+        Add a setting and restriction which will pause invisible autoplaying video
+        https://bugs.webkit.org/show_bug.cgi?id=151412
+
+        Reviewed by Eric Carlson.
+
+        Test: media/video-restricted-invisible-autoplay-not-allowed.html
+
+        Drive-by fix: m_autoplaying is reset in many places by calling pause() or play(), where those
+        calls did not originate from an explicit request to pause or play, e.g., during an interruption.
+        This causes m_autoplaying to be set to false, thus breaking resumption of autoplaying when the
+        interruption ends. Update PlatformMediaSession to remember its client's "autoplaying" state and
+        restore it when an interruption ends.
+
+        Add a means to register for viewport visibility notifications to FrameView, RenderView,
+        and RenderElement. Elements who wish to recieve these notifications must do so through their
+        renderer, and thus will have to re-register whenever a new renderer is attached.
+
+        Add a restriction to HTMLMediaElement which will pause autoplaying video when that video scrolls
+        out of the viewport, or is hidden with CSS.
+
+        Add a setting which controls whether that new restriction is set.
+
+        * dom/Element.h:
+        (WebCore::Element::isVisibleInViewportChanged): Add default empty virtual method.
+        * html/HTMLMediaElement.cpp:
+        (WebCore::HTMLMediaElement::HTMLMediaElement):
+        (WebCore::HTMLMediaElement::didMoveToNewDocument):
+        (WebCore::HTMLMediaElement::documentDidResumeFromPageCache):
+        (WebCore::HTMLMediaElement::removeBehaviorsRestrictionsAfterFirstUserGesture):
+        (WebCore::HTMLMediaElement::resumeAutoplaying):
+        (WebCore::mediaElementIsAllowedToAutoplay):
+        (WebCore::HTMLMediaElement::isVisibleInViewportChanged):
+        (WebCore::HTMLMediaElement::updateShouldAutoplay):
+        (WebCore::HTMLMediaElement::HTMLMediaElement): Set the new restriction based on the current Settings.
+        (WebCore::HTMLMediaElement::resumeAutoplaying): Continue autoplay, or begin playback.
+        (WebCore::HTMLMediaElement::didMoveToNewDocument): Update our autoplay state.
+        (WebCore::HTMLMediaElement::documentDidResumeFromPageCache): Ditto.
+        (WebCore::HTMLMediaElement::removedFrom): Ditto.
+        (WebCore::HTMLMediaElement::didAttachRenderers): Ditto.
+        (WebCore::HTMLMediaElement::didDetachRenderers): Ditto.
+        (WebCore::HTMLMediaElement::visibilityDidChange): Ditto.
+        (WebCore::HTMLMediaElement::willDetachRenderers): Unregister for visibility callbacks.
+        (WebCore::HTMLMediaElement::removeBehaviorsRestrictionsAfterFirstUserGesture): Clear new restriction.
+        (WebCore::mediaElementIsAllowedToAutoplay): Check for autoplay requirements.
+        (WebCore::HTMLMediaElement::isVisibleInViewportChanged): Added, update our autoplay state.
+        (WebCore::HTMLMediaElement::updateShouldAutoplay): Set interruption if necessary, clear otherwise.
+        * html/HTMLMediaElement.h:
+        * html/MediaElementSession.cpp:
+        (WebCore::restrictionName): Added support for new restriction.
+        * html/MediaElementSession.h:
+        * page/FrameView.cpp:
+        (WebCore::FrameView::viewportContentsChanged): Update clients of viewport visibility.
+        * page/Settings.in:
+        * platform/audio/PlatformMediaSession.cpp:
+        (WebCore::stateName): Add new "Autoplay" state.
+        (WebCore::interruptionName): Added new interruption type.
+        (WebCore::PlatformMediaSession::beginInterruption): Set the m_interruptionType.
+        (WebCore::PlatformMediaSession::clientWillBeginAutoplaying): Set the m_state to Autoplaying.
+        * platform/audio/PlatformMediaSession.h:
+        (WebCore::PlatformMediaSession::interruptionType): Added getter.
+        (WebCore::PlatformMediaSessionClient::resumeAutoplaying): Added default.
+        * platform/audio/PlatformMediaSessionManager.cpp:
+        (WebCore::PlatformMediaSessionManager::sessionWillBeginPlayback): Only pause session if its state is playing.
+        * rendering/RenderElement.cpp:
+        (WebCore::RenderElement::RenderElement): Set new ivars.
+        (WebCore::RenderElement::~RenderElement): Unregister for callbacks if necessary.
+        (WebCore::RenderElement::registerForVisibleInViewportCallback): Register for callbacks from RenderView.
+        (WebCore::RenderElement::unregisterForVisibleInViewportCallback): Unregister from same.
+        (WebCore::RenderElement::visibleInViewportStateChanged): Notify Element if value has changed.
+        * rendering/RenderElement.h:
+        * rendering/RenderView.cpp:
+        (WebCore::RenderView::registerForVisibleInViewportCallback): Add renderer to list of callbacks.
+        (WebCore::RenderView::unregisterForVisibleInViewportCallback): Remove renderer from same.
+        (WebCore::RenderView::updateVisibleViewportRect): Walk renderers setting their visiblility based on the viewport visible rect.
+        * rendering/RenderView.h:
+        * testing/Internals.cpp:
+        (WebCore::Internals::setMediaElementRestrictions): Support new restriction.
+
+2015-10-01  Eric Carlson  <eric.carlson@apple.com>
+
+        [iOS] AirPlay should not stop when the screen locks
+        https://bugs.webkit.org/show_bug.cgi?id=148315
+        <rdar://problem/22770703>
+
+        Reviewed by Jer Noble.
+
+        Tested by media/video-interruption-with-resume-allowing-play.html
+                  media/video-interruption-with-resume-not-allowing-play.html
+
+        * Modules/webaudio/AudioContext.h: overrideBackgroundPlaybackRestriction -> 
+          shouldOverrideBackgroundPlaybackRestriction.
+
+        * html/HTMLMediaElement.cpp:
+        (WebCore::HTMLMediaElement::suspendPlayback): Fix a typo in the logging.
+        (WebCore::HTMLMediaElement::mayResumePlayback): Ditto.
+        (WebCore::HTMLMediaElement::shouldOverrideBackgroundPlaybackRestriction): Renamed from
+          overrideBackgroundPlaybackRestriction.
+        (WebCore::HTMLMediaElement::overrideBackgroundPlaybackRestriction): Deleted.
+        * html/HTMLMediaElement.h:
+
+        * platform/audio/PlatformMediaSession.cpp:
+        (WebCore::stateName):
+        (WebCore::interruptionName): New, log the name of the interruption.
+        (WebCore::PlatformMediaSession::beginInterruption): Log the interruption type. Don't
+          increment the interruption counter if we are going to ignore it. Incorporate logic
+          from doInterruption.
+        (WebCore::PlatformMediaSession::doInterruption): Deleted.
+        (WebCore::PlatformMediaSession::shouldDoInterruption): Deleted.
+        (WebCore::PlatformMediaSession::forceInterruption): Deleted.
+
+        * platform/audio/PlatformMediaSession.h: Add SuspendedUnderLock interruption type.
+        * platform/audio/PlatformMediaSessionManager.cpp:
+        (WebCore::PlatformMediaSessionManager::applicationDidEnterBackground): Deleted.
+        * platform/audio/PlatformMediaSessionManager.h:
+
+        * platform/audio/ios/MediaSessionManagerIOS.h:
+        * platform/audio/ios/MediaSessionManagerIOS.mm:
+        (WebCore::MediaSessionManageriOS::applicationDidEnterBackground): Call beginInterruption
+          when appropriate.
+
+2015-09-03  Jer Noble  <jer.noble@apple.com>
+
+        [iOS] Playback does not pause when deselecting route and locking screen.
+        https://bugs.webkit.org/show_bug.cgi?id=148724
+
+        Reviewed by Eric Carlson.
+
+        When deselecting a route, the route change notification can be delayed for some amount
+        of time. If the screen is locked before the notification is fired, the PlatformMediaSessionManager
+        can refuse to pause the video when entering the background due to a wireless playback route
+        still being active.
+
+        When the media element transitions from having an active route to not having one (or vice versa),
+        re-run the interruption check. In order to correctly determine, when that occurs, whether
+        we are in an 'application background' state, cache that value to an ivar when handling
+        application{Will,Did}Enter{Background,Foreground}.
+
+        Because we only want to run this step during an actual transition between playing to a route ->
+        playing locally, cache the value of isPlayingToWirelessPlayback to another ivar, and only
+        inform the PlatformMediaSessionManager when that value actually changes.
+
+        * html/HTMLMediaElement.cpp:
+        (WebCore::HTMLMediaElement::mediaPlayerCurrentPlaybackTargetIsWirelessChanged):
+        * platform/audio/PlatformMediaSession.cpp:
+        (WebCore::PlatformMediaSession::isPlayingToWirelessPlaybackTargetChanged): Set or clear m_isPlayingToWirelessPlaybackTarget.
+        * platform/audio/PlatformMediaSession.h:
+        (WebCore::PlatformMediaSession::isPlayingToWirelessPlaybackTarget): Simple getter.
+        * platform/audio/PlatformMediaSessionManager.cpp:
+        (WebCore::PlatformMediaSessionManager::applicationWillEnterBackground): Set m_isApplicationInBackground.
+        (WebCore::PlatformMediaSessionManager::applicationDidEnterBackground): Ditto.
+        (WebCore::PlatformMediaSessionManager::applicationWillEnterForeground): Clear m_isApplicationInBackground.
+        (WebCore::PlatformMediaSessionManager::sessionIsPlayingToWirelessPlaybackTargetChanged): Run interruption
+            if application is in background.
+
+2017-05-11  Zalan Bujtas  <zalan@apple.com>
+
+        AX: Defer text changes until after the tree is clean if needed.
+        https://bugs.webkit.org/show_bug.cgi?id=171546
+        <rdar://problem/31934942>
+
+        Reviewed by Simon Fraser.
+
+        While updating an accessibility object state, we might
+        trigger unintentional style updates. This style update could
+        end up destroying renderes that are still referenced by functions
+        on the callstack.
+        To avoid that, defer such changes and let AXObjectCache operate on a clean tree.         
+
+        Test: accessibility/crash-when-render-tree-is-not-clean.html
+
+        * accessibility/AXObjectCache.cpp:
+        (WebCore::AXObjectCache::remove):
+        (WebCore::AXObjectCache::handleAttributeChanged):
+        (WebCore::AXObjectCache::labelChanged):
+        (WebCore::AXObjectCache::performDeferredCacheUpdate):
+        (WebCore::AXObjectCache::deferRecomputeIsIgnored):
+        (WebCore::AXObjectCache::deferTextChangedIfNeeded):
+        (WebCore::AXObjectCache::recomputeDeferredIsIgnored): Deleted.
+        (WebCore::AXObjectCache::deferTextChanged): Deleted.
+        * accessibility/AXObjectCache.h: Decouple different type of changes.
+        (WebCore::AXObjectCache::deferRecomputeIsIgnored):
+        (WebCore::AXObjectCache::deferTextChangedIfNeeded):
+        (WebCore::AXObjectCache::recomputeDeferredIsIgnored): Deleted.
+        (WebCore::AXObjectCache::deferTextChanged): Deleted.
+        * rendering/RenderBlock.cpp:
+        (WebCore::RenderBlock::deleteLines):
+        * rendering/RenderBlockLineLayout.cpp:
+        (WebCore::RenderBlockFlow::createAndAppendRootInlineBox):
+        * rendering/RenderText.cpp:
+        (WebCore::RenderText::setText):
+
+2017-05-02  Zalan Bujtas  <zalan@apple.com>
+
+        Defer AX cache update when text content changes until after layout is finished.
+        https://bugs.webkit.org/show_bug.cgi?id=171429
+        <rdar://problem/31885984>
+
+        Reviewed by Simon Fraser.
+
+        When the content of the RenderText changes (even as the result of a text-transform change)
+        instead of updating the AX cache eagerly (and trigger layout on a half-backed render tree)
+        we should just defer it until after the subsequent layout is done. 
+
+        Test: accessibility/crash-while-adding-text-child-with-transform.html
+
+        * accessibility/AXObjectCache.cpp:
+        (WebCore::AXObjectCache::remove):
+        (WebCore::AXObjectCache::performDeferredCacheUpdate):
+        (WebCore::AXObjectCache::recomputeDeferredIsIgnored):
+        (WebCore::AXObjectCache::deferTextChanged):
+        (WebCore::AXObjectCache::performDeferredIsIgnoredChange): Deleted.
+        * accessibility/AXObjectCache.h:
+        (WebCore::AXObjectCache::deferTextChanged):
+        (WebCore::AXObjectCache::performDeferredCacheUpdate):
+        (WebCore::AXObjectCache::performDeferredIsIgnoredChange): Deleted.
+        * page/FrameView.cpp:
+        (WebCore::FrameView::performPostLayoutTasks):
+        * rendering/RenderText.cpp:
+        (WebCore::RenderText::setText):
+
+2016-12-16  Zalan Bujtas  <zalan@apple.com>
+
+        Defer certain accessibility callbacks until after layout is finished.
+        https://bugs.webkit.org/show_bug.cgi?id=165861
+        rdar://problem/29646301
+
+        Reviewed by Chris Fleizach.
+
+        Currently with certain AXObjectCache callbacks, we can end up in a layout while the render tree is being mutated.  
+        This patch ensures that such callbacks are deferred until after tree mutation/layout is finished.
+
+        Test: accessibility/accessibility-crash-with-dynamic-inline-content.html
+
+        * accessibility/AXObjectCache.cpp:
+        (WebCore::AXObjectCache::remove):
+        (WebCore::AXObjectCache::performDeferredIsIgnoredChange):
+        (WebCore::AXObjectCache::insertDeferredIsIgnoredChange):
+        * accessibility/AXObjectCache.h:
+        * page/FrameView.cpp:
+        (WebCore::FrameView::performPostLayoutTasks):
+        * rendering/RenderBlock.cpp:
+        (WebCore::RenderBlock::deleteLines):
+        * rendering/RenderBlockLineLayout.cpp:
+        (WebCore::RenderBlockFlow::createAndAppendRootInlineBox):
+
+2017-04-28  Per Arne Vollan  <pvollan@apple.com>
+
+        Crash under WebCore::AccessibilityRenderObject::handleAriaExpandedChanged().
+        https://bugs.webkit.org/show_bug.cgi?id=171427
+        rdar://problem/31863417
+
+        Reviewed by Brent Fulgham.
+
+        The AccessibilityRenderObject object might delete itself in handleAriaExpandedChanged() under the call
+        to the parentObject() method. This will cause a crash when accessing the object later in this method.
+        Protect the current object while executing arbitrary event code.
+
+        Test: accessibility/accessibility-crash-setattribute.html
+
+        * accessibility/AccessibilityRenderObject.cpp:
+        (WebCore::AccessibilityRenderObject::handleAriaExpandedChanged):
+
+2017-04-19  Joseph Pecoraro  <pecoraro@apple.com>
+
+        ASAN Crash running LayoutTests/inspector/worker tests
+        https://bugs.webkit.org/show_bug.cgi?id=170967
+        <rdar://problem/31256437>
+
+        Reviewed by Alex Christensen.
+
+        * workers/WorkerMessagingProxy.h:
+        * workers/WorkerMessagingProxy.cpp:
+        (WebCore::WorkerMessagingProxy::WorkerMessagingProxy):
+        (WebCore::WorkerMessagingProxy::workerGlobalScopeDestroyedInternal):
+        Make the MessagingProxy thread safe ref counted. Since it used to
+        delete itself, turn this into a ref (implicit on construction)
+        and deref (replacing delete this).
+
+        (WebCore::WorkerMessagingProxy::postMessageToPageInspector):
+        When dispatching have the lambda implicitly ref/deref with the
+        lambda to keep the proxy alive while a lambda is queued.
+
+2016-05-20  Joseph Pecoraro  <pecoraro@apple.com>
+
+        Remove LegacyProfiler
+        https://bugs.webkit.org/show_bug.cgi?id=153565
+
+        Reviewed by Mark Lam.
+
+        * ForwardingHeaders/profiler/Profile.h: Removed.
+        * ForwardingHeaders/profiler/ProfileNode.h: Removed.
+        * testing/js/WebCoreTestSupport.cpp:
+        * xml/XSLStyleSheetLibxslt.cpp:
+        * xml/XSLTProcessorLibxslt.cpp:
+
+2016-05-20  Joseph Pecoraro  <pecoraro@apple.com>
+
+        Remove LegacyProfiler
+        https://bugs.webkit.org/show_bug.cgi?id=153565
+
+        Reviewed by Saam Barati.
+
+        JavaScriptCore now provides a sampling profiler and it is enabled
+        by all ports. Web Inspector switched months ago to using the
+        sampling profiler and displaying its data. Remove the legacy
+        profiler, as it is no longer being used by anything other then
+        console.profile and tests. We will update console.profile's
+        behavior soon to have new behavior and use the sampling data.
+
+        * CMakeLists.txt:
+        * DerivedSources.cpp:
+        * DerivedSources.make:
+        * ForwardingHeaders/profiler/LegacyProfiler.h: Removed.
+        * WebCore.xcodeproj/project.pbxproj:
+        * bindings/js/JSCustomXPathNSResolver.cpp:
+        * bindings/js/JSDOMWindowBase.cpp:
+        (WebCore::JSDOMWindowBase::supportsLegacyProfiling): Deleted.
+        (WebCore::JSDOMWindowBase::supportsRichSourceInfo): Deleted.
+        * bindings/js/JSDOMWindowBase.h:
+        * bindings/js/JSWorkerGlobalScopeBase.cpp:
+        (WebCore::JSWorkerGlobalScopeBase::supportsLegacyProfiling): Deleted.
+        * bindings/js/JSWorkerGlobalScopeBase.h:
+        * bindings/js/ScriptCachedFrameData.cpp:
+        * bindings/js/ScriptController.cpp:
+        (WebCore::ScriptController::clearWindowShell): Deleted.
+        * bindings/js/ScriptProfile.h: Removed.
+        * bindings/js/ScriptProfileNode.h: Removed.
+        * bindings/scripts/CodeGeneratorJS.pm:
+        (AddClassForwardIfNeeded): Deleted.
+        * bindings/scripts/test/JS/JSTestObj.cpp:
+        (WebCore::jsTestObjPrototypeFunctionMethodWithSequenceArg): Deleted.
+        (WebCore::jsTestObjPrototypeFunctionMethodReturningSequence): Deleted.
+        * bindings/scripts/test/TestObj.idl:
+        * css/CSSParser.cpp:
+        * dom/Document.cpp:
+        * inspector/InspectorConsoleInstrumentation.h:
+        (WebCore::InspectorInstrumentation::stopProfiling):
+        * inspector/InspectorController.cpp:
+        (WebCore::InspectorController::InspectorController):
+        (WebCore::InspectorController::legacyProfilerEnabled): Deleted.
+        (WebCore::InspectorController::setLegacyProfilerEnabled): Deleted.
+        * inspector/InspectorController.h:
+        * inspector/InspectorInstrumentation.cpp:
+        (WebCore::InspectorInstrumentation::stopProfilingImpl):
+        * inspector/InspectorInstrumentation.h:
+        * inspector/InspectorTimelineAgent.cpp:
+        (WebCore::InspectorTimelineAgent::startFromConsole):
+        (WebCore::InspectorTimelineAgent::stopFromConsole):
+        * inspector/InspectorTimelineAgent.h:
+        * inspector/PageDebuggerAgent.cpp:
+        * inspector/PageRuntimeAgent.cpp:
+        * inspector/ScriptProfile.idl: Removed.
+        * inspector/ScriptProfileNode.idl: Removed.
+        * inspector/TimelineRecordFactory.cpp:
+        (WebCore::buildAggregateCallInfoInspectorObject): Deleted.
+        (WebCore::buildInspectorObject): Deleted.
+        (WebCore::buildProfileInspectorObject): Deleted.
+        (WebCore::TimelineRecordFactory::appendProfile): Deleted.
+        * inspector/TimelineRecordFactory.h:
+        * page/DOMWindow.cpp:
+        * page/Page.cpp:
+        * page/PageConsoleClient.cpp:
+        (WebCore::PageConsoleClient::profileEnd):
+        (WebCore::PageConsoleClient::clearProfiles): Deleted.
+        * page/PageConsoleClient.h:
+        * testing/Internals.cpp:
+        (WebCore::Internals::resetToConsistentState): Deleted.
+        (WebCore::Internals::consoleProfiles): Deleted.
+        (WebCore::Internals::setLegacyJavaScriptProfilingEnabled): Deleted.
+        * testing/Internals.h:
+        * testing/Internals.idl:
+
+2017-07-11  Carlos Alberto Lopez Perez  <clopez@igalia.com>
+
+        [GTK] Spin buttons on input type number appear over the value itself for small widths
+        https://bugs.webkit.org/show_bug.cgi?id=173572
+
+        Reviewed by Carlos Garcia Campos.
+
+        When drawing the spin buttons, override the width of the input
+        element to increment it with the width of the spin button.
+        This ensures that we don't end up covering the input values with
+        the spin buttons.
+
+        Do this also for user controlled styles, because most web authors
+        won't test how their site renders on WebKitGTK+, and they will
+        assume spin buttons in the order of 13 pixels wide (that is what
+        most browsers use), but the GTK+ spin button is much wider (66 pixels).
+
+        Test: platform/gtk/fast/forms/number/number-size-spinbutton-nocover.html
+
+        * rendering/RenderTheme.cpp:
+        (WebCore::RenderTheme::adjustStyle):
+        * rendering/RenderThemeGtk.cpp:
+        (WebCore::RenderThemeGtk::adjustTextFieldStyle): Call the theme's adjustTextFieldStyle() also for user controlled styles.
+        (WebCore::RenderThemeGtk::adjustInnerSpinButtonStyle):
+
+2017-06-15  Matthew Hanson  <matthew_hanson@apple.com>
+
+        Cherry-pick r218300. rdar://problem/31971362
+
+    2017-06-14  Dean Jackson  <dino@apple.com>
+
+            Restrict filtered painting across cross-origin boundaries with transforms
+            https://bugs.webkit.org/show_bug.cgi?id=173388
+            <rdar://problem/27362159>
+
+            Reviewed by Simon Fraser.
+
+            Make sure all cases of LayerPaintingInfo maintain the security
+            flag. In this case there was only one new place, and since
+            everything is scalar, there was no need for a real copy constructor.
+
+            Test: http/tests/css/filters-on-iframes-transform.html
+
+            * rendering/RenderLayer.cpp:
+            (WebCore::RenderLayer::paintLayerByApplyingTransform): Make sure the cross
+            origin flag is used in the call to paint the layer children.
+            * rendering/RenderLayer.h: Fix some typos.
+
+2017-05-25  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r217439. rdar://problem/32089229
+
+    2017-05-24  Jiewen Tan  <jiewen_tan@apple.com>
+
+            Crash on WebCore::FrameSelection::setSelectionWithoutUpdatingAppearance + 1195
+            https://bugs.webkit.org/show_bug.cgi?id=172555
+            <rdar://problem/32004724>
+
+            Reviewed by Ryosuke Niwa.
+
+            setSelectionWithoutUpdatingAppearance could dispatch a synchronous focusin event,
+            which could invoke an event handler that deteles the frame. Therefore, add a
+            protector before the call.
+
+            Test: editing/selection/select-iframe-focusin-document-crash.html
+
+            * editing/FrameSelection.cpp:
+            (WebCore::FrameSelection::setSelection):
+
+2017-05-24  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r217172. rdar://problem/32380123
+
+    2017-05-19  Chris Dumez  <cdumez@apple.com>
+
+            Do not fire load event for SVGElements that are detached or in frameless documents
+            https://bugs.webkit.org/show_bug.cgi?id=172289
+            <rdar://problem/32275689>
+
+            Reviewed by Ryosuke Niwa.
+
+            We should not fire load event for SVGElements that are detached or in frameless
+            documents.
+
+            Test: svg/load-event-detached.html
+
+            * svg/SVGElement.cpp:
+            (WebCore::SVGElement::sendSVGLoadEventIfPossible):
+
+2017-05-23  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r217197. rdar://problem/32355285
+
+    2017-05-21  Antti Koivisto  <antti@apple.com>
+
+            matchMedia('print').addListener() fires in WK1 but never in WK2 when printing (breaks printing Google maps, QuickLooks)
+            https://bugs.webkit.org/show_bug.cgi?id=172361
+            <rdar://problem/28777408>
+
+            Reviewed by Sam Weinig.
+
+            Test: fast/media/matchMedia-print.html
+
+            * page/FrameView.cpp:
+            (WebCore::FrameView::layout):
+
+                Evaluate matchMedia queries unconditionally. No idea why it wasn't like that.
+
+            * testing/Internals.cpp:
+            (WebCore::Internals::setPrinting):
+
+                Add testing support. The existing ways to do printing testing were unable to hit this bug as
+                they had too much additional gunk.
+
+            * testing/Internals.h:
+            * testing/Internals.idl:
+
+2017-05-18  Dean Jackson  <dino@apple.com>
+
+        Restrict SVG filters to accessible security origins
+        https://bugs.webkit.org/show_bug.cgi?id=118689
+        <rdar://problem/27362159>
+
+        Reviewed by Brent Fulgham.
+
+        Certain SVG filters should only be allowed to operate
+        on content that is has SecurityOrigin access to. Implement
+        this by including a flag in PaintInfo and LayerPaintingInfo,
+        and have RenderWidget make sure the documents have acceptable
+        SecurityOrigins as it goes to paint.
+
+        This could be used as the first step in a "safe painting"
+        strategy, allowing some content to be rendered into a 
+        canvas or via the element() CSS function... but it is only
+        a small first step.
+
+        Test: http/tests/css/filters-on-iframes.html
+
+        * page/FrameView.cpp:
+        (WebCore::FrameView::paintContents):
+        * page/FrameView.h:
+        * platform/ScrollView.cpp:
+        (WebCore::ScrollView::paint):
+        * platform/ScrollView.h:
+        * platform/Scrollbar.cpp:
+        (WebCore::Scrollbar::paint):
+        * platform/Scrollbar.h:
+        * platform/Widget.h:
+        * platform/graphics/filters/FilterOperation.h:
+        (WebCore::FilterOperation::shouldBeRestrictedBySecurityOrigin):
+        * platform/graphics/filters/FilterOperations.cpp:
+        (WebCore::FilterOperations::hasFilterThatShouldBeRestrictedBySecurityOrigin):
+        * platform/graphics/filters/FilterOperations.h:
+        * platform/mac/WidgetMac.mm:
+        (WebCore::Widget::paint):
+        * rendering/FilterEffectRenderer.cpp:
+        (WebCore::FilterEffectRenderer::build):
+        * rendering/FilterEffectRenderer.h:
+        * rendering/PaintInfo.h:
+        (WebCore::PaintInfo::PaintInfo):
+        * rendering/RenderLayer.cpp:
+        (WebCore::RenderLayer::paint):
+        (WebCore::RenderLayer::setupFilters):
+        (WebCore::RenderLayer::paintForegroundForFragmentsWithPhase):
+        * rendering/RenderLayer.h:
+        * rendering/RenderScrollbar.cpp:
+        (WebCore::RenderScrollbar::paint):
+        * rendering/RenderScrollbar.h:
+        * rendering/RenderWidget.cpp:
+        (WebCore::RenderWidget::paintContents):
+
+2016-12-01  Matthew Hanson  <matthew_hanson@apple.com>
+
+        Merge r208825. rdar://problem/29277338
+
+    2016-11-16  Brent Fulgham  <bfulgham@apple.com>
+
+            Clear track client when removing a track
+            https://bugs.webkit.org/show_bug.cgi?id=164842
+            <rdar://problem/29213621>
+
+            Reviewed by Eric Carlson.
+
+            Call 'clearClient' when removing a track from an HTMLMediaElement.
+
+            Test: media/track/audio-track-add-remove.html
+                  media/track/video-track-add-remove.html
+
+            * html/HTMLMediaElement.cpp:
+            (WebCore::HTMLMediaElement::removeAudioTrack): Call 'clearClient'
+            (WebCore::HTMLMediaElement::removeVideoTrack): Ditto.
+
+2016-12-01  Matthew Hanson  <matthew_hanson@apple.com>
+
+        Merge r208628. rdar://problem/29277337
+
+    2016-11-11  Brent Fulgham  <bfulgham@apple.com>
+
+            Neutered ArrayBuffers are not properly serialized
+            https://bugs.webkit.org/show_bug.cgi?id=164647
+            <rdar://problem/29213490>
+
+            Reviewed by David Kilzer.
+
+            Correct binding logic to handle ImageBuffers being deserialized from neutered ArrayBuffers.
+
+            Test: fast/canvas/neutered-imagedata.html
+
+            * bindings/js/SerializedScriptValue.cpp:
+            (WebCore::CloneDeserializer::readTerminal):
+
+2016-10-31  Matthew Hanson  <matthew_hanson@apple.com>
+
+        Merge r206635 and r206637. rdar://problem/28718754
+
+    2016-10-28  Said Abou-Hallawa  <sabouhallawa@apple.com>
+
+            Change the MemoryCache and CachedResource adjustSize functions to take a long argument
+            https://bugs.webkit.org/show_bug.cgi?id=162708
+
+            Reviewed by Brent Fulgham.
+
+            Because the MemoryCache stores the size of the cached memory in unsigned,
+            two problems my happen when reporting a change in the size of the memory:
+
+            1. Signed integer overflow -- which can happen because MemoryCache::adjustSize()
+               takes a signed integer argument. If the allocated or the freed memory size is
+               larger than the maximum of a signed integer, an overflow will happen.
+               For the image caching code, this can be seen where the unsigned decodedSize
+               is casted to an integer before passing it to ImageObserver::decodedSizeChanged().
+
+            2. Unsigned integer overflow -- which can happen if the new allocated memory
+               size plus the currentSize exceeds the maximum of unsigned.
+               This can be seen in MemoryCache::adjustSize() where we add delta to m_liveSize
+               or m_deadSize without checking whether this addition will overflow or not. We
+               do not assert for overflow although we assert for underflow.
+
+            The fix for these two problems can be the following:
+
+            1. Make all the adjustSize functions all the way till MemoryCache::adjustSize()
+               take a signed long integer argument.
+
+            2. Do not create a NativeImagePtr for an ImageFrame if its frameBytes plus the
+               ImageFrameCache::decodedSize() will exceed the maximum of an unsigned integer.
+
+            * loader/cache/CachedImage.cpp:
+            (WebCore::CachedImage::decodedSizeChanged): Change the argument to be long. No overflow will happen when casting the argument from unsigned to long.
+            * loader/cache/CachedImage.h:
+            * loader/cache/CachedResource.cpp:
+            (WebCore::CachedResource::setDecodedSize): Use long integer casting when calling MemoryCache::adjustSize().
+            (WebCore::CachedResource::setEncodedSize): Ditto.
+            * loader/cache/MemoryCache.cpp:
+            (WebCore::MemoryCache::MemoryCache): Add as static assert to ensure sizeof(long long) can hold any unsigned or its negation.
+            (WebCore::MemoryCache::revalidationSucceeded): Use long integer casting when calling MemoryCache::adjustSize().
+            (WebCore::MemoryCache::remove): Ditto.
+            (WebCore::MemoryCache::adjustSize): Change the function argument to long integer. No overflow will happen when casting the argument from unsigned to long.
+            * loader/cache/MemoryCache.h:
+            * platform/graphics/BitmapImage.cpp:
+            (WebCore::BitmapImage::destroyMetadataAndNotify): Use long long casting when calling ImageObserver::decodedSizeChanged().
+            (WebCore::BitmapImage::cacheFrame): Do not create the NativeImage if adding its frameByes to the MemoryCache will cause numerical overflow.
+            (WebCore::BitmapImage::didDecodeProperties): Use long long casting.
+            (WebCore::BitmapImage::frameImageAtIndex): Use long long casting when calling ImageObserver::decodedSizeChanged().
+            * platform/graphics/ImageObserver.h:
+            * platform/graphics/cg/PDFDocumentImage.cpp:
+            (WebCore::PDFDocumentImage::decodedSizeChanged): Use long long casting when calling ImageObserver::decodedSizeChanged().
+
+2016-10-26  Matthew Hanson  <matthew_hanson@apple.com>
+
+        Merge r207547. rdar://problem/28810755
+
+    2016-10-19  Zalan Bujtas  <zalan@apple.com>
+
+            Use anonymous table row for new child at RenderTableRow::addChild() if available.
+            https://bugs.webkit.org/show_bug.cgi?id=163651
+            <rdar://problem/28705022>
+
+            Reviewed by David Hyatt.
+
+            We should try to prevent the continuation siblings from getting separated and inserted into
+            wrapper renderers. It makes finding these continuation siblings difficult.
+            This patch adds a checks for anonymous table rows so that we could find a closer common ancestor of
+            beforeChild/new child.
+
+            Test: fast/table/crash-when-table-has-continuation-and-content-inserted.html
+
+            * rendering/RenderObject.cpp:
+            (WebCore::RenderObject::showRenderObject): Add continuation information.
+            * rendering/RenderTableRow.cpp:
+            (WebCore::RenderTableRow::addChild):
+
+2016-10-26  Matthew Hanson  <matthew_hanson@apple.com>
+
+        Merge r207804. rdar://problem/28849628
+
+    2016-10-24  Zalan Bujtas  <zalan@apple.com>
+
+            Do not update selection rect on dirty lineboxes.
+            https://bugs.webkit.org/show_bug.cgi?id=163862
+            <rdar://problem/28813156>
+
+            Reviewed by Simon Fraser.
+
+            In certain cases RenderBlock::updateFirstLetter() triggers
+            unwanted render tree mutation while the caller assumes intact renderers.
+            This patch ensures that no renderers gets destroyed while computing the preferred widths
+            when we are outside of layout context.
+
+            Test: fast/css-generated-content/dynamic-first-letter-selection-clear-crash.html
+
+            * rendering/RenderBlock.cpp:
+            (WebCore::RenderBlock::computePreferredLogicalWidths):
+            (WebCore::RenderBlock::updateFirstLetter):
+            * rendering/RenderBlock.h:
+            * rendering/RenderListItem.cpp:
+            (WebCore::RenderListItem::insertOrMoveMarkerRendererIfNeeded):
+            * rendering/RenderRubyRun.cpp:
+            (WebCore::RenderRubyRun::updateFirstLetter):
+            * rendering/RenderRubyRun.h:
+            * rendering/RenderTable.cpp:
+            (WebCore::RenderTable::updateFirstLetter):
+            * rendering/RenderTable.h:
+            * rendering/svg/RenderSVGText.cpp:
+            (WebCore::RenderSVGText::updateFirstLetter):
+            * rendering/svg/RenderSVGText.h:
+
+2016-10-26  Matthew Hanson  <matthew_hanson@apple.com>
+
+        Merge r207683. rdar://problem/28849627
+
+    2016-10-21  Zalan Bujtas  <zalan@apple.com>
+
+            Do not mutate the render tree while collecting selection repaint rects.
+            https://bugs.webkit.org/show_bug.cgi?id=163800
+            <rdar://problem/28806886>
+
+           Reviewed by David Hyatt.
+
+           RenderListItem not only mutates the tree while in layout but it also uses
+           the old descendant context to find the insertion point.
+           This patch strictly ensures that we only do it while in layout and never
+           in other cases such as collecting repaint rects.
+           This gets redundant when webkit.org/b/163789 is fixed.
+
+           Test: fast/lists/crash-when-list-marker-is-moved-during-selection.html
+
+           * rendering/RenderListItem.cpp:
+           (WebCore::RenderListItem::insertOrMoveMarkerRendererIfNeeded):
+
+2016-03-15  Zalan Bujtas  <zalan@apple.com>
+
+        Delay HTMLFormControlElement::focus() call until after layout is finished.
+        https://bugs.webkit.org/show_bug.cgi?id=155503
+        <rdar://problem/24046635>
+
+        Reviewed by Simon Fraser.
+
+        Calling focus on a form element can trigger arbitrary JS code which could interfere with
+        the ongoing layout. 
+        This patch delays HTMLFormControlElement::focus() call until after layout is finished.
+        If we are currently not in the middle of a layout, HTMLFormControlElement::focus() is delayed until
+        after style resolution is done. 
+
+        Covered by LayoutTests/fast/dom/adopt-node-crash-2.html
+
+        * accessibility/AccessibilityObject.cpp:
+        (WebCore::AccessibilityObject::updateBackingStore):
+        * dom/Document.cpp:
+        (WebCore::Document::updateStyleIfNeeded):
+        (WebCore::Document::updateLayout):
+        (WebCore::Document::updateLayoutIfDimensionsOutOfDate):
+        * html/HTMLEmbedElement.cpp:
+        (WebCore::HTMLEmbedElement::renderWidgetLoadingPlugin):
+        * html/HTMLFormControlElement.cpp:
+        (WebCore::HTMLFormControlElement::didAttachRenderers):
+        * page/FrameView.cpp:
+        (WebCore::FrameView::layout):
+        (WebCore::FrameView::queuePostLayoutCallback):
+        (WebCore::FrameView::flushPostLayoutTasksQueue):
+        (WebCore::FrameView::performPostLayoutTasks):
+        (WebCore::FrameView::sendResizeEventIfNeeded):
+        * page/FrameView.h:
+        * rendering/RenderBox.cpp:
+        (WebCore::RenderBox::imageChanged):
+        * rendering/RenderLayer.cpp:
+        (WebCore::RenderLayer::scrollTo):
+
+2016-10-12  Matthew Hanson  <matthew_hanson@apple.com>
+
+        Merge r205786. rdar://problem/28476956
+
+    2016-09-10  Chris Dumez  <cdumez@apple.com>
+
+            It is possible for Document::m_frame pointer to become stale
+            https://bugs.webkit.org/show_bug.cgi?id=161812
+            <rdar://problem/27745023>
+
+            Reviewed by Ryosuke Niwa.
+
+            Document::m_frame is supposed to get cleared by Document::prepareForDestruction().
+            The Frame destructor calls Frame::setView(nullptr) which is supposed to call the
+            prepareForDestruction() on the Frame's associated document. However,
+            Frame::setView(nullptr) was calling prepareForDestruction() only if
+            Document::inPageCache() returned true. This is because, we allow Documents to
+            stay alive in the PageCache even though they don't have a frame.
+
+            The issue is that Document::m_inPageCache flag was set to true right before
+            firing the pagehide event, so technically before really entering PageCache.
+            Therefore, we can run into problems if a Frame gets destroyed by a pagehide
+            EventHandler because ~Frame() will not call Document::prepareForDestruction()
+            due to Document::m_inPageCache being true. After the frame is destroyed,
+            Document::m_frame becomes stale and any action on the document will likely
+            lead to crashes (such as the one in the layout test and the radar which
+            happens when trying to unregister event listeners from the document).
+
+            The solution adopted in this patch is to replace the m_inPageCache boolean
+            with a m_pageCacheState enumeration that has 3 states:
+            - NotInPageCache
+            - AboutToEnterPageCache
+            - InPageCache
+
+            Frame::setView() / Frame::setDocument() were then updated to call
+            Document::prepareForDestruction() on the associated document whenever
+            the document's pageCacheState is not InPageCache. This means that we
+            will now call Document::prepareForDestruction() when the document is
+            being detached from its frame while firing the pagehide event.
+
+            Note that I tried to keep this patch minimal. Therefore, I kept
+            the Document::inPageCache() getter for now. I plan to switch all its
+            calls sites to the new Document::pageCacheState() getter in a follow-up
+            patch so that we can finally drop the confusing Document::inPageCache().
+
+            Test: fast/history/pagehide-remove-iframe-crash.html
+
+            * dom/Document.cpp:
+            (WebCore::Document::Document):
+            (WebCore::Document::~Document):
+            (WebCore::Document::createRenderTree):
+            (WebCore::Document::destroyRenderTree):
+            (WebCore::Document::setFocusedElement):
+            (WebCore::Document::setPageCacheState):
+            (WebCore::Document::topDocument):
+            * dom/Document.h:
+            (WebCore::Document::pageCacheState):
+            (WebCore::Document::inPageCache):
+            * history/CachedFrame.cpp:
+            (WebCore::CachedFrame::destroy):
+            * history/PageCache.cpp:
+            (WebCore::setPageCacheState):
+            (WebCore::PageCache::addIfCacheable):
+            * loader/FrameLoader.cpp:
+            (WebCore::FrameLoader::stopAllLoaders):
+            (WebCore::FrameLoader::open):
+            * loader/HistoryController.cpp:
+            (WebCore::HistoryController::invalidateCurrentItemCachedPage):
+            * page/Frame.cpp:
+            (WebCore::Frame::setView):
+
+2016-01-26  Chris Dumez  <cdumez@apple.com>
+
+        Make sure a page is still PageCache-able after firing the 'pagehide' events
+        https://bugs.webkit.org/show_bug.cgi?id=153449
+
+        Reviewed by Andreas Kling.
+
+        Make sure a page is still PageCache-able after firing the 'pagehide'
+        events and abort if it isn't. This should improve robustness and it is
+        easy for pagehide event handlers to do things that would make a Page no
+        longer PageCache-able and this leads to bugs that are difficult to
+        investigate.
+
+        To achieve this, the 'pagehide' event firing logic was moved out of the
+        CachedFrame constructor. It now happens earlier in
+        PageCache::addIfCacheable() after checking if the page is cacheable and
+        before constructing the CachedPage / CachedFrames. After firing the
+        'pagehide' event in PageCache::addIfCacheable(), we check again that
+        the page is still cacheable and we abort early if it is not.
+
+        * history/CachedFrame.cpp:
+        (WebCore::CachedFrame::CachedFrame):
+        * history/PageCache.cpp:
+        (WebCore::setInPageCache):
+        (WebCore::firePageHideEventRecursively):
+        (WebCore::PageCache::addIfCacheable):
+        * history/PageCache.h:
+        * loader/FrameLoader.cpp:
+        (WebCore::FrameLoader::commitProvisionalLoad):
+
+2016-01-22  Chris Dumez  <cdumez@apple.com>
+
+        Document.open / Document.write should be prevented while the document is being unloaded
+        https://bugs.webkit.org/show_bug.cgi?id=153255
+        <rdar://problem/22741293>
+
+        Reviewed by Ryosuke Niwa.
+
+        Document.open / Document.write should be prevented while the document
+        is being unloaded, as per the HTML specification:
+        - https://html.spec.whatwg.org/multipage/webappapis.html#dom-document-open (step 6)
+        - https://html.spec.whatwg.org/multipage/webappapis.html#dom-document-write (step 3)
+
+        This patch is aligning our behavior with the specification and Firefox.
+        Calling Document.open / Document.write during the document was being
+        unloaded would cause us to crash as this was unexpected.
+
+        Tests: fast/frames/page-hide-document-open.html
+               fast/frames/page-unload-document-open.html
+
+        * WebCore.xcodeproj/project.pbxproj:
+        Add new IgnoreOpensDuringUnloadCountIncrementer.h header.
+
+        * dom/Document.cpp:
+        (WebCore::Document::open):
+        Abort if the document's ignore-opens-during-unload counter is greater
+        than zero, as per:
+        https://html.spec.whatwg.org/multipage/webappapis.html#dom-document-open (step 6)
+
+        (WebCore::Document::write):
+        Abort if the insertion point is undefined and the document's
+        ignore-opens-during-unload counter is greater than zero, as per:
+        https://html.spec.whatwg.org/multipage/webappapis.html#dom-document-write (step 3)
+
+        * dom/Document.h:
+        Add data member to maintain the document's ignore-opens-during-unload counter:
+        https://html.spec.whatwg.org/multipage/webappapis.html#ignore-opens-during-unload-counter
+
+        * dom/IgnoreOpensDuringUnloadCountIncrementer.h: Added.
+        Add utility class to increment / decrement a document's
+        ignore-opens-during-unload counter.
+
+        * history/CachedFrame.cpp:
+        (WebCore::CachedFrame::CachedFrame):
+        When a page goes into PageCache, we don't end up calling
+        FrameLoader::detachChildren() so we need to increment the document's
+        ignore-opens-during-unload counter before calling stopLoading() on each
+        subframe.
+
+        * loader/FrameLoader.cpp:
+        (WebCore::FrameLoader::detachChildren):
+        detachChildren() will end up firing the pagehide / unload events in each
+        child frame so we increment the parent frame's document's
+        ignore-opens-during-unload counter. This behavior matches the text of:
+        https://html.spec.whatwg.org/multipage/browsers.html#unload-a-document
+
+        As per the spec, the document's ignore-opens-during-unload counter should
+        be incremented before firing the pagehide / unload events at the document's
+        Window object. It should be decremented only after firing the pagehide /
+        unload events in each subframe. This is needed in case a subframe tries to
+        call document.open / document.write on a parent frame's document, from its
+        pagehide or unload handler.
+
+        (WebCore::FrameLoader::dispatchUnloadEvents):
+        Increment the document's ignore-opens-during-unload counter before firing
+        the pagehide / unload events and decrement it after. As per the spec, we
+        are not supposed to decrement this early. We actually supposed to wait
+        until the pagehide / unload events have been fired in all the subframes.
+        For this reason, we take care of re-incrementing the document's
+        ignore-opens-during-unload in detachChildren(), which will take care of
+        firing the pagehide / unload in the subframes.
+
+2015-08-10  Chris Dumez  <cdumez@apple.com>
+
+        Simplify code for making Page-cacheability decision
+        https://bugs.webkit.org/show_bug.cgi?id=147829
+
+        Reviewed by Antti Koivisto.
+
+        Simplify code for making Page-cacheability decision by merging logging
+        code and decision making code. Having the same checks in two places was
+        redundant and error-prone as we needed to keep them in sync.
+
+        Also get rid of failure reason enum values as those have not been used
+        in a while.
+
+        * history/PageCache.cpp:
+        (WebCore::canCacheFrame):
+        (WebCore::canCachePage):
+        (WebCore::PageCache::canCache):
+        (WebCore::logPageCacheFailureDiagnosticMessage): Deleted.
+        (WebCore::PageCache::singleton): Deleted.
+        (WebCore::PageCache::setMaxSize): Deleted.
+        (WebCore::PageCache::frameCount): Deleted.
+        (WebCore::PageCache::markPagesForVisitedLinkStyleRecalc): Deleted.
+        (WebCore::PageCache::markPagesForFullStyleRecalc): Deleted.
+        (WebCore::PageCache::markPagesForDeviceOrPageScaleChanged): Deleted.
+        (WebCore::PageCache::markPagesForContentsSizeChanged): Deleted.
+        (WebCore::PageCache::markPagesForCaptionPreferencesChanged): Deleted.
+        (WebCore::pruningReasonToDiagnosticLoggingKey): Deleted.
+        * page/DiagnosticLoggingKeys.cpp:
+        (WebCore::DiagnosticLoggingKeys::isDisabledKey):
+        (WebCore::DiagnosticLoggingKeys::redirectKey):
+        (WebCore::DiagnosticLoggingKeys::replaceKey):
+        (WebCore::DiagnosticLoggingKeys::sourceKey):
+        (WebCore::DiagnosticLoggingKeys::underMemoryPressureKey):
+        (WebCore::DiagnosticLoggingKeys::reloadFromOriginKey): Deleted.
+        * page/DiagnosticLoggingKeys.h:
+
+2015-12-12  Katlyn Graff  <kgraff@apple.com>
+
+        Safari background tabs should be fully suspended where possible.
+        https://bugs.webkit.org/show_bug.cgi?id=150515
+
+        Reviewed by Ryosuke Niwa.
+
+        Support for tab suspension for Mac, enabled by defaults writing to WebKitTabSuspension.
+        Page-down suspension consolidated with PageCache suspension code in Document::
+        suspend and Document::resume. Pages canTabSuspend if cacheable, nonvisible, nonprerender,
+        and nonactive.
+
+        * dom/Document.cpp: moved scrollbar handling from setInPageCache to suspend/resume
+        (WebCore::Document::suspend): moved scrollbar, dom, animation, timer, and visual update suspending into here
+        (WebCore::Document::resume): moved scrollbar, dom, animation, timer, and visual update resuming into here
+        * dom/Document.h: added m_isSuspended to prevent repeat calls from PageCache/Tab Suspension contention
+        * history/CachedFrame.cpp: moved dom, animation, and timer suspension into Document::suspend
+        (WebCore::CachedFrame::CachedFrame):
+       * history/PageCache.cpp: Added a few nullchecks to prevent crashes if canCacheFrame is called but document is null
+        (WebCore::PageCache::canCacheFrame):
+        * page/Page.cpp:
+        (WebCore::Page::Page): Added timer to fire delayed suspension
+        (WebCore::Page::setPageActivityState): Added a call to schedule tab suspension
+        (WebCore::Page::setIsVisibleInternal): Added a call to schedule tab suspension
+        (WebCore::Page::canTabSuspend): Added support for suspending if cacheable, nonvisible, nonprerender, and nonactive
+        (WebCore::Page::setIsTabSuspended): Added a function to suspend or resume tabs
+        (WebCore::Page::setTabSuspensionEnabled): Added support for a defaults write enable
+        (WebCore::Page::scheduleTabSuspension): Added ability to schedule the suspension timer to fire or resume
+        (WebCore::Page::timerFired): Added a suspension timer
+        * page/Page.h:
+        * page/PageThrottler.h:
+        (WebCore::PageThrottler::activityState): Added access to m_activityState for canTabSuspend
+
+2015-11-20  Katlyn Graff  <kgraff@apple.com>
+
+        Renaming PageCache suspension code to support more reasons for suspension.
+        https://bugs.webkit.org/show_bug.cgi?id=151527
+
+        Reviewed by Ryosuke Niwa.
+
+        No new tests because this is simply a refactor.
+
+        Renamed Element:: and Document:: documentWillSuspendForPageCache(),
+        documentDidResumeFromPageCache(),
+        registerForPageCacheSuspensionCallbacks(),
+        unregisterForPageCacheSuspensionCallbacks() to prepare to support
+        alternate reasons for document-level suspension.
+
+        * dom/Document.cpp:
+        (WebCore::Document::suspend):
+        (WebCore::Document::resume):
+        (WebCore::Document::registerForDocumentSuspensionCallbacks):
+        (WebCore::Document::unregisterForDocumentSuspensionCallbacks):
+        (WebCore::Document::documentWillSuspendForPageCache): Deleted.
+        (WebCore::Document::documentDidResumeFromPageCache): Deleted.
+        (WebCore::Document::registerForPageCacheSuspensionCallbacks): Deleted.
+        (WebCore::Document::unregisterForPageCacheSuspensionCallbacks): Deleted.
+        * dom/Document.h:
+        * dom/Element.h:
+        (WebCore::Element::prepareForDocumentSuspension):
+        (WebCore::Element::resumeFromDocumentSuspension):
+        (WebCore::Element::documentWillSuspendForPageCache): Deleted.
+        (WebCore::Element::documentDidResumeFromPageCache): Deleted.
+        * history/CachedFrame.cpp:
+        (WebCore::CachedFrameBase::restore):
+        (WebCore::CachedFrame::CachedFrame):
+        * html/HTMLFormElement.cpp:
+        (WebCore::HTMLFormElement::~HTMLFormElement):
+        (WebCore::HTMLFormElement::parseAttribute):
+        (WebCore::HTMLFormElement::resumeFromDocumentSuspension):
+        (WebCore::HTMLFormElement::didMoveToNewDocument):
+        (WebCore::HTMLFormElement::documentDidResumeFromPageCache): Deleted.
+        * html/HTMLFormElement.h:
+        * html/HTMLInputElement.cpp:
+        (WebCore::HTMLInputElement::~HTMLInputElement):
+        (WebCore::HTMLInputElement::registerForSuspensionCallbackIfNeeded):
+        (WebCore::HTMLInputElement::unregisterForSuspensionCallbackIfNeeded):
+        (WebCore::HTMLInputElement::resumeFromDocumentSuspension):
+        (WebCore::HTMLInputElement::prepareForDocumentSuspension):
+        (WebCore::HTMLInputElement::didMoveToNewDocument):
+        (WebCore::HTMLInputElement::documentDidResumeFromPageCache): Deleted.
+        (WebCore::HTMLInputElement::documentWillSuspendForPageCache): Deleted.
+        * html/HTMLInputElement.h:
+        * html/HTMLMediaElement.cpp:
+        (WebCore::HTMLMediaElement::registerWithDocument):
+        (WebCore::HTMLMediaElement::unregisterWithDocument):
+        (WebCore::HTMLMediaElement::prepareForDocumentSuspension):
+        (WebCore::HTMLMediaElement::resumeFromDocumentSuspension):
+        (WebCore::HTMLMediaElement::documentWillSuspendForPageCache): Deleted.
+        (WebCore::HTMLMediaElement::documentDidResumeFromPageCache): Deleted.
+        * html/HTMLMediaElement.h:
+        * html/HTMLPlugInImageElement.cpp:
+        (WebCore::HTMLPlugInImageElement::~HTMLPlugInImageElement):
+        (WebCore::HTMLPlugInImageElement::createElementRenderer):
+        (WebCore::HTMLPlugInImageElement::didMoveToNewDocument):
+        (WebCore::HTMLPlugInImageElement::prepareForDocumentSuspension):
+        (WebCore::HTMLPlugInImageElement::resumeFromDocumentSuspension):
+        (WebCore::HTMLPlugInImageElement::documentWillSuspendForPageCache): Deleted.
+        (WebCore::HTMLPlugInImageElement::documentDidResumeFromPageCache): Deleted.
+        * html/HTMLPlugInImageElement.h:
+        * loader/FrameLoader.cpp:
+        (WebCore::FrameLoader::commitProvisionalLoad):
+        * svg/SVGSVGElement.cpp:
+        (WebCore::SVGSVGElement::SVGSVGElement):
+        (WebCore::SVGSVGElement::~SVGSVGElement):
+        (WebCore::SVGSVGElement::didMoveToNewDocument):
+        (WebCore::SVGSVGElement::prepareForDocumentSuspension):
+        (WebCore::SVGSVGElement::resumeFromDocumentSuspension):
+        (WebCore::SVGSVGElement::documentWillSuspendForPageCache): Deleted.
+        (WebCore::SVGSVGElement::documentDidResumeFromPageCache): Deleted.
+        * svg/SVGSVGElement.h:
+
+2016-09-16  Babak Shafiei  <bshafiei@apple.com>
+
+        Merge r206006. rdar://problem/27991573
+
+    2016-09-15  Brady Eidson  <beidson@apple.com>
+
+            WKWebView.hasOnlySecureContent always returns "YES" after going back to a CachedPage (even if it has http resources).
+            <rdar://problem/27681261> and https://bugs.webkit.org/show_bug.cgi?id=162043
+
+            Reviewed by Brent Fulgham.
+
+            No new tests (Not possible with current testing infrastructure).
+
+            This adds the infrastructure for WebCore to track whether or not a CachedFrame had insecure content at the time
+            it was cached, and then to report that back to the client when a CachedPage is restored.
+
+            Since "has insecure content" is currently only tracked in the WK2 UI process, that is the only client of this code.
+
+            * history/CachedFrame.cpp:
+            (WebCore::CachedFrame::setHasInsecureContent):
+            * history/CachedFrame.h:
+            (WebCore::CachedFrame::hasInsecureContent):
+
+            * loader/EmptyClients.h:
+
+            * loader/FrameLoader.cpp:
+            (WebCore::FrameLoader::receivedFirstData):
+            (WebCore::FrameLoader::commitProvisionalLoad):
+            (WebCore::FrameLoader::dispatchDidCommitLoad):
+            * loader/FrameLoader.h:
+
+            * loader/FrameLoaderClient.h:
+
+            * loader/FrameLoaderTypes.h:
+
 2017-03-30  Eric Carlson  <eric.carlson@apple.com>
 
         [Crash] WebCore::AudioBuffer::AudioBuffer don't checking illegal value
@@ -1079,8 +4302,8 @@
 
 2017-02-17  Matthew Hanson  <matthew_hanson@apple.com>
 
-+        Rollout r212488. rdar://problem/29904368
-+
+        Rollout r212488. rdar://problem/29904368
+
 2017-02-16  Matthew Hanson  <matthew_hanson@apple.com>
 
         Merge r212518. rdar://problem/30541748

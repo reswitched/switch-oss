@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-Image-Surfaces.top_of_page">Image Surfaces</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>Image Surfaces</refname>
@@ -58,11 +56,6 @@
 </tgroup>
 </informaltable>
 </refsect1>
-<refsect1 id="cairo-Image-Surfaces.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
-</refsect1>
 
 
 <refsect1 id="cairo-Image-Surfaces.description" role="desc">
@@ -94,7 +87,7 @@ surface = cairo_image_surface_create_for_data (data, format,
 					  width, height,
 					  stride);
 </programlisting></informalexample>
-<refsect3 role="parameters">
+<refsect3 id="cairo-format-stride-for-width.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -109,13 +102,12 @@ surface = cairo_image_surface_create_for_data (data, format,
 <entry role="parameter_description"><para>The desired width of an image surface to be created.</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-format-stride-for-width.returns" role="returns">
 <title>Returns</title>
 <para> the appropriate stride to use given the desired
 format and width, or -1 if either the format is invalid or the width
 too large.</para>
-<para></para>
-</refsect3><para role="since">Since 1.6</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.6">1.6</link></para></refsect2>
 <refsect2 id="cairo-image-surface-create" role="function" condition="since:1.0">
 <title>cairo_image_surface_create&#160;()</title>
 <indexterm zone="cairo-image-surface-create" role="1.0"><primary sortas="image_surface_create">cairo_image_surface_create</primary></indexterm>
@@ -130,7 +122,7 @@ dimensions. Initially the surface contents are all</para>
 belonging to format will be 0. The contents of bits within a pixel,
 but not belonging to the given format are undefined).</para></listitem>
 </orderedlist>
-<refsect3 role="parameters">
+<refsect3 id="cairo-image-surface-create.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -148,7 +140,7 @@ but not belonging to the given format are undefined).</para></listitem>
 <entry role="parameter_description"><para>height of the surface, in pixels</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-image-surface-create.returns" role="returns">
 <title>Returns</title>
 <para> a pointer to the newly created surface. The caller
 owns the surface and should call <link linkend="cairo-surface-destroy"><function>cairo_surface_destroy()</function></link> when done
@@ -156,8 +148,7 @@ with it.</para>
 <para>This function always returns a valid pointer, but it will return a
 pointer to a "nil" surface if an error such as out of memory
 occurs. You can use <link linkend="cairo-surface-status"><function>cairo_surface_status()</function></link> to check for this.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-image-surface-create-for-data" role="function" condition="since:1.0">
 <title>cairo_image_surface_create_for_data&#160;()</title>
 <indexterm zone="cairo-image-surface-create-for-data" role="1.0"><primary sortas="image_surface_create_for_data">cairo_image_surface_create_for_data</primary></indexterm>
@@ -182,7 +173,7 @@ call <link linkend="cairo-format-stride-for-width"><function>cairo_format_stride
 maximum image width value, and then use the resulting stride value
 to allocate the data and to create the image surface. See
 <link linkend="cairo-format-stride-for-width"><function>cairo_format_stride_for_width()</function></link> for example code.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-image-surface-create-for-data.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -211,7 +202,7 @@ buffer as allocated. This value should always be computed by
 buffer.</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-image-surface-create-for-data.returns" role="returns">
 <title>Returns</title>
 <para> a pointer to the newly created surface. The caller
 owns the surface and should call <link linkend="cairo-surface-destroy"><function>cairo_surface_destroy()</function></link> when done
@@ -224,8 +215,7 @@ the error status of the returned surface will be
 <link linkend="cairo-surface-status"><function>cairo_surface_status()</function></link> to check for this.</para>
 <para>See <link linkend="cairo-surface-set-user-data"><function>cairo_surface_set_user_data()</function></link> for a means of attaching a
 destroy-notification fallback to the surface if necessary.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-image-surface-get-data" role="function" condition="since:1.2">
 <title>cairo_image_surface_get_data&#160;()</title>
 <indexterm zone="cairo-image-surface-get-data" role="1.2"><primary sortas="image_surface_get_data">cairo_image_surface_get_data</primary></indexterm>
@@ -237,7 +227,7 @@ inspection or modification.</para>
 pixel data to ensure that all pending drawing operations are
 finished. A call to <link linkend="cairo-surface-mark-dirty"><function>cairo_surface_mark_dirty()</function></link> is required after
 the data is modified.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-image-surface-get-data.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -249,21 +239,20 @@ the data is modified.</para>
 <entry role="parameter_description"><para>a <link linkend="cairo-image-surface-t"><type>cairo_image_surface_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-image-surface-get-data.returns" role="returns">
 <title>Returns</title>
 <para> a pointer to the image data of this surface or <link linkend="NULL:CAPS"><literal>NULL</literal></link>
 if <parameter>surface</parameter>
 is not an image surface, or if <link linkend="cairo-surface-finish"><function>cairo_surface_finish()</function></link>
 has been called.</para>
-<para></para>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-image-surface-get-format" role="function" condition="since:1.2">
 <title>cairo_image_surface_get_format&#160;()</title>
 <indexterm zone="cairo-image-surface-get-format" role="1.2"><primary sortas="image_surface_get_format">cairo_image_surface_get_format</primary></indexterm>
 <programlisting language="C"><link linkend="cairo-format-t"><returnvalue>cairo_format_t</returnvalue></link>
 cairo_image_surface_get_format (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *surface</parameter>);</programlisting>
 <para>Get the format of the surface.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-image-surface-get-format.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -275,18 +264,17 @@ cairo_image_surface_get_format (<parameter><link linkend="cairo-surface-t"><type
 <entry role="parameter_description"><para>a <link linkend="cairo-image-surface-t"><type>cairo_image_surface_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-image-surface-get-format.returns" role="returns">
 <title>Returns</title>
 <para> the format of the surface</para>
-<para></para>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-image-surface-get-width" role="function" condition="since:1.0">
 <title>cairo_image_surface_get_width&#160;()</title>
 <indexterm zone="cairo-image-surface-get-width" role="1.0"><primary sortas="image_surface_get_width">cairo_image_surface_get_width</primary></indexterm>
 <programlisting language="C"><link linkend="int"><returnvalue>int</returnvalue></link>
 cairo_image_surface_get_width (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *surface</parameter>);</programlisting>
 <para>Get the width of the image surface in pixels.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-image-surface-get-width.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -298,18 +286,17 @@ cairo_image_surface_get_width (<parameter><link linkend="cairo-surface-t"><type>
 <entry role="parameter_description"><para>a <link linkend="cairo-image-surface-t"><type>cairo_image_surface_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-image-surface-get-width.returns" role="returns">
 <title>Returns</title>
 <para> the width of the surface in pixels.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-image-surface-get-height" role="function" condition="since:1.0">
 <title>cairo_image_surface_get_height&#160;()</title>
 <indexterm zone="cairo-image-surface-get-height" role="1.0"><primary sortas="image_surface_get_height">cairo_image_surface_get_height</primary></indexterm>
 <programlisting language="C"><link linkend="int"><returnvalue>int</returnvalue></link>
 cairo_image_surface_get_height (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *surface</parameter>);</programlisting>
 <para>Get the height of the image surface in pixels.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-image-surface-get-height.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -321,18 +308,17 @@ cairo_image_surface_get_height (<parameter><link linkend="cairo-surface-t"><type
 <entry role="parameter_description"><para>a <link linkend="cairo-image-surface-t"><type>cairo_image_surface_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-image-surface-get-height.returns" role="returns">
 <title>Returns</title>
 <para> the height of the surface in pixels.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-image-surface-get-stride" role="function" condition="since:1.2">
 <title>cairo_image_surface_get_stride&#160;()</title>
 <indexterm zone="cairo-image-surface-get-stride" role="1.2"><primary sortas="image_surface_get_stride">cairo_image_surface_get_stride</primary></indexterm>
 <programlisting language="C"><link linkend="int"><returnvalue>int</returnvalue></link>
 cairo_image_surface_get_stride (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *surface</parameter>);</programlisting>
 <para>Get the stride of the image surface in bytes</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-image-surface-get-stride.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -344,15 +330,14 @@ cairo_image_surface_get_stride (<parameter><link linkend="cairo-surface-t"><type
 <entry role="parameter_description"><para>a <link linkend="cairo-image-surface-t"><type>cairo_image_surface_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-image-surface-get-stride.returns" role="returns">
 <title>Returns</title>
 <para> the stride of the image surface in bytes (or 0 if
 <parameter>surface</parameter>
 is not an image surface). The stride is the distance in
 bytes from the beginning of one row of the image data to the
 beginning of the next row.</para>
-<para></para>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-Image-Surfaces.other_details" role="details">
@@ -365,14 +350,14 @@ beginning of the next row.</para>
 <para>Defined if the image surface backend is available.
 The image surface backend is always built in.
 This macro was added for completeness in cairo 1.8.</para>
-<para role="since">Since 1.8</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.8">1.8</link></para></refsect2>
 <refsect2 id="cairo-format-t" role="enum" condition="since:1.0">
 <title>enum cairo_format_t</title>
 <indexterm zone="cairo-format-t" role="1.0"><primary sortas="format_t">cairo_format_t</primary></indexterm>
 <para><link linkend="cairo-format-t"><type>cairo_format_t</type></link> is used to identify the memory format of
 image data.</para>
 <para>New entries may be added in future versions.</para>
-<refsect3 role="enum_members">
+<refsect3 id="cairo-format-t.members" role="enum_members">
 <title>Members</title>
 <informaltable role="enum_members_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -430,7 +415,7 @@ image data.</para>
 <entry role="enum_member_annotations"></entry>
 </row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-Image-Surfaces.see-also">

@@ -567,7 +567,7 @@ static void getInlineRun(RenderObject* start, RenderObject* boundary,
 void RenderBlock::deleteLines()
 {
     if (AXObjectCache* cache = document().existingAXObjectCache())
-        cache->recomputeIsIgnored(this);
+        cache->deferRecomputeIsIgnored(element());
 }
 
 void RenderBlock::makeChildrenNonInline(RenderObject* insertionPoint)
@@ -2736,7 +2736,9 @@ void RenderBlock::computePreferredLogicalWidths()
 #endif
     ASSERT(preferredLogicalWidthsDirty());
 
-    updateFirstLetter();
+    // FIXME: Do not even try to reshuffle first letter renderers when we are not in layout
+    // until after webkit.org/b/163848 is fixed.
+    updateFirstLetter(view().frameView().isInRenderTreeLayout() ? RenderTreeMutationIsAllowed::Yes : RenderTreeMutationIsAllowed::No);
 
     m_minPreferredLogicalWidth = 0;
     m_maxPreferredLogicalWidth = 0;
@@ -3284,7 +3286,7 @@ void RenderBlock::getFirstLetter(RenderObject*& firstLetter, RenderElement*& fir
         firstLetterContainer = nullptr;
 }
 
-void RenderBlock::updateFirstLetter()
+void RenderBlock::updateFirstLetter(RenderTreeMutationIsAllowed mutationAllowedOrNot)
 {
 #if PLATFORM(WKC)
     CRASH_IF_STACK_OVERFLOW(WKC_STACK_MARGIN_DEFAULT);
@@ -3308,6 +3310,8 @@ void RenderBlock::updateFirstLetter()
     if (!is<RenderText>(*firstLetterObj))
         return;
 
+    if (mutationAllowedOrNot != RenderTreeMutationIsAllowed::Yes)
+        return;
     // Our layout state is not valid for the repaints we are going to trigger by
     // adding and removing children of firstLetterContainer.
     LayoutStateDisabler layoutStateDisabler(&view());

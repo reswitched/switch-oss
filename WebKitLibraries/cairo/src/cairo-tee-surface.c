@@ -435,7 +435,8 @@ cairo_tee_surface_create (cairo_surface_t *master)
     _cairo_surface_init (&surface->base,
 			 &cairo_tee_surface_backend,
 			 master->device,
-			 master->content);
+			 master->content,
+			 TRUE); /* is_vector */
 
     _cairo_surface_wrapper_init (&surface->master, master);
 

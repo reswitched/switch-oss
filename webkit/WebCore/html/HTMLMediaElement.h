@@ -210,7 +210,8 @@ public:
     virtual PassRefPtr<TimeRanges> seekable() const override;
     WEBCORE_EXPORT bool ended() const;
     bool autoplay() const;
-    bool loop() const;    
+    bool isAutoplaying() const { return m_autoplaying; }
+    bool loop() const;
     void setLoop(bool b);
     WEBCORE_EXPORT virtual void play() override;
     WEBCORE_EXPORT virtual void pause() override;
@@ -454,6 +455,7 @@ public:
     virtual MediaProducer::MediaStateFlags mediaState() const override;
 
     void layoutSizeChanged();
+    void visibilityDidChange();
 
     void allowsMediaDocumentInlinePlaybackChanged();
 
@@ -461,13 +463,15 @@ protected:
     HTMLMediaElement(const QualifiedName&, Document&, bool);
     virtual ~HTMLMediaElement();
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
-    virtual void finishParsingChildren() override;
-    virtual bool isURLAttribute(const Attribute&) const override;
-    virtual void willAttachRenderers() override;
-    virtual void didAttachRenderers() override;
+    void parseAttribute(const QualifiedName&, const AtomicString&) override;
+    void finishParsingChildren() override;
+    bool isURLAttribute(const Attribute&) const override;
+    void willAttachRenderers() override;
+    void didAttachRenderers() override;
+    void willDetachRenderers() override;
+    void didDetachRenderers() override;
 
-    virtual void didMoveToNewDocument(Document* oldDocument) override;
+    void didMoveToNewDocument(Document* oldDocument) override;
 
     enum DisplayMode { Unknown, None, Poster, PosterWaitingForVideo, Video };
     DisplayMode displayMode() const { return m_displayMode; }
@@ -729,7 +733,6 @@ private:
     bool isBlockedOnMediaController() const;
     virtual bool hasCurrentSrc() const override { return !m_currentSrc.isEmpty(); }
     virtual bool isLiveStream() const override { return movieLoadType() == MediaPlayerEnums::LiveStream; }
-    bool isAutoplaying() const { return m_autoplaying; }
 
     void updateSleepDisabling();
     bool shouldDisableSleep() const;
@@ -745,6 +748,7 @@ private:
     virtual PlatformMediaSession::MediaType presentationType() const override;
     virtual PlatformMediaSession::DisplayType displayType() const override;
     virtual void suspendPlayback() override;
+    void resumeAutoplaying() override;
     virtual void mayResumePlayback(bool shouldResume) override;
     virtual String mediaSessionTitle() const override;
     virtual double mediaSessionDuration() const override { return duration(); }
@@ -752,7 +756,7 @@ private:
     virtual bool canReceiveRemoteControlCommands() const override { return true; }
     void didReceiveRemoteControlCommand(PlatformMediaSession::RemoteControlCommandType, const PlatformMediaSession::RemoteCommandArgument*) override;
     bool supportsSeeking() const override;
-    virtual bool overrideBackgroundPlaybackRestriction() const override;
+    bool shouldOverrideBackgroundPlaybackRestriction(PlatformMediaSession::InterruptionType) const override;
 
     virtual void pageMutedStateDidChange() override;
 
@@ -765,8 +769,8 @@ private:
     void ensureMediaControlsShadowRoot();
 
 #if ENABLE(WIRELESS_PLAYBACK_TARGET)
-    virtual void documentWillSuspendForPageCache() override final;
-    virtual void documentDidResumeFromPageCache() override final;
+    virtual void prepareForDocumentSuspension() override final;
+    virtual void resumeFromDocumentSuspension() override final;
 
     enum class UpdateMediaState {
         Asynchronously,
@@ -774,6 +778,9 @@ private:
     };
     void updateMediaState(UpdateMediaState updateState = UpdateMediaState::Synchronously);
 #endif
+
+    void isVisibleInViewportChanged() override final;
+    void updateShouldAutoplay();
 
     void handleSeekToPlaybackPosition(double);
     void seekToPlaybackPositionEndedTimerFired();

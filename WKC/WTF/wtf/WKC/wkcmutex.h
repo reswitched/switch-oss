@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2015, 2016 ACCESS CO., LTD. All rights reserved.
+* Copyright (C) 2015-2017 ACCESS CO., LTD. All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are
@@ -126,7 +126,8 @@ public:
         m_locked = m_lock.try_lock();
         return m_locked;
     }
-    inline bool try_lock_for(const std::chrono::duration<std::milli>& timeout)
+    // WORKAROUND : compile error has occurred with -fdelayed-template-parsin.
+    /*inline bool try_lock_for(const std::chrono::duration<std::milli>& timeout)
     {
         if (!m_have_lock)
             return false;
@@ -144,7 +145,7 @@ public:
         } while (1);
         m_locked = false;
         return false;
-    }
+    }*/
     inline void unlock()
     {
         m_lock.unlock();

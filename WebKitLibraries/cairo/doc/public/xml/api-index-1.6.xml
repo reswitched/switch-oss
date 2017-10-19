@@ -3,7 +3,7 @@
                 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
 <!ENTITY version SYSTEM "version.xml">
 ]>
-<indexdiv>
+<indexdiv id="api-index-1.6">
 <indexdiv><title>F</title>
 <indexentry><primaryie linkends="cairo-format-stride-for-width"><link linkend="cairo-format-stride-for-width">cairo_format_stride_for_width</link>, function in <link linkend="cairo-Image-Surfaces">Image Surfaces</link></primaryie></indexentry>
 </indexdiv>

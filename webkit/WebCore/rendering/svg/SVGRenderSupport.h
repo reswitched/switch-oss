@@ -47,6 +47,8 @@ class SVGRenderSupport {
     WTF_MAKE_FAST_ALLOCATED;
 #endif
 public:
+    static void layoutDifferentRootIfNeeded(const RenderElement&);
+
     // Shares child layouting code between RenderSVGRoot/RenderSVG(Hidden)Container
     static void layoutChildren(RenderElement&, bool selfNeedsLayout);
 
@@ -94,8 +96,8 @@ public:
     static void updateMaskedAncestorShouldIsolateBlending(const RenderElement&);
 #endif
 
-    // FIXME: These methods do not belong here.
-    static const RenderSVGRoot& findTreeRootObject(const RenderElement&);
+    static RenderSVGRoot* findTreeRootObject(RenderElement&);
+    static const RenderSVGRoot* findTreeRootObject(const RenderElement&);
 
 private:
     // This class is not constructable.

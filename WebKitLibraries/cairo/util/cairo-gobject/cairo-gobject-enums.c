@@ -50,7 +50,12 @@ cairo_gobject_status_get_type (void)
           { CAIRO_STATUS_DEVICE_TYPE_MISMATCH, "CAIRO_STATUS_DEVICE_TYPE_MISMATCH", "device-type-mismatch" },
           { CAIRO_STATUS_DEVICE_ERROR, "CAIRO_STATUS_DEVICE_ERROR", "device-error" },
           { CAIRO_STATUS_INVALID_MESH_CONSTRUCTION, "CAIRO_STATUS_INVALID_MESH_CONSTRUCTION", "invalid-mesh-construction" },
-          { CAIRO_STATUS_LAST_STATUS, "CAIRO_STATUS_LAST_STATUS", "last-status" },
+	  { CAIRO_STATUS_DEVICE_FINISHED, "CAIRO_STATUS_DEVICE_FINISHED", "device-finished" },
+	  { CAIRO_STATUS_JBIG2_GLOBAL_MISSING, "CAIRO_STATUS_JBIG2_GLOBAL_MISSING", "jbig2-global_missing" },
+	  { CAIRO_STATUS_PNG_ERROR, "CAIRO_STATUS_PNG_ERROR", "png-error" },
+	  { CAIRO_STATUS_FREETYPE_ERROR, "CAIRO_STATUS_FREETYPE_ERROR", "freetype-error" },
+	  { CAIRO_STATUS_LAST_STATUS, "CAIRO_STATUS_LAST_STATUS", "last-status" },
+	  { CAIRO_STATUS_WIN32_GDI_ERROR, "CAIRO_STATUS_WIN32_GDI_ERROR", "win32-gdi-error" },
           { 0, NULL, NULL }
       };
       GType type = g_enum_register_static (g_intern_static_string ("cairo_status_t"), values);

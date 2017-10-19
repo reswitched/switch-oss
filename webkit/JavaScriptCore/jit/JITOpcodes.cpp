@@ -35,6 +35,7 @@
 #include "Heap.h"
 #include "JITInlines.h"
 #include "JSArray.h"
+#include "JSArrowFunction.h"
 #include "JSCell.h"
 #include "JSFunction.h"
 #include "JSNameScope.h"
@@ -70,6 +71,7 @@ void JIT::emit_op_end(Instruction* currentInstruction)
 {
     RELEASE_ASSERT(returnValueGPR != callFrameRegister);
     emitGetVirtualRegister(currentInstruction[1].u.operand, returnValueGPR);
+    emitRestoreCalleeSaves();
     emitFunctionEpilogue();
     ret();
 }
@@ -226,6 +228,25 @@ void JIT::emit_op_is_string(Instruction* currentInstruction)
     emitPutVirtualRegister(dst);
 }
 
+void JIT::emit_op_is_jsarray(Instruction* currentInstruction)
+{
+    int dst = currentInstruction[1].u.operand;
+    int value = currentInstruction[2].u.operand;
+
+    emitGetVirtualRegister(value, regT0);
+    Jump isNotCell = emitJumpIfNotJSCell(regT0);
+
+    compare8(Equal, Address(regT0, JSCell::typeInfoTypeOffset()), TrustedImm32(ArrayType), regT0);
+    emitTagBool(regT0);
+    Jump done = jump();
+
+    isNotCell.link(this);
+    move(TrustedImm32(ValueFalse), regT0);
+
+    done.link(this);
+    emitPutVirtualRegister(dst);
+}
+
 void JIT::emit_op_is_object(Instruction* currentInstruction)
 {
     int dst = currentInstruction[1].u.operand;
@@ -255,6 +276,7 @@ void JIT::emit_op_ret(Instruction* currentInstruction)
     emitGetVirtualRegister(currentInstruction[1].u.operand, returnValueGPR);
 
     checkStackPointerAlignment();
+    emitRestoreCalleeSaves();
     emitFunctionEpilogue();
     ret();
 }
@@ -419,6 +441,7 @@ void JIT::emit_op_bitor(Instruction* currentInstruction)
 void JIT::emit_op_throw(Instruction* currentInstruction)
 {
     ASSERT(regT0 == returnValueGPR);
+    copyCalleeSavesToVMCalleeSavesBuffer();
     emitGetVirtualRegister(currentInstruction[1].u.operand, regT0);
     callOperationNoExceptionCheck(operationThrow, regT0);
     jumpToExceptionHandler();
@@ -515,11 +538,8 @@ void JIT::emit_op_push_name_scope(Instruction* currentInstruction)
 
 void JIT::emit_op_catch(Instruction* currentInstruction)
 {
-    // Gotta restore the tag registers. We could be throwing from FTL, which may
-    // clobber them.
-    move(TrustedImm64(TagTypeNumber), tagTypeNumberRegister);
-    move(TrustedImm64(TagMask), tagMaskRegister);
-    
+    restoreCalleeSavesFromVMCalleeSavesBuffer();
+
     move(TrustedImmPtr(m_vm), regT3);
     load64(Address(regT3, VM::callFrameForThrowOffset()), callFrameRegister);
 
@@ -663,7 +683,7 @@ void JIT::emit_op_enter(Instruction*)
     // registers to zap stale pointers, to avoid unnecessarily prolonging
     // object lifetime and increasing GC pressure.
     size_t count = m_codeBlock->m_numVars;
-    for (size_t j = 0; j < count; ++j)
+    for (size_t j = CodeBlock::llintBaselineCalleeSaveSpaceAsVirtualRegisters(); j < count; ++j)
         emitInitRegister(virtualRegisterForLocal(j).offset());
 
     emitWriteBarrier(m_codeBlock->ownerExecutable());
@@ -687,6 +707,14 @@ void JIT::emit_op_get_scope(Instruction* currentInstruction)
     int dst = currentInstruction[1].u.operand;
     emitGetFromCallFrameHeaderPtr(JSStack::Callee, regT0);
     loadPtr(Address(regT0, JSFunction::offsetOfScopeChain()), regT0);
+    emitStoreCell(dst, regT0);
+}
+    
+void JIT::emit_op_load_arrowfunction_this(Instruction* currentInstruction)
+{
+    int dst = currentInstruction[1].u.operand;
+    emitGetFromCallFrameHeaderPtr(JSStack::Callee, regT0);
+    loadPtr(Address(regT0, JSArrowFunction::offsetOfThisValue()), regT0);
     emitStoreCell(dst, regT0);
 }
 
@@ -754,22 +782,6 @@ void JIT::emitSlow_op_check_tdz(Instruction* currentInstruction, Vector<SlowCase
     linkSlowCase(iter);
     JITSlowPathCall slowPathCall(this, currentInstruction, slow_path_throw_tdz_error);
     slowPathCall.call();
-}
-
-void JIT::emit_op_profile_will_call(Instruction* currentInstruction)
-{
-    Jump profilerDone = branchTestPtr(Zero, AbsoluteAddress(m_vm->enabledProfilerAddress()));
-    emitGetVirtualRegister(currentInstruction[1].u.operand, regT0);
-    callOperation(operationProfileWillCall, regT0);
-    profilerDone.link(this);
-}
-
-void JIT::emit_op_profile_did_call(Instruction* currentInstruction)
-{
-    Jump profilerDone = branchTestPtr(Zero, AbsoluteAddress(m_vm->enabledProfilerAddress()));
-    emitGetVirtualRegister(currentInstruction[1].u.operand, regT0);
-    callOperation(operationProfileDidCall, regT0);
-    profilerDone.link(this);
 }
 
 
@@ -932,11 +944,13 @@ void JIT::emitSlow_op_loop_hint(Instruction*, Vector<SlowCaseEntry>::iterator& i
     // Emit the slow path for the JIT optimization check:
     if (canBeOptimized()) {
         linkSlowCase(iter);
-        
+
+        copyCalleeSavesFromFrameOrRegisterToVMCalleeSavesBuffer();
+
         callOperation(operationOptimize, m_bytecodeOffset);
         Jump noOptimizedEntry = branchTestPtr(Zero, returnValueGPR);
         if (!ASSERT_DISABLED) {
-            Jump ok = branchPtr(MacroAssembler::Above, regT0, TrustedImmPtr(bitwise_cast<void*>(static_cast<intptr_t>(1000))));
+            Jump ok = branchPtr(MacroAssembler::Above, returnValueGPR, TrustedImmPtr(bitwise_cast<void*>(static_cast<intptr_t>(1000))));
             abortWithReason(JITUnreasonableLoopHintJumpTarget);
             ok.link(this);
         }
@@ -955,6 +969,10 @@ void JIT::emitSlow_op_loop_hint(Instruction*, Vector<SlowCaseEntry>::iterator& i
         emitJumpSlowToHot(jump(), OPCODE_LENGTH(op_loop_hint));
     }
 
+}
+
+void JIT::emit_op_nop(Instruction*)
+{
 }
 
 void JIT::emit_op_new_regexp(Instruction* currentInstruction)
@@ -978,26 +996,45 @@ void JIT::emit_op_new_func(Instruction* currentInstruction)
 
 void JIT::emit_op_new_func_exp(Instruction* currentInstruction)
 {
+    emitNewFuncExprCommon(currentInstruction);
+}
+    
+void JIT::emitNewFuncExprCommon(Instruction* currentInstruction)
+{
+    OpcodeID opcodeID = m_vm->interpreter->getOpcodeID(currentInstruction->u.opcode);
+    bool isArrowFunction = opcodeID == op_new_arrow_func_exp;
+    
     Jump notUndefinedScope;
     int dst = currentInstruction[1].u.operand;
 #if USE(JSVALUE64)
     emitGetVirtualRegister(currentInstruction[2].u.operand, regT0);
+    if (isArrowFunction)
+        emitGetVirtualRegister(currentInstruction[4].u.operand, regT1);
     notUndefinedScope = branch64(NotEqual, regT0, TrustedImm64(JSValue::encode(jsUndefined())));
     store64(TrustedImm64(JSValue::encode(jsUndefined())), Address(callFrameRegister, sizeof(Register) * dst));
 #else
     emitLoadPayload(currentInstruction[2].u.operand, regT0);
+    if (isArrowFunction)
+        emitLoadPayload(currentInstruction[4].u.operand, regT1);
     notUndefinedScope = branch32(NotEqual, tagFor(currentInstruction[2].u.operand), TrustedImm32(JSValue::UndefinedTag));
     emitStore(dst, jsUndefined());
 #endif
-
     Jump done = jump();
     notUndefinedScope.link(this);
-
-    FunctionExecutable* funcExpr = m_codeBlock->functionExpr(currentInstruction[3].u.operand);
-    callOperation(operationNewFunction, dst, regT0, funcExpr);
+        
+    FunctionExecutable* function = m_codeBlock->functionExpr(currentInstruction[3].u.operand);
+    if (isArrowFunction)
+        callOperation(operationNewArrowFunction, dst, regT0, function, regT1);
+    else
+        callOperation(operationNewFunction, dst, regT0, function);
     done.link(this);
 }
-
+    
+void JIT::emit_op_new_arrow_func_exp(Instruction* currentInstruction)
+{
+    emitNewFuncExprCommon(currentInstruction);
+}
+    
 void JIT::emit_op_new_array(Instruction* currentInstruction)
 {
     int dst = currentInstruction[1].u.operand;

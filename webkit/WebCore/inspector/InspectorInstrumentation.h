@@ -62,10 +62,6 @@ class ScriptArguments;
 class ScriptCallStack;
 }
 
-namespace JSC {
-class Profile;
-}
-
 namespace WebCore {
 
 class CSSRule;
@@ -226,7 +222,7 @@ public:
     static void didFireAnimationFrame(const InspectorInstrumentationCookie&);
 
     static void startProfiling(Page&, JSC::ExecState*, const String& title);
-    static RefPtr<JSC::Profile> stopProfiling(Page&, JSC::ExecState*, const String& title);
+    static void stopProfiling(Page&, JSC::ExecState*, const String& title);
 
     static void didOpenDatabase(ScriptExecutionContext*, RefPtr<Database>&&, const String& domain, const String& name, const String& version);
 
@@ -406,7 +402,7 @@ private:
     static void didFireAnimationFrameImpl(const InspectorInstrumentationCookie&);
 
     static void startProfilingImpl(InstrumentingAgents&, JSC::ExecState*, const String& title);
-    static RefPtr<JSC::Profile> stopProfilingImpl(InstrumentingAgents&, JSC::ExecState*, const String& title);
+    static void stopProfilingImpl(InstrumentingAgents&, JSC::ExecState*, const String& title);
 
     static void didOpenDatabaseImpl(InstrumentingAgents&, RefPtr<Database>&&, const String& domain, const String& name, const String& version);
 

@@ -153,6 +153,9 @@ namespace WebCore {
         // WKC extension
         //    If add new function, add the same function to Inheritance Class and develop real function to ResourceLoaderCurl.cpp or more.
         virtual bool willReceiveData(ResourceHandle* handle, int length) { return true; }
+        virtual bool shouldFailOnPartialFile() { return false; }
+        virtual void wkcRef() { }
+        virtual void wkcDeref() { }
 #endif
     };
 

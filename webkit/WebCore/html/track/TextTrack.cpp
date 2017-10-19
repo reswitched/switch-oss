@@ -153,13 +153,15 @@ TextTrack::~TextTrack()
 
         for (size_t i = 0; i < m_cues->length(); ++i)
             m_cues->item(i)->setTrack(nullptr);
-#if ENABLE(WEBVTT_REGIONS)
-        if (m_regions) {
-            for (size_t i = 0; i < m_regions->length(); ++i)
-                m_regions->item(i)->setTrack(nullptr);
-        }
-#endif
     }
+
+#if ENABLE(WEBVTT_REGIONS)
+    if (m_regions) {
+        for (size_t i = 0; i < m_regions->length(); ++i)
+            m_regions->item(i)->setTrack(nullptr);
+    }
+#endif
+
     clearClient();
 }
 

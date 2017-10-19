@@ -88,9 +88,6 @@ enum _optional { "", "OptionalValue1", "OptionalValue2", "OptionalValue3" };
     TestObj objMethod();
     TestObj objMethodWithArgs(long longArg, DOMString strArg, TestObj objArg);
 
-    void methodWithSequenceArg(sequence<ScriptProfile> sequenceArg);
-    sequence<ScriptProfile> methodReturningSequence(long longArg);
-
     void methodWithEnumArg(TestEnumType enumArg);
     [RaisesException] TestObj methodThatRequiresAllArgsAndThrows(DOMString strArg, TestObj objArg);
 

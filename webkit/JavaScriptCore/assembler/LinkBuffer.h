@@ -180,7 +180,8 @@ public:
     {
         ASSERT(call.isFlagSet(Call::Linkable));
         ASSERT(call.isFlagSet(Call::Near));
-        return CodeLocationNearCall(MacroAssembler::getLinkerAddress(code(), applyOffset(call.m_label)));
+        return CodeLocationNearCall(MacroAssembler::getLinkerAddress(code(), applyOffset(call.m_label)),
+            call.isFlagSet(Call::Tail) ? NearCallMode::Tail : NearCallMode::Regular);
     }
 
     CodeLocationLabel locationOf(PatchableJump jump)
@@ -321,10 +322,10 @@ private:
      ? ((linkBufferReference).finalizeCodeWithDisassembly dataLogFArgumentsForHeading) \
      : (linkBufferReference).finalizeCodeWithoutDisassembly())
 
-bool shouldShowDisassemblyFor(CodeBlock*);
+bool shouldDumpDisassemblyFor(CodeBlock*);
 
 #define FINALIZE_CODE_FOR(codeBlock, linkBufferReference, dataLogFArgumentsForHeading)  \
-    FINALIZE_CODE_IF(shouldShowDisassemblyFor(codeBlock) || Options::asyncDisassembly(), linkBufferReference, dataLogFArgumentsForHeading)
+    FINALIZE_CODE_IF(shouldDumpDisassemblyFor(codeBlock) || Options::asyncDisassembly(), linkBufferReference, dataLogFArgumentsForHeading)
 
 // Use this to finalize code, like so:
 //
@@ -339,14 +340,14 @@ bool shouldShowDisassemblyFor(CodeBlock*);
 //
 // ... and so on.
 //
-// Note that the dataLogFArgumentsForHeading are only evaluated when showDisassembly
+// Note that the dataLogFArgumentsForHeading are only evaluated when dumpDisassembly
 // is true, so you can hide expensive disassembly-only computations inside there.
 
 #define FINALIZE_CODE(linkBufferReference, dataLogFArgumentsForHeading)  \
-    FINALIZE_CODE_IF(JSC::Options::asyncDisassembly() || JSC::Options::showDisassembly(), linkBufferReference, dataLogFArgumentsForHeading)
+    FINALIZE_CODE_IF(JSC::Options::asyncDisassembly() || JSC::Options::dumpDisassembly(), linkBufferReference, dataLogFArgumentsForHeading)
 
 #define FINALIZE_DFG_CODE(linkBufferReference, dataLogFArgumentsForHeading)  \
-    FINALIZE_CODE_IF(JSC::Options::asyncDisassembly() || JSC::Options::showDisassembly() || Options::showDFGDisassembly(), linkBufferReference, dataLogFArgumentsForHeading)
+    FINALIZE_CODE_IF(JSC::Options::asyncDisassembly() || JSC::Options::dumpDisassembly() || Options::dumpDFGDisassembly(), linkBufferReference, dataLogFArgumentsForHeading)
 
 } // namespace JSC
 

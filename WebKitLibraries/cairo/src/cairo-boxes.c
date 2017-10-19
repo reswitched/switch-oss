@@ -102,6 +102,16 @@ _cairo_boxes_init_for_array (cairo_boxes_t *boxes,
     boxes->is_pixel_aligned = n == num_boxes;
 }
 
+/**
+ * Computes the minimum bounding box of the given list of boxes and assign
+ * it to the given boxes set. It also assigns that list as the list of
+ * limiting boxes in the box set.
+ *
+ * @param boxes        the box set to be filled (return buffer)
+ * @param limits       array of the limiting boxes to compute the bounding
+ *                     box from
+ * @param num_limits   length of the limits array
+ */
 void
 _cairo_boxes_limit (cairo_boxes_t	*boxes,
 		    const cairo_box_t	*limits,
@@ -265,6 +275,13 @@ _cairo_boxes_add (cairo_boxes_t *boxes,
     return boxes->status;
 }
 
+/**
+ * Computes the minimum bounding box of the given box set and stores
+ * it in the given box.
+ *
+ * @param boxes      the box set whose minimum bounding is computed
+ * @param box        return buffer for the computed result
+ */
 void
 _cairo_boxes_extents (const cairo_boxes_t *boxes,
 		      cairo_box_t *box)
@@ -317,18 +334,24 @@ _cairo_boxes_clear (cairo_boxes_t *boxes)
     boxes->is_pixel_aligned = TRUE;
 }
 
+/**
+ * Linearize a box set of possibly multiple chunks into one big chunk
+ * and returns an array of boxes
+ *
+ * @param boxes      the box set to be converted
+ * @param num_boxes  return buffer for the number of boxes (array count)
+ * @return           pointer to the newly allocated array of boxes
+ *                   (the number o elements is given in num_boxes)
+ * */
 cairo_box_t *
 _cairo_boxes_to_array (const cairo_boxes_t *boxes,
-		       int *num_boxes,
-		       cairo_bool_t force_allocation)
+		       int *num_boxes)
 {
     const struct _cairo_boxes_chunk *chunk;
     cairo_box_t *box;
     int i, j;
 
     *num_boxes = boxes->num_boxes;
-    if (boxes->chunks.next == NULL && ! force_allocation)
-	    return boxes->chunks.base;
 
     box = _cairo_malloc_ab (boxes->num_boxes, sizeof (cairo_box_t));
     if (box == NULL) {
@@ -436,7 +459,6 @@ cleanup_converter:
 void
 _cairo_debug_print_boxes (FILE *stream, const cairo_boxes_t *boxes)
 {
-#ifndef __WKC__
     const struct _cairo_boxes_chunk *chunk;
     cairo_box_t extents;
     int i;
@@ -458,5 +480,4 @@ _cairo_debug_print_boxes (FILE *stream, const cairo_boxes_t *boxes)
 		     _cairo_fixed_to_double (chunk->base[i].p2.y));
 	}
     }
-#endif
 }

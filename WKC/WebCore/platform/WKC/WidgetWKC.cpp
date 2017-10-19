@@ -77,7 +77,7 @@ void Widget::hide()
     setSelfVisible(false);
 }
 
-void Widget::paint(GraphicsContext*, const IntRect&)
+void Widget::paint(GraphicsContext*, const IntRect&, SecurityOriginPaintPolicy)
 {
 }
 

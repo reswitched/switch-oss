@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-Quartz-(CGFont)-Fonts.top_of_page">Quartz (CGFont) Fonts</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>Quartz (CGFont) Fonts</refname>
@@ -45,11 +43,6 @@
 </tgroup>
 </informaltable>
 </refsect1>
-<refsect1 id="cairo-Quartz-(CGFont)-Fonts.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
-</refsect1>
 
 
 <refsect1 id="cairo-Quartz-(CGFont)-Fonts.description" role="desc">
@@ -70,7 +63,7 @@ cairo_quartz_font_face_create_for_cgfont
 <para>Creates a new font for the Quartz font backend based on a
 <link linkend="CGFontRef"><type>CGFontRef</type></link>.  This font can then be used with
 <link linkend="cairo-set-font-face"><function>cairo_set_font_face()</function></link> or <link linkend="cairo-scaled-font-create"><function>cairo_scaled_font_create()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-quartz-font-face-create-for-cgfont.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -82,12 +75,11 @@ cairo_quartz_font_face_create_for_cgfont
 <entry role="parameter_description"><para>a <link linkend="CGFontRef"><type>CGFontRef</type></link> obtained through a method external to cairo.</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-quartz-font-face-create-for-cgfont.returns" role="returns">
 <title>Returns</title>
 <para> a newly created <link linkend="cairo-font-face-t"><type>cairo_font_face_t</type></link>. Free with
 <link linkend="cairo-font-face-destroy"><function>cairo_font_face_destroy()</function></link> when you are done using it.</para>
-<para></para>
-</refsect3><para role="since">Since 1.6</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.6">1.6</link></para></refsect2>
 <refsect2 id="cairo-quartz-font-face-create-for-atsu-font-id" role="function" condition="since:1.6">
 <title>cairo_quartz_font_face_create_for_atsu_font_id&#160;()</title>
 <indexterm zone="cairo-quartz-font-face-create-for-atsu-font-id" role="1.6"><primary sortas="quartz_font_face_create_for_atsu_font_id">cairo_quartz_font_face_create_for_atsu_font_id</primary></indexterm>
@@ -97,7 +89,7 @@ cairo_quartz_font_face_create_for_atsu_font_id
 <para>Creates a new font for the Quartz font backend based on an
 <link linkend="ATSUFontID"><type>ATSUFontID</type></link>. This font can then be used with
 <link linkend="cairo-set-font-face"><function>cairo_set_font_face()</function></link> or <link linkend="cairo-scaled-font-create"><function>cairo_scaled_font_create()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-quartz-font-face-create-for-atsu-font-id.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -109,12 +101,11 @@ cairo_quartz_font_face_create_for_atsu_font_id
 <entry role="parameter_description"><para>an ATSUFontID for the font.</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-quartz-font-face-create-for-atsu-font-id.returns" role="returns">
 <title>Returns</title>
 <para> a newly created <link linkend="cairo-font-face-t"><type>cairo_font_face_t</type></link>. Free with
 <link linkend="cairo-font-face-destroy"><function>cairo_font_face_destroy()</function></link> when you are done using it.</para>
-<para></para>
-</refsect3><para role="since">Since 1.6</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.6">1.6</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-Quartz-(CGFont)-Fonts.other_details" role="details">
@@ -126,7 +117,7 @@ cairo_quartz_font_face_create_for_atsu_font_id
 </programlisting>
 <para>Defined if the Quartz font backend is available.
 This macro can be used to conditionally compile backend-specific code.</para>
-<para role="since">Since 1.6</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.6">1.6</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-Quartz-(CGFont)-Fonts.see-also">

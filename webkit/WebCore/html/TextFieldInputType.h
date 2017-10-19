@@ -96,6 +96,7 @@ private:
     virtual void subtreeHasChanged() override final;
     virtual void capsLockStateMayHaveChanged() override final;
     virtual void updateAutoFillButton() override final;
+    void elementDidBlur() final;
 
     // SpinButtonElement::SpinButtonOwner functions.
     virtual void focusAndSelectSpinButtonOwner() override final;

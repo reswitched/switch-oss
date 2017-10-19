@@ -146,7 +146,7 @@ HeapTimer::HeapTimer(VM* vm)
 {
     m_timer = wkcTimerNewPeer();
     if (!m_timer)
-        CRASH_WITH_NO_MEMORY();
+        CRASH();
 }
 
 HeapTimer::~HeapTimer()

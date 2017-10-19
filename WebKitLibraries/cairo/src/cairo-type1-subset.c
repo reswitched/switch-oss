@@ -1715,14 +1715,20 @@ _cairo_type1_subset_init (cairo_type1_subset_t		*type1_subset,
 {
     cairo_type1_font_subset_t font;
     cairo_status_t status;
+    cairo_bool_t is_synthetic;
     unsigned long length;
     unsigned int i;
     char buf[30];
 
-    /* We need to use a fallback font generated from the synthesized outlines. */
-    if (scaled_font_subset->scaled_font->backend->is_synthetic &&
-	scaled_font_subset->scaled_font->backend->is_synthetic (scaled_font_subset->scaled_font))
-	return CAIRO_INT_STATUS_UNSUPPORTED;
+    /* We need to use a fallback font if this font differs from the type1 outlines. */
+    if (scaled_font_subset->scaled_font->backend->is_synthetic) {
+	status = scaled_font_subset->scaled_font->backend->is_synthetic (scaled_font_subset->scaled_font, &is_synthetic);
+	if (unlikely (status))
+	    return status;
+
+	if (is_synthetic)
+	    return CAIRO_INT_STATUS_UNSUPPORTED;
+    }
 
     status = _cairo_type1_font_subset_init (&font, scaled_font_subset, hex_encode);
     if (unlikely (status))

@@ -23,6 +23,7 @@
 
 #include "ArrayConventions.h"
 #include "ButterflyInlines.h"
+#include "JSCellInlines.h"
 #include "JSObject.h"
 
 namespace JSC {
@@ -78,19 +79,10 @@ public:
 
     JSArray* fastSlice(ExecState&, unsigned startIndex, unsigned count);
 
-    static IndexingType fastConcatType(VM& vm, JSArray& firstArray, JSArray& secondArray)
-    {
-        IndexingType type = firstArray.indexingType();
-        if (type != secondArray.indexingType())
-            return NonArray;
-        if (type != ArrayWithDouble && type != ArrayWithInt32 && type != ArrayWithContiguous)
-            return NonArray;
-        if (firstArray.structure(vm)->holesMustForwardToPrototype(vm)
-            || secondArray.structure(vm)->holesMustForwardToPrototype(vm))
-            return NonArray;
-        return type;
-    }
-    EncodedJSValue fastConcatWith(ExecState&, JSArray&);
+    bool canFastCopy(VM&, JSArray* otherArray);
+    // This function returns NonArray if the indexing types are not compatable for copying.
+    IndexingType mergeIndexingTypeForCopying(IndexingType other);
+    bool appendMemcpy(ExecState*, VM&, unsigned startIndex, JSArray* otherArray);
 
     enum ShiftCountMode {
         // This form of shift hints that we're doing queueing. With this assumption in hand,
@@ -152,7 +144,7 @@ public:
 
     static Structure* createStructure(VM& vm, JSGlobalObject* globalObject, JSValue prototype, IndexingType indexingType)
     {
-        return Structure::create(vm, globalObject, prototype, TypeInfo(ObjectType, StructureFlags), info(), indexingType);
+        return Structure::create(vm, globalObject, prototype, TypeInfo(ArrayType, StructureFlags), info(), indexingType);
     }
         
 protected:
@@ -293,7 +285,12 @@ inline JSArray* asArray(JSValue value)
     return asArray(value.asCell());
 }
 
-inline bool isJSArray(JSCell* cell) { return cell->classInfo() == JSArray::info(); }
+inline bool isJSArray(JSCell* cell)
+{
+    ASSERT((cell->classInfo() == JSArray::info()) == (cell->type() == ArrayType));
+    return cell->type() == ArrayType;
+}
+
 inline bool isJSArray(JSValue v) { return v.isCell() && isJSArray(v.asCell()); }
 
 inline JSArray* constructArray(ExecState* exec, Structure* arrayStructure, const ArgList& values)
@@ -305,6 +302,7 @@ inline JSArray* constructArray(ExecState* exec, Structure* arrayStructure, const
     // FIXME: we should probably throw an out of memory error here, but
     // when making this change we should check that all clients of this
     // function will correctly handle an exception being thrown from here.
+    // https://bugs.webkit.org/show_bug.cgi?id=169786
     RELEASE_ASSERT(array);
 
     for (unsigned i = 0; i < length; ++i)
@@ -320,6 +318,7 @@ inline JSArray* constructArray(ExecState* exec, Structure* arrayStructure, const
     // FIXME: we should probably throw an out of memory error here, but
     // when making this change we should check that all clients of this
     // function will correctly handle an exception being thrown from here.
+    // https://bugs.webkit.org/show_bug.cgi?id=169786
     RELEASE_ASSERT(array);
 
     for (unsigned i = 0; i < length; ++i)
@@ -335,6 +334,7 @@ inline JSArray* constructArrayNegativeIndexed(ExecState* exec, Structure* arrayS
     // FIXME: we should probably throw an out of memory error here, but
     // when making this change we should check that all clients of this
     // function will correctly handle an exception being thrown from here.
+    // https://bugs.webkit.org/show_bug.cgi?id=169786
     RELEASE_ASSERT(array);
 
     for (int i = 0; i < static_cast<int>(length); ++i)

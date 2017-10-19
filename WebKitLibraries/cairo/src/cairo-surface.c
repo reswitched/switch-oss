@@ -113,7 +113,8 @@ const cairo_surface_t name = {					\
     FALSE,				/* finished */		\
     TRUE,				/* is_clear */		\
     FALSE,				/* has_font_options */	\
-    FALSE,				/* owns_device */	\
+    FALSE,				/* owns_device */ \
+    FALSE,                              /* is_vector */ \
     { 0, 0, 0, NULL, },			/* user_data */		\
     { 0, 0, 0, NULL, },			/* mime_data */         \
     { 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 },   /* device_transform */	\
@@ -400,7 +401,8 @@ void
 _cairo_surface_init (cairo_surface_t			*surface,
 		     const cairo_surface_backend_t	*backend,
 		     cairo_device_t			*device,
-		     cairo_content_t			 content)
+		     cairo_content_t			 content,
+		     cairo_bool_t                        is_vector)
 {
     CAIRO_MUTEX_INITIALIZE ();
 
@@ -408,6 +410,7 @@ _cairo_surface_init (cairo_surface_t			*surface,
     surface->device = cairo_device_reference (device);
     surface->content = content;
     surface->type = backend->type;
+    surface->is_vector = is_vector;
 
     CAIRO_REFERENCE_COUNT_INIT (&surface->ref_count, 1);
     surface->status = CAIRO_STATUS_SUCCESS;
@@ -463,10 +466,11 @@ _cairo_surface_copy_similar_properties (cairo_surface_t *surface,
  *
  * Create a new surface that is as compatible as possible with an
  * existing surface. For example the new surface will have the same
- * fallback resolution and font options as @other. Generally, the new
- * surface will also use the same backend as @other, unless that is
- * not possible for some reason. The type of the returned surface may
- * be examined with cairo_surface_get_type().
+ * device scale, fallback resolution and font options as
+ * @other. Generally, the new surface will also use the same backend
+ * as @other, unless that is not possible for some reason. The type of
+ * the returned surface may be examined with
+ * cairo_surface_get_type().
  *
  * Initially the surface contents are all 0 (transparent if contents
  * have transparency, black otherwise.)
@@ -548,12 +552,14 @@ cairo_surface_create_similar (cairo_surface_t  *other,
  * cairo_surface_create_similar_image:
  * @other: an existing surface used to select the preference of the new surface
  * @format: the format for the new surface
- * @width: width of the new surface, (in device-space units)
- * @height: height of the new surface (in device-space units)
+ * @width: width of the new surface, (in pixels)
+ * @height: height of the new surface (in pixels)
  *
  * Create a new image surface that is as compatible as possible for uploading
  * to and the use in conjunction with an existing surface. However, this surface
- * can still be used like any normal image surface.
+ * can still be used like any normal image surface. Unlike
+ * cairo_surface_create_similar() the new image surface won't inherit
+ * the device scale from @other.
  *
  * Initially the surface contents are all 0 (transparent if contents
  * have transparency, black otherwise.)
@@ -911,8 +917,8 @@ _cairo_surface_create_scratch (cairo_surface_t	 *other,
  * @surface from being destroyed until a matching call to
  * cairo_surface_destroy() is made.
  *
- * The number of references to a #cairo_surface_t can be get using
- * cairo_surface_get_reference_count().
+ * Use cairo_surface_get_reference_count() to get the number of
+ * references to a #cairo_surface_t.
  *
  * Return value: the referenced #cairo_surface_t.
  *
@@ -2629,6 +2635,42 @@ _cairo_surface_show_text_glyphs (cairo_surface_t	    *surface,
     return _cairo_surface_set_error (surface, status);
 }
 
+cairo_status_t
+_cairo_surface_tag (cairo_surface_t	        *surface,
+		    cairo_bool_t                 begin,
+		    const char                  *tag_name,
+		    const char                  *attributes,
+		    const cairo_pattern_t	*source,
+		    const cairo_stroke_style_t	*stroke_style,
+		    const cairo_matrix_t	*ctm,
+		    const cairo_matrix_t	*ctm_inverse,
+		    const cairo_clip_t	        *clip)
+{
+    cairo_int_status_t status;
+
+    TRACE ((stderr, "%s\n", __FUNCTION__));
+    if (unlikely (surface->status))
+	return surface->status;
+    if (unlikely (surface->finished))
+	return _cairo_surface_set_error (surface, _cairo_error (CAIRO_STATUS_SURFACE_FINISHED));
+
+    if (surface->backend->tag == NULL)
+	return CAIRO_STATUS_SUCCESS;
+
+    if (begin) {
+	status = _pattern_has_error (source);
+	if (unlikely (status))
+	    return status;
+    }
+
+    status = surface->backend->tag (surface, begin, tag_name, attributes,
+				    source, stroke_style,
+				    ctm, ctm_inverse, clip);
+
+    return _cairo_surface_set_error (surface, status);
+}
+
+
 /**
  * _cairo_surface_set_resolution:
  * @surface: the surface
@@ -2722,6 +2764,10 @@ _cairo_surface_create_in_error (cairo_status_t status)
     case CAIRO_STATUS_INVALID_MESH_CONSTRUCTION:
     case CAIRO_STATUS_DEVICE_FINISHED:
     case CAIRO_STATUS_JBIG2_GLOBAL_MISSING:
+    case CAIRO_STATUS_PNG_ERROR:
+    case CAIRO_STATUS_FREETYPE_ERROR:
+    case CAIRO_STATUS_WIN32_GDI_ERROR:
+    case CAIRO_STATUS_TAG_ERROR:
     default:
 	_cairo_error_throw (CAIRO_STATUS_NO_MEMORY);
 	return (cairo_surface_t *) &_cairo_surface_nil;

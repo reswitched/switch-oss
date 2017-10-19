@@ -68,6 +68,9 @@ cairo_image_surface_get_stride
 <SECTION>
 <FILE>cairo-pdf</FILE>
 CAIRO_HAS_PDF_SURFACE
+CAIRO_PDF_OUTLINE_ROOT
+cairo_pdf_outline_flags_t
+cairo_pdf_metadata_t
 cairo_pdf_surface_create
 cairo_pdf_surface_create_for_stream
 cairo_pdf_surface_restrict_to_version
@@ -75,6 +78,10 @@ cairo_pdf_version_t
 cairo_pdf_get_versions
 cairo_pdf_version_to_string
 cairo_pdf_surface_set_size
+cairo_pdf_surface_add_outline
+cairo_pdf_surface_set_metadata
+cairo_pdf_surface_set_page_label
+cairo_pdf_surface_set_thumbnail_size
 </SECTION>
 
 <SECTION>
@@ -405,6 +412,14 @@ cairo_raster_source_release_func_t
 cairo_raster_source_snapshot_func_t
 cairo_raster_source_copy_func_t
 cairo_raster_source_finish_func_t
+</SECTION>
+
+<SECTION>
+<FILE>cairo-tag</FILE>
+CAIRO_TAG_DEST
+CAIRO_TAG_LINK
+cairo_tag_begin
+cairo_tag_end
 </SECTION>
 
 <SECTION>

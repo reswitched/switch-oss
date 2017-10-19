@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
- * Copyright (c) 2015 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2015, 2017 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -44,23 +44,23 @@
     width: 32px;
     height: 32px;
 
-    color: hsl(0, 0%, 45%);
+    fill: hsl(0, 0%, 45%);
 }
 
 .toolbar .item.button:not(.disabled):active > .glyph {
-    color: hsl(0, 0%, 30%);
+    fill: hsl(0, 0%, 30%);
 }
 
 .toolbar .item.button:not(.disabled):-webkit-any(:focus, .activate.activated) > .glyph {
-    color: hsl(212, 92%, 54%);
+    fill: hsl(212, 92%, 54%);
 }
 
 .toolbar .item.button:not(.disabled):matches(:focus, .activate.activated) > .glyph {
-    color: hsl(212, 92%, 54%);
+    fill: hsl(212, 92%, 54%);
 }
 
 .toolbar .item.button:not(.disabled):active:-webkit-any(:focus, .activate.activated) > .glyph {
-    color: hsl(218, 85%, 52%);
+    fill: hsl(218, 85%, 52%);
 }
 
 .toolbar .item.button:not(.disabled):active:matches(:focus, .activate.activated) > .glyph {

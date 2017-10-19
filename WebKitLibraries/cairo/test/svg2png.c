@@ -37,26 +37,55 @@
 int main (int argc, char *argv[])
 {
     GError *error = NULL;
-    GdkPixbuf *pixbuf;
+    RsvgHandle *handle;
+    RsvgDimensionData dimensions;
     const char *filename = argv[1];
     const char *output_filename = argv[2];
+    cairo_surface_t *surface;
+    cairo_t *cr;
+    cairo_status_t status;
 
     if (argc != 3)
 	FAIL ("usage: svg2png input_file.svg output_file.png");
 
+    #if GLIB_MAJOR_VERSION <= 2 && GLIB_MINOR_VERSION <= 34
     g_type_init ();
+    #endif
 
     error = NULL;
 
     rsvg_set_default_dpi (72.0);
-    pixbuf = rsvg_pixbuf_from_file (filename, &error);
-    if (error != NULL)
+
+    handle = rsvg_handle_new_from_file (filename, &error);
+    if (!handle)
 	FAIL (error->message);
 
-    gdk_pixbuf_save (pixbuf, output_filename, "png", &error, NULL);
-    if (error != NULL)
+    rsvg_handle_get_dimensions (handle, &dimensions);
+
+    surface = cairo_image_surface_create (CAIRO_FORMAT_RGB24,
+					  dimensions.width, dimensions.height);
+    cr = cairo_create (surface);
+    cairo_surface_destroy (surface);
+
+    cairo_set_source_rgb (cr, 1,1,1);
+    cairo_paint (cr);
+    cairo_push_group_with_content (cr, CAIRO_CONTENT_COLOR_ALPHA);
+
+    if (!rsvg_handle_render_cairo (handle, cr))
 	FAIL (error->message);
 
-    g_object_unref (pixbuf);
+    cairo_pop_group_to_source (cr);
+    cairo_paint (cr);
+
+    status = cairo_surface_write_to_png (cairo_get_target (cr),
+					 output_filename);
+    cairo_destroy (cr);
+    if (status)
+	FAIL (cairo_status_to_string (status));
+
+    if (!rsvg_handle_close (handle, &error))
+	FAIL (error->message);
+
+    g_object_unref (handle);
     return 0;
 }

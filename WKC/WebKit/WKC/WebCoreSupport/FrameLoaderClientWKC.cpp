@@ -473,7 +473,7 @@ FrameLoaderClientWKC::dispatchDidReceiveTitle(const WebCore::StringWithDirection
 }
 
 void
-FrameLoaderClientWKC::dispatchDidCommitLoad()
+FrameLoaderClientWKC::dispatchDidCommitLoad(Optional<WebCore::HasInsecureContent>)
 {
     m_appClient->dispatchDidCommitLoad();
 

@@ -243,6 +243,8 @@ Plan::CompilationPath Plan::compileInThreadImpl(LongLivedState& longLivedState)
         dataLog("Graph after parsing:\n");
         dfg.dump();
     }
+
+    codeBlock->setCalleeSaveRegisters(RegisterSet::dfgCalleeSaveRegisters());
     
     RUN_PHASE(performLiveCatchVariablePreservationPhase);
 
@@ -386,7 +388,7 @@ Plan::CompilationPath Plan::compileInThreadImpl(LongLivedState& longLivedState)
         RUN_PHASE(performCleanUp); // Reduce the graph size a lot.
         changed = false;
         RUN_PHASE(performStrengthReduction);
-        if (Options::enableObjectAllocationSinking()) {
+        if (Options::useObjectAllocationSinking()) {
             RUN_PHASE(performCriticalEdgeBreaking);
             RUN_PHASE(performObjectAllocationSinking);
         }
@@ -429,7 +431,7 @@ Plan::CompilationPath Plan::compileInThreadImpl(LongLivedState& longLivedState)
         RUN_PHASE(performCFA);
         RUN_PHASE(performGlobalStoreBarrierInsertion);
         RUN_PHASE(performStoreBarrierClustering);
-        if (Options::enableMovHintRemoval())
+        if (Options::useMovHintRemoval())
             RUN_PHASE(performMovHintRemoval);
         RUN_PHASE(performCleanUp);
         RUN_PHASE(performDCE); // We rely on this to kill dead code that won't be recognized as dead by B3.
@@ -443,7 +445,7 @@ Plan::CompilationPath Plan::compileInThreadImpl(LongLivedState& longLivedState)
             return FailPath;
         }
 
-        dumpAndVerifyGraph(dfg, "Graph just before FTL lowering:", shouldShowDisassembly(mode));
+        dumpAndVerifyGraph(dfg, "Graph just before FTL lowering:", shouldDumpDisassembly(mode));
         
         bool haveLLVM;
         Safepoint::Result safepointResult;

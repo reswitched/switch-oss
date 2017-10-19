@@ -139,11 +139,13 @@ void clobberize(Graph& graph, Node* node, const ReadFunctor& read, const WriteFu
     case ArithCos:
     case ArithLog:
     case GetScope:
+    case LoadArrowFunctionThis:
     case SkipScope:
     case StringCharCodeAt:
     case StringFromCharCode:
     case CompareEqConstant:
     case CompareStrictEq:
+    case IsJSArray:
     case IsUndefined:
     case IsBoolean:
     case IsNumber:
@@ -297,8 +299,6 @@ void clobberize(Graph& graph, Node* node, const ReadFunctor& read, const WriteFu
     case CheckTierUpWithNestedTriggerAndOSREnter:
     case LoopHint:
     case Breakpoint:
-    case ProfileWillCall:
-    case ProfileDidCall:
     case ProfileType:
     case ProfileControlFlow:
     case StoreBarrier:
@@ -380,9 +380,12 @@ void clobberize(Graph& graph, Node* node, const ReadFunctor& read, const WriteFu
     case ArrayPush:
     case ArrayPop:
     case Call:
+    case TailCallInlinedCaller:
     case Construct:
     case NativeCall:
     case NativeConstruct:
+    case TailCallVarargsInlinedCaller:
+    case TailCallForwardVarargsInlinedCaller:
     case CallVarargs:
     case CallForwardVarargs:
     case ConstructVarargs:
@@ -392,6 +395,13 @@ void clobberize(Graph& graph, Node* node, const ReadFunctor& read, const WriteFu
     case ValueAdd:
         read(World);
         write(Heap);
+        return;
+
+    case TailCall:
+    case TailCallVarargs:
+    case TailCallForwardVarargs:
+        read(World);
+        write(SideState);
         return;
         
     case GetGetter:
@@ -971,7 +981,8 @@ void clobberize(Graph& graph, Node* node, const ReadFunctor& read, const WriteFu
         read(HeapObjectCount);
         write(HeapObjectCount);
         return;
-        
+    
+    case NewArrowFunction:
     case NewFunction:
         if (node->castOperand<FunctionExecutable*>()->singletonFunction()->isStillValid())
             write(Watchpoint_fire);

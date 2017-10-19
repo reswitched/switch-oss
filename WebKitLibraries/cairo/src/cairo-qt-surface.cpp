@@ -1216,7 +1216,7 @@ _cairo_qt_fast_fill (cairo_qt_surface_t *qs,
 
 	cairo_clip_t clip, old_clip = qs->clipper.clip;
 
-	_cairo_clip_init_copy (&clip, &qs->clipper.clip);
+	qs->clipper.clip = _cairo_clip_copy (&clip);
 	status = (cairo_int_status_t) _cairo_clip_clip (&clip,
 							path,
 							fill_rule,

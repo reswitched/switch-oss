@@ -2258,8 +2258,17 @@ private:
                 m_ptr += length;
                 return jsNull();
             }
-            RefPtr<ImageData> result = ImageData::create(IntSize(width, height));
-            memcpy(result->data()->data(), m_ptr, length);
+            IntSize imageSize(width, height);
+            RELEASE_ASSERT(!length || Checked<int>(imageSize.area() * 4).unsafeGet() <= length);
+            RefPtr<ImageData> result = ImageData::create(imageSize);
+            if (!result) {
+                fail();
+                return JSValue();
+            }
+            if (length)
+                memcpy(result->data()->data(), m_ptr, length);
+            else
+                result->data()->zeroFill();
             m_ptr += length;
             return getJSValue(result.get());
         }

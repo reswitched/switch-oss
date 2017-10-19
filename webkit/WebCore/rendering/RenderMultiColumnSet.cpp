@@ -73,8 +73,9 @@ RenderObject* RenderMultiColumnSet::firstRendererInFlowThread() const
         // Adjacent sets should not occur. Currently we would have no way of figuring out what each
         // of them contains then.
         ASSERT(!sibling->isRenderMultiColumnSet());
-        RenderMultiColumnSpannerPlaceholder* placeholder = multiColumnFlowThread()->findColumnSpannerPlaceholder(sibling);
-        return placeholder->nextInPreOrderAfterChildren();
+        if (RenderMultiColumnSpannerPlaceholder* placeholder = multiColumnFlowThread()->findColumnSpannerPlaceholder(sibling))
+            return placeholder->nextInPreOrderAfterChildren();
+        ASSERT_NOT_REACHED();
     }
     return flowThread()->firstChild();
 }
@@ -85,8 +86,9 @@ RenderObject* RenderMultiColumnSet::lastRendererInFlowThread() const
         // Adjacent sets should not occur. Currently we would have no way of figuring out what each
         // of them contains then.
         ASSERT(!sibling->isRenderMultiColumnSet());
-        RenderMultiColumnSpannerPlaceholder* placeholder = multiColumnFlowThread()->findColumnSpannerPlaceholder(sibling);
-        return placeholder->previousInPreOrder();
+        if (RenderMultiColumnSpannerPlaceholder* placeholder = multiColumnFlowThread()->findColumnSpannerPlaceholder(sibling))
+            return placeholder->previousInPreOrder();
+        ASSERT_NOT_REACHED();
     }
     return flowThread()->lastLeafChild();
 }

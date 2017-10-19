@@ -280,4 +280,9 @@ void Pasteboard::setDragImage(DragImageRef, const IntPoint& hotSpot)
 }
 #endif
 
+void Pasteboard::writeTrustworthyWebURLsPboardType(const PasteboardURL&)
+{
+    notImplemented();
+}
+
 }

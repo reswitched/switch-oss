@@ -126,7 +126,7 @@ draw (cairo_t *cr, int width, int height)
     cairo_set_source_rgb (cr, 1, 1, 1);
     cairo_paint (cr);
 
-    cairo_select_font_face (cr, "Sans",
+    cairo_select_font_face (cr, CAIRO_TEST_FONT_FAMILY " Sans",
 			    CAIRO_FONT_SLANT_NORMAL,
 			    CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size (cr, TEXT_SIZE);

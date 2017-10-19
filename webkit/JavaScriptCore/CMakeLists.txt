@@ -48,7 +48,6 @@ set(JavaScriptCore_SOURCES
     API/JSClassRef.cpp
     API/JSContextRef.cpp
     API/JSObjectRef.cpp
-    API/JSProfilerPrivate.cpp
     API/JSScriptRef.cpp
     API/JSStringRef.cpp
     API/JSValueRef.cpp
@@ -68,6 +67,7 @@ set(JavaScriptCore_SOURCES
 
     builtins/BuiltinExecutables.cpp
 
+    bytecode/AdaptiveInferredPropertyValueWatchpointBase.cpp
     bytecode/ArrayAllocationProfile.cpp
     bytecode/ArrayProfile.cpp
     bytecode/BytecodeBasicBlock.cpp
@@ -76,6 +76,7 @@ set(JavaScriptCore_SOURCES
     bytecode/CallEdge.cpp
     bytecode/CallLinkInfo.cpp
     bytecode/CallLinkStatus.cpp
+    bytecode/CallMode.cpp
     bytecode/CallVariant.cpp
     bytecode/CodeBlock.cpp
     bytecode/CodeBlockHash.cpp
@@ -83,7 +84,6 @@ set(JavaScriptCore_SOURCES
     bytecode/CodeOrigin.cpp
     bytecode/CodeType.cpp
     bytecode/ComplexGetStatus.cpp
-    bytecode/ConstantStructureCheck.cpp
     bytecode/DFGExitProfile.cpp
     bytecode/DeferredCompilationCallback.cpp
     bytecode/DeferredSourceDump.cpp
@@ -92,14 +92,18 @@ set(JavaScriptCore_SOURCES
     bytecode/ExitingJITType.cpp
     bytecode/GetByIdStatus.cpp
     bytecode/GetByIdVariant.cpp
+    bytecode/InlineCallFrame.cpp
     bytecode/InlineCallFrameSet.cpp
     bytecode/JumpTable.cpp
     bytecode/LazyOperandValueProfile.cpp
     bytecode/MethodOfGettingAValueProfile.cpp
+    bytecode/ObjectPropertyCondition.cpp
+    bytecode/ObjectPropertyConditionSet.cpp
     bytecode/Opcode.cpp
     bytecode/PolymorphicGetByIdList.cpp
     bytecode/PolymorphicPutByIdList.cpp
     bytecode/PreciseJumpTargets.cpp
+    bytecode/PropertyCondition.cpp
     bytecode/PutByIdStatus.cpp
     bytecode/PutByIdVariant.cpp
     bytecode/ReduceWhitespace.cpp
@@ -127,6 +131,8 @@ set(JavaScriptCore_SOURCES
 
     dfg/DFGAbstractHeap.cpp
     dfg/DFGAbstractValue.cpp
+    dfg/DFGAdaptiveInferredPropertyValueWatchpoint.cpp
+    dfg/DFGAdaptiveStructureWatchpoint.cpp
     dfg/DFGArgumentsEliminationPhase.cpp
     dfg/DFGArgumentsUtilities.cpp
     dfg/DFGArithMode.cpp
@@ -197,6 +203,7 @@ set(JavaScriptCore_SOURCES
     dfg/DFGMinifiedGraph.cpp
     dfg/DFGMinifiedNode.cpp
     dfg/DFGMovHintRemovalPhase.cpp
+    dfg/DFGMultiGetByOffsetData.cpp
     dfg/DFGNaiveDominators.cpp
     dfg/DFGNaturalLoops.cpp
     dfg/DFGNode.cpp
@@ -310,6 +317,7 @@ set(JavaScriptCore_SOURCES
     inspector/InjectedScriptManager.cpp
     inspector/InjectedScriptModule.cpp
     inspector/InspectorAgentRegistry.cpp
+    inspector/InspectorFrontendRouter.cpp
     inspector/InspectorBackendDispatcher.cpp
     inspector/InspectorValues.cpp
     inspector/JSGlobalObjectConsoleClient.cpp
@@ -343,7 +351,6 @@ set(JavaScriptCore_SOURCES
     interpreter/StackVisitor.cpp
 
     jit/AccessorCallJITStubRoutine.cpp
-    jit/ArityCheckFailReturnThunks.cpp
     jit/AssemblyHelpers.cpp
     jit/BinarySwitch.cpp
     jit/ExecutableAllocationFuzz.cpp
@@ -371,6 +378,8 @@ set(JavaScriptCore_SOURCES
     jit/JITToDFGDeferredCompilationCallback.cpp
     jit/PolymorphicCallStubRoutine.cpp
     jit/Reg.cpp
+    jit/RegisterAtOffset.cpp
+    jit/RegisterAtOffsetList.cpp
     jit/RegisterPreservationWrapperGenerator.cpp
     jit/RegisterSet.cpp
     jit/Repatch.cpp
@@ -387,10 +396,6 @@ set(JavaScriptCore_SOURCES
     parser/SourceProvider.cpp
     parser/SourceProviderCache.cpp
 
-    profiler/LegacyProfiler.cpp
-    profiler/Profile.cpp
-    profiler/ProfileGenerator.cpp
-    profiler/ProfileNode.cpp
     profiler/ProfilerBytecode.cpp
     profiler/ProfilerBytecodeSequence.cpp
     profiler/ProfilerBytecodes.cpp
@@ -474,7 +479,6 @@ set(JavaScriptCore_RUNTIME_SOURCES
     runtime/IndexingType.cpp
     runtime/InferredValue.cpp
     runtime/InitializeThreading.cpp
-    runtime/IntendedStructureChain.cpp
     runtime/InternalFunction.cpp
     runtime/IntlObject.cpp
     runtime/IteratorOperations.cpp
@@ -486,6 +490,7 @@ set(JavaScriptCore_RUNTIME_SOURCES
     runtime/JSArrayBufferPrototype.cpp
     runtime/JSArrayBufferView.cpp
     runtime/JSArrayIterator.cpp
+    runtime/JSArrowFunction.cpp
     runtime/JSBoundFunction.cpp
     runtime/JSCJSValue.cpp
     runtime/JSCallee.cpp
@@ -889,7 +894,6 @@ if (ENABLE_FTL_JIT)
         ftl/FTLOperations.cpp
         ftl/FTLOutput.cpp
         ftl/FTLRecoveryOpcode.cpp
-        ftl/FTLRegisterAtOffset.cpp
         ftl/FTLSaveRestore.cpp
         ftl/FTLSlowPathCall.cpp
         ftl/FTLSlowPathCallKey.cpp

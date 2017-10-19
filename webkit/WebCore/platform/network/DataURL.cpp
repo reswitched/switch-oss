@@ -88,6 +88,11 @@ void handleDataURL(ResourceHandle* handle)
     response.setTextEncodingName(charset);
     response.setURL(handle->firstRequest().url());
 
+#if PLATFORM(WKC)
+    if (handle->client())
+        handle->client()->wkcRef();
+#endif
+
     if (base64) {
         data = decodeURLEscapeSequences(data);
 #if PLATFORM(WKC)
@@ -120,8 +125,10 @@ void handleDataURL(ResourceHandle* handle)
                 handle->client()->didReceiveData(handle, encodedData.data(), encodedData.length(), 0);
 #else
             if (encodedData.length()) {
-                if (handle->getInternal() && handle->getInternal()->m_cancelled)
+                if (handle->getInternal() && handle->getInternal()->m_cancelled) {
+                    handle->client()->wkcDeref();
                     return;
+                }
                 handle->client()->didReceiveData(handle, encodedData.data(), encodedData.length(), 0);
             }
 #endif
@@ -130,6 +137,11 @@ void handleDataURL(ResourceHandle* handle)
 
     if (handle->client())
         handle->client()->didFinishLoading(handle, 0);
+
+#if PLATFORM(WKC)
+    if (handle->client())
+        handle->client()->wkcDeref();
+#endif
 }
 
 } // namespace WebCore

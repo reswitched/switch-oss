@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-cairo-surface-observer.top_of_page">cairo-surface-observer</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>cairo-surface-observer</refname>
@@ -64,11 +62,6 @@
 </tgroup>
 </informaltable>
 </refsect1>
-<refsect1 id="cairo-cairo-surface-observer.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
-</refsect1>
 
 
 <refsect1 id="cairo-cairo-surface-observer.description" role="desc">
@@ -92,7 +85,7 @@ slow, which are frequent, etc.</para>
  parameter can be set to either CAIRO_SURFACE_OBSERVER_NORMAL
 or CAIRO_SURFACE_OBSERVER_RECORD_OPERATIONS, to control whether or not
 the internal observer should record operations.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-surface-create-observer.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -107,7 +100,7 @@ the internal observer should record operations.</para>
 <entry role="parameter_description"><para>sets the mode of operation (normal vs. record)</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-surface-create-observer.returns" role="returns">
 <title>Returns</title>
 <para> a pointer to the newly allocated surface. The caller
 owns the surface and should call <link linkend="cairo-surface-destroy"><function>cairo_surface_destroy()</function></link> when done
@@ -116,8 +109,7 @@ with it.</para>
 pointer to a "nil" surface if <parameter>other</parameter>
 is already in an error state
 or any other error occurs.</para>
-<para></para>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 <refsect2 id="cairo-surface-observer-add-fill-callback" role="function">
 <title>cairo_surface_observer_add_fill_callback&#160;()</title>
 <indexterm zone="cairo-surface-observer-add-fill-callback"><primary sortas="surface_observer_add_fill_callback">cairo_surface_observer_add_fill_callback</primary></indexterm>
@@ -128,11 +120,7 @@ cairo_surface_observer_add_fill_callback
                                 <parameter><link linkend="void"><type>void</type></link> *data</parameter>);</programlisting>
 <para>
 </para>
-<refsect3 role="returns">
-<title>Returns</title>
-
-<para></para>
-</refsect3></refsect2>
+</refsect2>
 <refsect2 id="cairo-surface-observer-add-finish-callback" role="function">
 <title>cairo_surface_observer_add_finish_callback&#160;()</title>
 <indexterm zone="cairo-surface-observer-add-finish-callback"><primary sortas="surface_observer_add_finish_callback">cairo_surface_observer_add_finish_callback</primary></indexterm>
@@ -143,11 +131,7 @@ cairo_surface_observer_add_finish_callback
                                 <parameter><link linkend="void"><type>void</type></link> *data</parameter>);</programlisting>
 <para>
 </para>
-<refsect3 role="returns">
-<title>Returns</title>
-
-<para></para>
-</refsect3></refsect2>
+</refsect2>
 <refsect2 id="cairo-surface-observer-add-flush-callback" role="function">
 <title>cairo_surface_observer_add_flush_callback&#160;()</title>
 <indexterm zone="cairo-surface-observer-add-flush-callback"><primary sortas="surface_observer_add_flush_callback">cairo_surface_observer_add_flush_callback</primary></indexterm>
@@ -158,11 +142,7 @@ cairo_surface_observer_add_flush_callback
                                 <parameter><link linkend="void"><type>void</type></link> *data</parameter>);</programlisting>
 <para>
 </para>
-<refsect3 role="returns">
-<title>Returns</title>
-
-<para></para>
-</refsect3></refsect2>
+</refsect2>
 <refsect2 id="cairo-surface-observer-add-glyphs-callback" role="function">
 <title>cairo_surface_observer_add_glyphs_callback&#160;()</title>
 <indexterm zone="cairo-surface-observer-add-glyphs-callback"><primary sortas="surface_observer_add_glyphs_callback">cairo_surface_observer_add_glyphs_callback</primary></indexterm>
@@ -173,11 +153,7 @@ cairo_surface_observer_add_glyphs_callback
                                 <parameter><link linkend="void"><type>void</type></link> *data</parameter>);</programlisting>
 <para>
 </para>
-<refsect3 role="returns">
-<title>Returns</title>
-
-<para></para>
-</refsect3></refsect2>
+</refsect2>
 <refsect2 id="cairo-surface-observer-add-mask-callback" role="function">
 <title>cairo_surface_observer_add_mask_callback&#160;()</title>
 <indexterm zone="cairo-surface-observer-add-mask-callback"><primary sortas="surface_observer_add_mask_callback">cairo_surface_observer_add_mask_callback</primary></indexterm>
@@ -188,11 +164,7 @@ cairo_surface_observer_add_mask_callback
                                 <parameter><link linkend="void"><type>void</type></link> *data</parameter>);</programlisting>
 <para>
 </para>
-<refsect3 role="returns">
-<title>Returns</title>
-
-<para></para>
-</refsect3></refsect2>
+</refsect2>
 <refsect2 id="cairo-surface-observer-add-paint-callback" role="function">
 <title>cairo_surface_observer_add_paint_callback&#160;()</title>
 <indexterm zone="cairo-surface-observer-add-paint-callback"><primary sortas="surface_observer_add_paint_callback">cairo_surface_observer_add_paint_callback</primary></indexterm>
@@ -203,11 +175,7 @@ cairo_surface_observer_add_paint_callback
                                 <parameter><link linkend="void"><type>void</type></link> *data</parameter>);</programlisting>
 <para>
 </para>
-<refsect3 role="returns">
-<title>Returns</title>
-
-<para></para>
-</refsect3></refsect2>
+</refsect2>
 <refsect2 id="cairo-surface-observer-add-stroke-callback" role="function">
 <title>cairo_surface_observer_add_stroke_callback&#160;()</title>
 <indexterm zone="cairo-surface-observer-add-stroke-callback"><primary sortas="surface_observer_add_stroke_callback">cairo_surface_observer_add_stroke_callback</primary></indexterm>
@@ -218,11 +186,7 @@ cairo_surface_observer_add_stroke_callback
                                 <parameter><link linkend="void"><type>void</type></link> *data</parameter>);</programlisting>
 <para>
 </para>
-<refsect3 role="returns">
-<title>Returns</title>
-
-<para></para>
-</refsect3></refsect2>
+</refsect2>
 <refsect2 id="cairo-surface-observer-callback-t" role="function">
 <title>cairo_surface_observer_callback_t&#160;()</title>
 <indexterm zone="cairo-surface-observer-callback-t"><primary sortas="surface_observer_callback_t">cairo_surface_observer_callback_t</primary></indexterm>
@@ -240,11 +204,7 @@ cairo_surface_observer_add_stroke_callback
 cairo_surface_observer_elapsed (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *surface</parameter>);</programlisting>
 <para>
 </para>
-<refsect3 role="returns">
-<title>Returns</title>
-
-<para></para>
-</refsect3></refsect2>
+</refsect2>
 <refsect2 id="cairo-surface-observer-print" role="function">
 <title>cairo_surface_observer_print&#160;()</title>
 <indexterm zone="cairo-surface-observer-print"><primary sortas="surface_observer_print">cairo_surface_observer_print</primary></indexterm>
@@ -254,11 +214,7 @@ cairo_surface_observer_print (<parameter><link linkend="cairo-surface-t"><type>c
                               <parameter><link linkend="void"><type>void</type></link> *closure</parameter>);</programlisting>
 <para>
 </para>
-<refsect3 role="returns">
-<title>Returns</title>
-
-<para></para>
-</refsect3></refsect2>
+</refsect2>
 
 </refsect1>
 <refsect1 id="cairo-cairo-surface-observer.other_details" role="details">
@@ -275,7 +231,7 @@ cairo_surface_observer_print (<parameter><link linkend="cairo-surface-t"><type>c
 <title>enum cairo_surface_observer_mode_t</title>
 <indexterm zone="cairo-surface-observer-mode-t" role="1.12"><primary sortas="surface_observer_mode_t">cairo_surface_observer_mode_t</primary></indexterm>
 <para>Whether operations should be recorded.</para>
-<refsect3 role="enum_members">
+<refsect3 id="cairo-surface-observer-mode-t.members" role="enum_members">
 <title>Members</title>
 <informaltable role="enum_members_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -294,7 +250,7 @@ cairo_surface_observer_print (<parameter><link linkend="cairo-surface-t"><type>c
 <entry role="enum_member_annotations"></entry>
 </row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.12</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.12">1.12</link></para></refsect2>
 
 </refsect1>
 

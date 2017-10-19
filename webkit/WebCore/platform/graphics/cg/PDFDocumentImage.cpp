@@ -210,7 +210,7 @@ void PDFDocumentImage::destroyDecodedData(bool)
     m_cachedImageBuffer = nullptr;
 
     if (imageObserver())
-        imageObserver()->decodedSizeChanged(this, -safeCast<int>(m_cachedBytes));
+        imageObserver()->decodedSizeChanged(this, -safeCast<long long>(m_cachedBytes));
 
     m_cachedBytes = 0;
 }

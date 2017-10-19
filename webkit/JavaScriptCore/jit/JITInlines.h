@@ -125,6 +125,14 @@ ALWAYS_INLINE JIT::Call JIT::emitNakedCall(CodePtr function)
     return nakedCall;
 }
 
+ALWAYS_INLINE JIT::Call JIT::emitNakedTailCall(CodePtr function)
+{
+    ASSERT(m_bytecodeOffset != std::numeric_limits<unsigned>::max()); // This method should only be called during hot/cold path generation, so that m_bytecodeOffset is set.
+    Call nakedCall = nearTailCall();
+    m_calls.append(CallRecord(nakedCall, m_bytecodeOffset, function.executableAddress()));
+    return nakedCall;
+}
+
 ALWAYS_INLINE void JIT::updateTopCallFrame()
 {
     ASSERT(static_cast<int>(m_bytecodeOffset) >= 0);
@@ -271,6 +279,12 @@ ALWAYS_INLINE MacroAssembler::Call JIT::callOperation(J_JITOperation_EJscC opera
     return appendCallWithExceptionCheckSetJSValueResult(operation, dst);
 }
 
+ALWAYS_INLINE MacroAssembler::Call JIT::callOperation(J_JITOperation_EJscCJ operation, int dst, GPRReg arg1, JSCell* cell, GPRReg arg2)
+{
+    setupArgumentsWithExecState(arg1, TrustedImmPtr(cell), arg2);
+    return appendCallWithExceptionCheckSetJSValueResult(operation, dst);
+}
+    
 ALWAYS_INLINE MacroAssembler::Call JIT::callOperation(J_JITOperation_EP operation, int dst, void* pointer)
 {
     setupArgumentsWithExecState(TrustedImmPtr(pointer));

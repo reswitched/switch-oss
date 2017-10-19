@@ -28,6 +28,7 @@
 
 #include "CallFrameInlines.h"
 #include "CodeBlock.h"
+#include "InlineCallFrame.h"
 #include "Interpreter.h"
 #include "JSLexicalEnvironment.h"
 #include "JSCInlines.h"
@@ -85,7 +86,7 @@ unsigned CallFrame::bytecodeOffsetFromCodeOriginIndex()
         if (inlineCallFrame->baselineCodeBlock() == codeBlock)
             return codeOrigin.bytecodeIndex;
 
-        codeOrigin = inlineCallFrame->caller;
+        codeOrigin = inlineCallFrame->directCaller;
         inlineCallFrame = codeOrigin.inlineCallFrame;
     }
     return codeOrigin.bytecodeIndex;

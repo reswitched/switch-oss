@@ -78,9 +78,9 @@ public:
     {
     }
 
-    State(const State& state)
-        : m_globalAlpha(state.m_globalAlpha)
-        , m_imageInterpolationQuality(state.m_imageInterpolationQuality)
+    State(float globalAlpha, InterpolationQuality imageInterpolationQuality)
+        : m_globalAlpha(globalAlpha)
+        , m_imageInterpolationQuality(imageInterpolationQuality)
     {
         // We do not copy m_imageMaskInformation because otherwise it would be applied
         // more than once during subsequent calls to restore().
@@ -120,7 +120,7 @@ PlatformContextCairo::~PlatformContextCairo()
 
 void PlatformContextCairo::save()
 {
-    m_stateStack.append(State(*m_state));
+    m_stateStack.append(State(m_state->m_globalAlpha, m_state->m_imageInterpolationQuality));
     m_state = &m_stateStack.last();
 
     cairo_save(m_cr.get());

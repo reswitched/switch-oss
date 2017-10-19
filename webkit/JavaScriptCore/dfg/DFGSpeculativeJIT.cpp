@@ -38,6 +38,7 @@
 #include "DFGSaneStringGetByValSlowPathGenerator.h"
 #include "DFGSlowPathGenerator.h"
 #include "DirectArguments.h"
+#include "JSArrowFunction.h"
 #include "JSCInlines.h"
 #include "JSEnvironmentRecord.h"
 #include "JSLexicalEnvironment.h"
@@ -322,7 +323,7 @@ RegisterSet SpeculativeJIT::usedRegisters()
             result.set(fpr);
     }
     
-    result.merge(RegisterSet::specialRegisters());
+    result.merge(RegisterSet::stubUnavailableRegisters());
     
     return result;
 }
@@ -2891,6 +2892,30 @@ void SpeculativeJIT::compileAdd(Node* node)
     }
 }
 
+void SpeculativeJIT::compileIsJSArray(Node* node)
+{
+    JSValueOperand value(this, node->child1());
+    GPRFlushedCallResult result(this);
+
+    JSValueRegs valueRegs = value.jsValueRegs();
+    GPRReg resultGPR = result.gpr();
+
+    JITCompiler::Jump isNotCell = m_jit.branchIfNotCell(valueRegs);
+
+    m_jit.compare8(JITCompiler::Equal,
+        JITCompiler::Address(valueRegs.payloadGPR(), JSCell::typeInfoTypeOffset()),
+        TrustedImm32(ArrayType),
+        resultGPR);
+    blessBoolean(resultGPR);
+    JITCompiler::Jump done = m_jit.jump();
+
+    isNotCell.link(&m_jit);
+    moveFalseTo(resultGPR);
+
+    done.link(&m_jit);
+    blessedBooleanResult(resultGPR, node);
+}
+
 void SpeculativeJIT::compileMakeRope(Node* node)
 {
     ASSERT(node->child1().useKind() == KnownStringUse);
@@ -3732,7 +3757,7 @@ void SpeculativeJIT::compileArithSqrt(Node* node)
     SpeculateDoubleOperand op1(this, node->child1());
     FPRReg op1FPR = op1.fpr();
 
-    if (!MacroAssembler::supportsFloatingPointSqrt() || !Options::enableArchitectureSpecificOptimizations()) {
+    if (!MacroAssembler::supportsFloatingPointSqrt() || !Options::useArchitectureSpecificOptimizations()) {
         flushRegisters();
         FPRResult result(this);
         callOperation(sqrt, result.fpr(), op1FPR);
@@ -4471,6 +4496,15 @@ void SpeculativeJIT::compileGetScope(Node* node)
     cellResult(result.gpr(), node);
 }
 
+    
+void SpeculativeJIT::compileLoadArrowFunctionThis(Node* node)
+{
+    SpeculateCellOperand function(this, node->child1());
+    GPRTemporary result(this, Reuse, function);
+    m_jit.loadPtr(JITCompiler::Address(function.gpr(), JSArrowFunction::offsetOfThisValue()), result.gpr());
+    cellResult(result.gpr(), node);
+}
+    
 void SpeculativeJIT::compileSkipScope(Node* node)
 {
     SpeculateCellOperand scope(this, node->child1());
@@ -4576,55 +4610,73 @@ void SpeculativeJIT::compileGetArrayLength(Node* node)
     } }
 }
 
+template <typename ClassType> void SpeculativeJIT::compileNewFunctionCommon(GPRReg resultGPR, Structure* structure, GPRReg scratch1GPR, GPRReg scratch2GPR, GPRReg scopeGPR, MacroAssembler::JumpList& slowPath, size_t size, FunctionExecutable* executable, ptrdiff_t offsetOfScopeChain, ptrdiff_t offsetOfExecutable, ptrdiff_t offsetOfRareData)
+{
+    emitAllocateJSObjectWithKnownSize<ClassType>(resultGPR, TrustedImmPtr(structure), TrustedImmPtr(0), scratch1GPR, scratch2GPR, slowPath, size);
+    
+    m_jit.storePtr(scopeGPR, JITCompiler::Address(resultGPR, offsetOfScopeChain));
+    m_jit.storePtr(TrustedImmPtr(executable), JITCompiler::Address(resultGPR, offsetOfExecutable));
+    m_jit.storePtr(TrustedImmPtr(0), JITCompiler::Address(resultGPR, offsetOfRareData));
+}
+
 void SpeculativeJIT::compileNewFunction(Node* node)
 {
+    NodeType nodeType = node->op();
+    ASSERT(nodeType == NewFunction || nodeType == NewArrowFunction);
+    
     SpeculateCellOperand scope(this, node->child1());
+    GPRReg thisValueGPR;
     GPRReg scopeGPR = scope.gpr();
 
     FunctionExecutable* executable = node->castOperand<FunctionExecutable*>();
 
+    if (nodeType == NewArrowFunction) {
+        SpeculateCellOperand thisValue(this, node->child2());
+        thisValueGPR = thisValue.gpr();
+    }
+
     if (executable->singletonFunction()->isStillValid()) {
         GPRFlushedCallResult result(this);
         GPRReg resultGPR = result.gpr();
-
+        
         flushRegisters();
-
-        callOperation(operationNewFunction, resultGPR, scopeGPR, executable);
+        
+        if (nodeType == NewArrowFunction)
+            callOperation(operationNewArrowFunction, resultGPR, scopeGPR, executable, thisValueGPR);
+        else
+            callOperation(operationNewFunction, resultGPR, scopeGPR, executable);
+        
         cellResult(resultGPR, node);
         return;
     }
 
-    Structure* structure = m_jit.graph().globalObjectFor(
-        node->origin.semantic)->functionStructure();
-
+    Structure* structure = nodeType == NewArrowFunction
+        ? m_jit.graph().globalObjectFor(node->origin.semantic)->arrowFunctionStructure()
+        : m_jit.graph().globalObjectFor(node->origin.semantic)->functionStructure();
+    
     GPRTemporary result(this);
     GPRTemporary scratch1(this);
     GPRTemporary scratch2(this);
+    
     GPRReg resultGPR = result.gpr();
     GPRReg scratch1GPR = scratch1.gpr();
     GPRReg scratch2GPR = scratch2.gpr();
-
+    
     JITCompiler::JumpList slowPath;
-    emitAllocateJSObjectWithKnownSize<JSFunction>(
-        resultGPR, TrustedImmPtr(structure), TrustedImmPtr(0),
-        scratch1GPR, scratch2GPR, slowPath, JSFunction::allocationSize(0));
-
-    // Don't need a memory barriers since we just fast-created the function, so it
-    // must be young.
-    m_jit.storePtr(
-        scopeGPR,
-        JITCompiler::Address(resultGPR, JSFunction::offsetOfScopeChain()));
-    m_jit.storePtr(
-        TrustedImmPtr(executable),
-        JITCompiler::Address(resultGPR, JSFunction::offsetOfExecutable()));
-    m_jit.storePtr(
-        TrustedImmPtr(0),
-        JITCompiler::Address(resultGPR, JSFunction::offsetOfRareData()));
-
-
-    addSlowPathGenerator(
-        slowPathCall(
-            slowPath, this, operationNewFunctionWithInvalidatedReallocationWatchpoint, resultGPR, scopeGPR, executable));
+    
+    if (nodeType == NewFunction) {
+        compileNewFunctionCommon<JSFunction>(resultGPR, structure, scratch1GPR, scratch2GPR, scopeGPR, slowPath, JSFunction::allocationSize(0), executable, JSFunction::offsetOfScopeChain(), JSFunction::offsetOfExecutable(), JSFunction::offsetOfRareData());
+            
+        addSlowPathGenerator(slowPathCall(slowPath, this, operationNewFunctionWithInvalidatedReallocationWatchpoint, resultGPR, scopeGPR, executable));
+    }
+    
+    if (nodeType == NewArrowFunction) {
+        compileNewFunctionCommon<JSArrowFunction>(resultGPR, structure, scratch1GPR, scratch2GPR, scopeGPR, slowPath, JSArrowFunction::allocationSize(0), executable, JSArrowFunction::offsetOfScopeChain(), JSArrowFunction::offsetOfExecutable(), JSArrowFunction::offsetOfRareData());
+        
+        m_jit.storePtr(thisValueGPR, JITCompiler::Address(resultGPR, JSArrowFunction::offsetOfThisValue()));
+        
+        addSlowPathGenerator(slowPathCall(slowPath, this, operationNewArrowFunctionWithInvalidatedReallocationWatchpoint, resultGPR, scopeGPR, executable, thisValueGPR));
+    }
 
     cellResult(resultGPR, node);
 }
@@ -4632,8 +4684,12 @@ void SpeculativeJIT::compileNewFunction(Node* node)
 void SpeculativeJIT::compileForwardVarargs(Node* node)
 {
     LoadVarargsData* data = node->loadVarargsData();
-    InlineCallFrame* inlineCallFrame = node->child1()->origin.semantic.inlineCallFrame;
-        
+    InlineCallFrame* inlineCallFrame;
+    if (node->child1())
+        inlineCallFrame = node->child1()->origin.semantic.inlineCallFrame;
+    else
+        inlineCallFrame = node->origin.semantic.inlineCallFrame;
+
     GPRTemporary length(this);
     JSValueRegsTemporary temp(this);
     GPRReg lengthGPR = length.gpr();

@@ -110,6 +110,11 @@ public:
         return m_width * m_width + m_height * m_height;
     }
 
+    float area() const
+    {
+        return m_width * m_height;
+    }
+
     FloatSize transposedSize() const
     {
         return FloatSize(m_height, m_width);
@@ -173,6 +178,11 @@ inline FloatSize operator*(const FloatSize& a, float b)
 inline FloatSize operator*(float a, const FloatSize& b)
 {
     return FloatSize(a * b.width(), a * b.height());
+}
+
+inline FloatSize operator*(const FloatSize& a, const FloatSize& b)
+{
+    return FloatSize(a.width() * b.width(), a.height() * b.height());
 }
 
 inline FloatSize operator/(const FloatSize& a, float b)

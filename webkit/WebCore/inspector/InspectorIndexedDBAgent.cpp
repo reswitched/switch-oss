@@ -65,6 +65,7 @@
 #include <inspector/InjectedScriptManager.h>
 #if !PLATFORM(WKC)
 #include <inspector/InspectorFrontendDispatchers.h>
+#include <inspector/InspectorFrontendRouter.h>
 #include <inspector/InspectorValues.h>
 #else
 #include <InspectorFrontendDispatchers.h>

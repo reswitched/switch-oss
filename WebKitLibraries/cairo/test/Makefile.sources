@@ -272,7 +272,10 @@ test_sources = \
 	record90.c					\
 	recordflip.c					\
 	record-extend.c					\
+	record-neg-extents.c                            \
 	record-mesh.c					\
+	record-replay-extend.c                          \
+	recording-ink-extents.c                         \
 	recording-surface-pattern.c			\
 	recording-surface-extend.c			\
 	rectangle-rounding-error.c			\
@@ -320,6 +323,7 @@ test_sources = \
 	smask-paint.c					\
 	smask-stroke.c					\
 	smask-text.c					\
+	smp-glyph.c					\
 	solid-pattern-cache-stress.c			\
 	source-clip.c					\
 	source-clip-scale.c				\
@@ -351,7 +355,9 @@ test_sources = \
 	text-pattern.c					\
 	text-rotate.c					\
 	text-transform.c				\
+	text-unhinted-metrics.c				\
 	text-zero-len.c					\
+	thin-lines.c                                    \
 	tighten-bounds.c				\
 	tiger.c						\
 	toy-font-face.c					\
@@ -412,7 +418,8 @@ quartz_surface_test_sources = quartz-surface-source.c
 pdf_surface_test_sources = \
 	pdf-features.c \
 	pdf-mime-data.c \
-	pdf-surface-source.c
+	pdf-surface-source.c \
+	pdf-tagged-text.c
 
 ps_surface_test_sources = \
 	ps-eps.c \

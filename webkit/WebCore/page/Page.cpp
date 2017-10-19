@@ -93,7 +93,6 @@
 #include "VisitedLinkStore.h"
 #include "VoidCallback.h"
 #include "Widget.h"
-#include <JavaScriptCore/profiler/Profile.h>
 #include <wtf/HashMap.h>
 #include <wtf/RefCountedLeakCounter.h>
 #include <wtf/StdLibExtras.h>
@@ -141,6 +140,7 @@ static void networkStateChanged(bool isOnLine)
 }
 
 static const ViewState::Flags PageInitialViewState = ViewState::IsVisible | ViewState::IsInWindow;
+bool Page::s_tabSuspensionIsEnabled = false;
 
 Page::Page(PageConfiguration& pageConfiguration)
     : m_chrome(std::make_unique<Chrome>(*this, *pageConfiguration.chromeClient))
@@ -168,7 +168,6 @@ Page::Page(PageConfiguration& pageConfiguration)
     , m_editorClient(*pageConfiguration.editorClient)
     , m_plugInClient(pageConfiguration.plugInClient)
     , m_validationMessageClient(pageConfiguration.validationMessageClient)
-    , m_subframeCount(0)
     , m_openedByDOM(false)
     , m_tabKeyCyclesThroughElements(true)
     , m_defersLoading(false)
@@ -222,6 +221,7 @@ Page::Page(PageConfiguration& pageConfiguration)
     , m_visitedLinkStore(*WTF::move(pageConfiguration.visitedLinkStore))
     , m_sessionID(SessionID::defaultSessionID())
     , m_isClosing(false)
+    , m_tabSuspensionTimer(*this, &Page::tabSuspensionTimerFired)
 {
     setTimerThrottlingEnabled(m_viewState & ViewState::IsVisuallyIdle);
 
@@ -255,6 +255,9 @@ Page::~Page()
     m_mainFrame->setView(nullptr);
     setGroupName(String());
     allPages->remove(this);
+    ASSERT(!m_nestedRunLoopCount);
+    ASSERT(!m_unnestCallback);
+
     
     m_settings->pageDestroyed();
 
@@ -1279,6 +1282,11 @@ void Page::setViewState(ViewState::Flags viewState)
 void Page::setPageActivityState(PageActivityState::Flags activityState)
 {
     chrome().client().setPageActivityState(activityState);
+    
+    if (activityState == PageActivityState::NoFlags && !isVisible())
+        scheduleTabSuspension(true);
+    else
+        scheduleTabSuspension(false);
 }
 
 void Page::setIsVisible(bool isVisible)
@@ -1324,6 +1332,8 @@ void Page::setIsVisibleInternal(bool isVisible)
         if (FrameView* view = mainFrame().view())
             view->hide();
     }
+
+    scheduleTabSuspension(!isVisible);
 }
 
 void Page::setIsPrerender()
@@ -1373,6 +1383,41 @@ void Page::addFooterWithHeight(int footerHeight)
     renderView->compositor().updateLayerForFooter(m_footerHeight);
 }
 #endif
+
+void Page::incrementNestedRunLoopCount()
+{
+    m_nestedRunLoopCount++;
+}
+
+void Page::decrementNestedRunLoopCount()
+{
+    ASSERT(m_nestedRunLoopCount);
+    if (m_nestedRunLoopCount <= 0)
+        return;
+
+    m_nestedRunLoopCount--;
+
+    if (!m_nestedRunLoopCount && m_unnestCallback) {
+        callOnMainThread([this] {
+            if (insideNestedRunLoop())
+                return;
+
+            // This callback may destruct the Page.
+            if (m_unnestCallback) {
+                auto callback = m_unnestCallback;
+                m_unnestCallback = nullptr;
+                callback();
+            }
+        });
+    }
+}
+
+void Page::whenUnnested(std::function<void()> callback)
+{
+    ASSERT(!m_unnestCallback);
+
+    m_unnestCallback = callback;
+}
 
 #if ENABLE(REMOTE_INSPECTOR)
 bool Page::remoteInspectionAllowed() const
@@ -1758,5 +1803,49 @@ void Page::setAllowsMediaDocumentInlinePlayback(bool flag)
         document->allowsMediaDocumentInlinePlaybackChanged();
 }
 #endif
+
+bool Page::canTabSuspend()
+{
+    return s_tabSuspensionIsEnabled && !m_isPrerender && (m_pageThrottler.activityState() == PageActivityState::NoFlags) && PageCache::singleton().canCache(*this);
+}
+
+void Page::setIsTabSuspended(bool shouldSuspend)
+{
+    for (Frame* frame = &mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        if (auto* document = frame->document()) {
+            if (shouldSuspend)
+                document->suspend();
+            else
+                document->resume();
+        }
+    }
+}
+
+void Page::setTabSuspensionEnabled(bool enable)
+{
+    s_tabSuspensionIsEnabled = enable;
+}
+
+void Page::scheduleTabSuspension(bool shouldSuspend)
+{
+    if (m_shouldTabSuspend == shouldSuspend)
+        return;
+    
+    if (shouldSuspend && canTabSuspend()) {
+        m_shouldTabSuspend = shouldSuspend;
+        m_tabSuspensionTimer.startOneShot(0);
+    } else {
+        m_tabSuspensionTimer.stop();
+        if (!shouldSuspend) {
+            m_shouldTabSuspend = shouldSuspend;
+            setIsTabSuspended(false);
+        }
+    }
+}
+
+void Page::tabSuspensionTimerFired()
+{
+    setIsTabSuspended(true);
+}
 
 } // namespace WebCore

@@ -96,7 +96,7 @@ public:
     virtual void dispatchDidStartProvisionalLoad() override;
     virtual void dispatchDidReceiveTitle(const WebCore::StringWithDirection&) override;
     virtual void dispatchDidChangeIcons(WebCore::IconType) override;
-    virtual void dispatchDidCommitLoad() override;
+    virtual void dispatchDidCommitLoad(Optional<WebCore::HasInsecureContent>) override;
     virtual void dispatchDidFailProvisionalLoad(const WebCore::ResourceError&) override;
     virtual void dispatchDidFailLoad(const WebCore::ResourceError&) override;
     virtual void dispatchDidFinishDocumentLoad() override;

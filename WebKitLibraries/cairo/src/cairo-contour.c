@@ -412,7 +412,6 @@ _cairo_contour_fini (cairo_contour_t *contour)
 void
 _cairo_debug_print_contour (FILE *file, cairo_contour_t *contour)
 {
-#ifndef __WKC__
     cairo_contour_chain_t *chain;
     int num_points, size_points;
     int i;
@@ -436,7 +435,6 @@ _cairo_debug_print_contour (FILE *file, cairo_contour_t *contour)
 		     _cairo_fixed_to_double (chain->points[i].y));
 	}
     }
-#endif
 }
 
 void

@@ -68,17 +68,17 @@ inline bool isX86()
 
 inline bool optimizeForARMv7IDIVSupported()
 {
-    return isARMv7IDIVSupported() && Options::enableArchitectureSpecificOptimizations();
+    return isARMv7IDIVSupported() && Options::useArchitectureSpecificOptimizations();
 }
 
 inline bool optimizeForARM64()
 {
-    return isARM64() && Options::enableArchitectureSpecificOptimizations();
+    return isARM64() && Options::useArchitectureSpecificOptimizations();
 }
 
 inline bool optimizeForX86()
 {
-    return isX86() && Options::enableArchitectureSpecificOptimizations();
+    return isX86() && Options::useArchitectureSpecificOptimizations();
 }
 
 class LinkBuffer;
@@ -507,7 +507,9 @@ public:
             None = 0x0,
             Linkable = 0x1,
             Near = 0x2,
+            Tail = 0x4,
             LinkableNear = 0x3,
+            LinkableNearTail = 0x7,
         };
 
         Call()
@@ -1151,7 +1153,15 @@ protected:
 
     static void repatchNearCall(CodeLocationNearCall nearCall, CodeLocationLabel destination)
     {
-        AssemblerType::relinkCall(nearCall.dataLocation(), destination.executableAddress());
+        switch (nearCall.callMode()) {
+        case NearCallMode::Tail:
+            AssemblerType::relinkJump(nearCall.dataLocation(), destination.executableAddress());
+            return;
+        case NearCallMode::Regular:
+            AssemblerType::relinkCall(nearCall.dataLocation(), destination.executableAddress());
+            return;
+        }
+        RELEASE_ASSERT_NOT_REACHED();
     }
 
     static void repatchCompact(CodeLocationDataLabelCompact dataLabelCompact, int32_t value)

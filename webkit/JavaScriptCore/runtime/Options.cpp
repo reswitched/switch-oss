@@ -267,7 +267,7 @@ static void recomputeDependentOptions()
     Options::useRegExpJIT() = false;
 #endif
 #if !ENABLE(CONCURRENT_JIT)
-    Options::enableConcurrentJIT() = false;
+    Options::useConcurrentJIT() = false;
 #endif
 #if !ENABLE(DFG_JIT)
     Options::useDFGJIT() = false;
@@ -281,9 +281,9 @@ static void recomputeDependentOptions()
     if (!MacroAssemblerX86::supportsFloatingPoint())
         Options::useJIT() = false;
 #endif
-    if (Options::showDisassembly()
-        || Options::showDFGDisassembly()
-        || Options::showFTLDisassembly()
+    if (Options::dumpDisassembly()
+        || Options::dumpDFGDisassembly()
+        || Options::dumpFTLDisassembly()
         || Options::dumpBytecodeAtDFGTime()
         || Options::dumpGraphAtEachPhase()
         || Options::verboseCompilation()
@@ -311,7 +311,7 @@ static void recomputeDependentOptions()
         Options::thresholdForFTLOptimizeAfterWarmUp() = 20;
         Options::thresholdForFTLOptimizeSoon() = 20;
         Options::maximumEvalCacheableSourceLength() = 150000;
-        Options::enableConcurrentJIT() = false;
+        Options::useConcurrentJIT() = false;
     }
 
     // Compute the maximum value of the reoptimization retry counter. This is simply
@@ -349,7 +349,7 @@ void Options::initialize()
     
                 // It *probably* makes sense for other platforms to enable this.
 #if PLATFORM(IOS) && CPU(ARM64)
-                enableLLVMFastISel() = true;
+                useLLVMFastISel() = true;
 #endif
         
             // Allow environment vars to override options if applicable.
@@ -371,8 +371,8 @@ void Options::initialize()
             ASSERT(Options::thresholdForOptimizeAfterWarmUp() >= Options::thresholdForOptimizeSoon());
             ASSERT(Options::thresholdForOptimizeAfterWarmUp() >= 0);
 
-            if (Options::showOptions()) {
-                DumpLevel level = static_cast<DumpLevel>(Options::showOptions());
+            if (Options::dumpOptions()) {
+                DumpLevel level = static_cast<DumpLevel>(Options::dumpOptions());
                 if (level > DumpLevel::Verbose)
                     level = DumpLevel::Verbose;
 

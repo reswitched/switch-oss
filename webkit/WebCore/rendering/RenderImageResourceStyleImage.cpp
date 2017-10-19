@@ -30,7 +30,6 @@
 
 #include "CachedImage.h"
 #include "RenderElement.h"
-#include "StyleCachedImage.h"
 
 namespace WebCore {
 
@@ -48,7 +47,7 @@ void RenderImageResourceStyleImage::initialize(RenderElement* renderer)
     RenderImageResource::initialize(renderer);
 
     if (m_styleImage->isCachedImage())
-        m_cachedImage = m_styleImage.get().cachedImage();
+        m_cachedImage = m_styleImage->cachedImage();
 
     m_styleImage->addClient(m_renderer);
 }
@@ -56,16 +55,21 @@ void RenderImageResourceStyleImage::initialize(RenderElement* renderer)
 void RenderImageResourceStyleImage::shutdown()
 {
     ASSERT(m_renderer);
+    image()->stopAnimation();
     m_styleImage->removeClient(m_renderer);
-    m_cachedImage = 0;
+    if (!m_styleImage->isCachedImage() && m_cachedImage)
+        m_cachedImage->removeClient(m_renderer);
+    m_cachedImage = nullptr;
 }
 
 PassRefPtr<Image> RenderImageResourceStyleImage::image(int width, int height) const
 {
     // Generated content may trigger calls to image() while we're still pending, don't assert but gracefully exit.
     if (m_styleImage->isPendingImage())
-        return 0;
-    return m_styleImage->image(m_renderer, IntSize(width, height));
+        return Image::nullImage();
+    if (auto image = m_styleImage->image(m_renderer, FloatSize(width, height)))
+        return image;
+    return Image::nullImage();
 }
 
 void RenderImageResourceStyleImage::setContainerSizeForRenderer(const IntSize& size)

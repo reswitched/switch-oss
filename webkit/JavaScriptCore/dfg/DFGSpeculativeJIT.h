@@ -711,6 +711,8 @@ public:
     
     void compileInstanceOfForObject(Node*, GPRReg valueReg, GPRReg prototypeReg, GPRReg scratchAndResultReg, GPRReg scratch2Reg);
     void compileInstanceOf(Node*);
+
+    void compileIsJSArray(Node*);
     
     void emitCall(Node*);
     
@@ -1202,6 +1204,12 @@ public:
         m_jit.setupArgumentsWithExecState(arg1, TrustedImmPtr(cell));
         return appendCallWithExceptionCheckSetResult(operation, result);
     }
+    
+    JITCompiler::Call callOperation(J_JITOperation_EJscCJ operation, GPRReg result, GPRReg arg1, JSCell* cell, GPRReg arg2)
+    {
+        m_jit.setupArgumentsWithExecState(arg1, TrustedImmPtr(cell), arg2);
+        return appendCallWithExceptionCheckSetResult(operation, result);
+    }
 
     JITCompiler::Call callOperation(V_JITOperation_EWs operation, WatchpointSet* watchpointSet)
     {
@@ -1350,6 +1358,17 @@ public:
         return appendCallWithExceptionCheckSetResult(operation, result);
     }
 
+    JITCompiler::Call callOperation(C_JITOperation_EGJ operation, GPRReg result, JSGlobalObject* globalObject, GPRReg arg1)
+    {
+        m_jit.setupArgumentsWithExecState(TrustedImmPtr(globalObject), arg1);
+        return appendCallSetResult(operation, result);
+    }
+
+    JITCompiler::Call callOperation(C_JITOperation_EGJ operation, GPRReg result, JSGlobalObject* globalObject, JSValueRegs arg1)
+    {
+        return callOperation(operation, result, globalObject, arg1.gpr());
+    }
+
     JITCompiler::Call callOperation(C_JITOperation_EJ operation, GPRReg result, GPRReg arg1)
     {
         m_jit.setupArgumentsWithExecState(arg1);
@@ -1379,6 +1398,14 @@ public:
     {
         m_jit.setupArgumentsWithExecState(arg1);
         return appendCallWithExceptionCheckSetResult(operation, result);
+    }
+    JITCompiler::Call callOperation(S_JITOperation_EJ operation, GPRReg result, JSValueRegs arg1)
+    {
+        return callOperation(operation, result, arg1.gpr());
+    }
+    JITCompiler::Call callOperation(J_JITOperation_EJ operation, GPRReg result, JSValueRegs arg1)
+    {
+        return callOperation(operation, result, arg1.payloadGPR());
     }
     JITCompiler::Call callOperation(J_JITOperation_EJ operation, GPRReg result, GPRReg arg1)
     {
@@ -1608,6 +1635,11 @@ public:
         m_jit.setupArgumentsWithExecState(arg1, TrustedImmPtr(cell));
         return appendCallWithExceptionCheckSetResult(operation, resultPayload, resultTag);
     }
+    JITCompiler::Call callOperation(J_JITOperation_EJscCJ operation, GPRReg resultTag, GPRReg resultPayload, GPRReg arg1, JSCell* cell, GPRReg arg2)
+    {
+        m_jit.setupArgumentsWithExecState(arg1, TrustedImmPtr(cell), arg2);
+        return appendCallWithExceptionCheckSetResult(operation, resultPayload, resultTag);
+    }
     JITCompiler::Call callOperation(J_JITOperation_ESsiCI operation, GPRReg resultTag, GPRReg resultPayload, StructureStubInfo* stubInfo, GPRReg arg1, const UniquedStringImpl* uid)
     {
         m_jit.setupArgumentsWithExecState(TrustedImmPtr(stubInfo), arg1, TrustedImmPtr(uid));
@@ -1676,6 +1708,17 @@ public:
         return appendCallWithExceptionCheckSetResult(operation, result);
     }
 
+    JITCompiler::Call callOperation(C_JITOperation_EGJ operation, GPRReg result, JSGlobalObject* globalObject, GPRReg arg1Tag, GPRReg arg1Payload)
+    {
+        m_jit.setupArgumentsWithExecState(TrustedImmPtr(globalObject), arg1Payload, arg1Tag);
+        return appendCallSetResult(operation, result);
+    }
+
+    JITCompiler::Call callOperation(C_JITOperation_EGJ operation, GPRReg result, JSGlobalObject* globalObject, JSValueRegs arg1)
+    {
+        return callOperation(operation, result, globalObject, arg1.tagGPR(), arg1.payloadGPR());
+    }
+
     JITCompiler::Call callOperation(C_JITOperation_EJ operation, GPRReg result, GPRReg arg1Tag, GPRReg arg1Payload)
     {
         m_jit.setupArgumentsWithExecState(EABI_32BIT_DUMMY_ARG arg1Payload, arg1Tag);
@@ -1690,6 +1733,11 @@ public:
     {
         m_jit.setupArgumentsWithExecState(EABI_32BIT_DUMMY_ARG arg1Payload, arg1Tag);
         return appendCallWithExceptionCheckSetResult(operation, result);
+    }
+
+    JITCompiler::Call callOperation(S_JITOperation_EJ operation, GPRReg result, JSValueRegs arg1)
+    {
+        return callOperation(operation, result, arg1.tagGPR(), arg1.payloadGPR());
     }
 
     JITCompiler::Call callOperation(S_JITOperation_EJJ operation, GPRReg result, GPRReg arg1Tag, GPRReg arg1Payload, GPRReg arg2Tag, GPRReg arg2Payload)
@@ -2179,6 +2227,7 @@ public:
     void compileGetByValOnScopedArguments(Node*);
     
     void compileGetScope(Node*);
+    void compileLoadArrowFunctionThis(Node*);
     void compileSkipScope(Node*);
 
     void compileGetArrayLength(Node*);
@@ -2210,6 +2259,7 @@ public:
     void compilePutByValForIntTypedArray(GPRReg base, GPRReg property, Node*, TypedArrayType);
     void compileGetByValOnFloatTypedArray(Node*, TypedArrayType);
     void compilePutByValForFloatTypedArray(GPRReg base, GPRReg property, Node*, TypedArrayType);
+    template <typename ClassType> void compileNewFunctionCommon(GPRReg, Structure*, GPRReg, GPRReg, GPRReg, MacroAssembler::JumpList&, size_t, FunctionExecutable*, ptrdiff_t, ptrdiff_t, ptrdiff_t);
     void compileNewFunction(Node*);
     void compileForwardVarargs(Node*);
     void compileCreateActivation(Node*);

@@ -56,6 +56,7 @@ public:
     bool hasRemoteFrontendConnected() { return m_remoteFrontendConnected; }
 
     // InspectorFrontendChannel
+    virtual Inspector::FrontendChannel::ConnectionType connectionType() const;
     virtual bool sendMessageToFrontend(const WTF::String& message);
 
 private:

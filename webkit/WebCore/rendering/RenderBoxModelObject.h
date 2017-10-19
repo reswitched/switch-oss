@@ -243,6 +243,9 @@ public:
 
     void suspendAnimations(double time = 0);
 
+    // NOTE: continuation() is moved from protected to apply Webkit r207926 patch.
+    RenderBoxModelObject* continuation() const;
+
 protected:
     RenderBoxModelObject(Element&, Ref<RenderStyle>&&, unsigned baseTypeFlags);
     RenderBoxModelObject(Document&, Ref<RenderStyle>&&, unsigned baseTypeFlags);
@@ -261,7 +264,6 @@ protected:
 
     bool shouldPaintAtLowQuality(GraphicsContext*, Image*, const void*, const LayoutSize&);
 
-    RenderBoxModelObject* continuation() const;
     void setContinuation(RenderBoxModelObject*);
 
     LayoutRect localCaretRectForEmptyElement(LayoutUnit width, LayoutUnit textIndentOffset);

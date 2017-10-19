@@ -78,6 +78,7 @@
 #include "HistoryController.h"
 #include "HistoryItem.h"
 #include "IconController.h"
+#include "IgnoreOpensDuringUnloadCountIncrementer.h"
 #include "InspectorController.h"
 #include "InspectorInstrumentation.h"
 #include "LoaderStrategy.h"
@@ -348,6 +349,9 @@ void FrameLoader::urlSelected(const URL& url, const String& passedTarget, Event*
 
 void FrameLoader::urlSelected(const FrameLoadRequest& passedRequest, Event* triggeringEvent)
 {
+    ASSERT_WITH_SECURITY_IMPLICATION(!triggeringEvent || !triggeringEvent->target() || !triggeringEvent->target()->toNode()
+        || triggeringEvent->target()->toNode()->document().pageCacheState() == Document::NotInPageCache);
+
     Ref<Frame> protect(m_frame);
     FrameLoadRequest frameRequest(passedRequest);
 
@@ -370,10 +374,13 @@ void FrameLoader::submitForm(PassRefPtr<FormSubmission> submission)
     ASSERT(submission->data());
     ASSERT(submission->state());
     ASSERT(!submission->state()->sourceDocument()->frame() || submission->state()->sourceDocument()->frame() == &m_frame);
-    
+
     if (!m_frame.page())
         return;
-    
+
+    if (submission->state()->sourceDocument()->pageCacheState() != Document::NotInPageCache)
+        return;
+
     if (submission->action().isEmpty())
         return;
 
@@ -628,7 +635,7 @@ void FrameLoader::clear(Document* newDocument, bool clearWindowProperties, bool 
 
 void FrameLoader::receivedFirstData()
 {
-    dispatchDidCommitLoad();
+    dispatchDidCommitLoad(Nullopt);
     dispatchDidClearWindowObjectsInAllWorlds();
     dispatchGlobalObjectAvailableInAllWorlds();
 
@@ -1124,7 +1131,10 @@ void FrameLoader::setupForReplace()
 }
 
 void FrameLoader::loadFrameRequest(const FrameLoadRequest& request, Event* event, PassRefPtr<FormState> formState)
-{    
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!event || !event->target() || !event->target()->toNode()
+        || event->target()->toNode()->document().pageCacheState() == Document::NotInPageCache);
+
     // Protect frame from getting blown away inside dispatchBeforeLoadEvent in loadWithDocumentLoader.
     Ref<Frame> protect(m_frame);
 
@@ -1180,7 +1190,7 @@ static ShouldOpenExternalURLsPolicy shouldOpenExternalURLsPolicyToApply(Frame& s
 
 bool FrameLoader::isNavigationAllowed() const
 {
-    return m_pageDismissalEventBeingDispatched == PageDismissalType::None && NavigationDisablerForBeforeUnload::isNavigationAllowed();
+    return m_pageDismissalEventBeingDispatched == PageDismissalType::None && NavigationDisabler::isNavigationAllowed();
 }
 
 void FrameLoader::loadURL(const FrameLoadRequest& frameLoadRequest, const String& referrer, FrameLoadType newLoadType, Event* event, PassRefPtr<FormState> prpFormState)
@@ -1634,7 +1644,7 @@ void FrameLoader::reload(bool endToEndReload)
 
 void FrameLoader::stopAllLoaders(ClearProvisionalItemPolicy clearProvisionalItemPolicy)
 {
-    ASSERT(!m_frame.document() || !m_frame.document()->inPageCache());
+    ASSERT(!m_frame.document() || m_frame.document()->pageCacheState() != Document::InPageCache);
     if (!isNavigationAllowed())
         return;
 
@@ -1821,9 +1831,8 @@ void FrameLoader::commitProvisionalLoad()
 
     // Check to see if we need to cache the page we are navigating away from into the back/forward cache.
     // We are doing this here because we know for sure that a new page is about to be loaded.
-    HistoryItem& item = *history().currentItem();
-    if (!m_frame.tree().parent() && PageCache::singleton().canCache(m_frame.page()) && !item.isInPageCache())
-        PageCache::singleton().add(item, *m_frame.page());
+    if (!m_frame.tree().parent() && history().currentItem())
+        PageCache::singleton().addIfCacheable(*history().currentItem(), m_frame.page());
 
     if (m_loadType != FrameLoadType::Replace)
         closeOldDataSources();
@@ -1854,10 +1863,12 @@ void FrameLoader::commitProvisionalLoad()
 #endif
         willRestoreFromCachedPage();
 
+        Optional<HasInsecureContent> hasInsecureContent = cachedPage->cachedMainFrame()->hasInsecureContent();
+
         // FIXME: This API should be turned around so that we ground CachedPage into the Page.
         cachedPage->restore(*m_frame.page());
 
-        dispatchDidCommitLoad();
+        dispatchDidCommitLoad(hasInsecureContent);
 
 #if PLATFORM(IOS)
         m_frame.page()->chrome().setDispatchViewportDataDidChangeSuppressed(false);
@@ -1884,7 +1895,7 @@ void FrameLoader::commitProvisionalLoad()
         if (m_frame.document()->doctype() && m_frame.page())
             m_frame.page()->chrome().didReceiveDocType(&m_frame);
 #endif
-        m_frame.document()->documentDidResumeFromPageCache();
+        m_frame.document()->resume();
 
         // Force a layout to update view size and thereby update scrollbars.
 #if PLATFORM(IOS)
@@ -2057,6 +2068,12 @@ void FrameLoader::clientRedirected(const URL& url, double seconds, double fireDa
     m_quickRedirectComing = (lockBackForwardList == LockBackForwardList::Yes || history().currentItemShouldBeReplaced()) && m_documentLoader && !m_isExecutingJavaScriptFormAction;
 }
 
+void FrameLoader::performClientRedirect(FrameLoadRequest&& frameLoadRequest)
+{
+    changeLocation(WTF::move(frameLoadRequest));
+    m_client.dispatchDidPerformClientRedirect();
+}
+
 bool FrameLoader::shouldReload(const URL& currentURL, const URL& destinationURL)
 {
     // This function implements the rule: "Don't reload if navigating by fragment within
@@ -2120,7 +2137,7 @@ void FrameLoader::open(CachedFrameBase& cachedFrame)
 
     clear(document, true, true, cachedFrame.isMainFrame());
 
-    document->setInPageCache(false);
+    document->setPageCacheState(Document::NotInPageCache);
 
     m_needsClear = true;
     m_isComplete = false;
@@ -2464,6 +2481,12 @@ void FrameLoader::detachChildren()
     // because we create a copy of the subframes list before looping. Therefore, it would be unsafe to
     // allow loading of subframes at this point.
     SubframeLoadingDisabler subframeLoadingDisabler(m_frame.document());
+
+    // detachChildren() will fire the unload event in each subframe and the
+    // HTML specification states that the parent document's ignore-opens-during-unload counter while
+    // this event is being fired in its subframes:
+    // https://html.spec.whatwg.org/multipage/browsers.html#unload-a-document
+    IgnoreOpensDuringUnloadCountIncrementer ignoreOpensDuringUnloadCountIncrementer(m_frame.document());
 
     Vector<Ref<Frame>, 16> childrenToDetach;
     childrenToDetach.reserveInitialCapacity(m_frame.tree().childCount());
@@ -2897,7 +2920,7 @@ bool FrameLoader::shouldClose()
 
     bool shouldClose = false;
     {
-        NavigationDisablerForBeforeUnload navigationDisabler;
+        NavigationDisabler navigationDisabler;
         size_t i;
 
         for (i = 0; i < targetFrames.size(); i++) {
@@ -2925,6 +2948,7 @@ void FrameLoader::handleUnloadEvents(UnloadEventPolicy unloadEventPolicy)
 
     // We store the frame's page in a local variable because the frame might get detached inside dispatchEvent.
     ForbidPromptsScope forbidPrompts(m_frame.page());
+    IgnoreOpensDuringUnloadCountIncrementer ignoreOpensDuringUnloadCountIncrementer(m_frame.document());
 
     if (m_didCallImplicitClose && !m_wasUnloadEventEmitted) {
         auto* currentFocusedElement = m_frame.document()->focusedElement();
@@ -3516,12 +3540,12 @@ void FrameLoader::didChangeTitle(DocumentLoader* loader)
 #endif
 }
 
-void FrameLoader::dispatchDidCommitLoad()
+void FrameLoader::dispatchDidCommitLoad(Optional<HasInsecureContent> initialHasInsecureContent)
 {
     if (m_stateMachine.creatingInitialEmptyDocument())
         return;
 
-    m_client.dispatchDidCommitLoad();
+    m_client.dispatchDidCommitLoad(initialHasInsecureContent);
 
     if (m_frame.isMainFrame()) {
         m_frame.page()->resetSeenPlugins();

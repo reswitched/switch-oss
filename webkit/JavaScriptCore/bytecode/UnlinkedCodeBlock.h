@@ -48,7 +48,6 @@ namespace JSC {
 class Debugger;
 class FunctionBodyNode;
 class FunctionExecutable;
-class FunctionParameters;
 class JSScope;
 class ParserError;
 class ScriptExecutable;
@@ -66,13 +65,14 @@ typedef unsigned UnlinkedObjectAllocationProfile;
 typedef unsigned UnlinkedLLIntCallLinkInfo;
 
 struct ExecutableInfo {
-    ExecutableInfo(bool needsActivation, bool usesEval, bool isStrictMode, bool isConstructor, bool isBuiltinFunction, ConstructorKind constructorKind)
+    ExecutableInfo(bool needsActivation, bool usesEval, bool isStrictMode, bool isConstructor, bool isBuiltinFunction, ConstructorKind constructorKind, bool isArrowFunction)
         : m_needsActivation(needsActivation)
         , m_usesEval(usesEval)
         , m_isStrictMode(isStrictMode)
         , m_isConstructor(isConstructor)
         , m_isBuiltinFunction(isBuiltinFunction)
         , m_constructorKind(static_cast<unsigned>(constructorKind))
+        , m_isArrowFunction(isArrowFunction)
     {
         ASSERT(m_constructorKind == static_cast<unsigned>(constructorKind));
     }
@@ -83,6 +83,7 @@ struct ExecutableInfo {
     bool isConstructor() const { return m_isConstructor; }
     bool isBuiltinFunction() const { return m_isBuiltinFunction; }
     ConstructorKind constructorKind() const { return static_cast<ConstructorKind>(m_constructorKind); }
+    bool isArrowFunction() const { return m_isArrowFunction; }
 
 private:
     unsigned m_needsActivation : 1;
@@ -91,6 +92,7 @@ private:
     unsigned m_isConstructor : 1;
     unsigned m_isBuiltinFunction : 1;
     unsigned m_constructorKind : 2;
+    unsigned m_isArrowFunction : 1;
 };
 
 enum UnlinkedFunctionKind {
@@ -122,7 +124,8 @@ public:
     {
         return (kind == CodeForCall) ? m_symbolTableForCall.get() : m_symbolTableForConstruct.get();
     }
-    size_t parameterCount() const;
+    unsigned parameterCount() const { return m_parameterCount; };
+    FunctionParseMode parseMode() const { return m_parseMode; };
     bool isInStrictContext() const { return m_isInStrictContext; }
     FunctionMode functionMode() const { return static_cast<FunctionMode>(m_functionMode); }
     ConstructorKind constructorKind() const { return static_cast<ConstructorKind>(m_constructorKind); }
@@ -137,8 +140,8 @@ public:
     unsigned typeProfilingEndOffset() const { return m_typeProfilingEndOffset; }
 
     UnlinkedFunctionCodeBlock* codeBlockFor(
-        VM&, const SourceCode&, CodeSpecializationKind, DebuggerMode, ProfilerMode, 
-        ParserError&);
+        VM&, const SourceCode&, CodeSpecializationKind, DebuggerMode, 
+        ParserError&, bool);
 
     static UnlinkedFunctionExecutable* fromGlobalCode(
         const Identifier&, ExecState&, const SourceCode&, JSObject*& exception, 
@@ -154,8 +157,6 @@ public:
         m_codeBlockForConstruct.clear();
     }
 
-    FunctionParameters* parameters() { return m_parameters.get(); }
-
     void recordParse(CodeFeatures features, bool hasCapturedVariables)
     {
         m_features = features;
@@ -170,6 +171,7 @@ public:
 
     bool isBuiltinFunction() const { return m_isBuiltinFunction; }
     bool isClassConstructorFunction() const { return constructorKind() != ConstructorKind::None; }
+    bool isArrowFunction() const { return m_isArrowFunction; }
 
 private:
     UnlinkedFunctionExecutable(VM*, Structure*, const SourceCode&, RefPtr<SourceProvider>&& sourceOverride, FunctionBodyNode*, UnlinkedFunctionKind);
@@ -181,7 +183,6 @@ private:
     WriteBarrier<JSString> m_nameValue;
     WriteBarrier<SymbolTable> m_symbolTableForCall;
     WriteBarrier<SymbolTable> m_symbolTableForConstruct;
-    RefPtr<FunctionParameters> m_parameters;
     RefPtr<SourceProvider> m_sourceOverride;
     unsigned m_firstLineOffset;
     unsigned m_lineCount;
@@ -193,6 +194,8 @@ private:
     unsigned m_parametersStartOffset;
     unsigned m_typeProfilingStartOffset;
     unsigned m_typeProfilingEndOffset;
+    unsigned m_parameterCount;
+    FunctionParseMode m_parseMode;
 
     CodeFeatures m_features;
 
@@ -201,6 +204,7 @@ private:
     unsigned m_isBuiltinFunction : 1;
     unsigned m_constructorKind : 2;
     unsigned m_functionMode : 1; // FunctionMode
+    unsigned m_isArrowFunction : 1;
 
 protected:
     void finishCreation(VM& vm)
@@ -270,6 +274,7 @@ public:
     bool isConstructor() const { return m_isConstructor; }
     bool isStrictMode() const { return m_isStrictMode; }
     bool usesEval() const { return m_usesEval; }
+    bool isArrowFunction() const { return m_isArrowFunction; }
 
     bool needsFullScopeChain() const { return m_needsFullScopeChain; }
 
@@ -546,6 +551,7 @@ private:
     unsigned m_hasCapturedVariables : 1;
     unsigned m_isBuiltinFunction : 1;
     unsigned m_constructorKind : 2;
+    unsigned m_isArrowFunction : 1;
 
     unsigned m_firstLine;
     unsigned m_lineCount;

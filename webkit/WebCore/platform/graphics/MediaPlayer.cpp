@@ -120,6 +120,9 @@ public:
     bool seeking() const override { return false; }
 
     void setRateDouble(double) override { }
+#if PLATFORM(WKC)
+    double rate() const override { return 1; }
+#endif
     void setPreservesPitch(bool) override { }
     bool paused() const override { return false; }
 

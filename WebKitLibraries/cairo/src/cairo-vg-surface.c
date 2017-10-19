@@ -1529,7 +1529,8 @@ _vg_surface_create_internal (cairo_vg_context_t *context,
     _cairo_surface_init (&surface->base,
 			 &cairo_vg_surface_backend,
 			 NULL, /* device */
-			 _vg_format_to_content (format));
+			 _vg_format_to_content (format),
+			 FALSE); /* is_vector */
 
     surface->width  = width;
     surface->height = height;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2012-2017 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -45,12 +45,7 @@ PassRefPtr<AudioBus> AudioBus::loadPlatformResource(const char* name, float samp
             return bus;
         }
     }
-
-error_end:
-    // not found. dummy data
-    RefPtr<AudioBus> bus = adoptRef(new AudioBus(2, 256, true));
-    bus->setSampleRate(sampleRate);
-    return bus;
+    return nullptr;
 }
 
 PassRefPtr<AudioBus> createBusFromInMemoryAudioFile(const void* data, size_t dataSize, bool mixToMono, float sampleRate)
@@ -70,14 +65,14 @@ PassRefPtr<AudioBus> createBusFromInMemoryAudioFile(const void* data, size_t dat
             if (bps==16) dlen>>=1;
             if (channels==2) dlen>>=1;
             else if (channels==4) dlen>>=2;
-            RefPtr<AudioBus> orig = AudioBus::create(2, dlen, true);
+            RefPtr<AudioBus> orig = AudioBus::create(channels, dlen, true);
 
             orig->setSampleRate(srate);
 
             AudioChannel* lch = orig->channel(AudioBus::ChannelLeft);
-            AudioChannel* rch = orig->channel(AudioBus::ChannelRight);
+            AudioChannel* rch = (channels >= 2) ? orig->channel(AudioBus::ChannelRight) : nullptr;
             float* dl = lch->mutableData();
-            float* dr = rch->mutableData();
+            float* dr = (rch) ? rch->mutableData() : nullptr;
 
             int bl=0, bh=1;
             if (endian==WKC_MEDIA_ENDIAN_BIGENDIAN) {
@@ -101,7 +96,9 @@ PassRefPtr<AudioBus> createBusFromInMemoryAudioFile(const void* data, size_t dat
                         else if (r>1.f) r=1.f;
                     }
                     dl[i] = l;
-                    dr[i] = r;
+                    if (dr) {
+                        dr[i] = r;
+                    }
                 }
             } else {
                 for (int i=0; i<dlen;i++) {
@@ -129,18 +126,16 @@ PassRefPtr<AudioBus> createBusFromInMemoryAudioFile(const void* data, size_t dat
                         sp+=2;
                     }
                     dl[i] = l;
-                    dr[i] = r;
+                    if (dr) {
+                        dr[i] = r;
+                    }
                 }
             }
+            buf.clear();
             return AudioBus::createBySampleRateConverting(orig.get(), mixToMono, sampleRate);
         }
     }
-
-error_end:
-    // failed to decode. dummy data.
-    RefPtr<AudioBus> bus = AudioBus::create(1, 256, true);
-    bus->setSampleRate(sampleRate);
-    return bus;
+    return nullptr;
 }
 
 } // namespace WebCore

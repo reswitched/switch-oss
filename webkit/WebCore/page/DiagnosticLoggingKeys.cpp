@@ -248,6 +248,11 @@ String DiagnosticLoggingKeys::isConditionalRequestKey()
     return ASCIILiteral("isConditionalRequest");
 }
 
+String DiagnosticLoggingKeys::isDisabledKey()
+{
+    return ASCIILiteral("isDisabled");
+}
+
 String DiagnosticLoggingKeys::noCurrentHistoryItemKey()
 {
     return ASCIILiteral("noCurrentHistoryItem");
@@ -266,6 +271,11 @@ String DiagnosticLoggingKeys::rawKey()
 String DiagnosticLoggingKeys::reasonKey()
 {
     return ASCIILiteral("reason");
+}
+
+String DiagnosticLoggingKeys::redirectKey()
+{
+    return ASCIILiteral("redirect");
 }
 
 String DiagnosticLoggingKeys::isLoadingKey()
@@ -353,6 +363,11 @@ String DiagnosticLoggingKeys::reloadKey()
     return ASCIILiteral("reload");
 }
 
+String DiagnosticLoggingKeys::replaceKey()
+{
+    return ASCIILiteral("replace");
+}
+
 String DiagnosticLoggingKeys::requestKey()
 {
     return ASCIILiteral("request");
@@ -405,7 +420,7 @@ String DiagnosticLoggingKeys::scriptKey()
 
 String DiagnosticLoggingKeys::sourceKey()
 {
-    return ASCIILiteral("sourceKey");
+    return ASCIILiteral("source");
 }
 
 String DiagnosticLoggingKeys::streamingMedia()
@@ -431,6 +446,11 @@ String DiagnosticLoggingKeys::synchronousMessageFailedKey()
 String DiagnosticLoggingKeys::uncacheableStatusCodeKey()
 {
     return ASCIILiteral("uncacheableStatusCode");
+}
+
+String DiagnosticLoggingKeys::underMemoryPressureKey()
+{
+    return ASCIILiteral("underMemoryPressure");
 }
 
 String DiagnosticLoggingKeys::unlikelyToReuseKey()

@@ -42,6 +42,7 @@
 #include "FrameLoader.h"
 #include "FrameSelection.h"
 #include "HTMLDetailsElement.h"
+#include "HTMLFormControlElement.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
@@ -536,7 +537,23 @@ static void appendChildrenToArray(AccessibilityObject* object, bool isForward, A
     size_t startIndex = isForward ? childrenSize : 0;
     size_t endIndex = isForward ? 0 : childrenSize;
 
+    // If the startObject is ignored, we should use an accessible sibling as a start element instead.
+    if (startObject && startObject->accessibilityIsIgnored() && startObject->isDescendantOfObject(object)) {
+        AccessibilityObject* parentObject = startObject->parentObject();
+        // Go up the parent chain to find the highest ancestor that's also being ignored.
+        while (parentObject && parentObject->accessibilityIsIgnored()) {
+            if (parentObject == object)
+                break;
+            startObject = parentObject;
+            parentObject = parentObject->parentObject();
+        }
+        // Get the un-ignored sibling based on the search direction, and update the searchPosition.
+        while (startObject && startObject->accessibilityIsIgnored())
+            startObject = isForward ? startObject->previousSibling() : startObject->nextSibling();
+    }
+    
     size_t searchPosition = startObject ? searchChildren.find(startObject) : WTF::notFound;
+    
     if (searchPosition != WTF::notFound) {
         if (isForward)
             endIndex = searchPosition + 1;
@@ -1585,7 +1602,7 @@ void AccessibilityObject::updateBackingStore()
     RefPtr<AccessibilityObject> protector(this);
 
     if (Document* document = this->document()) {
-        if (!document->view()->isInLayout())
+        if (!document->view()->isInRenderTreeLayout())
             document->updateLayoutIgnorePendingStylesheets();
     }
     
@@ -2753,6 +2770,20 @@ bool AccessibilityObject::isDOMHidden() const
     
     const RenderStyle& style = renderer->style();
     return style.display() == NONE || style.visibility() != VISIBLE;
+}
+
+bool AccessibilityObject::isShowingValidationMessage() const
+{
+    if (is<HTMLFormControlElement>(node()))
+        return downcast<HTMLFormControlElement>(*node()).isShowingValidationMessage();
+    return false;
+}
+
+String AccessibilityObject::validationMessage() const
+{
+    if (is<HTMLFormControlElement>(node()))
+        return downcast<HTMLFormControlElement>(*node()).validationMessage();
+    return String();
 }
 
 AccessibilityObjectInclusion AccessibilityObject::defaultObjectInclusion() const

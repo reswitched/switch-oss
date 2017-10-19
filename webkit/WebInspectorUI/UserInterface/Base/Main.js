@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2013-2014 Apple Inc. All rights reserved.
+ * Copyright (c) 2017 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -1664,8 +1665,8 @@ WebInspector._updateReloadToolbarButton = function()
 
 WebInspector._updateDownloadToolbarButton = function()
 {
-    // COMPATIBILITY (iOS 7): Page.archive did not exist yet.
-    if (!window.PageAgent || !PageAgent.archive || this.debuggableType !== WebInspector.DebuggableType.Web) {
+    // Not support Page.archieve.
+    if (true) {
         this._downloadToolbarButton.hidden = true;
         return;
     }

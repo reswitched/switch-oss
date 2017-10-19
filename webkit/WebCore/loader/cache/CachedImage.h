@@ -119,7 +119,7 @@ private:
     virtual bool decodedDataIsPurgeable() const override { return m_image && m_image->decodedDataIsPurgeable(); }
 
     // ImageObserver
-    virtual void decodedSizeChanged(const Image*, int delta) override;
+    virtual void decodedSizeChanged(const Image*, long long delta) override;
     virtual void didDraw(const Image*) override;
 
     virtual void animationAdvanced(const Image*) override;

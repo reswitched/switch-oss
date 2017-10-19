@@ -586,6 +586,9 @@ public:
     virtual AccessibilityObjectInclusion defaultObjectInclusion() const;
     bool accessibilityIsIgnoredByDefault() const;
     
+    bool isShowingValidationMessage() const;
+    String validationMessage() const;
+
     int blockquoteLevel() const;
     virtual int headingLevel() const { return 0; }
     virtual int tableLevel() const { return 0; }
@@ -648,6 +651,7 @@ public:
     virtual AccessibilityObject* nextSibling() const { return nullptr; }
     virtual AccessibilityObject* nextSiblingUnignored(int limit) const;
     virtual AccessibilityObject* previousSiblingUnignored(int limit) const;
+    
     virtual AccessibilityObject* parentObject() const = 0;
     virtual AccessibilityObject* parentObjectUnignored() const;
     virtual AccessibilityObject* parentObjectIfExists() const { return nullptr; }

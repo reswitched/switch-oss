@@ -280,7 +280,7 @@ can_use_msaa_compositor (cairo_gl_surface_t *surface,
     /* Multisampling OpenGL ES surfaces only maintain one multisampling
        framebuffer and thus must use the spans compositor to do non-antialiased
        rendering. */
-    if (((cairo_gl_context_t *) surface->base.device)->gl_flavor == CAIRO_GL_FLAVOR_ES
+    if (((cairo_gl_context_t *) surface->base.device)->gl_flavor == CAIRO_GL_FLAVOR_ES2
 	 && surface->supports_msaa
 	 && antialias == CAIRO_ANTIALIAS_NONE)
 	return FALSE;
@@ -582,6 +582,7 @@ _prevent_overlapping_strokes (cairo_gl_context_t 		*ctx,
 	scissor_was_enabled = glIsEnabled (GL_SCISSOR_TEST);
 	if (! scissor_was_enabled) {
 	    _cairo_path_fixed_approximate_stroke_extents (path, style, ctm,
+							  FALSE, /* is_vector */
 							  &stroke_extents);
 	    _cairo_gl_scissor_to_rectangle (setup->dst, &stroke_extents);
 	}

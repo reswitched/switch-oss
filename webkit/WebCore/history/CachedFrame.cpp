@@ -126,7 +126,7 @@ void CachedFrameBase::restore()
         m_document->page()->chrome().client().needTouchEvents(true);
 #endif
 
-    m_document->documentDidResumeFromPageCache();
+    m_document->resume();
 }
 
 CachedFrame::CachedFrame(Frame& frame)
@@ -145,20 +145,15 @@ CachedFrame::CachedFrame(Frame& frame)
     // Custom scrollbar renderers will get reattached when the document comes out of the page cache
     m_view->detachCustomScrollbars();
 
-    m_document->setInPageCache(true);
-    frame.loader().stopLoading(UnloadEventPolicyUnloadAndPageHide);
+    ASSERT(m_document->inPageCache());
 
     // Create the CachedFrames for all Frames in the FrameTree.
     for (Frame* child = frame.tree().firstChild(); child; child = child->tree().nextSibling())
         m_childFrames.append(std::make_unique<CachedFrame>(*child));
 
-    // Active DOM objects must be suspended before we cache the frame script data,
-    // but after we've fired the pagehide event, in case that creates more objects.
-    // Suspending must also happen after we've recursed over child frames, in case
-    // those create more objects.
-    m_document->documentWillSuspendForPageCache();
-    m_document->suspendScriptedAnimationControllerCallbacks();
-    m_document->suspendActiveDOMObjects(ActiveDOMObject::PageCache);
+    // Active DOM objects must be suspended before we cache the frame script data.
+    m_document->suspend();
+
     m_cachedFrameScriptData = std::make_unique<ScriptCachedFrameData>(frame);
 
     m_document->domWindow()->suspendForPageCache();
@@ -169,9 +164,6 @@ CachedFrame::CachedFrame(Frame& frame)
         frame.view()->clearBackingStores();
 
     frame.view()->clearScrollableAreas();
-
-    // documentWillSuspendForPageCache() can set up a layout timer on the FrameView, so clear timers after that.
-    frame.clearTimers();
 
     // Deconstruct the FrameTree, to restore it later.
     // We do this for two reasons:
@@ -266,11 +258,16 @@ void CachedFrame::destroy()
     // fully anyway, because the document won't be able to access its DOMWindow object (due to being frameless).
     m_document->removeAllEventListeners();
 
-    m_document->setInPageCache(false);
+    m_document->setPageCacheState(Document::NotInPageCache);
     m_document->prepareForDestruction();
 
     clear();
 }
+void CachedFrame::setHasInsecureContent(HasInsecureContent hasInsecureContent)
+{
+    m_hasInsecureContent = hasInsecureContent;
+}
+
 
 void CachedFrame::setCachedFramePlatformData(std::unique_ptr<CachedFramePlatformData> data)
 {

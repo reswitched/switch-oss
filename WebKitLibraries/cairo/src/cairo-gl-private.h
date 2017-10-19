@@ -103,10 +103,10 @@ typedef struct _cairo_gl_surface cairo_gl_surface_t;
 typedef enum cairo_gl_flavor {
     CAIRO_GL_FLAVOR_NONE = 0,
     CAIRO_GL_FLAVOR_DESKTOP = 1,
-    CAIRO_GL_FLAVOR_ES = 2
+    CAIRO_GL_FLAVOR_ES2 = 2
 } cairo_gl_flavor_t;
 
-/* Indices for vertex attributes used by BindAttribLocation etc */
+/* Indices for vertex attributes used by BindAttribLocation, etc. */
 enum {
     CAIRO_GL_VERTEX_ATTRIB_INDEX = 0,
     CAIRO_GL_COLOR_ATTRIB_INDEX  = 1,

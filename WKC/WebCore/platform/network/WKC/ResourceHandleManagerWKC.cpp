@@ -1762,7 +1762,9 @@ bool ResourceHandleManager::finalizingResourceHandle(ResourceHandle* job, Resour
 #else
                         if (!job->frame() || !job->frame()->loader().isHostedByObjectElement()) {
 #endif
-                            addHTTPCache(job, url, d->client()->resourceData(), d->m_response);
+                            if (!(d->m_msgDataResult == CURLE_PARTIAL_FILE && d->client()->shouldFailOnPartialFile())) {
+                                addHTTPCache(job, url, d->client()->resourceData(), d->m_response);
+                            }
                         }
                         break;
                     case 304:
@@ -1786,7 +1788,11 @@ bool ResourceHandleManager::finalizingResourceHandle(ResourceHandle* job, Resour
                     }
                 }
 #endif // ENABLE(WKC_HTTPCACHE)
-                d->client()->didFinishLoading(job, monotonicallyIncreasingTime());
+                if (d->m_msgDataResult == CURLE_PARTIAL_FILE && d->client()->shouldFailOnPartialFile()) {
+                    d->client()->didFail(job, ResourceError(String(), CURLE_PARTIAL_FILE, String(d->m_url), String("data receiving error"), 0));
+                } else {
+                    d->client()->didFinishLoading(job, monotonicallyIncreasingTime());
+                }
             }
             break;
         case CURLE_OPERATION_TIMEDOUT:
@@ -4956,6 +4962,18 @@ void
 ResourceHandleManager::notifyRequestRestartInNetworkThread()
 {
     m_threadRunning = false;
+}
+
+void
+ResourceHandleManager::lockThreadMutex()
+{
+    wkcMutexLockPeer(m_threadMutex);
+}
+
+void
+ResourceHandleManager::unlockThreadMutex()
+{
+    wkcMutexUnlockPeer(m_threadMutex);
 }
 
 // Thread entry point for ResourceHandleManager class

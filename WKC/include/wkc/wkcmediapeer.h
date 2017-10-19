@@ -902,6 +902,15 @@ Write the process for determining whether content is being seeked.
 WKC_PEER_API bool wkcMediaPlayerIsSeekingPeer(void* in_self);
 
 /**
+@brief Gets content playback speed factor
+@param in_self Media player instance
+@retval content playback speed factor
+@details
+The content playback speed factor (the playbackRate attribute value) must be returned as a return value.
+*/
+WKC_PEER_API double wkcMediaPlayerRatePeer(void* in_self);
+
+/**
 @brief Sets content playback speed factor
 @param in_self Media player instance
 @param in_rate Playback rate

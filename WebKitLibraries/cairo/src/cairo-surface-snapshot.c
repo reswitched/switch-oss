@@ -265,7 +265,8 @@ _cairo_surface_snapshot (cairo_surface_t *surface)
     _cairo_surface_init (&snapshot->base,
 			 &_cairo_surface_snapshot_backend,
 			 NULL, /* device */
-			 surface->content);
+			 surface->content,
+			 surface->is_vector);
     snapshot->base.type = surface->type;
 
     CAIRO_MUTEX_INIT (snapshot->mutex);

@@ -121,6 +121,7 @@ public:
     RefPtr<SharedBuffer> resourceData;
     String resourceMIMEType;
 #endif
+    FloatSize imageSize;
 };
 
 // For reading from the pasteboard.
@@ -184,6 +185,7 @@ public:
     void read(PasteboardWebContentReader&);
 
     void write(const PasteboardURL&);
+    virtual void writeTrustworthyWebURLsPboardType(const PasteboardURL&);
     void write(const PasteboardImage&);
     void write(const PasteboardWebContent&);
 

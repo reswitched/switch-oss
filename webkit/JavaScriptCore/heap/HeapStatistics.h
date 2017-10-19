@@ -42,7 +42,7 @@ public:
     static void recordGCPauseTime(double start, double end);
     static size_t parseMemoryAmount(char*);
 
-    static void showObjectStatistics(Heap*);
+    static void dumpObjectStatistics(Heap*);
 
     static const size_t KB = 1024;
     static const size_t MB = 1024 * KB;

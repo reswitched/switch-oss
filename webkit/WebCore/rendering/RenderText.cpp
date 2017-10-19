@@ -66,13 +66,13 @@ using namespace Unicode;
 namespace WebCore {
 
 struct SameSizeAsRenderText : public RenderObject {
+    void* pointers[2];
     uint32_t bitfields : 16;
 #if ENABLE(IOS_TEXT_AUTOSIZING)
     float candidateTextSize;
 #endif
     float widths[4];
     String text;
-    void* pointers[2];
 };
 
 COMPILE_ASSERT(sizeof(RenderText) == sizeof(SameSizeAsRenderText), RenderText_should_stay_small);
@@ -1161,7 +1161,7 @@ void RenderText::setText(const String& text, bool force)
         downcast<RenderBlockFlow>(*parent()).invalidateLineLayoutPath();
     
     if (AXObjectCache* cache = document().existingAXObjectCache())
-        cache->textChanged(this);
+        cache->deferTextChangedIfNeeded(textNode());
 }
 
 String RenderText::textWithoutConvertingBackslashToYenSymbol() const

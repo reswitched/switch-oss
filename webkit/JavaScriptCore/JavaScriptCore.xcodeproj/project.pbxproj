@@ -1124,6 +1124,8 @@
 		86F3EEBF168CDE930077B92A /* ObjcRuntimeExtras.h in Headers */ = {isa = PBXBuildFile; fileRef = 86F3EEB616855A5B0077B92A /* ObjcRuntimeExtras.h */; };
 		86FA9E91142BBB2E001773B7 /* JSBoundFunction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 86FA9E8F142BBB2D001773B7 /* JSBoundFunction.cpp */; };
 		86FA9E92142BBB2E001773B7 /* JSBoundFunction.h in Headers */ = {isa = PBXBuildFile; fileRef = 86FA9E90142BBB2E001773B7 /* JSBoundFunction.h */; };
+		8B0F424C1ABD6DE2003917EA /* JSArrowFunction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8B0F424B1ABD6DE2003917EA /* JSArrowFunction.cpp */; };
+		8B14186D1B62527F00FB2068 /* JSArrowFunction.h in Headers */ = {isa = PBXBuildFile; fileRef = 8B0F424A1ABD6D2F003917EA /* JSArrowFunction.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		90213E3D123A40C200D422F3 /* MemoryStatistics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 90213E3B123A40C200D422F3 /* MemoryStatistics.cpp */; };
 		90213E3E123A40C200D422F3 /* MemoryStatistics.h in Headers */ = {isa = PBXBuildFile; fileRef = 90213E3C123A40C200D422F3 /* MemoryStatistics.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		93052C340FB792190048FDC3 /* ParserArena.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 93052C320FB792190048FDC3 /* ParserArena.cpp */; };
@@ -1168,6 +1170,8 @@
 		99E45A2618A1B2590026D88F /* EncodedValue.h in Headers */ = {isa = PBXBuildFile; fileRef = 99E45A2118A1B2590026D88F /* EncodedValue.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		99E45A2718A1B2590026D88F /* InputCursor.h in Headers */ = {isa = PBXBuildFile; fileRef = 99E45A2218A1B2590026D88F /* InputCursor.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		99E45A2818A1B2590026D88F /* NondeterministicInput.h in Headers */ = {isa = PBXBuildFile; fileRef = 99E45A2318A1B2590026D88F /* NondeterministicInput.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		99F1A6FE1B8E6D9400463B26 /* InspectorFrontendRouter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 99F1A6FC1B8E6D9400463B26 /* InspectorFrontendRouter.cpp */; };
+		99F1A7011B98FBEC00463B26 /* InspectorFrontendRouter.h in Headers */ = {isa = PBXBuildFile; fileRef = 99F1A7001B98FBEC00463B26 /* InspectorFrontendRouter.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		9E729407190F01A5001A91B5 /* InitializeThreading.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E178636C0D9BEEC300D74E75 /* InitializeThreading.cpp */; };
 		9E729408190F021E001A91B5 /* InitializeLLVMPOSIX.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0FCEFAC51805E75500472CE4 /* InitializeLLVMPOSIX.cpp */; };
 		9E72940B190F0514001A91B5 /* BundlePath.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E72940A190F0514001A91B5 /* BundlePath.h */; };
@@ -2894,6 +2898,8 @@
 		86F75EFD151C062F007C9BA3 /* RegExpMatchesArray.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RegExpMatchesArray.cpp; sourceTree = "<group>"; };
 		86FA9E8F142BBB2D001773B7 /* JSBoundFunction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = JSBoundFunction.cpp; sourceTree = "<group>"; };
 		86FA9E90142BBB2E001773B7 /* JSBoundFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSBoundFunction.h; sourceTree = "<group>"; };
+		8B0F424A1ABD6D2F003917EA /* JSArrowFunction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JSArrowFunction.h; sourceTree = "<group>"; };
+		8B0F424B1ABD6DE2003917EA /* JSArrowFunction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = JSArrowFunction.cpp; sourceTree = "<group>"; };
 		90213E3B123A40C200D422F3 /* MemoryStatistics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemoryStatistics.cpp; sourceTree = "<group>"; };
 		90213E3C123A40C200D422F3 /* MemoryStatistics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryStatistics.h; sourceTree = "<group>"; };
 		93052C320FB792190048FDC3 /* ParserArena.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParserArena.cpp; sourceTree = "<group>"; };
@@ -2954,6 +2960,8 @@
 		99E45A2118A1B2590026D88F /* EncodedValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EncodedValue.h; sourceTree = "<group>"; };
 		99E45A2218A1B2590026D88F /* InputCursor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InputCursor.h; sourceTree = "<group>"; };
 		99E45A2318A1B2590026D88F /* NondeterministicInput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NondeterministicInput.h; sourceTree = "<group>"; };
+		99F1A6FC1B8E6D9400463B26 /* InspectorFrontendRouter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = InspectorFrontendRouter.cpp; sourceTree = "<group>"; };
+		99F1A7001B98FBEC00463B26 /* InspectorFrontendRouter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InspectorFrontendRouter.h; sourceTree = "<group>"; };
 		9B4954E81A6640DB002815A6 /* ParserFunctionInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ParserFunctionInfo.h; sourceTree = "<group>"; };
 		9E729409190F0306001A91B5 /* BundlePath.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = BundlePath.mm; sourceTree = "<group>"; };
 		9E72940A190F0514001A91B5 /* BundlePath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BundlePath.h; sourceTree = "<group>"; };
@@ -4513,6 +4521,8 @@
 				A7BDAEC517F4EA1400F6140C /* JSArrayIterator.h */,
 				86FA9E8F142BBB2D001773B7 /* JSBoundFunction.cpp */,
 				86FA9E90142BBB2E001773B7 /* JSBoundFunction.h */,
+				8B0F424B1ABD6DE2003917EA /* JSArrowFunction.cpp */,
+				8B0F424A1ABD6D2F003917EA /* JSArrowFunction.h */,
 				657CF45619BF6662004ACBF2 /* JSCallee.cpp */,
 				657CF45719BF6662004ACBF2 /* JSCallee.h */,
 				0FD9497E1A97DB9600E28966 /* JSCatchScope.cpp */,
@@ -5465,6 +5475,7 @@
 		A5BA15DF1823409200A82E69 /* inspector */ = {
 			isa = PBXGroup;
 			children = (
+				99F1A7001B98FBEC00463B26 /* InspectorFrontendRouter.h */,
 				A513E5CC185FB992007E95AD /* agents */,
 				A5EA70E319F5B0E20098F5EC /* augmentable */,
 				A532438D185696CA002ED692 /* protocol */,
@@ -5496,6 +5507,7 @@
 				A593CF7B1840360300BFCE27 /* InspectorBackendDispatcher.h */,
 				A5D0A1BA1862301B00C7B496 /* InspectorEnvironment.h */,
 				A5945594182479EB00CC3843 /* InspectorFrontendChannel.h */,
+				99F1A6FC1B8E6D9400463B26 /* InspectorFrontendRouter.cpp */,
 				A55D93AB18514F7900400DED /* InspectorProtocolTypes.h */,
 				A593CF801840377100BFCE27 /* InspectorValues.cpp */,
 				A593CF811840377100BFCE27 /* InspectorValues.h */,
@@ -5659,6 +5671,7 @@
 				A5EA70EC19F5B3EA0098F5EC /* generate_cpp_alternate_backend_dispatcher_header.py in Headers */,
 				C4F4B6F31A05C944005CAB76 /* cpp_generator_templates.py in Headers */,
 				A5EF9B151A1D43FA00702E90 /* generate_cpp_backend_dispatcher_implementation.py in Headers */,
+				99F1A7011B98FBEC00463B26 /* InspectorFrontendRouter.h in Headers */,
 				FE384EE81ADDB7AD0055DE2C /* JSDollarVMPrototype.h in Headers */,
 				FE384EE61ADDB7AD0055DE2C /* JSDollarVM.h in Headers */,
 				6AD2CB4D19B9140100065719 /* DebuggerEvalEnabler.h in Headers */,
@@ -6464,6 +6477,7 @@
 				A503FA26188EFFFD00110F14 /* ScriptDebugServer.h in Headers */,
 				A55D93A6185012A800400DED /* ScriptFunctionCall.h in Headers */,
 				A54CF2FA184EAEDA00237F19 /* ScriptObject.h in Headers */,
+				8B14186D1B62527F00FB2068 /* JSArrowFunction.h in Headers */,
 				A54CF2F6184EAB2400237F19 /* ScriptValue.h in Headers */,
 				A7299DA617D12858005F5FF9 /* SetConstructor.h in Headers */,
 				A790DD6E182F499700588807 /* SetIteratorPrototype.h in Headers */,
@@ -7306,6 +7320,7 @@
 				0FD8A31B17D51F2200CA2C40 /* FTLOSREntry.cpp in Sources */,
 				0F235BDC17178E1C00690C7F /* FTLOSRExit.cpp in Sources */,
 				0F235BDF17178E1C00690C7F /* FTLOSRExitCompiler.cpp in Sources */,
+				8B0F424C1ABD6DE2003917EA /* JSArrowFunction.cpp in Sources */,
 				0FEA0A2A1709629600BB722C /* FTLOutput.cpp in Sources */,
 				0F485329187DFDEC0083B687 /* FTLRecoveryOpcode.cpp in Sources */,
 				0F6B1CC31862C47800845D97 /* FTLRegisterAtOffset.cpp in Sources */,
@@ -7691,6 +7706,7 @@
 				932F5BDD0822A1C700736975 /* jsc.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
+				99F1A6FE1B8E6D9400463B26 /* InspectorFrontendRouter.cpp in Sources */,
 		};
 /* End PBXSourcesBuildPhase section */
 

@@ -94,69 +94,69 @@ bool MediaControlsWKC::initializeControls(Document& document)
 
     RefPtr<MediaControlPlayButtonElement> playButton = MediaControlPlayButtonElement::create(document);
     m_playButton = playButton.get();
-    panel->appendChild(playButton.release(), exceptionCode);
+    panel->appendChild(playButton.releaseNonNull(), exceptionCode);
     if (exceptionCode)
         return false;
 
     RefPtr<MediaControlTimelineElement> timeline = MediaControlTimelineElement::create(document, this);
     m_timeline = timeline.get();
-    panel->appendChild(timeline.release(), exceptionCode);
+    panel->appendChild(timeline.releaseNonNull(), exceptionCode);
     if (exceptionCode)
         return false;
 
     RefPtr<MediaControlCurrentTimeDisplayElement> currentTimeDisplay = MediaControlCurrentTimeDisplayElement::create(document);
     m_currentTimeDisplay = currentTimeDisplay.get();
     m_currentTimeDisplay->hide();
-    panel->appendChild(currentTimeDisplay.release(), exceptionCode);
+    panel->appendChild(currentTimeDisplay.releaseNonNull(), exceptionCode);
     if (exceptionCode)
         return false;
 
     RefPtr<MediaControlTimeRemainingDisplayElement> durationDisplay = MediaControlTimeRemainingDisplayElement::create(document);
     m_durationDisplay = durationDisplay.get();
-    panel->appendChild(durationDisplay.release(), exceptionCode);
+    panel->appendChild(durationDisplay.releaseNonNull(), exceptionCode);
     if (exceptionCode)
         return false;
 
     if (document.page()->theme().supportsClosedCaptioning()) {
         RefPtr<MediaControlToggleClosedCaptionsButtonElement> toggleClosedCaptionsButton = MediaControlToggleClosedCaptionsButtonElement::create(document, this);
         m_toggleClosedCaptionsButton = toggleClosedCaptionsButton.get();
-        panel->appendChild(toggleClosedCaptionsButton.release(), exceptionCode);
+        panel->appendChild(toggleClosedCaptionsButton.releaseNonNull(), exceptionCode);
         if (exceptionCode)
             return false;
     }
 
     RefPtr<MediaControlFullscreenButtonElement> fullscreenButton = MediaControlFullscreenButtonElement::create(document);
     m_fullScreenButton = fullscreenButton.get();
-    panel->appendChild(fullscreenButton.release(), exceptionCode);
+    panel->appendChild(fullscreenButton.releaseNonNull(), exceptionCode);
     if (exceptionCode)
         return false;
 
     RefPtr<MediaControlPanelMuteButtonElement> panelMuteButton = MediaControlPanelMuteButtonElement::create(document, this);
     m_panelMuteButton = panelMuteButton.get();
-    panel->appendChild(panelMuteButton.release(), exceptionCode);
+    panel->appendChild(panelMuteButton.releaseNonNull(), exceptionCode);
     if (exceptionCode)
         return false;
 
     RefPtr<MediaControlVolumeSliderContainerElement> sliderContainer = MediaControlVolumeSliderContainerElement::create(document);
     m_volumeSliderContainer = sliderContainer.get();
-    panel->appendChild(sliderContainer.release(), exceptionCode);
+    panel->appendChild(sliderContainer.releaseNonNull(), exceptionCode);
     if (exceptionCode)
         return false;
 
     RefPtr<MediaControlPanelVolumeSliderElement> slider = MediaControlPanelVolumeSliderElement::create(document);
     m_volumeSlider = slider.get();
     m_volumeSlider->setClearMutedOnUserInteraction(true);
-    m_volumeSliderContainer->appendChild(slider.release(), exceptionCode);
+    m_volumeSliderContainer->appendChild(slider.releaseNonNull(), exceptionCode);
     if (exceptionCode)
         return false;
 
     m_panel = panel.get();
-    enclosure->appendChild(panel.release(), exceptionCode);
+    enclosure->appendChild(panel.releaseNonNull(), exceptionCode);
     if (exceptionCode)
         return false;
 
     m_enclosure = enclosure.get();
-    appendChild(enclosure.release(), exceptionCode);
+    appendChild(enclosure.releaseNonNull(), exceptionCode);
     if (exceptionCode)
         return false;
 
@@ -252,7 +252,7 @@ void MediaControlsWKC::createTextTrackDisplay()
         m_textDisplayContainer->setMediaController(m_mediaController);
 
     // Insert it before the first controller element so it always displays behind the controls.
-    insertBefore(textDisplayContainer.release(), m_enclosure, ASSERT_NO_EXCEPTION);
+    insertBefore(textDisplayContainer.releaseNonNull(), m_enclosure, ASSERT_NO_EXCEPTION);
 }
 #endif
 

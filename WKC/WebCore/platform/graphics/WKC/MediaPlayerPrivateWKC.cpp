@@ -449,6 +449,12 @@ MediaPlayerPrivate::setEndTime(float in_time)
     (void)wkcMediaPlayerSetEndTimePeer(m_peer, in_time);
 }
 
+double
+MediaPlayerPrivate::rate() const
+{
+    return wkcMediaPlayerRatePeer(m_peer);
+}
+
 void
 MediaPlayerPrivate::setRate(float rate)
 {

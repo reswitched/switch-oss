@@ -47,6 +47,7 @@ public:
 
     virtual void didCreateFrontendAndBackend(FrontendChannel*, BackendDispatcher*) = 0;
     virtual void willDestroyFrontendAndBackend(DisconnectReason) = 0;
+    virtual void discardValues() { }
     virtual void discardAgent() { }
 
 protected:

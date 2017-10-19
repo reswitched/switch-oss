@@ -26,6 +26,7 @@
 #include "config.h"
 #include "LLIntData.h"
 #include "BytecodeConventions.h"
+#include "CodeBlock.h"
 #include "CodeType.h"
 #include "Instruction.h"
 #include "JSScope.h"
@@ -135,9 +136,19 @@ void Data::performAssertions(VM& vm)
 #elif CPU(X86_64) && (OS(WINDOWS) || OS(WINDOWS_WKC))
     ASSERT(maxFrameExtentForSlowPathCall == 64);
 #endif
+
+#if !ENABLE(JIT) || USE(JSVALUE32_64)
+    ASSERT(!CodeBlock::llintBaselineCalleeSaveSpaceAsVirtualRegisters());
+#elif (CPU(X86_64) && !OS(WINDOWS))  || CPU(ARM64)
+    ASSERT(CodeBlock::llintBaselineCalleeSaveSpaceAsVirtualRegisters() == 3);
+#elif (CPU(X86_64) && OS(WINDOWS))
+    ASSERT(CodeBlock::llintBaselineCalleeSaveSpaceAsVirtualRegisters() == 3);
+#endif
+    
     ASSERT(StringType == 6);
     ASSERT(ObjectType == 18);
     ASSERT(FinalObjectType == 19);
+    ASSERT(ArrayType == 29);
     ASSERT(MasqueradesAsUndefined == 1);
     ASSERT(ImplementsHasInstance == 2);
     ASSERT(ImplementsDefaultHasInstance == 8);

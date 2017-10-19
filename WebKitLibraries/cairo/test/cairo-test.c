@@ -915,6 +915,10 @@ REPEAT:
     cairo_paint (cr);
     cairo_restore (cr);
 
+    cairo_select_font_face (cr, CAIRO_TEST_FONT_FAMILY " Sans",
+			    CAIRO_FONT_SLANT_NORMAL,
+			    CAIRO_FONT_WEIGHT_NORMAL);
+    
     /* Set all components of font_options to avoid backend differences
      * and reduce number of needed reference images. */
     font_options = cairo_font_options_create ();

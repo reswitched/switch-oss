@@ -37,6 +37,7 @@
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>
+#include <wtf/ThreadSafeRefCounted.h>
 
 namespace WebCore {
 
@@ -44,10 +45,11 @@ namespace WebCore {
     class ScriptExecutionContext;
     class Worker;
 
-    class WorkerMessagingProxy : public WorkerGlobalScopeProxy, public WorkerObjectProxy, public WorkerLoaderProxy {
+    class WorkerMessagingProxy : public ThreadSafeRefCounted<WorkerMessagingProxy>, public WorkerGlobalScopeProxy, public WorkerObjectProxy, public WorkerLoaderProxy {
         WTF_MAKE_NONCOPYABLE(WorkerMessagingProxy); WTF_MAKE_FAST_ALLOCATED;
     public:
         explicit WorkerMessagingProxy(Worker*);
+        virtual ~WorkerMessagingProxy();
 
         // Implementations of WorkerGlobalScopeProxy.
         // (Only use these methods in the worker object thread.)
@@ -83,9 +85,6 @@ namespace WebCore {
 
         // Only use this method on the worker object thread.
         bool askedToTerminate() const { return m_askedToTerminate; }
-
-    protected:
-        virtual ~WorkerMessagingProxy();
 
     private:
         friend class MessageWorkerTask;

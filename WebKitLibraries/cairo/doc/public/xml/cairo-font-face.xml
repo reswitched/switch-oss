@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-cairo-font-face-t.top_of_page">cairo_font_face_t</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>cairo_font_face_t</refname>
@@ -56,11 +54,6 @@
 </tgroup>
 </informaltable>
 </refsect1>
-<refsect1 id="cairo-cairo-font-face-t.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
-</refsect1>
 
 
 <refsect1 id="cairo-cairo-font-face-t.description" role="desc">
@@ -87,9 +80,9 @@ cairo_font_face_reference (<parameter><link linkend="cairo-font-face-t"><type>ca
 <parameter>font_face</parameter>
  from being destroyed until a matching call to
 <link linkend="cairo-font-face-destroy"><function>cairo_font_face_destroy()</function></link> is made.</para>
-<para>The number of references to a <link linkend="cairo-font-face-t"><type>cairo_font_face_t</type></link> can be get using
-<link linkend="cairo-font-face-get-reference-count"><function>cairo_font_face_get_reference_count()</function></link>.</para>
-<refsect3 role="parameters">
+<para>Use <link linkend="cairo-font-face-get-reference-count"><function>cairo_font_face_get_reference_count()</function></link> to get the number of
+references to a <link linkend="cairo-font-face-t"><type>cairo_font_face_t</type></link>.</para>
+<refsect3 id="cairo-font-face-reference.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -102,11 +95,10 @@ cairo_font_face_reference (<parameter><link linkend="cairo-font-face-t"><type>ca
 function does nothing).</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-font-face-reference.returns" role="returns">
 <title>Returns</title>
 <para> the referenced <link linkend="cairo-font-face-t"><type>cairo_font_face_t</type></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-font-face-destroy" role="function" condition="since:1.0">
 <title>cairo_font_face_destroy&#160;()</title>
 <indexterm zone="cairo-font-face-destroy" role="1.0"><primary sortas="font_face_destroy">cairo_font_face_destroy</primary></indexterm>
@@ -117,7 +109,7 @@ cairo_font_face_destroy (<parameter><link linkend="cairo-font-face-t"><type>cair
 is zero, then <parameter>font_face</parameter>
  and all associated resources are freed.
 See <link linkend="cairo-font-face-reference"><function>cairo_font_face_reference()</function></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-font-face-destroy.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -129,7 +121,7 @@ See <link linkend="cairo-font-face-reference"><function>cairo_font_face_referenc
 <entry role="parameter_description"><para>a <link linkend="cairo-font-face-t"><type>cairo_font_face_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-font-face-status" role="function" condition="since:1.0">
 <title>cairo_font_face_status&#160;()</title>
 <indexterm zone="cairo-font-face-status" role="1.0"><primary sortas="font_face_status">cairo_font_face_status</primary></indexterm>
@@ -137,7 +129,7 @@ See <link linkend="cairo-font-face-reference"><function>cairo_font_face_referenc
 cairo_font_face_status (<parameter><link linkend="cairo-font-face-t"><type>cairo_font_face_t</type></link> *font_face</parameter>);</programlisting>
 <para>Checks whether an error has previously occurred for this
 font face</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-font-face-status.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -149,12 +141,11 @@ font face</para>
 <entry role="parameter_description"><para>a <link linkend="cairo-font-face-t"><type>cairo_font_face_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-font-face-status.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> or another error such as
 <link linkend="CAIRO-STATUS-NO-MEMORY:CAPS"><literal>CAIRO_STATUS_NO_MEMORY</literal></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-font-face-get-type" role="function" condition="since:1.2">
 <title>cairo_font_face_get_type&#160;()</title>
 <indexterm zone="cairo-font-face-get-type" role="1.2"><primary sortas="font_face_get_type">cairo_font_face_get_type</primary></indexterm>
@@ -162,7 +153,7 @@ font face</para>
 cairo_font_face_get_type (<parameter><link linkend="cairo-font-face-t"><type>cairo_font_face_t</type></link> *font_face</parameter>);</programlisting>
 <para>This function returns the type of the backend used to create
 a font face. See <link linkend="cairo-font-type-t"><type>cairo_font_type_t</type></link> for available types.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-font-face-get-type.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -174,12 +165,11 @@ a font face. See <link linkend="cairo-font-type-t"><type>cairo_font_type_t</type
 <entry role="parameter_description"><para>a font face</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-font-face-get-type.returns" role="returns">
 <title>Returns</title>
 <para> The type of <parameter>font_face</parameter>
 .</para>
-<para></para>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 <refsect2 id="cairo-font-face-get-reference-count" role="function" condition="since:1.4">
 <title>cairo_font_face_get_reference_count&#160;()</title>
 <indexterm zone="cairo-font-face-get-reference-count" role="1.4"><primary sortas="font_face_get_reference_count">cairo_font_face_get_reference_count</primary></indexterm>
@@ -187,7 +177,7 @@ a font face. See <link linkend="cairo-font-type-t"><type>cairo_font_type_t</type
 cairo_font_face_get_reference_count (<parameter><link linkend="cairo-font-face-t"><type>cairo_font_face_t</type></link> *font_face</parameter>);</programlisting>
 <para>Returns the current reference count of <parameter>font_face</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-font-face-get-reference-count.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -199,13 +189,12 @@ cairo_font_face_get_reference_count (<parameter><link linkend="cairo-font-face-t
 <entry role="parameter_description"><para>a <link linkend="cairo-font-face-t"><type>cairo_font_face_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-font-face-get-reference-count.returns" role="returns">
 <title>Returns</title>
 <para> the current reference count of <parameter>font_face</parameter>
 .  If the
 object is a nil object, 0 will be returned.</para>
-<para></para>
-</refsect3><para role="since">Since 1.4</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.4">1.4</link></para></refsect2>
 <refsect2 id="cairo-font-face-set-user-data" role="function" condition="since:1.0">
 <title>cairo_font_face_set_user_data&#160;()</title>
 <indexterm zone="cairo-font-face-set-user-data" role="1.0"><primary sortas="font_face_set_user_data">cairo_font_face_set_user_data</primary></indexterm>
@@ -219,7 +208,7 @@ cairo_font_face_set_user_data (<parameter><link linkend="cairo-font-face-t"><typ
 call this function with the key that was used to set it and <link linkend="NULL:CAPS"><literal>NULL</literal></link>
 for <parameter>data</parameter>
 .</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-font-face-set-user-data.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -242,12 +231,11 @@ font face is destroyed or when new user data is attached using the
 same key.</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-font-face-set-user-data.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> or <link linkend="CAIRO-STATUS-NO-MEMORY:CAPS"><literal>CAIRO_STATUS_NO_MEMORY</literal></link> if a
 slot could not be allocated for the user data.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-font-face-get-user-data" role="function" condition="since:1.0">
 <title>cairo_font_face_get_user_data&#160;()</title>
 <indexterm zone="cairo-font-face-get-user-data" role="1.0"><primary sortas="font_face_get_user_data">cairo_font_face_get_user_data</primary></indexterm>
@@ -258,7 +246,7 @@ cairo_font_face_get_user_data (<parameter><link linkend="cairo-font-face-t"><typ
  using the specified
 key.  If no user data has been attached with the given key this
 function returns <link linkend="NULL:CAPS"><literal>NULL</literal></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-font-face-get-user-data.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -274,11 +262,10 @@ function returns <link linkend="NULL:CAPS"><literal>NULL</literal></link>.</para
 attached to</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-font-face-get-user-data.returns" role="returns">
 <title>Returns</title>
 <para> the user data previously attached or <link linkend="NULL:CAPS"><literal>NULL</literal></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-cairo-font-face-t.other_details" role="details">
@@ -299,7 +286,7 @@ directions) . A font face can be set on a <link linkend="cairo-t"><type>cairo_t<
 font face can be queried using <link linkend="cairo-font-face-get-type"><function>cairo_font_face_get_type()</function></link>.</para>
 <para>Memory management of <link linkend="cairo-font-face-t"><type>cairo_font_face_t</type></link> is done with
 <link linkend="cairo-font-face-reference"><function>cairo_font_face_reference()</function></link> and <link linkend="cairo-font-face-destroy"><function>cairo_font_face_destroy()</function></link>.</para>
-<para role="since">Since 1.0</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-font-type-t" role="enum" condition="since:1.2">
 <title>enum cairo_font_type_t</title>
 <indexterm zone="cairo-font-type-t" role="1.2"><primary sortas="font_type_t">cairo_font_type_t</primary></indexterm>
@@ -324,7 +311,7 @@ such as <link linkend="cairo-ft-scaled-font-lock-face"><function>cairo_ft_scaled
 <para>The behavior of calling a type-specific function with a scaled font
 of the wrong type is undefined.</para>
 <para>New entries may be added in future versions.</para>
-<refsect3 role="enum_members">
+<refsect3 id="cairo-font-type-t.members" role="enum_members">
 <title>Members</title>
 <informaltable role="enum_members_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -359,7 +346,7 @@ of the wrong type is undefined.</para>
 <entry role="enum_member_annotations"></entry>
 </row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.2</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-cairo-font-face-t.see-also">

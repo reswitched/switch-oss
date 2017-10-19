@@ -644,7 +644,6 @@ _cairo_clip_contains_extents (const cairo_clip_t *clip,
 void
 _cairo_debug_print_clip (FILE *stream, const cairo_clip_t *clip)
 {
-#ifndef __WKC__
     int i;
 
     if (clip == NULL) {
@@ -683,7 +682,6 @@ _cairo_debug_print_clip (FILE *stream, const cairo_clip_t *clip)
 	    fprintf (stream, "\n");
 	} while ((clip_path = clip_path->prev) != NULL);
     }
-#endif
 }
 
 const cairo_rectangle_int_t *

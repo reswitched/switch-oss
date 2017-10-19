@@ -11,7 +11,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/src \
 cairo_sphinx_la_SOURCES = fdr.c
 cairo_sphinx_la_CPPFLAGS = $(AM_CPPFLAGS)
 cairo_sphinx_la_CFLAGS = $(CAIRO_CFLAGS)
-cairo_sphinx_la_LDFLAGS = -module -no-undefined
+cairo_sphinx_la_LDFLAGS = -module -no-undefined -avoid-version
 if CAIRO_HAS_DL
 cairo_sphinx_la_LIBADD = -ldl
 endif

@@ -389,7 +389,8 @@ _cairo_gl_surface_init (cairo_device_t *device,
     _cairo_surface_init (&surface->base,
 			 &_cairo_gl_surface_backend,
 			 device,
-			 content);
+			 content,
+			 FALSE); /* is_vector */
 
     surface->width = width;
     surface->height = height;
@@ -921,7 +922,7 @@ _cairo_gl_surface_draw_image (cairo_gl_surface_t *dst,
 	 *     alignment constraint
 	 */
 	if (src->stride < 0 ||
-	    (ctx->gl_flavor == CAIRO_GL_FLAVOR_ES &&
+	    (ctx->gl_flavor == CAIRO_GL_FLAVOR_ES2 &&
 	     (src->width * cpp < src->stride - 3 ||
 	      width != src->width)))
 	{
@@ -1098,7 +1099,7 @@ _cairo_gl_surface_map_to_image (void      *abstract_surface,
 	return NULL;
     }
 
-    if (_cairo_gl_surface_flavor (surface) == CAIRO_GL_FLAVOR_ES) {
+    if (_cairo_gl_surface_flavor (surface) == CAIRO_GL_FLAVOR_ES2) {
 	/* If only RGBA is supported, we must download data in a compatible
 	 * format. This means that pixman will convert the data on the CPU when
 	 * interacting with other image surfaces. For ALPHA, GLES2 does not
@@ -1318,7 +1319,7 @@ _cairo_gl_surface_resolve_multisampling (cairo_gl_surface_t *surface)
 	return CAIRO_INT_STATUS_SUCCESS;
 
     /* GLES surfaces do not need explicit resolution. */
-    if (((cairo_gl_context_t *) surface->base.device)->gl_flavor == CAIRO_GL_FLAVOR_ES)
+    if (((cairo_gl_context_t *) surface->base.device)->gl_flavor == CAIRO_GL_FLAVOR_ES2)
 	return CAIRO_INT_STATUS_SUCCESS;
 
     if (! _cairo_gl_surface_is_texture (surface))

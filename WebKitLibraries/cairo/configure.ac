@@ -296,7 +296,7 @@ CAIRO_ENABLE_SURFACE_BACKEND(beos, BeOS/Zeta, no, [
 dnl ===========================================================================
 
 CAIRO_ENABLE_SURFACE_BACKEND(drm, DRM, no, [
-  drm_REQUIRES="libudev >= 136"
+  drm_REQUIRES="libudev >= 136, libdrm >= 2.4"
   PKG_CHECK_MODULES(drm, $drm_REQUIRES, ,
    [use_drm="no (requires $drm_REQUIRES, udev is available from git://git.kernel.org/pub/scm/linux/hotplug/udev.git)"])
 ])
@@ -470,6 +470,9 @@ dnl ===========================================================================
 any2ppm_cs=no
 CAIRO_ENABLE_SURFACE_BACKEND(script, script, yes, [
   any2ppm_cs=yes
+  # The script backend requires zlib.
+  use_script=$have_libz
+  script_NONPKGCONFIG_LIBS=-lz
 ])
 
 dnl ===========================================================================

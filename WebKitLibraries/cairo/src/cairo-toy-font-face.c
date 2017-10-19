@@ -44,11 +44,6 @@
 #include "cairoint.h"
 #include "cairo-error-private.h"
 
-#ifdef __ARMCC_VERSION
-extern char* wkc_strdup(const char*);
-#define strdup wkc_strdup
-#endif
-
 
 static const cairo_font_face_t _cairo_font_face_null_pointer = {
     { 0 },				/* hash_entry */

@@ -22,6 +22,7 @@
 
 #include "DataObjectGtk.h"
 #include "DragData.h"
+#include "NotImplemented.h"
 #include "Image.h"
 #include "URL.h"
 #include "PasteboardHelper.h"
@@ -175,6 +176,11 @@ void Pasteboard::write(const PasteboardImage& pasteboardImage)
 
     if (m_gtkClipboard)
         PasteboardHelper::defaultPasteboardHelper()->writeClipboardContents(m_gtkClipboard);
+}
+
+void Pasteboard::writeTrustworthyWebURLsPboardType(const PasteboardURL&)
+{
+    notImplemented();
 }
 
 void Pasteboard::write(const PasteboardWebContent& pasteboardContent)

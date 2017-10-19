@@ -111,8 +111,15 @@ private:
         case GetMyArgumentByVal:
         case ForwardVarargs:
         case CallForwardVarargs:
-        case ConstructForwardVarargs: {
-            InlineCallFrame* inlineCallFrame = m_node->child1()->origin.semantic.inlineCallFrame;
+        case ConstructForwardVarargs:
+        case TailCallForwardVarargs:
+        case TailCallForwardVarargsInlinedCaller: {
+
+            InlineCallFrame* inlineCallFrame;
+            if (m_node->argumentsChild())
+                inlineCallFrame = m_node->argumentsChild()->origin.semantic.inlineCallFrame;
+            else
+                inlineCallFrame = m_node->origin.semantic.inlineCallFrame;
             if (!inlineCallFrame) {
                 // Read the outermost arguments and argument count.
                 for (unsigned i = m_graph.m_codeBlock->numParameters(); i-- > 1;)
@@ -138,7 +145,7 @@ private:
                 m_read(VirtualRegister(i));
         
             // Read all of the inline arguments and call frame headers that we didn't already capture.
-            for (InlineCallFrame* inlineCallFrame = m_node->origin.semantic.inlineCallFrame; inlineCallFrame; inlineCallFrame = inlineCallFrame->caller.inlineCallFrame) {
+            for (InlineCallFrame* inlineCallFrame = m_node->origin.semantic.inlineCallFrame; inlineCallFrame; inlineCallFrame = inlineCallFrame->getCallerInlineFrameSkippingDeadFrames()) {
                 for (unsigned i = inlineCallFrame->arguments.size(); i-- > 1;)
                     m_read(VirtualRegister(inlineCallFrame->stackOffset + virtualRegisterForArgument(i).offset()));
                 if (inlineCallFrame->isClosureCall)

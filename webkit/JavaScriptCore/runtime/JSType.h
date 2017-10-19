@@ -58,6 +58,7 @@ enum JSType : uint8_t {
     PureForwardingProxyType,
     ImpureProxyType,
     WithScopeType,
+    ArrayType,
     DirectArgumentsType,
     ScopedArgumentsType,
 
@@ -77,7 +78,9 @@ enum JSType : uint8_t {
     GlobalObjectType,
     ActivationObjectType,
 
-    LastJSCObjectType = ActivationObjectType,
+    ClonedArgumentsType,
+
+    LastJSCObjectType = ClonedArgumentsType,
 };
 
 COMPILE_ASSERT(sizeof(JSType) == sizeof(uint8_t), sizeof_jstype_is_one_byte);

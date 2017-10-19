@@ -2,7 +2,7 @@
  * Copyright (C) 2004, 2006 Apple Computer, Inc.  All rights reserved.
  * Copyright (C) 2005, 2006 Michael Emmel mike.emmel@gmail.com
  * All rights reserved.
- * Copyright (c) 2010-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -250,7 +250,10 @@ void ResourceHandle::setDefersLoading(bool defers)
     if (!d->m_handle)
         d->m_defersLoading = defers;
     else if (defers) {
+        ResourceHandleManager* manager = ResourceHandleManager::sharedInstance();
+        manager->lockThreadMutex();
         CURLcode error = curl_easy_pause(d->m_handle, CURLPAUSE_ALL);
+        manager->unlockThreadMutex();
         // If we could not defer the handle, so don't do it.
         if (error != CURLE_OK)
             return;
@@ -262,7 +265,10 @@ void ResourceHandle::setDefersLoading(bool defers)
         // we would ASSERT.
         d->m_defersLoading = defers;
 
+        ResourceHandleManager* manager = ResourceHandleManager::sharedInstance();
+        manager->lockThreadMutex();
         CURLcode error = curl_easy_pause(d->m_handle, CURLPAUSE_CONT);
+        manager->unlockThreadMutex();
         if (error != CURLE_OK)
             // Restarting the handle has failed so just cancel it.
             cancel();

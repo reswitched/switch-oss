@@ -92,9 +92,11 @@ private:
     static void threadEntry(void* threadData);
     void runLoop();
 
+#if !PLATFORM(WKC) // The members below are unnecessary because we create only one AudioDecoder thread.
     WTF::ThreadIdentifier m_threadID;
     Mutex m_threadCreationMutex;
     MessageQueue<DecodingTask> m_queue;
+#endif
 };
 
 } // namespace WebCore

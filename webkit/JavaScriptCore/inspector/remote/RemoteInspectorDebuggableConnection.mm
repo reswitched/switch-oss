@@ -194,7 +194,7 @@ void RemoteInspectorDebuggableConnection::close()
 
             if (m_debuggable) {
                 if (m_connected)
-                    m_debuggable->disconnect();
+                    m_debuggable->disconnect(this);
 
                 m_debuggable = nullptr;
             }

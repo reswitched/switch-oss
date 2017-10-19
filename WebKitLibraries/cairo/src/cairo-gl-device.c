@@ -171,7 +171,7 @@ test_can_read_bgra (cairo_gl_flavor_t gl_flavor)
     if (gl_flavor == CAIRO_GL_FLAVOR_DESKTOP)
 	return TRUE;
 
-    assert (gl_flavor == CAIRO_GL_FLAVOR_ES);
+    assert (gl_flavor == CAIRO_GL_FLAVOR_ES2);
 
    /* For OpenGL ES we have to look for the specific extension and BGRA only
     * matches cairo's integer packed bytes on little-endian machines. */
@@ -190,7 +190,7 @@ _cairo_gl_context_init (cairo_gl_context_t *ctx)
     int n;
 
     cairo_bool_t is_desktop = gl_flavor == CAIRO_GL_FLAVOR_DESKTOP;
-    cairo_bool_t is_gles = gl_flavor == CAIRO_GL_FLAVOR_ES;
+    cairo_bool_t is_gles = gl_flavor == CAIRO_GL_FLAVOR_ES2;
 
     _cairo_device_init (&ctx->base, &_cairo_gl_device_backend);
 
@@ -402,7 +402,7 @@ _cairo_gl_ensure_framebuffer (cairo_gl_context_t *ctx,
        does not require an explicit multisample resolution. */
 #if CAIRO_HAS_GLESV2_SURFACE
     if (surface->supports_msaa && _cairo_gl_msaa_compositor_enabled () &&
-	ctx->gl_flavor == CAIRO_GL_FLAVOR_ES) {
+	ctx->gl_flavor == CAIRO_GL_FLAVOR_ES2) {
 	_cairo_gl_ensure_msaa_gles_framebuffer (ctx, surface);
     } else
 #endif
@@ -509,7 +509,7 @@ _cairo_gl_ensure_msaa_depth_stencil_buffer (cairo_gl_context_t *ctx,
 #endif
 
 #if CAIRO_HAS_GLESV2_SURFACE
-    if (ctx->gl_flavor == CAIRO_GL_FLAVOR_ES) {
+    if (ctx->gl_flavor == CAIRO_GL_FLAVOR_ES2) {
 	dispatch->FramebufferRenderbuffer (GL_FRAMEBUFFER,
 					   GL_DEPTH_ATTACHMENT,
 					   GL_RENDERBUFFER,
@@ -712,7 +712,7 @@ _cairo_gl_context_bind_framebuffer (cairo_gl_context_t *ctx,
     if (_cairo_gl_surface_is_texture (surface)) {
 	/* OpenGL ES surfaces only have either a multisample framebuffer or a
 	 * singlesample framebuffer, so we cannot switch back and forth. */
-	if (ctx->gl_flavor == CAIRO_GL_FLAVOR_ES) {
+	if (ctx->gl_flavor == CAIRO_GL_FLAVOR_ES2) {
 	    _cairo_gl_ensure_framebuffer (ctx, surface);
 	    ctx->dispatch.BindFramebuffer (GL_FRAMEBUFFER, surface->fb);
 	    return;
@@ -749,7 +749,7 @@ _cairo_gl_context_set_destination (cairo_gl_context_t *ctx,
 
     /* The decision whether or not to use multisampling happens when
      * we create an OpenGL ES surface, so we can never switch modes. */
-    if (ctx->gl_flavor == CAIRO_GL_FLAVOR_ES)
+    if (ctx->gl_flavor == CAIRO_GL_FLAVOR_ES2)
 	multisampling = surface->msaa_active;
 
     changing_surface = ctx->current_target != surface || surface->needs_update;

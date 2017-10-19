@@ -31,6 +31,7 @@
 
 #include "FontDescription.h"
 #include "FontPlatformData.h"
+#include "NoEventDispatchAssertion.h"
 #include "SVGDocument.h"
 #include "SVGFontData.h"
 #include "SVGFontElement.h"
@@ -79,11 +80,20 @@ bool CachedSVGFont::ensureCustomFontData(bool externalSVG, const AtomicString& r
         return CachedFont::ensureCustomFontData(externalSVG, remoteURI);
 
     if (!m_externalSVGDocument && !errorOccurred() && !isLoading() && m_data) {
-        m_externalSVGDocument = SVGDocument::create(nullptr, URL());
-        RefPtr<TextResourceDecoder> decoder = TextResourceDecoder::create("application/xml");
-        m_externalSVGDocument->setContent(decoder->decodeAndFlush(m_data->data(), m_data->size()));
+        bool sawError = false;
+        {
+            // We may get here during render tree updates when events are forbidden.
+            // Frameless document can't run scripts or call back to the client so this is safe.
+            m_externalSVGDocument = SVGDocument::create(nullptr, URL());
+            auto decoder = TextResourceDecoder::create("application/xml");
+
+            NoEventDispatchAssertion::EventAllowedScope allowedScope(*m_externalSVGDocument);
+
+            m_externalSVGDocument->setContent(decoder->decodeAndFlush(m_data->data(), m_data->size()));
+            sawError = decoder->sawError();
+        }
 #if !ENABLE(SVG_OTF_CONVERTER)
-        if (decoder->sawError())
+        if (sawError)
             m_externalSVGDocument = nullptr;
 #else
         if (decoder->sawError())

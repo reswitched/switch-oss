@@ -198,7 +198,7 @@ void AssemblyHelpers::jitAssertArgumentCountSane()
 
 void AssemblyHelpers::callExceptionFuzz()
 {
-    if (!Options::enableExceptionFuzz())
+    if (!Options::useExceptionFuzz())
         return;
 
     ASSERT(stackAlignmentBytes() >= sizeof(void*) * 2);

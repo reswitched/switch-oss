@@ -67,5 +67,10 @@ void AgentRegistry::discardAgents()
         m_agents[i]->discardAgent();
 }
 
-} // namespace Inspector
+void AgentRegistry::discardValues()
+{
+    for (auto& agent : m_agents)
+        agent->discardValues();
+}
 
+} // namespace Inspector

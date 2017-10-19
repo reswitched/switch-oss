@@ -115,6 +115,7 @@ using namespace HTMLNames;
 AccessibilityRenderObject::AccessibilityRenderObject(RenderObject* renderer)
     : AccessibilityNodeObject(renderer->node())
     , m_renderer(renderer)
+    , m_weakPtrFactory(this)
 {
 #ifndef NDEBUG
     m_renderer->setHasAXObject(true);
@@ -2343,6 +2344,9 @@ AccessibilityObject* AccessibilityRenderObject::activeDescendant() const
 
 void AccessibilityRenderObject::handleAriaExpandedChanged()
 {
+    // This object might be deleted under the call to the parentObject() method.
+    auto protectedThis = Ref<AccessibilityRenderObject>(*this);
+    
     // Find if a parent of this object should handle aria-expanded changes.
     AccessibilityObject* containerParent = this->parentObject();
     while (containerParent) {

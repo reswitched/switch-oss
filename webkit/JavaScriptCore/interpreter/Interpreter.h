@@ -31,6 +31,7 @@
 #define Interpreter_h
 
 #include "ArgList.h"
+#include "JSArrowFunction.h"
 #include "JSCJSValue.h"
 #include "JSCell.h"
 #include "JSObject.h"
@@ -50,6 +51,7 @@ namespace JSC {
     class ExecutableBase;
     class FunctionExecutable;
     class VM;
+    class JSArrowFunction;
     class JSFunction;
     class JSGlobalObject;
     class LLIntOffsetsExtractor;
@@ -211,7 +213,7 @@ namespace JSC {
 
         JSValue execute(ProgramExecutable*, CallFrame*, JSObject* thisObj);
         JSValue executeCall(CallFrame*, JSObject* function, CallType, const CallData&, JSValue thisValue, const ArgList&);
-        JSObject* executeConstruct(CallFrame*, JSObject* function, ConstructType, const ConstructData&, const ArgList&);
+        JSObject* executeConstruct(CallFrame*, JSObject* function, ConstructType, const ConstructData&, const ArgList&, JSValue newTarget);
         JSValue execute(EvalExecutable*, CallFrame*, JSValue thisValue, JSScope*);
 
         void getArgumentsData(CallFrame*, JSFunction*&, ptrdiff_t& firstParameterIndex, Register*& argv, int& argc);
@@ -246,7 +248,7 @@ namespace JSC {
 
         void dumpRegisters(CallFrame*);
         
-        bool isCallBytecode(Opcode opcode) { return opcode == getOpcode(op_call) || opcode == getOpcode(op_construct) || opcode == getOpcode(op_call_eval); }
+        bool isCallBytecode(Opcode opcode) { return opcode == getOpcode(op_call) || opcode == getOpcode(op_construct) || opcode == getOpcode(op_call_eval) || opcode == getOpcode(op_tail_call); }
 
         void enableSampler();
         int m_sampleEntryDepth;
@@ -279,9 +281,12 @@ namespace JSC {
     unsigned sizeOfVarargs(CallFrame* exec, JSValue arguments, uint32_t firstVarArgOffset);
     static const unsigned maxArguments = 0x10000;
     unsigned sizeFrameForVarargs(CallFrame* exec, JSStack*, JSValue arguments, unsigned numUsedStackSlots, uint32_t firstVarArgOffset);
+    unsigned sizeFrameForForwardArguments(CallFrame* exec, JSStack*, unsigned numUsedStackSlots);
     void loadVarargs(CallFrame* execCaller, VirtualRegister firstElementDest, JSValue source, uint32_t offset, uint32_t length);
     void setupVarargsFrame(CallFrame* execCaller, CallFrame* execCallee, JSValue arguments, uint32_t firstVarArgOffset, uint32_t length);
     void setupVarargsFrameAndSetThis(CallFrame* execCaller, CallFrame* execCallee, JSValue thisValue, JSValue arguments, uint32_t firstVarArgOffset, uint32_t length);
+    void setupForwardArgumentsFrame(CallFrame* execCaller, CallFrame* execCallee, uint32_t length);
+    void setupForwardArgumentsFrameAndSetThis(CallFrame* execCaller, CallFrame* execCallee, JSValue thisValue, uint32_t length);
     
 } // namespace JSC
 

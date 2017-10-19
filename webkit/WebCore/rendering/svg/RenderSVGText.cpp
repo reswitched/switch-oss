@@ -371,7 +371,7 @@ void RenderSVGText::layout()
         m_needsReordering = true;
         m_needsPositioningValuesUpdate = false;
         updateCachedBoundariesInParents = true;
-    } else if (m_needsTextMetricsUpdate || SVGRenderSupport::findTreeRootObject(*this).isLayoutSizeChanged()) {
+    } else if (m_needsTextMetricsUpdate || SVGRenderSupport::findTreeRootObject(*this)->isLayoutSizeChanged()) {
         // If the root layout size changed (eg. window size changes) or the transform to the root
         // context has changed then recompute the on-screen font size.
         updateFontInAllDescendants(this, &m_layoutAttributesBuilder);
@@ -549,7 +549,7 @@ RenderBlock* RenderSVGText::firstLineBlock() const
 
 // Fix for <rdar://problem/8048875>. We should not render :first-letter CSS Style
 // in a SVG text element context.
-void RenderSVGText::updateFirstLetter()
+void RenderSVGText::updateFirstLetter(RenderTreeMutationIsAllowed)
 {
 }
 

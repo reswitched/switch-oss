@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2015-2017 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -61,6 +61,10 @@
 #include <openssl/hmac.h>
 #include <openssl/rsa.h>
 #include <openssl/sha.h>
+#include <openssl/ossl_typ.h>
+#include <openssl/rsa_locl.h>
+#include <openssl/bn_lcl.h>
+#include <openssl/hmac_lcl.h>
 
 #if ENABLE(SUBTLE_CRYPTO)
 
@@ -115,9 +119,8 @@ CryptoKeyRSA::create(CryptoAlgorithmIdentifier identifier, const CryptoKeyDataRS
     rsa->q = pq;
     if (type==CryptoKeyType::Private) {
         BN_CTX* ctx = 0;
-        BIGNUM one;
-        BN_init(&one);
-        BN_set_word(&one, 1);
+        BIGNUM* one = BN_new();
+        BN_set_word(one, 1);
         rsa->dmp1 = BN_new();
         rsa->dmq1 = BN_new();
         rsa->iqmp = BN_new();
@@ -126,10 +129,11 @@ CryptoKeyRSA::create(CryptoAlgorithmIdentifier identifier, const CryptoKeyDataRS
         ctx = BN_CTX_new();
         if (!ctx)
             goto error_end;
-        BN_mod_sub(rsa->dmp1, pexp, pp, &one, ctx);
-        BN_mod_sub(rsa->dmq1, pexp, pq, &one, ctx);
-        BN_sqr(&one, pq, ctx);
-        BN_mod(rsa->iqmp, &one, pp, ctx);
+        BN_mod_sub(rsa->dmp1, pexp, pp, one, ctx);
+        BN_mod_sub(rsa->dmq1, pexp, pq, one, ctx);
+        BN_sqr(one, pq, ctx);
+        BN_mod(rsa->iqmp, one, pp, ctx);
+        BN_free(one);
         BN_CTX_free(ctx);
     } else {
         rsa->dmp1 = 0;
@@ -189,10 +193,22 @@ std::unique_ptr<CryptoKeyData>
 CryptoKeyRSA::exportData() const
 {
     RSA* rsa = (RSA *)m_platformKey;
-    Vector<uint8_t> v(BN_num_bytes(rsa->e));
-    int len = BN_bn2bin(rsa->e, v.data());
-    std::unique_ptr<CryptoKeyData> ret(new CryptoKeyDataOctetSequence(v));
-    return ret;
+    const BIGNUM* n = 0;
+    const BIGNUM* e = 0;
+    const BIGNUM* d = 0;
+    RSA_get0_key(rsa, &n, &e, &d);
+    if (!n || !e)
+        return nullptr;
+    Vector<uint8_t> modulus(BN_num_bytes(n));
+    Vector<uint8_t> exponent(BN_num_bytes(e));
+    if (!d) {
+        // Public key
+        return CryptoKeyDataRSAComponents::createPublic(modulus, exponent);
+    } else {
+        // Private key
+        Vector<uint8_t> privateExponent(BN_num_bytes(d));
+        return CryptoKeyDataRSAComponents::createPrivate(modulus, exponent, privateExponent);
+    }
 }
 
 void
@@ -335,9 +351,9 @@ CryptoAlgorithmHMAC::platformVerify(const CryptoAlgorithmHmacParams& params, con
     HMAC_CTX ctx;
     unsigned int len=0;
     unsigned char buf[EVP_MAX_MD_SIZE];
-    HMAC_CTX_init(&ctx);
+    HMAC_CTX_reset(&ctx);
 
-    int ret = HMAC_Init(&ctx, key.key().data(), key.key().size(), EVP_sha256());
+    int ret = HMAC_Init_ex(&ctx, key.key().data(), key.key().size(), EVP_sha256(), NULL);
     if (!ret)
         goto error_end;
     ret = HMAC_Update(&ctx, data.first, data.second);
@@ -346,14 +362,14 @@ CryptoAlgorithmHMAC::platformVerify(const CryptoAlgorithmHmacParams& params, con
     ret = HMAC_Final(&ctx, buf, &len);
     if (!ret)
         goto error_end;
-    HMAC_CTX_cleanup(&ctx);
+    HMAC_CTX_reset(&ctx);
     success(true);
     return;
 
 error_end:
     ec = ABORT_ERR;
     failureCallback();
-    HMAC_CTX_cleanup(&ctx);
+    HMAC_CTX_reset(&ctx);
     return;
 }
 

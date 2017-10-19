@@ -50,6 +50,7 @@ public:
     void didCreateFrontendAndBackend(FrontendChannel*, BackendDispatcher*);
     void willDestroyFrontendAndBackend(DisconnectReason);
     void discardAgents();
+    void discardValues();
 
 #if ENABLE(INSPECTOR_ALTERNATE_DISPATCHERS)
     void appendExtraAgent(std::unique_ptr<InspectorAgentBase>);

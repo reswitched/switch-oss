@@ -57,6 +57,7 @@ public:
 
     virtual void didCreateFrontendAndBackend(FrontendChannel*, BackendDispatcher*) override;
     virtual void willDestroyFrontendAndBackend(DisconnectReason) override;
+    void discardValues() override;
 
     virtual void enable(ErrorString&) override;
     virtual void disable(ErrorString&) override;

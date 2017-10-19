@@ -131,6 +131,11 @@ enum class ShouldOpenExternalURLsPolicy {
         No
     };
 
+    enum class HasInsecureContent {
+        Yes,
+        No,
+    };
+
     enum class AllowNavigationToInvalidURL {
         Yes,
         No

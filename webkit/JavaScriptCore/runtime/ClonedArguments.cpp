@@ -27,6 +27,7 @@
 #include "ClonedArguments.h"
 
 #include "GetterSetter.h"
+#include "InlineCallFrame.h"
 #include "JSCInlines.h"
 
 namespace JSC {
@@ -124,7 +125,7 @@ ClonedArguments* ClonedArguments::createByCopyingFrom(
 
 Structure* ClonedArguments::createStructure(VM& vm, JSGlobalObject* globalObject, JSValue prototype)
 {
-    return Structure::create(vm, globalObject, prototype, TypeInfo(ObjectType, StructureFlags), info());
+    return Structure::create(vm, globalObject, prototype, TypeInfo(ClonedArgumentsType, StructureFlags), info());
 }
 
 bool ClonedArguments::getOwnPropertySlot(JSObject* object, ExecState* exec, PropertyName ident, PropertySlot& slot)

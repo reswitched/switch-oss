@@ -296,7 +296,7 @@ namespace JSC {
 
         void compileOpCall(OpcodeID, Instruction*, unsigned callLinkInfoIndex);
         void compileOpCallSlowCase(OpcodeID, Instruction*, Vector<SlowCaseEntry>::iterator&, unsigned callLinkInfoIndex);
-        void compileSetupVarargsFrame(Instruction*, CallLinkInfo*);
+        void compileSetupVarargsFrame(OpcodeID, Instruction*, CallLinkInfo*);
         void compileCallEval(Instruction*);
         void compileCallEvalSlowCase(Instruction*, Vector<SlowCaseEntry>::iterator&);
         void emitPutCallResult(Instruction*);
@@ -462,8 +462,11 @@ namespace JSC {
         void emit_op_bitor(Instruction*);
         void emit_op_bitxor(Instruction*);
         void emit_op_call(Instruction*);
+        void emit_op_tail_call(Instruction*);
         void emit_op_call_eval(Instruction*);
         void emit_op_call_varargs(Instruction*);
+        void emit_op_tail_call_varargs(Instruction*);
+        void emit_op_tail_call_forward_arguments(Instruction*);
         void emit_op_construct_varargs(Instruction*);
         void emit_op_catch(Instruction*);
         void emit_op_construct(Instruction*);
@@ -480,6 +483,7 @@ namespace JSC {
         void emit_op_enter(Instruction*);
         void emit_op_create_lexical_environment(Instruction*);
         void emit_op_get_scope(Instruction*);
+        void emit_op_load_arrowfunction_this(Instruction*);
         void emit_op_eq(Instruction*);
         void emit_op_eq_null(Instruction*);
         void emit_op_get_by_id(Instruction*);
@@ -493,6 +497,7 @@ namespace JSC {
         void emit_op_is_boolean(Instruction*);
         void emit_op_is_number(Instruction*);
         void emit_op_is_string(Instruction*);
+        void emit_op_is_jsarray(Instruction*);
         void emit_op_is_object(Instruction*);
         void emit_op_jeq_null(Instruction*);
         void emit_op_jfalse(Instruction*);
@@ -521,6 +526,7 @@ namespace JSC {
         void emit_op_new_array_buffer(Instruction*);
         void emit_op_new_func(Instruction*);
         void emit_op_new_func_exp(Instruction*);
+        void emit_op_new_arrow_func_exp(Instruction*);
         void emit_op_new_object(Instruction*);
         void emit_op_new_regexp(Instruction*);
         void emit_op_not(Instruction*);
@@ -528,8 +534,7 @@ namespace JSC {
         void emit_op_pop_scope(Instruction*);
         void emit_op_dec(Instruction*);
         void emit_op_inc(Instruction*);
-        void emit_op_profile_did_call(Instruction*);
-        void emit_op_profile_will_call(Instruction*);
+        void emit_op_nop(Instruction*);
         void emit_op_profile_type(Instruction*);
         void emit_op_profile_control_flow(Instruction*);
         void emit_op_push_name_scope(Instruction*);
@@ -573,8 +578,11 @@ namespace JSC {
         void emitSlow_op_bitor(Instruction*, Vector<SlowCaseEntry>::iterator&);
         void emitSlow_op_bitxor(Instruction*, Vector<SlowCaseEntry>::iterator&);
         void emitSlow_op_call(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_tail_call(Instruction*, Vector<SlowCaseEntry>::iterator&);
         void emitSlow_op_call_eval(Instruction*, Vector<SlowCaseEntry>::iterator&);
         void emitSlow_op_call_varargs(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_tail_call_varargs(Instruction*, Vector<SlowCaseEntry>::iterator&);
+        void emitSlow_op_tail_call_forward_arguments(Instruction*, Vector<SlowCaseEntry>::iterator&);
         void emitSlow_op_construct_varargs(Instruction*, Vector<SlowCaseEntry>::iterator&);
         void emitSlow_op_construct(Instruction*, Vector<SlowCaseEntry>::iterator&);
         void emitSlow_op_to_this(Instruction*, Vector<SlowCaseEntry>::iterator&);
@@ -636,6 +644,7 @@ namespace JSC {
         void emitRightShift(Instruction*, bool isUnsigned);
         void emitRightShiftSlowCase(Instruction*, Vector<SlowCaseEntry>::iterator&, bool isUnsigned);
 
+        void emitNewFuncExprCommon(Instruction*);
         void emitVarInjectionCheck(bool needsVarInjectionChecks);
         void emitResolveClosure(int dst, int scope, bool needsVarInjectionChecks, unsigned depth);
         void emitLoadWithStructureCheck(int scope, Structure** structureSlot);
@@ -705,6 +714,7 @@ namespace JSC {
         MacroAssembler::Call callOperation(J_JITOperation_EJJAp, int, GPRReg, GPRReg, ArrayProfile*);
         MacroAssembler::Call callOperation(C_JITOperation_EJsc, GPRReg);
         MacroAssembler::Call callOperation(J_JITOperation_EJscC, int, GPRReg, JSCell*);
+        MacroAssembler::Call callOperation(J_JITOperation_EJscCJ, int, GPRReg, JSCell*, GPRReg);
         MacroAssembler::Call callOperation(C_JITOperation_EJscZ, GPRReg, int32_t);
         MacroAssembler::Call callOperation(C_JITOperation_EJscZ, int, GPRReg, int32_t);
 #if USE(JSVALUE64)
@@ -778,6 +788,7 @@ namespace JSC {
         void updateTopCallFrame();
 
         Call emitNakedCall(CodePtr function = CodePtr());
+        Call emitNakedTailCall(CodePtr function = CodePtr());
 
         // Loads the character value of a single character string into dst.
         void emitLoadCharacterString(RegisterID src, RegisterID dst, JumpList& failures);

@@ -117,11 +117,6 @@
 #include "WebConsoleAgent.h"
 #include "WorkerThread.h"
 #include "XMLHttpRequest.h"
-#if !PLATFORM(WKC)
-#include <JavaScriptCore/Profile.h>
-#else
-#include "Profile.h"
-#endif
 #include <bytecode/CodeBlock.h>
 #include <inspector/InspectorAgentBase.h>
 #include <inspector/InspectorValues.h>
@@ -237,6 +232,7 @@ public:
     explicit InspectorFrontendChannelDummy(Page*);
     virtual ~InspectorFrontendChannelDummy() { }
     virtual bool sendMessageToFrontend(const String& message) override;
+    virtual ConnectionType connectionType() const override { return ConnectionType::Local; }
 
 private:
     Page* m_frontendPage;
@@ -286,6 +282,12 @@ static bool markerTypesFrom(const String& markerType, DocumentMarker::MarkerType
     return true;
 }
 
+static std::unique_ptr<PrintContext>& printContextForTesting()
+{
+    static NeverDestroyed<std::unique_ptr<PrintContext>> context;
+    return context;
+}
+
 const char* Internals::internalsId = "internals";
 
 Ref<Internals> Internals::create(Document* document)
@@ -316,7 +318,6 @@ void Internals::resetToConsistentState(Page* page)
     TextRun::setAllowsRoundingHacks(false);
     WebCore::overrideUserPreferredLanguages(Vector<String>());
     WebCore::Settings::setUsesOverlayScrollbars(false);
-    page->inspectorController().setProfilerEnabled(false);
 #if ENABLE(VIDEO_TRACK)
     page->group().captionPreferences()->setCaptionsStyleSheetOverride(emptyString());
     page->group().captionPreferences()->setTestingMode(false);
@@ -357,6 +358,8 @@ Internals::Internals(Document* document)
 #endif
 }
 
+
+    printContextForTesting() = nullptr;
 Document* Internals::contextDocument() const
 {
     return downcast<Document>(scriptExecutionContext());
@@ -1659,11 +1662,6 @@ unsigned Internals::countMatchesForText(const String& text, unsigned findOptions
     return document->frame()->editor().countMatchesForText(text, nullptr, findOptions, 1000, mark, nullptr);
 }
 
-const ProfilesArray& Internals::consoleProfiles() const
-{
-    return contextDocument()->page()->console().profiles();
-}
-
 unsigned Internals::numberOfLiveNodes() const
 {
     unsigned nodeCount = 0;
@@ -1715,9 +1713,8 @@ PassRefPtr<DOMWindow> Internals::openDummyInspectorFrontend(const String& url)
     m_frontendClient = std::make_unique<InspectorFrontendClientDummy>(&page->inspectorController(), frontendPage);
     frontendPage->inspectorController().setInspectorFrontendClient(m_frontendClient.get());
 
-    bool isAutomaticInspection = false;
     m_frontendChannel = std::make_unique<InspectorFrontendChannelDummy>(frontendPage);
-    page->inspectorController().connectFrontend(m_frontendChannel.get(), isAutomaticInspection);
+    page->inspectorController().connectFrontend(m_frontendChannel.get());
 
     return m_frontendWindow;
 }
@@ -1728,24 +1725,17 @@ void Internals::closeDummyInspectorFrontend()
     ASSERT(page);
     ASSERT(m_frontendWindow);
 
-    page->inspectorController().disconnectFrontend(Inspector::DisconnectReason::InspectorDestroyed);
+    Page* frontendPage = m_frontendWindow->document()->page();
+    ASSERT(frontendPage);
 
+    frontendPage->inspectorController().setInspectorFrontendClient(nullptr);
     m_frontendClient = nullptr;
+
+    page->inspectorController().disconnectFrontend(m_frontendChannel.get());
     m_frontendChannel = nullptr;
 
     m_frontendWindow->close(m_frontendWindow->scriptExecutionContext());
     m_frontendWindow = nullptr;
-}
-
-void Internals::setJavaScriptProfilingEnabled(bool enabled, ExceptionCode& ec)
-{
-    Page* page = contextDocument()->frame()->page();
-    if (!page) {
-        ec = INVALID_ACCESS_ERR;
-        return;
-    }
-
-    page->inspectorController().setProfilerEnabled(enabled);
 }
 
 void Internals::setInspectorIsUnderTest(bool isUnderTest, ExceptionCode& ec)
@@ -2272,6 +2262,12 @@ static const char* cursorTypeToString(Cursor::Type cursorType)
     case Cursor::NorthSouthResize: return "NorthSouthResize";
     case Cursor::EastWestResize: return "EastWestResize";
     case Cursor::NorthEastSouthWestResize: return "NorthEastSouthWestResize";
+}
+
+void Internals::setPrinting(int width, int height)
+{
+    printContextForTesting() = std::make_unique<PrintContext>(frame());
+    printContextForTesting()->begin(width, height);
     case Cursor::NorthWestSouthEastResize: return "NorthWestSouthEastResize";
     case Cursor::ColumnResize: return "ColumnResize";
     case Cursor::RowResize: return "RowResize";
@@ -2620,8 +2616,21 @@ Vector<String> Internals::bufferedSamplesForTrackID(SourceBuffer* buffer, const 
 #endif
 
 #if ENABLE(VIDEO)
-void Internals::beginMediaSessionInterruption()
+void Internals::beginMediaSessionInterruption(const String& interruptionString, ExceptionCode& ec)
 {
+    PlatformMediaSession::InterruptionType interruption = PlatformMediaSession::SystemInterruption;
+
+    if (equalIgnoringCase(interruptionString, "System"))
+        interruption = PlatformMediaSession::SystemInterruption;
+    else if (equalIgnoringCase(interruptionString, "SystemSleep"))
+        interruption = PlatformMediaSession::SystemSleep;
+    else if (equalIgnoringCase(interruptionString, "EnteringBackground"))
+        interruption = PlatformMediaSession::EnteringBackground;
+    else {
+        ec = INVALID_ACCESS_ERR;
+        return;
+    }
+
     PlatformMediaSessionManager::sharedManager().beginInterruption(PlatformMediaSession::SystemInterruption);
 }
 
@@ -2818,6 +2827,8 @@ void Internals::installMockPageOverlay(const String& overlayType, ExceptionCode&
         return;
     }
 
+        if (equalIgnoringCase(restrictionString, "InvisibleAutoplayNotPermitted"))
+            restrictions |= MediaElementSession::InvisibleAutoplayNotPermitted;
     MockPageOverlayClient::singleton().installOverlay(document->frame()->mainFrame(), overlayType == "view" ? PageOverlay::OverlayType::View : PageOverlay::OverlayType::Document);
 }
 

@@ -26,10 +26,6 @@
 #include "config.h"
 #include "JSCryptoOperationData.h"
 
-#if PLATFORM(WKC)
-#include "JSONObject.h"
-#endif
-
 #if ENABLE(SUBTLE_CRYPTO)
 
 #include "JSDOMBinding.h"
@@ -45,13 +41,6 @@ bool cryptoOperationDataFromJSValue(ExecState* exec, JSValue value, CryptoOperat
     else if (RefPtr<ArrayBufferView> bufferView = toArrayBufferView(value))
         result = std::make_pair(static_cast<uint8_t*>(bufferView->baseAddress()), bufferView->byteLength());
     else {
-#if PLATFORM(WKC)
-        String json = JSONStringify(exec, value, 0);
-        if (!json.isNull() && json.is8Bit()) {
-            result = std::make_pair(json.characters8(), json.length());
-            return true;
-        }
-#endif
         throwTypeError(exec, "Only ArrayBuffer and ArrayBufferView objects can be passed as CryptoOperationData");
         return false;
     }

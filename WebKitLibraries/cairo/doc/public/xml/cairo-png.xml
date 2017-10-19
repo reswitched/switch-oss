@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-PNG-Support.top_of_page">PNG Support</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>PNG Support</refname>
@@ -53,11 +51,6 @@
 </tgroup>
 </informaltable>
 </refsect1>
-<refsect1 id="cairo-PNG-Support.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
-</refsect1>
 
 
 <refsect1 id="cairo-PNG-Support.description" role="desc">
@@ -82,7 +75,7 @@ libpng.</para>
 cairo_image_surface_create_from_png (<parameter>const <link linkend="char"><type>char</type></link> *filename</parameter>);</programlisting>
 <para>Creates a new image surface and initializes the contents to the
 given PNG file.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-image-surface-create-from-png.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -94,7 +87,7 @@ given PNG file.</para>
 <entry role="parameter_description"><para>name of PNG file to load</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-image-surface-create-from-png.returns" role="returns">
 <title>Returns</title>
 <para> a new <link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> initialized with the contents
 of the PNG file, or a "nil" surface if any error occurred. A nil
@@ -102,12 +95,12 @@ surface can be checked for with cairo_surface_status(surface) which
 may return one of the following values:</para>
 <para><link linkend="CAIRO-STATUS-NO-MEMORY:CAPS"><literal>CAIRO_STATUS_NO_MEMORY</literal></link>
 <link linkend="CAIRO-STATUS-FILE-NOT-FOUND:CAPS"><literal>CAIRO_STATUS_FILE_NOT_FOUND</literal></link>
-<link linkend="CAIRO-STATUS-READ-ERROR:CAPS"><literal>CAIRO_STATUS_READ_ERROR</literal></link></para>
+<link linkend="CAIRO-STATUS-READ-ERROR:CAPS"><literal>CAIRO_STATUS_READ_ERROR</literal></link>
+<link linkend="CAIRO-STATUS-PNG-ERROR:CAPS"><literal>CAIRO_STATUS_PNG_ERROR</literal></link></para>
 <para>Alternatively, you can allow errors to propagate through the drawing
 operations and check the status on the context upon completion
 using <link linkend="cairo-status"><function>cairo_status()</function></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-read-func-t" role="function" condition="since:1.0">
 <title>cairo_read_func_t&#160;()</title>
 <indexterm zone="cairo-read-func-t" role="1.0"><primary sortas="read_func_t">cairo_read_func_t</primary></indexterm>
@@ -122,7 +115,7 @@ function was registered, the buffer to read the data into and the
 length of the data in bytes.  The read function should return
 <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> if all the data was successfully read,
 <link linkend="CAIRO-STATUS-READ-ERROR:CAPS"><literal>CAIRO_STATUS_READ_ERROR</literal></link> otherwise.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-read-func-t.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -140,11 +133,10 @@ length of the data in bytes.  The read function should return
 <entry role="parameter_description"><para>the amount of data to read</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-read-func-t.returns" role="returns">
 <title>Returns</title>
 <para> the status code of the read operation</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-image-surface-create-from-png-stream" role="function" condition="since:1.0">
 <title>cairo_image_surface_create_from_png_stream&#160;()</title>
 <indexterm zone="cairo-image-surface-create-from-png-stream" role="1.0"><primary sortas="image_surface_create_from_png_stream">cairo_image_surface_create_from_png_stream</primary></indexterm>
@@ -155,7 +147,7 @@ cairo_image_surface_create_from_png_stream
 <para>Creates a new image surface from PNG data read incrementally
 via the <parameter>read_func</parameter>
  function.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-image-surface-create-from-png-stream.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -171,7 +163,7 @@ via the <parameter>read_func</parameter>
 .</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-image-surface-create-from-png-stream.returns" role="returns">
 <title>Returns</title>
 <para> a new <link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> initialized with the contents
 of the PNG file or a "nil" surface if the data read is not a valid PNG image
@@ -179,12 +171,12 @@ or memory could not be allocated for the operation.  A nil
 surface can be checked for with cairo_surface_status(surface) which
 may return one of the following values:</para>
 <para><link linkend="CAIRO-STATUS-NO-MEMORY:CAPS"><literal>CAIRO_STATUS_NO_MEMORY</literal></link>
-<link linkend="CAIRO-STATUS-READ-ERROR:CAPS"><literal>CAIRO_STATUS_READ_ERROR</literal></link></para>
+<link linkend="CAIRO-STATUS-READ-ERROR:CAPS"><literal>CAIRO_STATUS_READ_ERROR</literal></link>
+<link linkend="CAIRO-STATUS-PNG-ERROR:CAPS"><literal>CAIRO_STATUS_PNG_ERROR</literal></link></para>
 <para>Alternatively, you can allow errors to propagate through the drawing
 operations and check the status on the context upon completion
 using <link linkend="cairo-status"><function>cairo_status()</function></link>.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-surface-write-to-png" role="function" condition="since:1.0">
 <title>cairo_surface_write_to_png&#160;()</title>
 <indexterm zone="cairo-surface-write-to-png" role="1.0"><primary sortas="surface_write_to_png">cairo_surface_write_to_png</primary></indexterm>
@@ -195,7 +187,7 @@ cairo_surface_write_to_png (<parameter><link linkend="cairo-surface-t"><type>cai
  to a new file <parameter>filename</parameter>
  as a PNG
 image.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-surface-write-to-png.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -210,16 +202,16 @@ image.</para>
 <entry role="parameter_description"><para>the name of a file to write to</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-surface-write-to-png.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> if the PNG file was written
 successfully. Otherwise, <link linkend="CAIRO-STATUS-NO-MEMORY:CAPS"><literal>CAIRO_STATUS_NO_MEMORY</literal></link> if memory could not
 be allocated for the operation or
 <link linkend="CAIRO-STATUS-SURFACE-TYPE-MISMATCH:CAPS"><literal>CAIRO_STATUS_SURFACE_TYPE_MISMATCH</literal></link> if the surface does not have
 pixel contents, or <link linkend="CAIRO-STATUS-WRITE-ERROR:CAPS"><literal>CAIRO_STATUS_WRITE_ERROR</literal></link> if an I/O error occurs
-while attempting to write the file.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+while attempting to write the file, or <link linkend="CAIRO-STATUS-PNG-ERROR:CAPS"><literal>CAIRO_STATUS_PNG_ERROR</literal></link> if libpng
+returned an error.</para>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-write-func-t" role="function" condition="since:1.0">
 <title>cairo_write_func_t&#160;()</title>
 <indexterm zone="cairo-write-func-t" role="1.0"><primary sortas="write_func_t">cairo_write_func_t</primary></indexterm>
@@ -234,7 +226,7 @@ function was registered, the data to write and the length of the
 data in bytes.  The write function should return
 <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> if all the data was successfully written,
 <link linkend="CAIRO-STATUS-WRITE-ERROR:CAPS"><literal>CAIRO_STATUS_WRITE_ERROR</literal></link> otherwise.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-write-func-t.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -252,11 +244,10 @@ data in bytes.  The write function should return
 <entry role="parameter_description"><para>the amount of data to write</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-write-func-t.returns" role="returns">
 <title>Returns</title>
 <para> the status code of the write operation</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-surface-write-to-png-stream" role="function" condition="since:1.0">
 <title>cairo_surface_write_to_png_stream&#160;()</title>
 <indexterm zone="cairo-surface-write-to-png-stream" role="1.0"><primary sortas="surface_write_to_png_stream">cairo_surface_write_to_png_stream</primary></indexterm>
@@ -265,7 +256,7 @@ cairo_surface_write_to_png_stream (<parameter><link linkend="cairo-surface-t"><t
                                    <parameter><link linkend="cairo-write-func-t"><type>cairo_write_func_t</type></link> write_func</parameter>,
                                    <parameter><link linkend="void"><type>void</type></link> *closure</parameter>);</programlisting>
 <para>Writes the image surface to the write function.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-surface-write-to-png-stream.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -283,15 +274,15 @@ cairo_surface_write_to_png_stream (<parameter><link linkend="cairo-surface-t"><t
 <entry role="parameter_description"><para>closure data for the write function</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-surface-write-to-png-stream.returns" role="returns">
 <title>Returns</title>
 <para> <link linkend="CAIRO-STATUS-SUCCESS:CAPS"><literal>CAIRO_STATUS_SUCCESS</literal></link> if the PNG file was written
 successfully.  Otherwise, <link linkend="CAIRO-STATUS-NO-MEMORY:CAPS"><literal>CAIRO_STATUS_NO_MEMORY</literal></link> is returned if
 memory could not be allocated for the operation,
 <link linkend="CAIRO-STATUS-SURFACE-TYPE-MISMATCH:CAPS"><literal>CAIRO_STATUS_SURFACE_TYPE_MISMATCH</literal></link> if the surface does not have
-pixel contents.</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+pixel contents, or <link linkend="CAIRO-STATUS-PNG-ERROR:CAPS"><literal>CAIRO_STATUS_PNG_ERROR</literal></link> if libpng
+returned an error.</para>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-PNG-Support.other_details" role="details">
@@ -304,7 +295,7 @@ pixel contents.</para>
 <para>Defined if the PNG functions are available.
 This macro can be used to conditionally compile code using the cairo
 PNG functions.</para>
-<para role="since">Since 1.0</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-PNG-Support.see-also">

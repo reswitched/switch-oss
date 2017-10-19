@@ -144,7 +144,8 @@ public:
         
     JS_EXPORT_PRIVATE static void put(JSCell*, ExecState*, PropertyName, JSValue, PutPropertySlot&);
     JS_EXPORT_PRIVATE static void putByIndex(JSCell*, ExecState*, unsigned propertyName, JSValue, bool shouldThrow);
-        
+
+    // This performs the ECMAScript Set() operation.
     ALWAYS_INLINE void putByIndexInline(ExecState* exec, unsigned propertyName, JSValue value, bool shouldThrow)
     {
         if (canSetIndexQuickly(propertyName)) {
@@ -158,21 +159,44 @@ public:
     //  - the prototype chain is not consulted
     //  - accessors are not called.
     //  - it will ignore extensibility and read-only properties if PutDirectIndexLikePutDirect is passed as the mode (the default).
-    // This method creates a property with attributes writable, enumerable and configurable all set to true.
+    // This method creates a property with attributes writable, enumerable and configurable all set to true if attributes is zero,
+    // otherwise, it creates a property with the provided attributes. Semantically, this is performing defineOwnProperty.
     bool putDirectIndex(ExecState* exec, unsigned propertyName, JSValue value, unsigned attributes, PutDirectIndexMode mode)
     {
-        if (!attributes && canSetIndexQuicklyForPutDirect(propertyName)) {
+        auto canSetIndexQuicklyForPutDirect = [&]() -> bool {
+            switch (indexingType()) {
+            case ALL_BLANK_INDEXING_TYPES:
+            case ALL_UNDECIDED_INDEXING_TYPES:
+                return false;
+            case ALL_INT32_INDEXING_TYPES:
+            case ALL_DOUBLE_INDEXING_TYPES:
+            case ALL_CONTIGUOUS_INDEXING_TYPES:
+            case ALL_ARRAY_STORAGE_INDEXING_TYPES:
+                return propertyName < m_butterfly.get()->vectorLength();
+            default:
+                RELEASE_ASSERT_NOT_REACHED();
+                return false;
+            }
+        };
+
+        if (!attributes && canSetIndexQuicklyForPutDirect()) {
             setIndexQuickly(exec->vm(), propertyName, value);
             return true;
         }
-        return putDirectIndexBeyondVectorLength(exec, propertyName, value, attributes, mode);
+        return putDirectIndexSlowOrBeyondVectorLength(exec, propertyName, value, attributes, mode);
     }
+    // This is semantically equivalent to performing defineOwnProperty(propertyName, {configurable:true, writable:true, enumerable:true, value:value}).
     bool putDirectIndex(ExecState* exec, unsigned propertyName, JSValue value)
     {
         return putDirectIndex(exec, propertyName, value, 0, PutDirectIndexLikePutDirect);
     }
 
-    // A non-throwing version of putDirect and putDirectIndex.
+    // A generally non-throwing version of putDirect and putDirectIndex.
+    // However, it's only guaranteed to not throw based on what the receiver is.
+    // For example, if the receiver is a ProxyObject, this is not guaranteed, since
+    // it may call into arbitrary JS code. It's the responsibility of the user of
+    // this API to ensure that the receiver object is a well known type if they
+    // want to ensure that this won't throw an exception.
     JS_EXPORT_PRIVATE void putDirectMayBeIndex(ExecState*, PropertyName, JSValue);
         
     bool hasIndexingHeader() const
@@ -296,24 +320,7 @@ public:
             return false;
         }
     }
-        
-    bool canSetIndexQuicklyForPutDirect(unsigned i)
-    {
-        switch (indexingType()) {
-        case ALL_BLANK_INDEXING_TYPES:
-        case ALL_UNDECIDED_INDEXING_TYPES:
-            return false;
-        case ALL_INT32_INDEXING_TYPES:
-        case ALL_DOUBLE_INDEXING_TYPES:
-        case ALL_CONTIGUOUS_INDEXING_TYPES:
-        case ALL_ARRAY_STORAGE_INDEXING_TYPES:
-            return i < m_butterfly->vectorLength();
-        default:
-            RELEASE_ASSERT_NOT_REACHED();
-            return false;
-        }
-    }
-        
+
     void setIndexQuickly(VM& vm, unsigned i, JSValue v)
     {
         switch (indexingType()) {
@@ -630,10 +637,7 @@ public:
     void setStructureAndReallocateStorageIfNecessary(VM&, unsigned oldCapacity, Structure*);
     void setStructureAndReallocateStorageIfNecessary(VM&, Structure*);
 
-    void convertToDictionary(VM& vm)
-    {
-        setStructure(vm, Structure::toCacheableDictionaryTransition(vm, structure(vm)));
-    }
+    JS_EXPORT_PRIVATE void convertToDictionary(VM&);
 
     void flattenDictionaryObject(VM& vm)
     {
@@ -815,16 +819,19 @@ protected:
         
     // Call this if you want setIndexQuickly to succeed and you're sure that
     // the array is contiguous.
-    void ensureLength(VM& vm, unsigned length)
+    bool WARN_UNUSED_RETURN ensureLength(VM& vm, unsigned length)
     {
         ASSERT(length < MAX_ARRAY_INDEX);
         ASSERT(hasContiguous(indexingType()) || hasInt32(indexingType()) || hasDouble(indexingType()) || hasUndecided(indexingType()));
-            
-        if (m_butterfly->vectorLength() < length)
-            ensureLengthSlow(vm, length);
-            
+
+        if (m_butterfly.get()->vectorLength() < length) {
+            if (!ensureLengthSlow(vm, length))
+                return false;
+        }
+
         if (m_butterfly->publicLength() < length)
             m_butterfly->setPublicLength(length);
+        return true;
     }
         
     // Call this if you want to shrink the butterfly backing store, and you're
@@ -865,7 +872,7 @@ private:
         
     void putByIndexBeyondVectorLength(ExecState*, unsigned propertyName, JSValue, bool shouldThrow);
     bool putDirectIndexBeyondVectorLengthWithArrayStorage(ExecState*, unsigned propertyName, JSValue, unsigned attributes, PutDirectIndexMode, ArrayStorage*);
-    JS_EXPORT_PRIVATE bool putDirectIndexBeyondVectorLength(ExecState*, unsigned propertyName, JSValue, unsigned attributes, PutDirectIndexMode);
+    JS_EXPORT_PRIVATE bool putDirectIndexSlowOrBeyondVectorLength(ExecState*, unsigned propertyName, JSValue, unsigned attributes, PutDirectIndexMode);
         
     unsigned getNewVectorLength(unsigned currentVectorLength, unsigned currentLength, unsigned desiredLength);
     unsigned getNewVectorLength(unsigned desiredLength);
@@ -876,7 +883,7 @@ private:
     JS_EXPORT_PRIVATE void convertInt32ToDoubleOrContiguousWhilePerformingSetIndex(VM&, unsigned index, JSValue);
     JS_EXPORT_PRIVATE void convertDoubleToContiguousWhilePerformingSetIndex(VM&, unsigned index, JSValue);
         
-    void ensureLengthSlow(VM&, unsigned length);
+    bool ensureLengthSlow(VM&, unsigned length);
         
     ContiguousJSValues ensureInt32Slow(VM&);
     ContiguousDoubles ensureDoubleSlow(VM&);
@@ -1294,7 +1301,12 @@ inline bool JSObject::putDirectInternal(VM& vm, PropertyName propertyName, JSVal
     if ((mode == PutModePut) && !isExtensible())
         return false;
 
-    structure = Structure::addPropertyTransition(vm, structure, propertyName, attributes, offset, slot.context());
+    // We want the structure transition watchpoint to fire after this object has switched
+    // structure. This allows adaptive watchpoints to observe if the new structure is the one
+    // we want.
+    DeferredStructureTransitionWatchpointFire deferredWatchpointFire;
+    
+    structure = Structure::addPropertyTransition(vm, structure, propertyName, attributes, offset, slot.context(), &deferredWatchpointFire);
     
     validateOffset(offset);
     ASSERT(structure->isValidOffset(offset));

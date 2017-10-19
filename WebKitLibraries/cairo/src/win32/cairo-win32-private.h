@@ -139,6 +139,7 @@ typedef struct _cairo_win32_printing_surface {
     cairo_matrix_t ctm;
     cairo_bool_t has_gdi_ctm;
     cairo_matrix_t gdi_ctm;
+    cairo_bool_t extents_valid;
     HBRUSH brush, old_brush;
     cairo_scaled_font_subsets_t *font_subsets;
 } cairo_win32_printing_surface_t;

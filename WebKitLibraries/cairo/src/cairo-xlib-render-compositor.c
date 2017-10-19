@@ -965,7 +965,7 @@ _cairo_xlib_font_fini (cairo_scaled_font_private_t *abstract_private,
     cairo_list_del (&priv->link);
 
     status = _cairo_xlib_display_acquire (priv->device, &display);
-    if (status)
+    if (unlikely (status)) /* this should be impossible but leak just in case */
 	goto BAIL;
 
     for (i = 0; i < NUM_GLYPHSETS; i++) {
@@ -978,7 +978,7 @@ _cairo_xlib_font_fini (cairo_scaled_font_private_t *abstract_private,
 
     cairo_device_release (&display->base);
 BAIL:
-    cairo_device_destroy (&display->base);
+    cairo_device_destroy (priv->device);
     free (priv);
 }
 

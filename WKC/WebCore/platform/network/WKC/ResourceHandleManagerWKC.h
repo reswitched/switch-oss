@@ -372,6 +372,8 @@ public:
     void resumeNetworkThread(void);
     bool isNetworkThread(void);
     void notifyRequestRestartInNetworkThread(void);
+    void lockThreadMutex();
+    void unlockThreadMutex();
 private:
     void threadTerminate(void);
     void sendDataFromBufferToWebCore(ResourceHandle* job, ResourceHandleInternal* d);

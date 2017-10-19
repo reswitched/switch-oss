@@ -94,7 +94,6 @@
 #include "cairoint.h"
 
 #include "cairo-drm-private.h"
-#include "cairo-drm-ioctl-private.h"
 #include "cairo-drm-intel-private.h"
 #include "cairo-drm-intel-command-private.h"
 #include "cairo-drm-intel-ioctl-private.h"
@@ -110,6 +109,7 @@
 #include "cairo-path-fixed-private.h"
 #include "cairo-region-private.h"
 #include "cairo-surface-offset-private.h"
+#include "cairo-image-surface-private.h"
 
 #include <sys/ioctl.h>
 #include <sys/mman.h>

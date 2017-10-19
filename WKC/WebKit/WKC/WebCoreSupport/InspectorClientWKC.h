@@ -59,7 +59,7 @@ public:
     virtual void inspectorDestroyed();
     void webViewDestroyed();
 
-    virtual WebCore::InspectorFrontendChannel* openInspectorFrontend(WebCore::InspectorController *);
+    virtual Inspector::FrontendChannel* openInspectorFrontend(WebCore::InspectorController *);
     virtual void closeInspectorFrontend();
     virtual void bringFrontendToFront();
 

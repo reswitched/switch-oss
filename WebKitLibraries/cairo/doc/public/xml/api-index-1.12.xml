@@ -3,7 +3,7 @@
                 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
 <!ENTITY version SYSTEM "version.xml">
 ]>
-<indexdiv>
+<indexdiv id="api-index-1.12">
 <indexdiv><title>F</title>
 <indexentry><primaryie linkends="cairo-ft-font-face-get-synthesize"><link linkend="cairo-ft-font-face-get-synthesize">cairo_ft_font_face_get_synthesize</link>, function in <link linkend="cairo-FreeType-Fonts">FreeType Fonts</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-ft-font-face-set-synthesize"><link linkend="cairo-ft-font-face-set-synthesize">cairo_ft_font_face_set_synthesize</link>, function in <link linkend="cairo-FreeType-Fonts">FreeType Fonts</link></primaryie></indexentry>

@@ -34,6 +34,7 @@
 
 #include "EventException.h"
 #include "InspectorInstrumentation.h"
+#include "NoEventDispatchAssertion.h"
 #include "ScriptController.h"
 #include "WebKitAnimationEvent.h"
 #include "WebKitTransitionEvent.h"
@@ -190,7 +191,7 @@ static const AtomicString& legacyType(const Event* event)
 
 bool EventTarget::fireEventListeners(Event* event)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!NoEventDispatchAssertion::isEventDispatchForbidden());
+    ASSERT_WITH_SECURITY_IMPLICATION(NoEventDispatchAssertion::isEventAllowedInMainThread());
     ASSERT(event && !event->type().isEmpty());
 
     EventTargetData* d = eventTargetData();

@@ -43,7 +43,7 @@ namespace WebCore {
 
 const ClassInfo JSWorkerGlobalScopeBase::s_info = { "WorkerGlobalScope", &JSDOMGlobalObject::s_info, 0, CREATE_METHOD_TABLE(JSWorkerGlobalScopeBase) };
 
-const GlobalObjectMethodTable JSWorkerGlobalScopeBase::s_globalObjectMethodTable = { &allowsAccessFrom, &supportsProfiling, &supportsRichSourceInfo, &shouldInterruptScript, &javaScriptRuntimeFlags, &queueTaskToEventLoop, &shouldInterruptScriptBeforeTimeout };
+const GlobalObjectMethodTable JSWorkerGlobalScopeBase::s_globalObjectMethodTable = { &allowsAccessFrom, &supportsRichSourceInfo, &shouldInterruptScript, &javaScriptRuntimeFlags, &queueTaskToEventLoop, &shouldInterruptScriptBeforeTimeout };
 
 JSWorkerGlobalScopeBase::JSWorkerGlobalScopeBase(JSC::VM& vm, JSC::Structure* structure, PassRefPtr<WorkerGlobalScope> impl)
     : JSDOMGlobalObject(vm, structure, &normalWorld(vm), &s_globalObjectMethodTable)
@@ -70,11 +70,6 @@ ScriptExecutionContext* JSWorkerGlobalScopeBase::scriptExecutionContext() const
 bool JSWorkerGlobalScopeBase::allowsAccessFrom(const JSGlobalObject* object, ExecState* exec)
 {
     return JSGlobalObject::allowsAccessFrom(object, exec);
-}
-
-bool JSWorkerGlobalScopeBase::supportsProfiling(const JSGlobalObject* object)
-{
-    return JSGlobalObject::supportsProfiling(object);
 }
 
 bool JSWorkerGlobalScopeBase::supportsRichSourceInfo(const JSGlobalObject* object)

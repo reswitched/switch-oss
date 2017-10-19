@@ -3,7 +3,7 @@
                 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
 <!ENTITY version SYSTEM "version.xml">
 ]>
-<indexdiv>
+<indexdiv id="api-index-1.2">
 <indexdiv><title>F</title>
 <indexentry><primaryie linkends="cairo-font-face-get-type"><link linkend="cairo-font-face-get-type">cairo_font_face_get_type</link>, function in <link linkend="cairo-cairo-font-face-t">cairo_font_face_t</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-font-type-t"><link linkend="cairo-font-type-t">cairo_font_type_t</link>, enum in <link linkend="cairo-cairo-font-face-t">cairo_font_face_t</link></primaryie></indexentry>

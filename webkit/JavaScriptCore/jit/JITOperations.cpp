@@ -43,6 +43,7 @@
 #include "HostCallReturnValue.h"
 #include "JIT.h"
 #include "JITToDFGDeferredCompilationCallback.h"
+#include "JSArrowFunction.h"
 #include "JSCInlines.h"
 #include "JSCatchScope.h"
 #include "JSFunctionNameScope.h"
@@ -52,7 +53,6 @@
 #include "JSPropertyNameEnumerator.h"
 #include "JSStackInlines.h"
 #include "JSWithScope.h"
-#include "LegacyProfiler.h"
 #include "ObjectConstructor.h"
 #include "PropertyName.h"
 #include "Repatch.h"
@@ -527,12 +527,20 @@ static void directPutByVal(CallFrame* callFrame, JSObject* baseObject, JSValue s
         // Despite its name, JSValue::isUInt32 will return true only for positive boxed int32_t; all those values are valid array indices.
         uint32_t index = subscript.asUInt32();
         ASSERT(isIndex(index));
-        if (baseObject->canSetIndexQuicklyForPutDirect(index)) {
-            baseObject->setIndexQuickly(callFrame->vm(), index, value);
-            return;
+
+        switch (baseObject->indexingType()) {
+        case ALL_INT32_INDEXING_TYPES:
+        case ALL_DOUBLE_INDEXING_TYPES:
+        case ALL_CONTIGUOUS_INDEXING_TYPES:
+        case ALL_ARRAY_STORAGE_INDEXING_TYPES:
+            if (index < baseObject->butterfly()->vectorLength())
+                break;
+            FALLTHROUGH;
+        default:
+            arrayProfile->setOutOfBounds();
+            break;
         }
 
-        arrayProfile->setOutOfBounds();
         baseObject->putDirectIndex(callFrame, index, value, 0, isStrictMode ? PutDirectIndexShouldThrow : PutDirectIndexShouldNotThrow);
         return;
     }
@@ -631,7 +639,7 @@ void JIT_OPERATION operationDirectPutByVal(ExecState* callFrame, EncodedJSValue 
         if (hasOptimizableIndexing(structure)) {
             // Attempt to optimize.
             JITArrayMode arrayMode = jitArrayModeForStructure(structure);
-            if (jitArrayModePermitsPut(arrayMode) && arrayMode != byValInfo.arrayMode) {
+            if (jitArrayModePermitsPutDirect(arrayMode) && arrayMode != byValInfo.arrayMode) {
                 CodeBlock* codeBlock = callFrame->codeBlock();
                 ConcurrentJITLocker locker(codeBlock->m_lock);
                 arrayProfile->computeUpdatedPrediction(locker, codeBlock, structure);
@@ -702,14 +710,14 @@ EncodedJSValue JIT_OPERATION operationCallEval(ExecState* exec, ExecState* execC
     return JSValue::encode(result);
 }
 
-static void* handleHostCall(ExecState* execCallee, JSValue callee, CodeSpecializationKind kind)
+static SlowPathReturnType handleHostCall(ExecState* execCallee, JSValue callee, CallLinkInfo* callLinkInfo)
 {
     ExecState* exec = execCallee->callerFrame();
     VM* vm = &exec->vm();
 
     execCallee->setCodeBlock(0);
 
-    if (kind == CodeForCall) {
+    if (callLinkInfo->specializationKind() == CodeForCall) {
         CallData callData;
         CallType callType = getCallData(callee, callData);
     
@@ -719,18 +727,25 @@ static void* handleHostCall(ExecState* execCallee, JSValue callee, CodeSpecializ
             NativeCallFrameTracer tracer(vm, execCallee);
             execCallee->setCallee(asObject(callee));
             vm->hostCallReturnValue = JSValue::decode(callData.native.function(execCallee));
-            if (vm->exception())
-                return vm->getCTIStub(throwExceptionFromCallSlowPathGenerator).code().executableAddress();
+            if (vm->exception()) {
+                return encodeResult(
+                    vm->getCTIStub(throwExceptionFromCallSlowPathGenerator).code().executableAddress(),
+                    reinterpret_cast<void*>(KeepTheFrame));
+            }
 
-            return reinterpret_cast<void*>(getHostCallReturnValue);
+            return encodeResult(
+                bitwise_cast<void*>(getHostCallReturnValue),
+                reinterpret_cast<void*>(callLinkInfo->callMode() == CallMode::Tail ? ReuseTheFrame : KeepTheFrame));
         }
     
         ASSERT(callType == CallTypeNone);
         exec->vm().throwException(exec, createNotAFunctionError(exec, callee));
-        return vm->getCTIStub(throwExceptionFromCallSlowPathGenerator).code().executableAddress();
+        return encodeResult(
+            vm->getCTIStub(throwExceptionFromCallSlowPathGenerator).code().executableAddress(),
+            reinterpret_cast<void*>(KeepTheFrame));
     }
 
-    ASSERT(kind == CodeForConstruct);
+    ASSERT(callLinkInfo->specializationKind() == CodeForConstruct);
     
     ConstructData constructData;
     ConstructType constructType = getConstructData(callee, constructData);
@@ -741,18 +756,23 @@ static void* handleHostCall(ExecState* execCallee, JSValue callee, CodeSpecializ
         NativeCallFrameTracer tracer(vm, execCallee);
         execCallee->setCallee(asObject(callee));
         vm->hostCallReturnValue = JSValue::decode(constructData.native.function(execCallee));
-        if (vm->exception())
-            return vm->getCTIStub(throwExceptionFromCallSlowPathGenerator).code().executableAddress();
+        if (vm->exception()) {
+            return encodeResult(
+                vm->getCTIStub(throwExceptionFromCallSlowPathGenerator).code().executableAddress(),
+                reinterpret_cast<void*>(KeepTheFrame));
+        }
 
-        return reinterpret_cast<void*>(getHostCallReturnValue);
+        return encodeResult(bitwise_cast<void*>(getHostCallReturnValue), reinterpret_cast<void*>(KeepTheFrame));
     }
     
     ASSERT(constructType == ConstructTypeNone);
     exec->vm().throwException(exec, createNotAConstructorError(exec, callee));
-    return vm->getCTIStub(throwExceptionFromCallSlowPathGenerator).code().executableAddress();
+    return encodeResult(
+        vm->getCTIStub(throwExceptionFromCallSlowPathGenerator).code().executableAddress(),
+        reinterpret_cast<void*>(KeepTheFrame));
 }
 
-inline char* linkFor(
+inline SlowPathReturnType linkFor(
     ExecState* execCallee, CallLinkInfo* callLinkInfo, CodeSpecializationKind kind,
     RegisterPreservationMode registers)
 {
@@ -766,7 +786,7 @@ inline char* linkFor(
         // FIXME: We should cache these kinds of calls. They can be common and currently they are
         // expensive.
         // https://bugs.webkit.org/show_bug.cgi?id=144458
-        return reinterpret_cast<char*>(handleHostCall(execCallee, calleeAsValue, kind));
+        return handleHostCall(execCallee, calleeAsValue, callLinkInfo);
     }
 
     JSFunction* callee = jsCast<JSFunction*>(calleeAsFunctionCell);
@@ -782,17 +802,21 @@ inline char* linkFor(
 
         if (!isCall(kind) && functionExecutable->isBuiltinFunction()) {
             exec->vm().throwException(exec, createNotAConstructorError(exec, callee));
-            return reinterpret_cast<char*>(vm->getCTIStub(throwExceptionFromCallSlowPathGenerator).code().executableAddress());
+            return encodeResult(
+                vm->getCTIStub(throwExceptionFromCallSlowPathGenerator).code().executableAddress(),
+                reinterpret_cast<void*>(KeepTheFrame));
         }
 
         JSObject* error = functionExecutable->prepareForExecution(execCallee, callee, scope, kind);
         if (error) {
             exec->vm().throwException(exec, error);
-            return reinterpret_cast<char*>(vm->getCTIStub(throwExceptionFromCallSlowPathGenerator).code().executableAddress());
+            return encodeResult(
+                vm->getCTIStub(throwExceptionFromCallSlowPathGenerator).code().executableAddress(),
+                reinterpret_cast<void*>(KeepTheFrame));
         }
         codeBlock = functionExecutable->codeBlockFor(kind);
         ArityCheckMode arity;
-        if (execCallee->argumentCountIncludingThis() < static_cast<size_t>(codeBlock->numParameters()) || callLinkInfo->callType() == CallLinkInfo::CallVarargs || callLinkInfo->callType() == CallLinkInfo::ConstructVarargs)
+        if (execCallee->argumentCountIncludingThis() < static_cast<size_t>(codeBlock->numParameters()) || callLinkInfo->isVarargs())
             arity = MustCheckArity;
         else
             arity = ArityCheckNotRequired;
@@ -803,30 +827,30 @@ inline char* linkFor(
     else
         linkFor(execCallee, *callLinkInfo, codeBlock, callee, codePtr, kind, registers);
     
-    return reinterpret_cast<char*>(codePtr.executableAddress());
+    return encodeResult(codePtr.executableAddress(), reinterpret_cast<void*>(callLinkInfo->callMode() == CallMode::Tail ? ReuseTheFrame : KeepTheFrame));
 }
 
-char* JIT_OPERATION operationLinkCall(ExecState* execCallee, CallLinkInfo* callLinkInfo)
+SlowPathReturnType JIT_OPERATION operationLinkCall(ExecState* execCallee, CallLinkInfo* callLinkInfo)
 {
     return linkFor(execCallee, callLinkInfo, CodeForCall, RegisterPreservationNotRequired);
 }
 
-char* JIT_OPERATION operationLinkConstruct(ExecState* execCallee, CallLinkInfo* callLinkInfo)
+SlowPathReturnType JIT_OPERATION operationLinkConstruct(ExecState* execCallee, CallLinkInfo* callLinkInfo)
 {
     return linkFor(execCallee, callLinkInfo, CodeForConstruct, RegisterPreservationNotRequired);
 }
 
-char* JIT_OPERATION operationLinkCallThatPreservesRegs(ExecState* execCallee, CallLinkInfo* callLinkInfo)
+SlowPathReturnType JIT_OPERATION operationLinkCallThatPreservesRegs(ExecState* execCallee, CallLinkInfo* callLinkInfo)
 {
     return linkFor(execCallee, callLinkInfo, CodeForCall, MustPreserveRegisters);
 }
 
-char* JIT_OPERATION operationLinkConstructThatPreservesRegs(ExecState* execCallee, CallLinkInfo* callLinkInfo)
+SlowPathReturnType JIT_OPERATION operationLinkConstructThatPreservesRegs(ExecState* execCallee, CallLinkInfo* callLinkInfo)
 {
     return linkFor(execCallee, callLinkInfo, CodeForConstruct, MustPreserveRegisters);
 }
 
-inline char* virtualForWithFunction(
+inline SlowPathReturnType virtualForWithFunction(
     ExecState* execCallee, CodeSpecializationKind kind, RegisterPreservationMode registers,
     JSCell*& calleeAsFunctionCell)
 {
@@ -837,7 +861,7 @@ inline char* virtualForWithFunction(
     JSValue calleeAsValue = execCallee->calleeAsValue();
     calleeAsFunctionCell = getJSFunction(calleeAsValue);
     if (UNLIKELY(!calleeAsFunctionCell))
-        return reinterpret_cast<char*>(handleHostCall(execCallee, calleeAsValue, kind));
+        return handleHostCall(execCallee, calleeAsValue, callLinkInfo);
     
     JSFunction* function = jsCast<JSFunction*>(calleeAsFunctionCell);
     JSScope* scope = function->scopeUnchecked();
@@ -847,62 +871,67 @@ inline char* virtualForWithFunction(
 
         if (!isCall(kind) && functionExecutable->isBuiltinFunction()) {
             exec->vm().throwException(exec, createNotAConstructorError(exec, function));
-            return reinterpret_cast<char*>(vm->getCTIStub(throwExceptionFromCallSlowPathGenerator).code().executableAddress());
+            return encodeResult(
+                vm->getCTIStub(throwExceptionFromCallSlowPathGenerator).code().executableAddress(),
+                reinterpret_cast<void*>(KeepTheFrame));
         }
 
         JSObject* error = functionExecutable->prepareForExecution(execCallee, function, scope, kind);
         if (error) {
             exec->vm().throwException(exec, error);
-            return reinterpret_cast<char*>(vm->getCTIStub(throwExceptionFromCallSlowPathGenerator).code().executableAddress());
+            return encodeResult(
+                vm->getCTIStub(throwExceptionFromCallSlowPathGenerator).code().executableAddress(),
+                reinterpret_cast<void*>(KeepTheFrame));
         }
     }
-    return reinterpret_cast<char*>(executable->entrypointFor(
-        *vm, kind, MustCheckArity, registers).executableAddress());
+    return encodeResult(executable->entrypointFor(
+        *vm, kind, MustCheckArity, callLinkInfo->registerPreservationMode()).executableAddress(),
+        reinterpret_cast<void*>(callLinkInfo->callMode() == CallMode::Tail ? ReuseTheFrame : KeepTheFrame));
 }
 
-inline char* virtualFor(
+inline SlowPathReturnType virtualFor(
     ExecState* execCallee, CodeSpecializationKind kind, RegisterPreservationMode registers)
 {
     JSCell* calleeAsFunctionCellIgnored;
     return virtualForWithFunction(execCallee, kind, registers, calleeAsFunctionCellIgnored);
 }
 
-char* JIT_OPERATION operationLinkPolymorphicCall(ExecState* execCallee, CallLinkInfo* callLinkInfo)
+SlowPathReturnType JIT_OPERATION operationLinkPolymorphicCall(ExecState* execCallee, CallLinkInfo* callLinkInfo)
 {
     JSCell* calleeAsFunctionCell;
-    char* result = virtualForWithFunction(execCallee, CodeForCall, RegisterPreservationNotRequired, calleeAsFunctionCell);
+    SlowPathReturnType result = virtualForWithFunction(execCallee, CodeForCall, RegisterPreservationNotRequired, calleeAsFunctionCell);
 
     linkPolymorphicCall(execCallee, *callLinkInfo, CallVariant(calleeAsFunctionCell), RegisterPreservationNotRequired);
     
     return result;
 }
 
-char* JIT_OPERATION operationVirtualCall(ExecState* execCallee, CallLinkInfo*)
+SlowPathReturnType JIT_OPERATION operationVirtualCall(ExecState* execCallee, CallLinkInfo*)
 {    
     return virtualFor(execCallee, CodeForCall, RegisterPreservationNotRequired);
 }
 
-char* JIT_OPERATION operationVirtualConstruct(ExecState* execCallee, CallLinkInfo*)
+SlowPathReturnType JIT_OPERATION operationVirtualConstruct(ExecState* execCallee, CallLinkInfo*)
 {
     return virtualFor(execCallee, CodeForConstruct, RegisterPreservationNotRequired);
 }
 
-char* JIT_OPERATION operationLinkPolymorphicCallThatPreservesRegs(ExecState* execCallee, CallLinkInfo* callLinkInfo)
+SlowPathReturnType JIT_OPERATION operationLinkPolymorphicCallThatPreservesRegs(ExecState* execCallee, CallLinkInfo* callLinkInfo)
 {
     JSCell* calleeAsFunctionCell;
-    char* result = virtualForWithFunction(execCallee, CodeForCall, MustPreserveRegisters, calleeAsFunctionCell);
+    SlowPathReturnType result = virtualForWithFunction(execCallee, CodeForCall, MustPreserveRegisters, calleeAsFunctionCell);
 
     linkPolymorphicCall(execCallee, *callLinkInfo, CallVariant(calleeAsFunctionCell), MustPreserveRegisters);
     
     return result;
 }
 
-char* JIT_OPERATION operationVirtualCallThatPreservesRegs(ExecState* execCallee, CallLinkInfo*)
+SlowPathReturnType JIT_OPERATION operationVirtualCallThatPreservesRegs(ExecState* execCallee, CallLinkInfo*)
 {    
     return virtualFor(execCallee, CodeForCall, MustPreserveRegisters);
 }
 
-char* JIT_OPERATION operationVirtualConstructThatPreservesRegs(ExecState* execCallee, CallLinkInfo*)
+SlowPathReturnType JIT_OPERATION operationVirtualConstructThatPreservesRegs(ExecState* execCallee, CallLinkInfo*)
 {
     return virtualFor(execCallee, CodeForConstruct, MustPreserveRegisters);
 }
@@ -1017,6 +1046,30 @@ EncodedJSValue JIT_OPERATION operationNewFunctionWithInvalidatedReallocationWatc
     return JSValue::encode(JSFunction::createWithInvalidatedReallocationWatchpoint(vm, static_cast<FunctionExecutable*>(functionExecutable), scope));
 }
 
+EncodedJSValue static operationNewFunctionCommon(ExecState* exec, JSScope* scope, JSCell* functionExecutable, EncodedJSValue thisValue, bool isInvalidated)
+{
+    ASSERT(functionExecutable->inherits(FunctionExecutable::info()));
+    FunctionExecutable* executable = static_cast<FunctionExecutable*>(functionExecutable);
+    VM& vm = exec->vm();
+    NativeCallFrameTracer tracer(&vm, exec);
+        
+    JSArrowFunction* arrowFunction  = isInvalidated
+        ? JSArrowFunction::createWithInvalidatedReallocationWatchpoint(vm, executable, scope, JSValue::decode(thisValue))
+        : JSArrowFunction::create(vm, executable, scope, JSValue::decode(thisValue));
+    
+    return JSValue::encode(arrowFunction);
+}
+    
+EncodedJSValue JIT_OPERATION operationNewArrowFunctionWithInvalidatedReallocationWatchpoint(ExecState* exec, JSScope* scope, JSCell* functionExecutable, EncodedJSValue thisValue)
+{
+    return operationNewFunctionCommon(exec, scope, functionExecutable, thisValue, true);
+}
+    
+EncodedJSValue JIT_OPERATION operationNewArrowFunction(ExecState* exec, JSScope* scope, JSCell* functionExecutable, EncodedJSValue thisValue)
+{
+    return operationNewFunctionCommon(exec, scope, functionExecutable, thisValue, false);
+}
+
 JSCell* JIT_OPERATION operationNewObject(ExecState* exec, Structure* structure)
 {
     VM* vm = &exec->vm();
@@ -1128,11 +1181,6 @@ SlowPathReturnType JIT_OPERATION operationOptimize(ExecState* exec, int32_t byte
         return encodeResult(0, 0);
     }
     
-    if (vm.enabledProfiler()) {
-        updateAllPredictionsAndOptimizeAfterWarmUp(codeBlock);
-        return encodeResult(0, 0);
-    }
-
     Debugger* debugger = codeBlock->globalObject()->debugger();
     if (debugger && (debugger->isStepping() || codeBlock->baselineAlternative()->hasDebuggerRequests())) {
         updateAllPredictionsAndOptimizeAfterWarmUp(codeBlock);
@@ -1243,8 +1291,11 @@ SlowPathReturnType JIT_OPERATION operationOptimize(ExecState* exec, int32_t byte
         else
             numVarsWithValues = 0;
         Operands<JSValue> mustHandleValues(codeBlock->numParameters(), numVarsWithValues);
+        int localsUsedForCalleeSaves = static_cast<int>(CodeBlock::llintBaselineCalleeSaveSpaceAsVirtualRegisters());
         for (size_t i = 0; i < mustHandleValues.size(); ++i) {
             int operand = mustHandleValues.operandForIndex(i);
+            if (operandIsLocal(operand) && VirtualRegister(operand).toLocal() < localsUsedForCalleeSaves)
+                continue;
             mustHandleValues[i] = exec->uncheckedR(operand).jsValue();
         }
 
@@ -1447,24 +1498,6 @@ void JIT_OPERATION operationPopScope(ExecState* exec, int32_t scopeReg)
 
     JSScope* scope = exec->uncheckedR(scopeReg).Register::scope();
     exec->uncheckedR(scopeReg) = scope->next();
-}
-
-void JIT_OPERATION operationProfileDidCall(ExecState* exec, EncodedJSValue encodedValue)
-{
-    VM& vm = exec->vm();
-    NativeCallFrameTracer tracer(&vm, exec);
-
-    if (LegacyProfiler* profiler = vm.enabledProfiler())
-        profiler->didExecute(exec, JSValue::decode(encodedValue));
-}
-
-void JIT_OPERATION operationProfileWillCall(ExecState* exec, EncodedJSValue encodedValue)
-{
-    VM& vm = exec->vm();
-    NativeCallFrameTracer tracer(&vm, exec);
-
-    if (LegacyProfiler* profiler = vm.enabledProfiler())
-        profiler->willExecute(exec, JSValue::decode(encodedValue));
 }
 
 EncodedJSValue JIT_OPERATION operationCheckHasInstance(ExecState* exec, EncodedJSValue encodedValue, EncodedJSValue encodedBaseVal)
@@ -1750,6 +1783,14 @@ EncodedJSValue JIT_OPERATION operationInstanceOf(ExecState* exec, EncodedJSValue
     return JSValue::encode(jsBoolean(result));
 }
 
+int32_t JIT_OPERATION operationSizeFrameForForwardArguments(ExecState* exec, EncodedJSValue, int32_t numUsedStackSlots, int32_t)
+{
+    VM& vm = exec->vm();
+    NativeCallFrameTracer tracer(&vm, exec);
+    JSStack* stack = &exec->interpreter()->stack();
+    return sizeFrameForForwardArguments(exec, stack, numUsedStackSlots);
+}
+
 int32_t JIT_OPERATION operationSizeFrameForVarargs(ExecState* exec, EncodedJSValue encodedArguments, int32_t numUsedStackSlots, int32_t firstVarArgOffset)
 {
     VM& vm = exec->vm();
@@ -1757,6 +1798,14 @@ int32_t JIT_OPERATION operationSizeFrameForVarargs(ExecState* exec, EncodedJSVal
     JSStack* stack = &exec->interpreter()->stack();
     JSValue arguments = JSValue::decode(encodedArguments);
     return sizeFrameForVarargs(exec, stack, arguments, numUsedStackSlots, firstVarArgOffset);
+}
+
+CallFrame* JIT_OPERATION operationSetupForwardArgumentsFrame(ExecState* exec, CallFrame* newCallFrame, EncodedJSValue, int32_t, int32_t length)
+{
+    VM& vm = exec->vm();
+    NativeCallFrameTracer tracer(&vm, exec);
+    setupForwardArgumentsFrame(exec, newCallFrame, length);
+    return newCallFrame;
 }
 
 CallFrame* JIT_OPERATION operationSetupVarargsFrame(ExecState* exec, CallFrame* newCallFrame, EncodedJSValue encodedArguments, int32_t firstVarArgOffset, int32_t length)

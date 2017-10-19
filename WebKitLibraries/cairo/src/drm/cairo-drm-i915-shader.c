@@ -38,6 +38,7 @@
 #include "cairo-surface-offset-private.h"
 #include "cairo-surface-subsurface-private.h"
 #include "cairo-surface-snapshot-private.h"
+#include "cairo-image-surface-private.h"
 
 #if 0
 static cairo_status_t

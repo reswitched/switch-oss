@@ -5,7 +5,7 @@
              (C) 1999 Lars Knoll (knoll@kde.org)
              (C) 1999 Antti Koivisto (koivisto@kde.org)
    Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
-   Copyright (c) 2010-2016 ACCESS CO., LTD. All rights reserved.
+   Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public
@@ -40,6 +40,7 @@ public:
     void setCannotBlitToWindow();
     void updateLayoutAndStyleIfNeededRecursive();
     void forceLayout();
+    bool needsLayout() const;
 
     WKCPoint contentsToWindow(const WKCPoint&);
     WKCRect contentsToWindow(const WKCRect&);

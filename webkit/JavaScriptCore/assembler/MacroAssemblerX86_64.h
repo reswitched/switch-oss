@@ -852,6 +852,8 @@ private:
     {
         if (!call.isFlagSet(Call::Near))
             X86Assembler::linkPointer(code, call.m_label.labelAtOffset(-REPTACH_OFFSET_CALL_R11), function.value());
+        else if (call.isFlagSet(Call::Tail))
+            X86Assembler::linkJump(code, call.m_label, function.value());
         else
             X86Assembler::linkCall(code, call.m_label, function.value());
     }

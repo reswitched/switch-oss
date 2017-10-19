@@ -66,7 +66,7 @@ static RuntimeFlags javaScriptRuntimeFlags(const JSGlobalObject* globalObject)
     return runtimeFlags;
 }
 
-const GlobalObjectMethodTable JSC::javaScriptCoreAPIGlobalObjectMethodTable = { &JSGlobalObject::allowsAccessFrom, &JSGlobalObject::supportsProfiling, &JSGlobalObject::supportsRichSourceInfo, &JSGlobalObject::shouldInterruptScript, &javaScriptRuntimeFlags, nullptr, &JSGlobalObject::shouldInterruptScriptBeforeTimeout };
+const GlobalObjectMethodTable JSC::javaScriptCoreAPIGlobalObjectMethodTable = { &JSGlobalObject::allowsAccessFrom, &JSGlobalObject::supportsRichSourceInfo, &JSGlobalObject::shouldInterruptScript, &javaScriptRuntimeFlags, nullptr, &JSGlobalObject::shouldInterruptScriptBeforeTimeout };
 
 // From the API's perspective, a context group remains alive iff
 //     (a) it has been JSContextGroupRetained

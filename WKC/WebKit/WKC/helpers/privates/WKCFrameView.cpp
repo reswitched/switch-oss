@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -77,6 +77,12 @@ void
 FrameViewPrivate::forceLayout()
 {
     m_webcore->forceLayout();
+}
+
+bool
+FrameViewPrivate::needsLayout() const
+{
+    return m_webcore->needsLayout();
 }
 
 WKCPoint
@@ -188,6 +194,12 @@ void
 FrameView::forceLayout()
 {
     m_private.forceLayout();
+}
+
+bool
+FrameView::needsLayout() const
+{
+    return m_private.needsLayout();
 }
 
 WKCPoint

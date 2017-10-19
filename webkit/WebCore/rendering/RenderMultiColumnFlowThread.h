@@ -49,7 +49,7 @@ public:
     static RenderBox* nextColumnSetOrSpannerSiblingOf(const RenderBox*);
     static RenderBox* previousColumnSetOrSpannerSiblingOf(const RenderBox*);
 
-    RenderMultiColumnSpannerPlaceholder* findColumnSpannerPlaceholder(RenderBox* spanner) const { return m_spannerMap.get(spanner); }
+    RenderMultiColumnSpannerPlaceholder* findColumnSpannerPlaceholder(RenderBox* spanner) const { return m_spannerMap.get(spanner).get(); }
 
     virtual void layout() override;
 
@@ -132,7 +132,7 @@ private:
     RenderObject* processPossibleSpannerDescendant(RenderObject*& subtreeRoot, RenderObject* descendant);
     
 private:
-    typedef HashMap<RenderBox*, RenderMultiColumnSpannerPlaceholder*> SpannerMap;
+    typedef HashMap<RenderBox*, WeakPtr<RenderMultiColumnSpannerPlaceholder>> SpannerMap;
     SpannerMap m_spannerMap;
 
     // The last set we worked on. It's not to be used as the "current set". The concept of a

@@ -38,7 +38,6 @@ enum class ConstructorKind { None, Base, Derived };
 enum class SuperBinding { Needed, NotNeeded };
 enum class ThisTDZMode { AlwaysCheck, CheckIfNeeded };
 
-enum ProfilerMode { ProfilerOff, ProfilerOn };
 enum DebuggerMode { DebuggerOff, DebuggerOn };
 
 #if !PLATFORM(WKC)
@@ -46,6 +45,15 @@ enum FunctionMode { FunctionExpression, FunctionDeclaration };
 #else
 enum FunctionMode { FunctionExpression=0, FunctionDeclaration=1 };
 #endif
+
+enum FunctionParseMode {
+    NormalFunctionMode,
+    GetterMode,
+    SetterMode,
+    MethodMode,
+    NotAFunctionMode,
+    ArrowFunctionMode
+};
 
 #if !PLATFORM(WKC)
 inline bool functionNameIsInScope(const Identifier& name, FunctionMode functionMode)

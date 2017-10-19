@@ -28,6 +28,7 @@
 
 #if ENABLE(DFG_JIT)
 
+#include "ArrayConstructor.h"
 #include "DFGAbstractInterpreter.h"
 #include "GetByIdStatus.h"
 #include "GetterSetter.h"
@@ -895,6 +896,7 @@ bool AbstractInterpreter<AbstractStateType>::executeEffects(unsigned clobberLimi
     }
         
     case IsUndefined:
+    case IsJSArray:
     case IsBoolean:
     case IsNumber:
     case IsString:
@@ -905,6 +907,9 @@ bool AbstractInterpreter<AbstractStateType>::executeEffects(unsigned clobberLimi
         if (child.value()) {
             bool constantWasSet = true;
             switch (node->op()) {
+            case IsJSArray:
+                setConstant(node, jsBoolean(child.value().isObject() && child.value().getObject()->type() == ArrayType));
+                break;
             case IsUndefined:
                 setConstant(node, jsBoolean(
                     child.value().isCell()
@@ -967,6 +972,21 @@ bool AbstractInterpreter<AbstractStateType>::executeEffects(unsigned clobberLimi
         
         bool constantWasSet = false;
         switch (node->op()) {
+        case IsJSArray:
+            // We don't have a SpeculatedType for Proxies yet so we can't do better at proving false.
+            if (!(child.m_type & ~SpecArray)) {
+                setConstant(node, jsBoolean(true));
+                constantWasSet = true;
+                break;
+            }
+
+            if (!(child.m_type & SpecObject)) {
+                setConstant(node, jsBoolean(false));
+                constantWasSet = true;
+                break;
+            }
+
+            break;
         case IsUndefined:
             // FIXME: Use the masquerades-as-undefined watchpoint thingy.
             // https://bugs.webkit.org/show_bug.cgi?id=144456
@@ -1461,6 +1481,13 @@ bool AbstractInterpreter<AbstractStateType>::executeEffects(unsigned clobberLimi
     case Return:
         m_state.setIsValid(false);
         break;
+
+    case TailCall:
+    case TailCallVarargs:
+    case TailCallForwardVarargs:
+        clobberWorld(node->origin.semantic, clobberLimit);
+        m_state.setIsValid(false);
+        break;
         
     case Throw:
     case ThrowReferenceError:
@@ -1627,7 +1654,12 @@ bool AbstractInterpreter<AbstractStateType>::executeEffects(unsigned clobberLimi
     case CreateClonedArguments:
         forNode(node).setType(m_graph, SpecObjectOther);
         break;
-        
+            
+    case NewArrowFunction:
+        forNode(node).set(
+            m_graph, m_codeBlock->globalObjectFor(node->origin.semantic)->arrowFunctionStructure());
+        break;
+            
     case NewFunction:
         forNode(node).set(
             m_graph, m_codeBlock->globalObjectFor(node->origin.semantic)->functionStructure());
@@ -1688,6 +1720,15 @@ bool AbstractInterpreter<AbstractStateType>::executeEffects(unsigned clobberLimi
         forNode(node).setType(m_graph, SpecObjectOther);
         break;
 
+    case LoadArrowFunctionThis:
+        if (JSValue base = forNode(node->child1()).m_value) {
+            JSArrowFunction* function = jsDynamicCast<JSArrowFunction*>(base);
+            setConstant(node, *m_graph.freeze(function->boundThis()));
+            break;
+        }
+        forNode(node).setType(m_graph, SpecFinalObject);
+        break;
+            
     case SkipScope: {
         JSValue child = forNode(node->child1()).value();
         if (child) {
@@ -1733,7 +1774,10 @@ bool AbstractInterpreter<AbstractStateType>::executeEffects(unsigned clobberLimi
                 // something more subtle?
                 AbstractValue result;
                 for (unsigned i = status.numVariants(); i--;) {
-                    DFG_ASSERT(m_graph, node, !status[i].alternateBase());
+                    // This thing won't give us a variant that involves prototypes. If it did, we'd
+                    // have more work to do here.
+                    DFG_ASSERT(m_graph, node, status[i].conditionSet().isEmpty());
+                    
                     JSValue constantResult =
                         m_graph.tryGetConstantProperty(value, status[i].offset());
                     if (!constantResult) {
@@ -2014,30 +2058,22 @@ bool AbstractInterpreter<AbstractStateType>::executeEffects(unsigned clobberLimi
         AbstractValue base = forNode(node->child1());
         StructureSet baseSet;
         AbstractValue result;
-        for (unsigned i = node->multiGetByOffsetData().variants.size(); i--;) {
-            GetByIdVariant& variant = node->multiGetByOffsetData().variants[i];
-            StructureSet set = variant.structureSet();
+        for (const MultiGetByOffsetCase& getCase : node->multiGetByOffsetData().cases) {
+            StructureSet set = getCase.set();
             set.filter(base);
             if (set.isEmpty())
                 continue;
             baseSet.merge(set);
             
-            JSValue baseForLoad;
-            if (variant.alternateBase())
-                baseForLoad = variant.alternateBase();
-            else
-                baseForLoad = base.m_value;
-            JSValue constantResult =
-                m_graph.tryGetConstantProperty(
-                    baseForLoad, variant.baseStructure(), variant.offset());
-            if (!constantResult) {
+            if (getCase.method().kind() != GetByOffsetMethod::Constant) {
                 result.makeHeapTop();
                 continue;
             }
+            
             AbstractValue thisResult;
             thisResult.set(
                 m_graph,
-                *m_graph.freeze(constantResult),
+                *getCase.method().constant(),
                 m_state.structureClobberState());
             result.merge(thisResult);
         }
@@ -2272,13 +2308,16 @@ bool AbstractInterpreter<AbstractStateType>::executeEffects(unsigned clobberLimi
         break;
             
     case Call:
+    case TailCallInlinedCaller:
     case Construct:
     case NativeCall:
     case NativeConstruct:
     case CallVarargs:
     case CallForwardVarargs:
+    case TailCallVarargsInlinedCaller:
     case ConstructVarargs:
     case ConstructForwardVarargs:
+    case TailCallForwardVarargsInlinedCaller:
         clobberWorld(node->origin.semantic, clobberLimit);
         forNode(node).makeHeapTop();
         break;
@@ -2297,8 +2336,6 @@ bool AbstractInterpreter<AbstractStateType>::executeEffects(unsigned clobberLimi
         break;
 
     case Breakpoint:
-    case ProfileWillCall:
-    case ProfileDidCall:
     case ProfileType:
     case ProfileControlFlow:
     case Phantom:

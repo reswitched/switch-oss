@@ -7,9 +7,7 @@
 <refmeta>
 <refentrytitle role="top_of_page" id="cairo-Error-handling.top_of_page">Error handling</refentrytitle>
 <manvolnum>3</manvolnum>
-<refmiscinfo>
-  CAIRO Library
-</refmiscinfo>
+<refmiscinfo>CAIRO Library</refmiscinfo>
 </refmeta>
 <refnamediv>
 <refname>Error handling</refname>
@@ -45,11 +43,6 @@
 </tgroup>
 </informaltable>
 </refsect1>
-<refsect1 id="cairo-Error-handling.object-hierarchy" role="object_hierarchy">
-<title role="object_hierarchy.title">Object Hierarchy</title>
-<screen>
-</screen>
-</refsect1>
 
 
 <refsect1 id="cairo-Error-handling.description" role="desc">
@@ -73,7 +66,7 @@ code is required before or after each individual cairo function call.</para>
 <programlisting language="C">const <link linkend="char"><returnvalue>char</returnvalue></link>&#160;*
 cairo_status_to_string (<parameter><link linkend="cairo-status-t"><type>cairo_status_t</type></link> status</parameter>);</programlisting>
 <para>Provides a human-readable description of a <link linkend="cairo-status-t"><type>cairo_status_t</type></link>.</para>
-<refsect3 role="parameters">
+<refsect3 id="cairo-status-to-string.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -85,11 +78,10 @@ cairo_status_to_string (<parameter><link linkend="cairo-status-t"><type>cairo_st
 <entry role="parameter_description"><para>a cairo status</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
-</refsect3><refsect3 role="returns">
+</refsect3><refsect3 id="cairo-status-to-string.returns" role="returns">
 <title>Returns</title>
 <para> a string representation of the status</para>
-<para></para>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 <refsect2 id="cairo-debug-reset-static-data" role="function" condition="since:1.0">
 <title>cairo_debug_reset_static_data&#160;()</title>
 <indexterm zone="cairo-debug-reset-static-data" role="1.0"><primary sortas="debug_reset_static_data">cairo_debug_reset_static_data</primary></indexterm>
@@ -110,7 +102,7 @@ active cairo objects remaining, (ie. the appropriate destroy
 functions have been called as necessary). If there are active cairo
 objects, this call is likely to cause a crash, (eg. an assertion
 failure due to a hash table being destroyed when non-empty).</para>
-<para role="since">Since 1.0</para></refsect2>
+<para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-Error-handling.other_details" role="details">
@@ -124,7 +116,7 @@ but when using <link linkend="cairo-t"><type>cairo_t</type></link>, the last err
 the context and can be retrieved with <link linkend="cairo-status"><function>cairo_status()</function></link>.</para>
 <para>New entries may be added in future versions.  Use <link linkend="cairo-status-to-string"><function>cairo_status_to_string()</function></link>
 to get a human-readable representation of an error message.</para>
-<refsect3 role="enum_members">
+<refsect3 id="cairo-status-t.members" role="enum_members">
 <title>Members</title>
 <informaltable role="enum_members_table" pgwide="1" frame="none">
 <tgroup cols="3">
@@ -331,6 +323,26 @@ to get a human-readable representation of an error message.</para>
 </entry>
 <entry role="enum_member_annotations"></entry>
 </row>
+<row role="constant"><entry role="enum_member_name"><para id="CAIRO-STATUS-PNG-ERROR:CAPS">CAIRO_STATUS_PNG_ERROR</para></entry>
+<entry role="enum_member_description"><para>error occurred in libpng while reading from or writing to a PNG file (Since 1.16)</para>
+</entry>
+<entry role="enum_member_annotations"></entry>
+</row>
+<row role="constant"><entry role="enum_member_name"><para id="CAIRO-STATUS-FREETYPE-ERROR:CAPS">CAIRO_STATUS_FREETYPE_ERROR</para></entry>
+<entry role="enum_member_description"><para>error occurred in libfreetype (Since 1.16)</para>
+</entry>
+<entry role="enum_member_annotations"></entry>
+</row>
+<row role="constant"><entry role="enum_member_name"><para id="CAIRO-STATUS-WIN32-GDI-ERROR:CAPS">CAIRO_STATUS_WIN32_GDI_ERROR</para></entry>
+<entry role="enum_member_description"><para>error occurred in the Windows Graphics Device Interface (Since 1.16)</para>
+</entry>
+<entry role="enum_member_annotations"></entry>
+</row>
+<row role="constant"><entry role="enum_member_name"><para id="CAIRO-STATUS-TAG-ERROR:CAPS">CAIRO_STATUS_TAG_ERROR</para></entry>
+<entry role="enum_member_description"><para>invalid tag name, attributes, or nesting (Since 1.16)</para>
+</entry>
+<entry role="enum_member_annotations"></entry>
+</row>
 <row role="constant"><entry role="enum_member_name"><para id="CAIRO-STATUS-LAST-STATUS:CAPS">CAIRO_STATUS_LAST_STATUS</para></entry>
 <entry role="enum_member_description"><para>this is a special value indicating the number of
   status values defined in this enumeration.  When using this value, note
@@ -340,13 +352,13 @@ to get a human-readable representation of an error message.</para>
 <entry role="enum_member_annotations"></entry>
 </row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since 1.0</para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.0">1.0</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-Error-handling.see-also">
 <title>See Also</title>
 <para>cairo_status(), <link linkend="cairo-surface-status"><function>cairo_surface_status()</function></link>, <link linkend="cairo-pattern-status"><function>cairo_pattern_status()</function></link>,
-           <link linkend="cairo-font-face-status"><function>cairo_font_face_status()</function></link>, <link linkend="cairo-scaled-font-status"><function>cairo_scaled_font_status()</function></link>, 
+           <link linkend="cairo-font-face-status"><function>cairo_font_face_status()</function></link>, <link linkend="cairo-scaled-font-status"><function>cairo_scaled_font_status()</function></link>,
            <link linkend="cairo-region-status"><function>cairo_region_status()</function></link></para>
 
 </refsect1>
