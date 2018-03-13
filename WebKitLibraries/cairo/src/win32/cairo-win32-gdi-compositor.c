@@ -634,9 +634,10 @@ _cairo_win32_gdi_compositor_glyphs (const cairo_compositor_t	*compositor,
 const cairo_compositor_t *
 _cairo_win32_gdi_compositor_get (void)
 {
+    static cairo_atomic_once_t once = CAIRO_ATOMIC_ONCE_INIT;
     static cairo_compositor_t compositor;
 
-    if (compositor.delegate == NULL) {
+    if (_cairo_atomic_init_once_enter(&once)) {
 	compositor.delegate = &_cairo_fallback_compositor;
 
 	compositor.paint  = _cairo_win32_gdi_compositor_paint;
@@ -644,6 +645,8 @@ _cairo_win32_gdi_compositor_get (void)
 	compositor.fill   = _cairo_win32_gdi_compositor_fill;
 	compositor.stroke = _cairo_win32_gdi_compositor_stroke;
 	compositor.glyphs = _cairo_win32_gdi_compositor_glyphs;
+
+	_cairo_atomic_init_once_leave(&once);
     }
 
     return &compositor;

@@ -1,7 +1,7 @@
 /*
  * wkcglobalwrapper.h
  *
- * Copyright(c) 2011-2015 ACCESS CO., LTD. All rights reserved.
+ * Copyright(c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,6 +27,8 @@
 
 #ifndef _WKCGLOBALWRAPPER_H_
 #define _WKCGLOBALWRAPPER_H_
+
+#include <wkc/wkcheappeer.h>
 
 typedef struct WKCStaticLocalPtr_ {
     WKCStaticLocalPtr_() {
@@ -57,6 +59,7 @@ typedef struct WKCGlobalObjResetter_ {
     static WKCStaticLocalPtr name##_StaticLocalPtr; \
     if (!name##_StaticLocalPtr.fPtr) { \
         name##_StaticLocalPtr.fPtr = (void*)(new type arg); \
+        wkcHeapNotifyNeverDestroyedPeer((void*)name##_StaticLocalPtr.fPtr); \
     } \
     type& name = *((type*)(name##_StaticLocalPtr.fPtr));
 

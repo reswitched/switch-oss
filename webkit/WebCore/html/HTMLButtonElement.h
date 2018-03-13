@@ -59,6 +59,9 @@ private:
     virtual bool isEnumeratable() const override { return true; }
     virtual bool supportLabels() const override { return true; }
 
+#if PLATFORM(WKC)
+    virtual bool canBeSuccessfulSubmitButton() const override;
+#endif
     virtual bool isSuccessfulSubmitButton() const override;
     virtual bool isActivatedSubmit() const override;
     virtual void setActivatedSubmit(bool flag) override;

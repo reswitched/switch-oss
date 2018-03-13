@@ -1,6 +1,6 @@
-<?xml version='1.0' encoding='UTF-8'?> 
+<?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
-                "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
+		"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
 <!ENTITY version SYSTEM "version.xml">
 ]>
 <refentry id="cairo-Tags-and-Links">
@@ -127,7 +127,7 @@ to. Destinations are created with the <link linkend="CAIRO-TAG-DEST:CAPS"><liter
 : An integer specifying the page number in the PDF file to link to.</para>
 <para><parameter>pos</parameter>
 : [optional] An array of two floats specifying the x,y position
-on the page. Default is 0,0.</para>
+on the page.</para>
 <para>An example of the link attributes to link to a page and x,y position:</para>
 <programlisting>
 "page=3 pos=[3.1 6.2]"
@@ -153,8 +153,9 @@ on the page. Default is 0,0.</para>
 <para> <parameter>page</parameter>
 : An integer specifying the page number in the PDF file.</para>
 <para> <parameter>pos</parameter>
-: [optional] An array of two floats specifying the x,y position
- on the page. Default is 0,0.</para>
+: [optional] An array of two floats specifying the x,y
+ position on the page. Position coordinates in external files are in PDF
+ coordinates (0,0 at bottom left).</para>
 <para>An example of the link attributes to PDF file:</para>
 <programlisting>
 "file='document.pdf' page=16 pos=[25 40]"

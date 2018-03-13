@@ -1564,8 +1564,9 @@ template <class TreeBuilder> bool Parser<LexerType>::parseFunctionInfo(TreeBuild
 #endif
     }
     
-    bool isClassConstructor = constructorKind != ConstructorKind::None;
-    
+    functionScope->setConstructorKind(constructorKind);
+    functionScope->setExpectedSuperBinding(expectedSuperBinding);
+
     functionInfo.bodyStartColumn = startColumn;
     
     // If we know about this function already, we can use the cached info and skip the parser to the end of the function.
@@ -1637,12 +1638,6 @@ template <class TreeBuilder> bool Parser<LexerType>::parseFunctionInfo(TreeBuild
         semanticFailIfTrue(m_vm->propertyNames->arguments == *functionInfo.name, "'", functionInfo.name->impl(), "' is not a valid function name in strict mode");
         semanticFailIfTrue(m_vm->propertyNames->eval == *functionInfo.name, "'", functionInfo.name->impl(), "' is not a valid function name in strict mode");
     }
-    if (functionScope->hasDirectSuper()) {
-        semanticFailIfTrue(!isClassConstructor, "Cannot call super() outside of a class constructor");
-        semanticFailIfTrue(constructorKind != ConstructorKind::Derived, "Cannot call super() in a base class constructor");
-    }
-    if (functionScope->needsSuperBinding())
-        semanticFailIfTrue(expectedSuperBinding == SuperBinding::NotNeeded, "super can only be used in a method of a derived class");
 
     JSTokenLocation location = JSTokenLocation(m_token.m_location);
     functionInfo.endOffset = m_token.m_data.offset;
@@ -1654,7 +1649,9 @@ template <class TreeBuilder> bool Parser<LexerType>::parseFunctionInfo(TreeBuild
     
     // Cache the tokenizer state and the function scope the first time the function is parsed.
     // Any future reparsing can then skip the function.
-    static const int minimumFunctionLengthToCache = 16;
+    // For arrow function is 8 = x=>x + 4 symbols;
+    // For ordinary function is 16  = function(){} + 4 symbols
+    const int minimumFunctionLengthToCache = functionBodyType == StandardFunctionBodyBlock ? 16 : 8;
     std::unique_ptr<SourceProviderCacheItem> newInfo;
     int functionLength = functionInfo.endOffset - functionInfo.startOffset;
     if (TreeBuilder::CanUseFunctionCache && m_functionCache && functionLength > minimumFunctionLengthToCache) {
@@ -2802,7 +2799,16 @@ template <class TreeBuilder> TreeExpression Parser<LexerType>::parseMemberExpres
     if (baseIsSuper) {
         base = context.superExpr(location);
         next();
-        currentScope()->setNeedsSuperBinding();
+        ScopeRef functionScope = currentFunctionScope();
+        if (!functionScope->setNeedsSuperBinding()) {
+            // It unnecessary to check of using super during reparsing one more time. Also it can lead to syntax error
+            // in case of arrow function because during reparsing we don't know whether we currently parse the arrow function
+            // inside of the constructor or method.
+            if (!m_lexer->isReparsingFunction()) {
+                SuperBinding functionSuperBinding = functionScope->expectedSuperBinding();
+                semanticFailIfTrue(functionSuperBinding == SuperBinding::NotNeeded, "super is not valid in this context");
+            }
+        }
     } else
         base = parsePrimaryExpression(context);
 
@@ -2836,8 +2842,19 @@ template <class TreeBuilder> TreeExpression Parser<LexerType>::parseMemberExpres
                 JSTextPosition expressionEnd = lastTokenEndPosition();
                 TreeArguments arguments = parseArguments(context, AllowSpread);
                 failIfFalse(arguments, "Cannot parse call arguments");
-                if (baseIsSuper)
-                    currentScope()->setHasDirectSuper();
+                if (baseIsSuper) {
+                    ScopeRef functionScope = currentFunctionScope();
+                    if (!functionScope->setHasDirectSuper()) {
+                        // It unnecessary to check of using super during reparsing one more time. Also it can lead to syntax error
+                        // in case of arrow function because during reparsing we don't know whether we currently parse the arrow function
+                        // inside of the constructor or method.
+                        if (!m_lexer->isReparsingFunction()) {
+                            ConstructorKind functionConstructorKind = functionScope->constructorKind();
+                            semanticFailIfTrue(functionConstructorKind == ConstructorKind::None, "super is not valid in this context");
+                            semanticFailIfTrue(functionConstructorKind != ConstructorKind::Derived, "super is not valid in this context");
+                        }
+                    }
+                }
                 base = context.makeFunctionCallNode(startLocation, base, arguments, expressionStart, expressionEnd, lastTokenEndPosition());
             }
             m_nonLHSCount = nonLHSCount;

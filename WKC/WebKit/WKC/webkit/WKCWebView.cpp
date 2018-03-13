@@ -11,7 +11,7 @@
     Copyright (C) 2009 Igalia S.L.
     Copyright (C) 2009 Movial Creative Technologies Inc.
     Copyright (C) 2009 Bobby Powers
-    Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
+    Copyright (c) 2010-2018 ACCESS CO., LTD. All rights reserved.
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -669,8 +669,8 @@ WKCWebViewPrivate::construct()
 
     settings->setForceCompositingMode(false);
 
-    settings->setAllowDisplayOfInsecureContent(true);
-    settings->setAllowRunningOfInsecureContent(true);
+    settings->setAllowDisplayOfInsecureContent(false);
+    settings->setAllowRunningOfInsecureContent(false);
 
     settings->setMaximumHTMLParserDOMTreeDepth(WebCore::Settings::defaultMaximumHTMLParserDOMTreeDepth);
 
@@ -3663,12 +3663,6 @@ WKCWebKitGetTickCount()
     return wkcGetTickCountPeer();
 }
 
-int
-WKCWebKitSetTimeZone(int offset, bool isSummerTime)
-{
-    return wkcSetTimeZonePeer(offset, isSummerTime);
-}
-
 void
 WKCWebkitRegisterGetCurrentTimeCallback(WKC::GetCurrentTimeProc in_proc)
 {
@@ -4723,16 +4717,13 @@ WKCWebView::setEditable(bool enable)
 void
 WKCWebView::cancelFullScreen()
 {
-    // Unlike the name we cannot use webkitCancelFullScreen() here.
-    // Because the method does not consider the elements inside frames...
-
     WebCore::Document* childmost = 0;
     for (WebCore::Frame* frame = &m_private->core()->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         if (frame->document()->webkitFullscreenElement())
             childmost = frame->document();
     }
     if (childmost)
-        childmost->webkitExitFullscreen();
+        childmost->webkitCancelFullScreen();
 }
 
 void

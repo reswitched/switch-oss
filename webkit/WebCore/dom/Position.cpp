@@ -119,7 +119,7 @@ Position::Position(PassRefPtr<Node> anchorNode, int offset, AnchorType anchorTyp
     , m_anchorType(anchorType)
     , m_isLegacyEditingPosition(false)
 {
-    ASSERT(!m_anchorNode || !editingIgnoresContent(m_anchorNode.get()) || !m_anchorNode->isShadowRoot());
+    ASSERT(!m_anchorNode || !editingIgnoresContent(m_anchorNode.get()));
     ASSERT(!m_anchorNode || !m_anchorNode->isPseudoElement());
     ASSERT(anchorType == PositionIsOffsetInAnchor);
 }
@@ -162,7 +162,7 @@ Node* Position::containerNode() const
         return m_anchorNode.get();
     case PositionIsBeforeAnchor:
     case PositionIsAfterAnchor:
-        return findParent(*m_anchorNode);
+        return m_anchorNode->parentNode();
     }
     ASSERT_NOT_REACHED();
     return nullptr;
@@ -222,7 +222,7 @@ Position Position::parentAnchoredEquivalent() const
     
     // FIXME: This should only be necessary for legacy positions, but is also needed for positions before and after Tables
     if (m_offset <= 0 && (m_anchorType != PositionIsAfterAnchor && m_anchorType != PositionIsAfterChildren)) {
-        if (findParent(*m_anchorNode) && (editingIgnoresContent(m_anchorNode.get()) || isRenderedTable(m_anchorNode.get())))
+        if (m_anchorNode->parentNode() && (editingIgnoresContent(m_anchorNode.get()) || isRenderedTable(m_anchorNode.get())))
             return positionInParentBeforeNode(m_anchorNode.get());
         return Position(m_anchorNode.get(), 0, PositionIsOffsetInAnchor);
     }
@@ -335,7 +335,7 @@ Position Position::previous(PositionMoveType moveType) const
         }
     }
 
-    ContainerNode* parent = findParent(*node);
+    ContainerNode* parent = node->parentNode();
     if (!parent)
         return *this;
 
@@ -382,7 +382,7 @@ Position Position::next(PositionMoveType moveType) const
         return createLegacyEditingPosition(node, (moveType == Character) ? uncheckedNextOffset(node, offset) : offset + 1);
     }
 
-    ContainerNode* parent = findParent(*node);
+    ContainerNode* parent = node->parentNode();
     if (!parent)
         return *this;
 
@@ -484,7 +484,7 @@ bool Position::atStartOfTree() const
         return true;
 
     Node* container = containerNode();
-    if (container && findParent(*container))
+    if (container && container->parentNode())
         return false;
 
     switch (m_anchorType) {
@@ -509,7 +509,7 @@ bool Position::atEndOfTree() const
         return true;
 
     Node* container = containerNode();
-    if (container && findParent(*container))
+    if (container && container->parentNode())
         return false;
 
     switch (m_anchorType) {
@@ -942,11 +942,6 @@ bool Position::hasRenderedNonAnonymousDescendantsWithHeight(const RenderElement&
 bool Position::nodeIsUserSelectNone(Node* node)
 {
     return node && node->renderer() && node->renderer()->style().userSelect() == SELECT_NONE;
-}
-
-ContainerNode* Position::findParent(const Node& node)
-{
-    return node.nonShadowBoundaryParentNode();
 }
 
 #if ENABLE(USERSELECT_ALL)

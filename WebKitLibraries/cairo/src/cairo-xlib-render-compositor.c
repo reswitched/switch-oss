@@ -1725,9 +1725,10 @@ composite_glyphs (void				*surface,
 const cairo_compositor_t *
 _cairo_xlib_mask_compositor_get (void)
 {
+    static cairo_atomic_once_t once = CAIRO_ATOMIC_ONCE_INIT;
     static cairo_mask_compositor_t compositor;
 
-    if (compositor.base.delegate == NULL) {
+    if (_cairo_atomic_init_once_enter(&once)) {
 	_cairo_mask_compositor_init (&compositor,
 				     _cairo_xlib_fallback_compositor_get ());
 
@@ -1745,6 +1746,8 @@ _cairo_xlib_mask_compositor_get (void)
 	compositor.composite_boxes = composite_boxes;
 	compositor.check_composite_glyphs = check_composite_glyphs;
 	compositor.composite_glyphs = composite_glyphs;
+
+	_cairo_atomic_init_once_leave(&once);
     }
 
     return &compositor.base;
@@ -1973,9 +1976,10 @@ composite_tristrip (void		*abstract_dst,
 const cairo_compositor_t *
 _cairo_xlib_traps_compositor_get (void)
 {
+    static cairo_atomic_once_t once = CAIRO_ATOMIC_ONCE_INIT;
     static cairo_traps_compositor_t compositor;
 
-    if (compositor.base.delegate == NULL) {
+    if (_cairo_atomic_init_once_enter(&once)) {
 	_cairo_traps_compositor_init (&compositor,
 				      _cairo_xlib_mask_compositor_get ());
 
@@ -1997,6 +2001,8 @@ _cairo_xlib_traps_compositor_get (void)
 	compositor.composite_tristrip = composite_tristrip;
 	compositor.check_composite_glyphs = check_composite_glyphs;
 	compositor.composite_glyphs = composite_glyphs;
+
+	_cairo_atomic_init_once_leave(&once);
     }
 
     return &compositor.base;

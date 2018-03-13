@@ -49,7 +49,7 @@ namespace WebCore {
 static double monotonicTimeToDocumentMilliseconds(Document* document, double seconds)
 {
     ASSERT(seconds >= 0.0);
-    return document->loader()->timing().monotonicTimeToZeroBasedDocumentTime(seconds) * 1000.0;
+    return Performance::reduceTimeResolution(document->loader()->timing().monotonicTimeToZeroBasedDocumentTime(seconds)) * 1000.0;
 }
 
 static bool passesTimingAllowCheck(const ResourceResponse& response, Document* requestingDocument)
@@ -148,7 +148,7 @@ double PerformanceResourceTiming::connectStart() const
         return domainLookupEnd();
 
     // connectStart includes any DNS time, so we may need to trim that off.
-    int connectStart = m_timing.connectStart;
+    double connectStart = m_timing.connectStart;
     if (m_timing.domainLookupEnd >= 0)
         connectStart = m_timing.domainLookupEnd;
 
@@ -195,15 +195,13 @@ double PerformanceResourceTiming::responseEnd() const
 #endif
 }
 
-double PerformanceResourceTiming::resourceTimeToDocumentMilliseconds(int deltaMilliseconds) const
+double PerformanceResourceTiming::resourceTimeToDocumentMilliseconds(double deltaMilliseconds) const
 {
     if (!deltaMilliseconds)
         return 0.0;
-#if !PLATFORM(WKC)
-    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_requestingDocument->loader()->timing().navigationStart()) + deltaMilliseconds;
-#else
-    return monotonicTimeToDocumentMilliseconds(m_requestingDocument, m_requestingDocument->loader()->timing().navigationStart()) + deltaMilliseconds;
-#endif
+    double documentStartTime = m_requestingDocument->loader()->timing().monotonicTimeToZeroBasedDocumentTime(m_requestingDocument->loader()->timing().navigationStart()) * 1000.0;
+    double resourceTimeSeconds = (documentStartTime + deltaMilliseconds) / 1000.0;
+    return 1000.0 * Performance::reduceTimeResolution(resourceTimeSeconds);
 }
 
 } // namespace WebCore

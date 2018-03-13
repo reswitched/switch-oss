@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2006, 2007, 2013 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Nuanti Ltd.
- * Copyright (C) 2012-2017 ACCESS CO., LTD. All rights reserved.
+ * Copyright (C) 2012-2018 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -780,6 +780,11 @@ static bool isFocusControlBannedElement(const FocusCandidate& candidate)
     }
     Element& candidateElement = downcast<Element>(*candidate.visibleNode);
 
+    Element* fullscreenElement = document.webkitCurrentFullScreenElement();
+    if (fullscreenElement && fullscreenElement->parentElement() && fullscreenElement->parentElement() == &candidateElement) {
+        return true;
+    }
+
     IntRect frameRect = view->frameRect();
     if (view->parent())
         frameRect = view->parent()->contentsToWindow(frameRect);
@@ -799,6 +804,7 @@ static bool isFocusControlBannedElement(const FocusCandidate& candidate)
         IntRect rect = roundedIntRect(candidateRect);
         rect = mainView->contentsToWindow(rect);
         rect.intersect(frameRect);
+        rect.intersect(mainView->frameRect());
         if (rect.isEmpty())
             continue;
 
@@ -1273,7 +1279,7 @@ static bool isScrollableContainerNode(Node* node)
 
     if (RenderObject* renderer = node->renderer()) {
         return (renderer->isBox() && downcast<RenderBox>(renderer)->canBeScrolledAndHasScrollableArea()
-             && node->hasChildNodes() && !node->isDocumentNode() && node->firstChild()->isElementNode());
+             && node->hasChildNodes() && !node->isDocumentNode());
     }
 
     return false;
@@ -1312,7 +1318,6 @@ void FocusController::findFocusableNodeInDirection(Node* container, Node* starti
 
         if (isScrollableContainerNode(element) && !element->renderer()->isTextArea()) {
             findFocusableNodeInDirection(element, startingElement, current.rect, direction, event, closest, scope);
-            continue;
         }
 
         if (element == startingElement)
@@ -1520,7 +1525,6 @@ static Element* findVerticallyFocusableElement(FocusDirection direction, Element
         return 0;
 
     Element* element = 0;
-    Document* document;
 
     for (element = start; element; element = getClosestElement(element, direction)) {
 
@@ -1541,44 +1545,6 @@ static Element* findVerticallyFocusableElement(FocusDirection direction, Element
         if (candidate.isNull())
             continue;
 
-        if (element->isFrameOwnerElement() || (isScrollableContainerNode(element) && !element->renderer()->isTextArea())) {
-            Element* childElement = 0;
-            if (element->isFrameOwnerElement()) {
-                HTMLFrameOwnerElement* owner = downcast<HTMLFrameOwnerElement>(element);
-                if (!owner->contentFrame()) {
-                    element = 0;
-                    break;
-                }
-                document = owner->contentFrame()->document();
-                if (direction == FocusDirectionUp) {
-                    childElement = ElementTraversal::lastWithin(*document);
-                } else {
-                    childElement = ElementTraversal::firstWithin(*document);
-                }
-            } else {
-                if (direction == FocusDirectionUp) {
-                    childElement = ElementTraversal::lastChild(*element);
-                } else {
-                    childElement = ElementTraversal::firstChild(*element);
-                }
-            }
-
-            FrameView* frameView = element->document().view();
-            if (!frameView) {
-                return 0;
-            }
-            LayoutRect scopeRect = element->renderer()->absoluteBoundingBoxRect(true);
-            if (scope && !scope->isEmpty())
-                scopeRect.intersect(*scope);
-
-            childElement = findVerticallyFocusableElement(direction, childElement, event, &scopeRect);
-
-            if (childElement) {
-                element = childElement;
-                break;
-            }
-            continue;
-        }
         break;
     }
     return element;
@@ -1639,6 +1605,72 @@ distanceBetweenElementAndPoint(const Element* element,  const LayoutPoint& conte
 }
 
 Element*
+FocusController::findNearestFocusableElementFromPoint(Element* start, const LayoutPoint& point, const LayoutRect& scope)
+{
+    CRASH_IF_STACK_OVERFLOW(WKC_STACK_MARGIN_DEFAULT);
+
+    if (!start)
+        return 0;
+
+    Element* nearest = 0;
+    int nearDist = INT_MAX;
+
+    for (Element* element = start; element; element = findVerticallyFocusableElement(FocusDirectionDown, ElementTraversal::next(*element), 0, &scope)) {
+        if (!element->isKeyboardFocusable(0))
+            continue;
+
+        Element* e = element;
+        if (e->isFrameOwnerElement())  {
+            HTMLFrameOwnerElement* owner = downcast<HTMLFrameOwnerElement>(e);
+            if (!owner->contentFrame()) {
+                continue;
+            }
+            Document* document = owner->contentFrame()->document();
+            Element* child = ElementTraversal::firstWithin(*document);
+
+            FrameView* frameView = e->document().view();
+            if (!frameView) {
+                continue;
+            }
+            LayoutRect scopeRect = e->renderer()->absoluteBoundingBoxRect(true);
+            if (!scope.isEmpty())
+                scopeRect.intersect(scope);
+
+            child = findNearestFocusableElementFromPoint(child, point, scope);
+            if (!child)
+                continue;
+            e = child;
+        } else if (isScrollableContainerNode(e) && !e->renderer()->isTextArea()) {
+            Element* child = ElementTraversal::firstChild(*e);
+            if (!child)
+                continue;
+            e = child;
+        }
+
+        FocusCandidate candidate = FocusCandidate(e, FocusDirectionDown);
+        if (candidate.isNull())
+            continue;
+        if (candidate.isOffscreen)
+            continue;
+        if (isFocusControlBannedElement(candidate))
+            continue;
+
+        int dist = distanceBetweenElementAndPoint(e, point);
+        ASSERT(dist >= 0);
+        if (dist == 0) {
+            nearest = e;
+            break;
+        }
+        if (dist < nearDist) {
+            nearest = e;
+            nearDist = dist;
+        }
+    }
+
+    return nearest;
+}
+
+Element*
 FocusController::findNearestFocusableElementFromPoint(const IntPoint& point, const IntRect* scope)
 {
     Element* nearest = 0;
@@ -1660,28 +1692,7 @@ FocusController::findNearestFocusableElementFromPoint(const IntPoint& point, con
     }
 
     Element* element = findFirstFocusableElement(fr, &scopeRect);
-
-    for (; element; element = findVerticallyFocusableElement(FocusDirectionDown, ElementTraversal::next(*element), 0, &scopeRect)) {
-        if (!element->isKeyboardFocusable(0))
-            continue;
-        FocusCandidate candidate = FocusCandidate(element, FocusDirectionDown);
-        if (candidate.isNull())
-            continue;
-        if (candidate.isOffscreen)
-            continue;
-        if (isFocusControlBannedElement(candidate))
-            continue;
-        int dist = distanceBetweenElementAndPoint(element, contentsPoint);
-        ASSERT(dist >= 0);
-        if (dist == 0) {
-            nearest = element;
-            break;
-        }
-        if (dist < nearDist) {
-            nearest = element;
-            nearDist = dist;
-        }
-    }
+    nearest = findNearestFocusableElementFromPoint(element, contentsPoint, scopeRect);
 
     return nearest;
 }
@@ -1689,6 +1700,8 @@ FocusController::findNearestFocusableElementFromPoint(const IntPoint& point, con
 Element*
 FocusController::findNearestClickableElementFromPoint(const Element* start, const LayoutPoint& point, const LayoutRect& scope)
 {
+    CRASH_IF_STACK_OVERFLOW(WKC_STACK_MARGIN_DEFAULT);
+
     if (!start)
         return 0;
 

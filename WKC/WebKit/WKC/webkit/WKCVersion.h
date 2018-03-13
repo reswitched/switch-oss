@@ -1,7 +1,7 @@
 /*
  * WKCWebVersion.h
  *
- * Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -29,7 +29,7 @@
 #define WKC_VERSION_CHECK(major, minor, micro) \
     (((major)*10000) + ((minor)*100) + (micro)) >= ((WKC_VERSION_MAJOR*10000) + (WKC_VERSION_MINOR*100) + (WKC_VERSION_MICRO))
 
-#define WKC_CUSTOMER_RELEASE_VERSION "0.7.9"
+#define WKC_CUSTOMER_RELEASE_VERSION "0.8.9"
 
 #define WKC_WEBKIT_VERSION "601.6"
 

@@ -590,9 +590,10 @@ void AnimationController::cancelAnimations(RenderElement& renderer)
         return;
 
     Element* element = renderer.element();
+    if (!element || element->document().renderTreeBeingDestroyed())
+        return;
     ASSERT(!element || !element->document().inPageCache());
-    if (element)
-        element->setNeedsStyleRecalc(SyntheticStyleChange);
+    element->setNeedsStyleRecalc(SyntheticStyleChange);
 }
 
 bool AnimationController::updateAnimations(RenderElement& renderer, RenderStyle& newStyle, Ref<RenderStyle>& animatedStyle)

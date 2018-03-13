@@ -1,7 +1,7 @@
 /*
  *  Copyright (C) 1999-2002 Harri Porten (porten@kde.org)
  *  Copyright (C) 2001 Peter Kelly (pmk@post.com)
- *  Copyright (C) 2004, 2007, 2008 Apple Inc. All rights reserved.
+ *  Copyright (C) 2004-2017 Apple Inc. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -381,14 +381,22 @@ JSValue JSString::toPrimitive(ExecState*, PreferredPrimitiveType) const
 
 bool JSString::getPrimitiveNumber(ExecState* exec, double& number, JSValue& result) const
 {
+    VM& vm = exec->vm();
+    StringView view = unsafeView(exec);
+    if (UNLIKELY(vm.exception()))
+        return false;
     result = this;
-    number = jsToNumber(view(exec));
+    number = jsToNumber(view);
     return false;
 }
 
 double JSString::toNumber(ExecState* exec) const
 {
-    return jsToNumber(view(exec));
+    VM& vm = exec->vm();
+    StringView view = unsafeView(exec);
+    if (UNLIKELY(vm.exception()))
+        return 0;
+    return jsToNumber(view);
 }
 
 inline StringObject* StringObject::create(VM& vm, JSGlobalObject* globalObject, JSString* string)

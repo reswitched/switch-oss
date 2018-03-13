@@ -1,7 +1,7 @@
 /*
  *  wkcheappeer.h
  *
- *  Copyright(c) 2011-2015 ACCESS CO., LTD. All rights reserved.
+ *  Copyright(c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  */
 
 #ifndef _WKC_HEAP_PEER_H_
@@ -79,6 +79,7 @@ WKC_PEER_API void wkcHeapDecommitPeer(void* ptr, size_t size);
 
 WKC_PEER_API size_t wkcHeapGetPageSizePeer(void);
 WKC_PEER_API void wkcHeapCacheFlushPeer(void* in_ptr, size_t in_size);
+WKC_PEER_API void wkcHeapNotifyNeverDestroyedPeer(void* in_ptr);
 
 #ifndef WKC_HEAP_PEER_COMPILE_ASSERT
 #define WKC_HEAP_PEER_COMPILE_ASSERT(exp, name) typedef int dummy##name [(exp) ? 1 : -1]

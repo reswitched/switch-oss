@@ -40,7 +40,6 @@
 namespace WebCore {
 
 SVGResources::SVGResources()
-    : m_linkedResource(0)
 {
 }
 
@@ -153,6 +152,21 @@ static inline String targetReferenceFromResource(SVGElement& element)
         ASSERT_NOT_REACHED();
 
     return SVGURIReference::fragmentIdentifierFromIRIString(target, element.document());
+}
+
+static inline bool isChainableResource(const SVGElement& element, const SVGElement& linkedResource)
+{
+    if (is<SVGPatternElement>(element))
+        return is<SVGPatternElement>(linkedResource);
+
+    if (is<SVGGradientElement>(element))
+        return is<SVGGradientElement>(linkedResource);
+    
+    if (is<SVGFilterElement>(element))
+        return is<SVGFilterElement>(linkedResource);
+
+    ASSERT_NOT_REACHED();
+    return false;
 }
 
 static inline RenderSVGResourceContainer* paintingResourceFromSVGPaint(Document& document, const SVGPaint::SVGPaintType& paintType, const String& paintUri, AtomicString& id, bool& hasPendingResource)
@@ -275,10 +289,13 @@ bool SVGResources::buildCachedResources(const RenderElement& renderer, const Ren
 
     if (chainableResourceTags().contains(tagName)) {
         AtomicString id(targetReferenceFromResource(element));
-        if (setLinkedResource(getRenderSVGResourceContainerById(document, id)))
-            foundResources = true;
-        else
+        auto* linkedResource = getRenderSVGResourceContainerById(document, id);
+        if (!linkedResource)
             registerPendingResource(extensions, id, element);
+        else if (isChainableResource(element, linkedResource->element())) {
+            setLinkedResource(linkedResource);
+            foundResources = true;
+        }
     }
 
     return foundResources;

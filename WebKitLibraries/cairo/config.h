@@ -130,14 +130,18 @@
 /* Define to 1 if you have the `funlockfile' function. */
 #undef HAVE_FUNLOCKFILE
 
+/* Enable if your compiler supports the legacy GCC __sync_* atomic primitives
+   */
+#undef HAVE_GCC_LEGACY_ATOMICS
+
 /* Whether you have gcov */
 #undef HAVE_GCOV
 
 /* Define to 1 if you have the `getline' function. */
 #undef HAVE_GETLINE
 
-/* Enable if your compiler supports the Intel __sync_* atomic primitives */
-#undef HAVE_INTEL_ATOMIC_PRIMITIVES
+/* Define to 1 if you have the `gmtime_r' function. */
+#undef HAVE_GMTIME_R
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
@@ -156,6 +160,9 @@
 
 /* Define to 1 if you have the `link' function. */
 #undef HAVE_LINK
+
+/* Define to 1 if you have the `localtime_r' function. */
+#undef HAVE_LOCALTIME_R
 
 /* Define to 1 if you have the Valgrind lockdep tool */
 #undef HAVE_LOCKDEP
@@ -245,6 +252,9 @@
 /* Define to 1 if you have the <time.h> header file. */
 #undef HAVE_TIME_H
 
+/* Define to 1 if typeof works with your compiler. */
+#undef HAVE_TYPEOF
+
 /* Define to 1 if the system has the type `uint128_t'. */
 #undef HAVE_UINT128_T
 
@@ -265,9 +275,6 @@
 
 /* Define to 1 if you have the `waitpid' function. */
 #undef HAVE_WAITPID
-
-/* Define to 1 if you have the <windows.h> header file. */
-#undef HAVE_WINDOWS_H
 
 /* Define to 1 if you have the <X11/extensions/shmproto.h> header file. */
 #undef HAVE_X11_EXTENSIONS_SHMPROTO_H
@@ -321,7 +328,7 @@
 #define PACKAGE_URL
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.15.6"
+#define PACKAGE_VERSION "1.15.10"
 
 /* Shared library file extension */
 #define SHARED_LIB_EXT ".so"
@@ -436,6 +443,9 @@
 #ifndef __cplusplus
 #define inline
 #endif
+
+/* Define to __typeof__ if your compiler spells it that way. */
+#undef typeof
 
 #define WKC_CAIRO_CUSTOMIZE 1
 #include "wkccairorename.h"

@@ -123,7 +123,7 @@ bool RegExpObject::defineOwnProperty(JSObject* object, ExecState* exec, Property
         if (!regExp->m_lastIndexIsWritable) {
             if (descriptor.writablePresent() && descriptor.writable())
                 return reject(exec, shouldThrow, "Attempting to change writable attribute of unconfigurable property.");
-            if (!sameValue(exec, regExp->getLastIndex(), descriptor.value()))
+            if (descriptor.value() && !sameValue(exec, regExp->getLastIndex(), descriptor.value()))
                 return reject(exec, shouldThrow, "Attempting to change value of a readonly property.");
             return true;
         }

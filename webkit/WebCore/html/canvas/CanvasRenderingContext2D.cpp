@@ -2078,6 +2078,14 @@ void CanvasRenderingContext2D::putImageData(ImageData* data, ImageBuffer::Coordi
         ec = TYPE_MISMATCH_ERR;
         return;
     }
+
+#if PLATFORM(WKC) 
+    if (data->data()->isNeutered()) {
+        ec = INVALID_STATE_ERR;
+        return;
+    }
+#endif
+
     if (!std::isfinite(dx) || !std::isfinite(dy) || !std::isfinite(dirtyX) || !std::isfinite(dirtyY) || !std::isfinite(dirtyWidth) || !std::isfinite(dirtyHeight)) {
         ec = NOT_SUPPORTED_ERR;
         return;

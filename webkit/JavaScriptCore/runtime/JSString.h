@@ -156,7 +156,7 @@ public:
 
     class SafeView;
     SafeView view(ExecState*) const;
-    StringViewWithUnderlyingString viewWithUnderlyingString(ExecState&) const;
+    StringViewWithUnderlyingString viewWithUnderlyingString(ExecState*) const;
 
     inline bool equal(ExecState*, JSString* other) const;
     const String& value(ExecState*) const;
@@ -230,7 +230,7 @@ private:
     static JSValue toThis(JSCell*, ExecState*, ECMAMode);
 
     String& string() { ASSERT(!isRope()); return m_value; }
-    StringView unsafeView(ExecState&) const;
+    StringView unsafeView(ExecState*) const;
 
     friend JSValue jsString(ExecState*, JSString*, JSString*);
     friend JSString* jsSubstring(ExecState*, JSString*, unsigned offset, unsigned length);
@@ -400,8 +400,8 @@ private:
     void resolveRopeInternal16(UChar*) const;
     void resolveRopeInternal16NoSubstring(UChar*) const;
     void clearFibers() const;
-    StringView unsafeView(ExecState&) const;
-    StringViewWithUnderlyingString viewWithUnderlyingString(ExecState&) const;
+    StringView unsafeView(ExecState*) const;
+    StringViewWithUnderlyingString viewWithUnderlyingString(ExecState*) const;
 
     WriteBarrierBase<JSString>& fiber(unsigned i) const
     {
@@ -537,8 +537,12 @@ inline const String& JSString::tryGetValue() const
 
 inline JSString* JSString::getIndex(ExecState* exec, unsigned i)
 {
+    VM& vm = exec->vm();
     ASSERT(canGetIndex(i));
-    return jsSingleCharacterString(exec, unsafeView(*exec)[i]);
+    StringView view = unsafeView(exec);
+    if (UNLIKELY(vm.exception()))
+        return nullptr;
+    return jsSingleCharacterString(exec, view[i]);
 }
 
 inline JSString* jsString(VM* vm, const String& s)
@@ -681,18 +685,18 @@ inline bool isJSString(JSValue v)
     return v.isCell() && v.asCell()->type() == StringType;
 }
 
-ALWAYS_INLINE StringView JSRopeString::unsafeView(ExecState& state) const
+ALWAYS_INLINE StringView JSRopeString::unsafeView(ExecState* exec) const
 {
     if (isSubstring()) {
         if (is8Bit())
             return StringView(substringBase()->m_value.characters8() + substringOffset(), m_length);
         return StringView(substringBase()->m_value.characters16() + substringOffset(), m_length);
     }
-    resolveRope(&state);
+    resolveRope(exec);
     return m_value;
 }
 
-ALWAYS_INLINE StringViewWithUnderlyingString JSRopeString::viewWithUnderlyingString(ExecState& state) const
+ALWAYS_INLINE StringViewWithUnderlyingString JSRopeString::viewWithUnderlyingString(ExecState* exec) const
 {
     if (isSubstring()) {
         auto& base = substringBase()->m_value;
@@ -700,21 +704,21 @@ ALWAYS_INLINE StringViewWithUnderlyingString JSRopeString::viewWithUnderlyingStr
             return { { base.characters8() + substringOffset(), m_length }, base };
         return { { base.characters16() + substringOffset(), m_length }, base };
     }
-    resolveRope(&state);
+    resolveRope(exec);
     return { m_value, m_value };
 }
 
-ALWAYS_INLINE StringView JSString::unsafeView(ExecState& state) const
+ALWAYS_INLINE StringView JSString::unsafeView(ExecState* exec) const
 {
     if (isRope())
-        return static_cast<const JSRopeString*>(this)->unsafeView(state);
+        return static_cast<const JSRopeString*>(this)->unsafeView(exec);
     return m_value;
 }
 
-ALWAYS_INLINE StringViewWithUnderlyingString JSString::viewWithUnderlyingString(ExecState& state) const
+ALWAYS_INLINE StringViewWithUnderlyingString JSString::viewWithUnderlyingString(ExecState* exec) const
 {
     if (isRope())
-        return static_cast<const JSRopeString&>(*this).viewWithUnderlyingString(state);
+        return static_cast<const JSRopeString&>(*this).viewWithUnderlyingString(exec);
     return { m_value, m_value };
 }
 
@@ -735,7 +739,7 @@ inline JSString::SafeView::SafeView(ExecState& state, const JSString& string)
 
 inline JSString::SafeView::operator StringView() const
 {
-    return m_string->unsafeView(*m_state);
+    return m_string->unsafeView(m_state);
 }
 
 inline StringView JSString::SafeView::get() const

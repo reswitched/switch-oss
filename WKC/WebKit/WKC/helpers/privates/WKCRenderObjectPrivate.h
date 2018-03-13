@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -64,16 +64,20 @@ public:
 
     bool isTextControl() const;
     bool isTextArea() const;
+    bool isInline() const;
+    bool isRenderFullScreen() const;
     WKCRect absoluteBoundingBoxRect(bool usetransform);
     void focusRingRects(WTF::Vector<WKCRect>&);
     WKCRect absoluteClippedOverflowRect();
     bool hasOutline() const;
     RenderStyle* style();
+    RenderObject* parent();
 
 private:
     WebCore::RenderObject* m_webcore;
     RenderObjectWrap m_wkc;
     RenderStylePrivate* m_renderStyle;
+    RenderObjectPrivate* m_parent;
 };
 
 } // namespace

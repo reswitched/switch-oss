@@ -114,10 +114,9 @@ am__aclocal_m4_deps = $(top_srcdir)/build/aclocal.cairo.m4 \
 	$(top_srcdir)/build/aclocal.compare.m4 \
 	$(top_srcdir)/build/aclocal.enable.m4 \
 	$(top_srcdir)/build/aclocal.float.m4 \
-	$(top_srcdir)/build/aclocal.gtk-doc.m4 \
 	$(top_srcdir)/build/aclocal.makefile.m4 \
 	$(top_srcdir)/build/aclocal.pkg.m4 \
-	$(top_srcdir)/build/libtool.m4 \
+	$(top_srcdir)/build/gtk-doc.m4 $(top_srcdir)/build/libtool.m4 \
 	$(top_srcdir)/build/ltoptions.m4 \
 	$(top_srcdir)/build/ltsugar.m4 \
 	$(top_srcdir)/build/ltversion.m4 \
@@ -150,14 +149,15 @@ CONFIG_CLEAN_FILES = cairo-uninstalled.pc cairo-xlib-uninstalled.pc \
 	cairo-os2-uninstalled.pc cairo-beos-uninstalled.pc \
 	cairo-drm-uninstalled.pc cairo-gallium-uninstalled.pc \
 	cairo-png-uninstalled.pc cairo-gl-uninstalled.pc \
-	cairo-glesv2-uninstalled.pc cairo-cogl-uninstalled.pc \
-	cairo-directfb-uninstalled.pc cairo-vg-uninstalled.pc \
-	cairo-egl-uninstalled.pc cairo-glx-uninstalled.pc \
-	cairo-wgl-uninstalled.pc cairo-script-uninstalled.pc \
-	cairo-ft-uninstalled.pc cairo-fc-uninstalled.pc \
-	cairo-ps-uninstalled.pc cairo-pdf-uninstalled.pc \
-	cairo-svg-uninstalled.pc cairo-tee-uninstalled.pc \
-	cairo-xml-uninstalled.pc cairo-gobject-uninstalled.pc
+	cairo-glesv2-uninstalled.pc cairo-glesv3-uninstalled.pc \
+	cairo-cogl-uninstalled.pc cairo-directfb-uninstalled.pc \
+	cairo-vg-uninstalled.pc cairo-egl-uninstalled.pc \
+	cairo-glx-uninstalled.pc cairo-wgl-uninstalled.pc \
+	cairo-script-uninstalled.pc cairo-ft-uninstalled.pc \
+	cairo-fc-uninstalled.pc cairo-ps-uninstalled.pc \
+	cairo-pdf-uninstalled.pc cairo-svg-uninstalled.pc \
+	cairo-tee-uninstalled.pc cairo-xml-uninstalled.pc \
+	cairo-gobject-uninstalled.pc
 CONFIG_CLEAN_VPATH_FILES =
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -530,6 +530,11 @@ GOBJECT_LIBS = @GOBJECT_LIBS@
 GREP = @GREP@
 GS = @GS@
 GTKDOC_CHECK = @GTKDOC_CHECK@
+GTKDOC_CHECK_PATH = @GTKDOC_CHECK_PATH@
+GTKDOC_DEPS_CFLAGS = @GTKDOC_DEPS_CFLAGS@
+GTKDOC_DEPS_LIBS = @GTKDOC_DEPS_LIBS@
+GTKDOC_MKPDF = @GTKDOC_MKPDF@
+GTKDOC_REBASE = @GTKDOC_REBASE@
 HTML_DIR = @HTML_DIR@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
@@ -628,6 +633,8 @@ gl_CFLAGS = @gl_CFLAGS@
 gl_LIBS = @gl_LIBS@
 glesv2_CFLAGS = @glesv2_CFLAGS@
 glesv2_LIBS = @glesv2_LIBS@
+glesv3_CFLAGS = @glesv3_CFLAGS@
+glesv3_LIBS = @glesv3_LIBS@
 glib_CFLAGS = @glib_CFLAGS@
 glib_LIBS = @glib_LIBS@
 gtk_CFLAGS = @gtk_CFLAGS@
@@ -845,6 +852,8 @@ cairo-png-uninstalled.pc: $(top_builddir)/config.status $(top_srcdir)/src/cairo-
 cairo-gl-uninstalled.pc: $(top_builddir)/config.status $(top_srcdir)/src/cairo-features-uninstalled.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 cairo-glesv2-uninstalled.pc: $(top_builddir)/config.status $(top_srcdir)/src/cairo-features-uninstalled.pc.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+cairo-glesv3-uninstalled.pc: $(top_builddir)/config.status $(top_srcdir)/src/cairo-features-uninstalled.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 cairo-cogl-uninstalled.pc: $(top_builddir)/config.status $(top_srcdir)/src/cairo-features-uninstalled.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@

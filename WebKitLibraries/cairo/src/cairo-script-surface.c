@@ -1202,7 +1202,8 @@ static cairo_status_t
 _write_image_surface (cairo_output_stream_t *output,
 		      const cairo_image_surface_t *image)
 {
-    int stride, row, width;
+    int row, width;
+    ptrdiff_t stride;
     uint8_t row_stack[CAIRO_STACK_BUFFER_SIZE];
     uint8_t *rowdata;
     uint8_t *data;

@@ -3134,6 +3134,59 @@ _cairo_gradient_pattern_is_solid (const cairo_gradient_pattern_t *gradient,
     return TRUE;
 }
 
+/**
+ * _cairo_pattern_is_constant_alpha:
+ *
+ * Convenience function to determine whether a pattern has constant
+ * alpha within the given extents. In this case the alpha argument is
+ * initialized to the alpha within the extents.
+ *
+ * Return value: %TRUE if the pattern has constant alpha.
+ **/
+cairo_bool_t
+_cairo_pattern_is_constant_alpha (const cairo_pattern_t         *abstract_pattern,
+				  const cairo_rectangle_int_t   *extents,
+				  double                        *alpha)
+{
+    const cairo_pattern_union_t *pattern;
+    cairo_color_t color;
+
+    if (_cairo_pattern_is_clear (abstract_pattern)) {
+	*alpha = 0.0;
+	return TRUE;
+    }
+
+    if (_cairo_pattern_is_opaque (abstract_pattern, extents)) {
+	*alpha = 1.0;
+	return TRUE;
+    }
+
+    pattern = (cairo_pattern_union_t *) abstract_pattern;
+    switch (pattern->base.type) {
+    case CAIRO_PATTERN_TYPE_SOLID:
+	*alpha = pattern->solid.color.alpha;
+	return TRUE;
+
+    case CAIRO_PATTERN_TYPE_LINEAR:
+    case CAIRO_PATTERN_TYPE_RADIAL:
+	if (_cairo_gradient_pattern_is_solid (&pattern->gradient.base, extents, &color)) {
+	    *alpha = color.alpha;
+	    return TRUE;
+	} else {
+	    return FALSE;
+	}
+
+	/* TODO: need to test these as well */
+    case CAIRO_PATTERN_TYPE_SURFACE:
+    case CAIRO_PATTERN_TYPE_RASTER_SOURCE:
+    case CAIRO_PATTERN_TYPE_MESH:
+	return FALSE;
+    }
+
+    ASSERT_NOT_REACHED;
+    return FALSE;
+}
+
 static cairo_bool_t
 _mesh_is_clear (const cairo_mesh_pattern_t *mesh)
 {

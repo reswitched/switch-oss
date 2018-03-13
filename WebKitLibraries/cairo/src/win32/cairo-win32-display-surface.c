@@ -936,7 +936,7 @@ static const cairo_surface_backend_t cairo_win32_display_surface_backend = {
  *
  * Return value: the newly created surface, NULL on failure
  *
- * Since: 1.14.3
+ * Since: 1.14
  **/
 cairo_surface_t *
 cairo_win32_surface_create_with_format (HDC hdc, cairo_format_t format)

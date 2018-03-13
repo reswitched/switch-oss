@@ -230,6 +230,7 @@ extern "C" {
 #define ASSERT(assertion) ((void)0)
 #define ASSERT_AT(assertion, file, line, function) ((void)0)
 #define ASSERT_NOT_REACHED() ((void)0)
+#define ASSERT_IMPLIES(condition, assertion) ((void)0)
 #define NO_RETURN_DUE_TO_ASSERT
 
 #define ASSERT_UNUSED(variable, assertion) ((void)variable)
@@ -267,6 +268,12 @@ extern "C" {
     WTFReportAssertionFailure(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, 0); \
 } while (0)
 
+#define ASSERT_IMPLIES(condition, assertion) do { \
+    if ((condition) && !(assertion)) { \
+        WTFReportAssertionFailure(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, #condition " => " #assertion); \
+    } \
+} while (0)
+
 #else // PLATFORM(WKC) && CRASH_DEBUG_ASSERT_DISABLED
 
 #define ASSERT(assertion) do {\
@@ -286,6 +293,13 @@ extern "C" {
 #define ASSERT_NOT_REACHED() do { \
     WTFReportAssertionFailure(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, 0); \
     CRASH(); \
+} while (0)
+
+#define ASSERT_IMPLIES(condition, assertion) do { \
+    if ((condition) && !(assertion)) { \
+        WTFReportAssertionFailure(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, #condition " => " #assertion); \
+        CRASH(); \
+    } \
 } while (0)
 
 #endif // PLATFORM(WKC) && CRASH_DEBUG_ASSERT_DISABLED

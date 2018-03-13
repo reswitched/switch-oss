@@ -37,6 +37,7 @@
 #include "DiagnosticLoggingKeys.h"
 #include "Document.h"
 #include "DocumentLoader.h"
+#include "FocusController.h"
 #include "FrameLoader.h"
 #include "FrameLoaderClient.h"
 #include "FrameView.h"
@@ -389,6 +390,20 @@ static void setPageCacheState(Page& page, Document::PageCacheState pageCacheStat
     }
 }
 
+// When entering page cache, tear down the render tree before setting the in-cache flag.
+// This maintains the invariant that render trees are never present in the page cache.
+// Note that destruction happens bottom-up so that the main frame's tree dies last.
+static void destroyRenderTree(MainFrame& mainFrame)
+{
+    for (Frame* frame = mainFrame.tree().traversePreviousWithWrap(true); frame; frame = frame->tree().traversePreviousWithWrap(false)) {
+        if (!frame->document())
+            continue;
+        auto& document = *frame->document();
+        if (document.hasLivingRenderTree())
+            document.destroyRenderTree();
+    }
+}
+
 static void firePageHideEventRecursively(Frame& frame)
 {
     auto* document = frame.document();
@@ -417,6 +432,11 @@ void PageCache::addIfCacheable(HistoryItem& item, Page* page)
 
     setPageCacheState(*page, Document::AboutToEnterPageCache);
 
+    // Focus the main frame, defocusing a focused subframe (if we have one). We do this here,
+    // before the page enters the page cache, while we still can dispatch DOM blur/focus events.
+    if (page->focusController().focusedFrame())
+        page->focusController().setFocusedFrame(&page->mainFrame());
+
     // Fire the pagehide event in all frames.
     firePageHideEventRecursively(page->mainFrame());
 
@@ -426,6 +446,8 @@ void PageCache::addIfCacheable(HistoryItem& item, Page* page)
         setPageCacheState(*page, Document::NotInPageCache);
         return;
     }
+
+    destroyRenderTree(page->mainFrame());
 
     setPageCacheState(*page, Document::InPageCache);
 

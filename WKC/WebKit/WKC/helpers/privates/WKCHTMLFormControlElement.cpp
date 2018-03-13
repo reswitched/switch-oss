@@ -75,12 +75,6 @@ HTMLFormControlElementPrivate::dispatchFormControlChangeEvent()
     webcore()->dispatchFormControlChangeEvent();
 }
 
-bool
-HTMLFormControlElementPrivate::isSuccessfulSubmitButton() const
-{
-    return webcore()->isSuccessfulSubmitButton();
-}
-
 const AtomicString&
 HTMLFormControlElementPrivate::type()
 {
@@ -110,12 +104,6 @@ void
 HTMLFormControlElement::dispatchFormControlChangeEvent()
 {
     return static_cast<HTMLFormControlElementPrivate&>(priv()).dispatchFormControlChangeEvent();
-}
-
-bool
-HTMLFormControlElement::isSuccessfulSubmitButton() const
-{
-    return static_cast<HTMLFormControlElementPrivate&>(priv()).isSuccessfulSubmitButton();
 }
 
 const AtomicString&

@@ -2128,6 +2128,7 @@ botor_add_edge (cairo_botor_scan_converter_t *self,
     return CAIRO_STATUS_SUCCESS;
 }
 
+#if 0
 static cairo_status_t
 _cairo_botor_scan_converter_add_edge (void		*converter,
 				      const cairo_point_t *p1,
@@ -2146,6 +2147,7 @@ _cairo_botor_scan_converter_add_edge (void		*converter,
 
     return botor_add_edge (self, &edge);
 }
+#endif
 
 cairo_status_t
 _cairo_botor_scan_converter_add_polygon (cairo_botor_scan_converter_t *converter,

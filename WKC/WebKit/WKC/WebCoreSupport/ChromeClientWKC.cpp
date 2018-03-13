@@ -863,6 +863,9 @@ ChromeClientWKC::enterFullScreenForElement(WebCore::Element* element)
 void
 ChromeClientWKC::exitFullScreenForElement(WebCore::Element* element)
 {
+    if (!element)
+        return;
+
     if (element->isMediaElement()) {
         WebCore::HTMLMediaElement* mediaElement = downcast<WebCore::HTMLMediaElement>(element);
         WebCore::MediaPlayer* player = mediaElement->player();

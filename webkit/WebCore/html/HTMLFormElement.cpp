@@ -42,6 +42,7 @@
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "HTMLTableElement.h"
+#include "NodeRareData.h"
 #include "Page.h"
 #include "RenderTextControl.h"
 #include "ScriptController.h"
@@ -172,16 +173,35 @@ Node* HTMLFormElement::item(unsigned index)
 void HTMLFormElement::submitImplicitly(Event* event, bool fromImplicitSubmissionTrigger)
 {
     unsigned submissionTriggerCount = 0;
+#if PLATFORM(WKC)
+    bool seenDefaultButton = false;
+#endif
     for (unsigned i = 0; i < m_associatedElements.size(); ++i) {
         FormAssociatedElement* formAssociatedElement = m_associatedElements[i];
         if (!is<HTMLFormControlElement>(*formAssociatedElement))
             continue;
         HTMLFormControlElement& formElement = downcast<HTMLFormControlElement>(*formAssociatedElement);
+#if !PLATFORM(WKC)
         if (formElement.isSuccessfulSubmitButton()) {
             if (formElement.renderer()) {
                 formElement.dispatchSimulatedClick(event);
                 return;
             }
+#else
+        if (!seenDefaultButton && formElement.canBeSuccessfulSubmitButton()) {
+            if (fromImplicitSubmissionTrigger)
+                seenDefaultButton = true;
+            if (formElement.isSuccessfulSubmitButton()) {
+                if (formElement.renderer()) {
+                    formElement.dispatchSimulatedClick(event);
+                    return;
+                }
+            }
+            if (fromImplicitSubmissionTrigger) {
+                // Default (submit) button is not activated; no implicit submission.
+                return;
+            }
+#endif
         } else if (formElement.canTriggerImplicitSubmission())
             ++submissionTriggerCount;
     }
@@ -610,6 +630,9 @@ void HTMLFormElement::removeFormElement(FormAssociatedElement* e)
         --m_associatedElementsAfterIndex;
     removeFromPastNamesMap(e);
     m_associatedElements.remove(index);
+
+    if (auto* nodeLists = this->nodeLists())
+        nodeLists->invalidateCaches();
 }
 
 void HTMLFormElement::registerInvalidAssociatedFormControl(const HTMLFormControlElement& formControlElement)

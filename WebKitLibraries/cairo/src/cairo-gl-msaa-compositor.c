@@ -273,6 +273,8 @@ static cairo_bool_t
 can_use_msaa_compositor (cairo_gl_surface_t *surface,
 			 cairo_antialias_t antialias)
 {
+    cairo_gl_flavor_t gl_flavor = ((cairo_gl_context_t *) surface->base.device)->gl_flavor;
+
     query_surface_capabilities (surface);
     if (! surface->supports_stencil)
 	return FALSE;
@@ -280,8 +282,10 @@ can_use_msaa_compositor (cairo_gl_surface_t *surface,
     /* Multisampling OpenGL ES surfaces only maintain one multisampling
        framebuffer and thus must use the spans compositor to do non-antialiased
        rendering. */
-    if (((cairo_gl_context_t *) surface->base.device)->gl_flavor == CAIRO_GL_FLAVOR_ES2
+    if ((gl_flavor == CAIRO_GL_FLAVOR_ES3 ||
+	 gl_flavor == CAIRO_GL_FLAVOR_ES2)
 	 && surface->supports_msaa
+	 && surface->num_samples > 1
 	 && antialias == CAIRO_ANTIALIAS_NONE)
 	return FALSE;
 
@@ -378,6 +382,9 @@ _cairo_gl_msaa_compositor_mask_source_operator (const cairo_compositor_t *compos
 					   FALSE);
     if (unlikely (status))
 	goto finish;
+
+    _cairo_gl_context_set_destination (ctx, dst, setup.multisample);
+
     status = _cairo_gl_set_operands_and_operator (&setup, ctx);
     if (unlikely (status))
 	goto finish;
@@ -634,6 +641,7 @@ query_surface_capabilities (cairo_gl_surface_t *surface)
     glGetIntegerv(GL_STENCIL_BITS, &stencil_bits);
     surface->supports_stencil = stencil_bits > 0;
     surface->supports_msaa = samples > 1;
+    surface->num_samples = samples;
 
     status = _cairo_gl_context_release (ctx, status);
 }
@@ -936,10 +944,13 @@ _cairo_gl_msaa_compositor_init (cairo_compositor_t	 *compositor,
 const cairo_compositor_t *
 _cairo_gl_msaa_compositor_get (void)
 {
+    static cairo_atomic_once_t once = CAIRO_ATOMIC_ONCE_INIT;
     static cairo_compositor_t compositor;
-    if (compositor.delegate == NULL)
+    if (_cairo_atomic_init_once_enter(&once)) {
 	_cairo_gl_msaa_compositor_init (&compositor,
 					_cairo_gl_span_compositor_get ());
+	_cairo_atomic_init_once_leave(&once);
+    }
 
     return &compositor;
 }

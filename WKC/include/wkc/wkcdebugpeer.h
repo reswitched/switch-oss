@@ -24,7 +24,12 @@ extern "C" {
 */
 WKC_PEER_API void wkcNetSetSocketErrorCallbackPeer(void(*callback)(int));
 /**
-@brief Report if 'this' is used in an arrow function.
+@brief Report when an arrow function is used.
+*/
+WKC_PEER_API void wkcReportArrowFunctionPeer();
+WKC_PEER_API void wkcSetReportArrowFunctionCallbackPeer(void(*callback)());
+/**
+@brief Report when 'this' is used in an arrow function.
 */
 WKC_PEER_API void wkcReportArrowFunctionThisPeer();
 WKC_PEER_API void wkcSetReportArrowFunctionThisCallbackPeer(void(*callback)());

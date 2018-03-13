@@ -35,6 +35,9 @@
 namespace WebCore {
 
 class CryptoAlgorithmDescriptionBuilder {
+#if PLATFORM(WKC)
+    WTF_MAKE_FAST_ALLOCATED;
+#endif
     WTF_MAKE_NONCOPYABLE(CryptoAlgorithmDescriptionBuilder);
 public:
     CryptoAlgorithmDescriptionBuilder();

@@ -175,6 +175,7 @@ _cairo_tag_stack_push (cairo_tag_stack_t *stack,
 	    stack->type = TAG_TREE_TYPE_STRUCTURE;
     } else {
 	if (stack->type == TAG_TREE_TYPE_LINK_ONLY &&
+	    (strcmp (name, "Link") != 0) &&
 	    name_in_list (name, _cairo_tag_stack_struct_pdf_list))
 	{
 	    stack->type = TAG_TREE_TYPE_STRUCTURE;

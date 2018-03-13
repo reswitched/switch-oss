@@ -793,6 +793,7 @@ private:
     GenericTaskQueue<ScriptExecutionContext> m_seekTaskQueue;
     GenericTaskQueue<ScriptExecutionContext> m_resizeTaskQueue;
     GenericTaskQueue<ScriptExecutionContext> m_shadowDOMTaskQueue;
+    GenericTaskQueue<Timer> m_visibilityChangeTaskQueue;
     RefPtr<TimeRanges> m_playedTimeRanges;
     GenericEventQueue m_asyncEventQueue;
 

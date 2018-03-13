@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -32,12 +32,14 @@ RenderObjectPrivate::RenderObjectPrivate(WebCore::RenderObject* parent)
     : m_webcore(parent)
     , m_wkc(*this)
     , m_renderStyle(0)
+    , m_parent(0)
 {
 }
 
 RenderObjectPrivate::~RenderObjectPrivate()
 {
     delete m_renderStyle;
+    delete m_parent;
 }
  
 bool
@@ -50,6 +52,18 @@ bool
 RenderObjectPrivate::isTextArea() const
 {
     return m_webcore->isTextArea();
+}
+
+bool
+RenderObjectPrivate::isInline() const
+{
+    return m_webcore->isInline();
+}
+
+bool
+RenderObjectPrivate::isRenderFullScreen() const
+{
+    return m_webcore->isRenderFullScreen();
 }
 
 WKCRect
@@ -92,6 +106,19 @@ RenderObjectPrivate::style()
     }
     return &m_renderStyle->wkc();
 }
+
+RenderObject*
+RenderObjectPrivate::parent()
+{
+    WebCore::RenderObject* parent = m_webcore->parent();
+    if (!parent)
+        return 0;
+    if (!m_parent || m_parent->webcore() != parent) {
+        delete m_parent;
+        m_parent = new RenderObjectPrivate(parent);
+    }
+    return &m_parent->wkc();
+}
  
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -115,6 +142,18 @@ bool
 RenderObject::isTextArea() const
 {
     return m_private.isTextArea();
+}
+
+bool
+RenderObject::isInline() const
+{
+    return m_private.isInline();
+}
+
+bool
+RenderObject::isRenderFullScreen() const
+{
+    return m_private.isRenderFullScreen();
 }
 
 WKCRect
@@ -149,6 +188,12 @@ RenderStyle*
 RenderObject::style() const
 {
     return m_private.style();
+}
+
+RenderObject*
+RenderObject::parent() const
+{
+    return m_private.parent();
 }
 
 

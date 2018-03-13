@@ -45,12 +45,6 @@
 #include "cairo-pattern-private.h"
 #include "cairo-traps-private.h"
 
-#if _XOPEN_SOURCE >= 600 || defined (_ISOC99_SOURCE)
-#define ISFINITE(x) isfinite (x)
-#else
-#define ISFINITE(x) ((x) * (x) >= 0.) /* check for NaNs */
-#endif
-
 static cairo_status_t
 _cairo_gstate_init_copy (cairo_gstate_t *gstate, cairo_gstate_t *other);
 

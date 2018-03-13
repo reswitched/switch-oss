@@ -41,6 +41,7 @@
 #include "InspectorInstrumentation.h"
 #include "LoaderStrategy.h"
 #include "MainFrame.h"
+#include "MixedContentChecker.h"
 #include "Page.h"
 #include "PlatformStrategies.h"
 #include "ProgressTracker.h"
@@ -67,6 +68,7 @@ ResourceLoader::ResourceLoader(Frame* frame, ResourceLoaderOptions options)
     , m_notifiedLoadComplete(false)
     , m_cancellationStatus(NotCancelled)
     , m_defersLoading(frame->page()->defersLoading())
+    , m_canAskClientForCredentials { options.clientCredentialPolicy == ClientCredentialPolicy::MayAskClientForCredentials }
     , m_options(options)
     , m_isQuickLookResource(false)
 #if ENABLE(CONTENT_EXTENSIONS)
@@ -131,6 +133,7 @@ bool ResourceLoader::init(const ResourceRequest& r)
 #endif
     
     m_defersLoading = m_frame->page()->defersLoading();
+    m_canAskClientForCredentials = m_options.clientCredentialPolicy == ClientCredentialPolicy::MayAskClientForCredentials && !isMixedContent(r.url());
     if (m_options.securityCheck() == DoSecurityCheck && !m_frame->document()->securityOrigin()->canDisplay(clientRequest.url())) {
         FrameLoader::reportLocalLoadFailed(m_frame.get(), clientRequest.url().string());
         releaseResources();
@@ -286,6 +289,16 @@ bool ResourceLoader::isSubresourceLoader()
     return false;
 }
 
+bool ResourceLoader::isMixedContent(const URL& url) const
+{
+    if (MixedContentChecker::isMixedContent(m_frame->document()->securityOrigin(), url))
+        return true;
+    Frame& topFrame = m_frame->tree().top();
+    if (&topFrame != m_frame && MixedContentChecker::isMixedContent(topFrame.document()->securityOrigin(), url))
+        return true;
+    return false;
+}
+
 void ResourceLoader::willSendRequestInternal(ResourceRequest& request, const ResourceResponse& redirectResponse)
 {
     // Protect this in this delegate method since the additional processing can do
@@ -335,12 +348,17 @@ void ResourceLoader::willSendRequestInternal(ResourceRequest& request, const Res
     else
         InspectorInstrumentation::willSendRequest(m_frame.get(), m_identifier, m_frame->loader().documentLoader(), request, redirectResponse);
 
-    if (!redirectResponse.isNull())
+    bool isRedirect = !redirectResponse.isNull();
+
+    if (isMixedContent(m_request.url()) || (isRedirect && isMixedContent(request.url())))
+        m_canAskClientForCredentials = false;
+
+    if (isRedirect)
         platformStrategies()->loaderStrategy()->resourceLoadScheduler()->crossOriginRedirectReceived(this, request.url());
 
     m_request = request;
 
-    if (!redirectResponse.isNull() && !m_documentLoader->isCommitted())
+    if (isRedirect && !m_documentLoader->isCommitted())
         frameLoader()->client().dispatchDidReceiveServerRedirectForProvisionalLoad();
 }
 
@@ -390,6 +408,25 @@ void ResourceLoader::didReceiveResponse(const ResourceResponse& r)
     m_response = r;
 
     if (m_response.isHttpVersion0_9()) {
+        auto url = m_response.url();
+        // Non-HTTP responses are interpreted as HTTP/0.9 which may allow exfiltration of data
+        // from non-HTTP services. Therefore cancel if the document was loaded with different
+        // HTTP version or if the resource request was to a non-default port.
+        if (!m_documentLoader->response().isHttpVersion0_9()) {
+            String message = "Cancelled resource load from '" + url.string() + "' because it is using HTTP/0.9 and the document was loaded with a different HTTP version.";
+            m_frame->document()->addConsoleMessage(MessageSource::Security, MessageLevel::Error, message, identifier());
+            ResourceError error("", 0, url, message);
+            didFail(error);
+            return;
+        }
+        if (!isDefaultPortForProtocol(url.port(), url.protocol())) {
+            String message = "Cancelled resource load from '" + url.string() + "' because it is using HTTP/0.9 on a non-default port.";
+            m_frame->document()->addConsoleMessage(MessageSource::Security, MessageLevel::Error, message, identifier());
+            ResourceError error("", 0, url, message);
+            didFail(error);
+            return;
+        }
+            
         String message = "Sandboxing '" + m_response.url().string() + "' because it is using HTTP/0.9.";
         m_frame->document()->addConsoleMessage(MessageSource::Security, MessageLevel::Error, message, m_identifier);
         frameLoader()->forceSandboxFlags(SandboxScripts | SandboxPlugins);
@@ -621,7 +658,9 @@ bool ResourceLoader::shouldUseCredentialStorage()
 
 bool ResourceLoader::isAllowedToAskUserForCredentials() const
 {
-    return m_options.clientCredentialPolicy() == AskClientForAllCredentials || (m_options.clientCredentialPolicy() == DoNotAskClientForCrossOriginCredentials && m_frame->document()->securityOrigin()->canRequest(originalRequest().url()));
+    if (!m_canAskClientForCredentials)
+        return false;
+    return m_options.credentials == FetchOptions::Credentials::Include || (m_options.credentials == FetchOptions::Credentials::SameOrigin && m_frame->document()->securityOrigin()->canRequest(originalRequest().url()));
 }
 
 void ResourceLoader::didReceiveAuthenticationChallenge(const AuthenticationChallenge& challenge)

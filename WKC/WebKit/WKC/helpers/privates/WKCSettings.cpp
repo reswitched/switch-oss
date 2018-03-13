@@ -1,7 +1,7 @@
 /*
  *  WKCSettings.cpp
  *
- *  Copyright (c) 2010-2015 ACCESS CO., LTD. All rights reserved.
+ *  Copyright (c) 2010-2018 ACCESS CO., LTD. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -917,6 +917,26 @@ bool WKCSettings::hiddenPageDOMTimerThrottlingEnabled() const
 #else
     return false;
 #endif
+}
+
+void WKCSettings::setAllowDisplayOfInsecureContent(bool flag)
+{
+    PARENT()->setAllowDisplayOfInsecureContent(flag);
+}
+
+bool WKCSettings::allowDisplayOfInsecureContent() const
+{
+    return PARENT()->allowDisplayOfInsecureContent();
+}
+
+void WKCSettings::setAllowRunningOfInsecureContent(bool flag)
+{
+    PARENT()->setAllowRunningOfInsecureContent(flag);
+}
+
+bool WKCSettings::allowRunningOfInsecureContent() const
+{
+    return PARENT()->allowRunningOfInsecureContent();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

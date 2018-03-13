@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2009 Antonio Gomes <tonikitoo@webkit.org>
- * Copyright (C) 2012-2017 ACCESS CO., LTD. All rights reserved.
+ * Copyright (C) 2012-2018 ACCESS CO., LTD. All rights reserved.
  *
  * All rights reserved.
  *
@@ -1189,16 +1189,14 @@ LayoutRect rectToAbsoluteCoordinates(Frame* initialFrame, const LayoutRect& init
     LayoutRect rect = initialRect;
     for (Frame* frame = initialFrame; frame; frame = frame->tree().parent()) {
         if (Element* element = frame->ownerElement()) {
-            do {
 #if PLATFORM(WKC)
-                rect.move(offsetLeft(element), offsetTop(element));
-                if (element->renderer() && element->renderer()->style().position() == FixedPosition) {
-                    rect.move(frame->tree().parent()->view()->scrollOffset());
-                }
+            IntRect frameRect = frame->view()->frameRect();
+            rect.move(frameRect.x(), frameRect.y());
 #else
+            do {
                 rect.move(element->offsetLeft(), element->offsetTop());
-#endif
             } while ((element = element->offsetParent()));
+#endif
             rect.move((-frame->view()->scrollOffset()));
         }
     }

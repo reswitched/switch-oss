@@ -264,13 +264,12 @@ _cairo_clip_intersect_box (cairo_clip_t *clip,
     return _cairo_clip_intersect_rectangle_box (clip, &r, box);
 }
 
-/**
- * copy a box set to an clip
+/* Copy a box set to a clip
  *
- * @param	box	the box set to copy from
- * @param	clip	the clip to copy to (return buffer)
- * @result		zero if the allocation failed - the clip will be set to all-clipped
- *			otherwise non-zero
+ * @param boxes  The box set to copy from.
+ * @param clip   The clip to copy to (return buffer).
+ * @returns      Zero if the allocation failed (the clip will be set to
+ *               all-clipped), otherwise non-zero.
  */
 static cairo_bool_t
 _cairo_boxes_copy_to_clip (const cairo_boxes_t *boxes, cairo_clip_t *clip)

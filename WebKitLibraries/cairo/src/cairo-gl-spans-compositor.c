@@ -528,10 +528,11 @@ _cairo_gl_span_renderer_fini (cairo_abstract_span_renderer_t *_r,
 const cairo_compositor_t *
 _cairo_gl_span_compositor_get (void)
 {
+    static cairo_atomic_once_t once = CAIRO_ATOMIC_ONCE_INIT;
     static cairo_spans_compositor_t spans;
     static cairo_compositor_t shape;
 
-    if (spans.base.delegate == NULL) {
+    if (_cairo_atomic_init_once_enter(&once)) {
 	/* The fallback to traps here is essentially just for glyphs... */
 	_cairo_shape_mask_compositor_init (&shape,
 					   _cairo_gl_traps_compositor_get());
@@ -547,6 +548,8 @@ _cairo_gl_span_compositor_get (void)
 	//spans.check_span_renderer = check_span_renderer;
 	spans.renderer_init = _cairo_gl_span_renderer_init;
 	spans.renderer_fini = _cairo_gl_span_renderer_fini;
+
+	_cairo_atomic_init_once_leave(&once);
     }
 
     return &spans.base;

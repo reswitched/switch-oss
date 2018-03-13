@@ -604,6 +604,13 @@ void FrameView::didDestroyRenderTree()
     ASSERT(!frame().animation().hasAnimations());
 }
 
+void FrameView::didRestoreFromPageCache()
+{
+    // When restoring from page cache, the main frame stays in place while subframes get swapped in.
+    // We update the scrollable area set to ensure that scrolling data structures get invalidated.
+    updateScrollableAreaSet();
+}
+
 void FrameView::setContentsSize(const IntSize& size)
 {
     if (size == contentsSize())
@@ -4221,6 +4228,9 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
     // it is also incorrect, since if two frames overlap, the first could be excluded from the dirty
     // region but then become included later by the second frame adding rects to the dirty region
     // when it lays out.
+
+    //Style updates can trigger script, which can cause this FrameView to be destroyed.
+    Ref<FrameView> protectedThis(*this);
 
     AnimationUpdateBlock animationUpdateBlock(&frame().animation());
 

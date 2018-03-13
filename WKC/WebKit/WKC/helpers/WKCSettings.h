@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2003, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  *           (C) 2006 Graham Dennis (graham.dennis@gmail.com)
- * Copyright (c) 2010-2015 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2018 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -292,6 +292,11 @@ public:
     void setHiddenPageDOMTimerThrottlingEnabled(bool);
     bool hiddenPageDOMTimerThrottlingEnabled() const;
 
+    void setAllowDisplayOfInsecureContent(bool);
+    bool allowDisplayOfInsecureContent() const;
+
+    void setAllowRunningOfInsecureContent(bool);
+    bool allowRunningOfInsecureContent() const;
 
 private:
     friend class WKCWebViewPrivate;

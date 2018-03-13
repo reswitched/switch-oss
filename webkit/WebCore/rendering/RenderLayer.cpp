@@ -6312,6 +6312,10 @@ bool RenderLayer::listBackgroundIsKnownToBeOpaqueInRect(const Vector<RenderLayer
 
     for (auto iter = list->rbegin(); iter != list->rend(); ++iter) {
         const RenderLayer* childLayer = *iter;
+#if PLATFORM(WKC)
+        if (!gValidLayers->contains(childLayer))
+            continue;
+#endif
         if (childLayer->isComposited())
             continue;
 

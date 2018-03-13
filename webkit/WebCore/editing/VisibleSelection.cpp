@@ -125,16 +125,18 @@ void VisibleSelection::setExtent(const VisiblePosition& visiblePosition)
 
 PassRefPtr<Range> VisibleSelection::firstRange() const
 {
-    if (isNone())
+    if (isNoneOrOrphaned())
         return 0;
     Position start = m_start.parentAnchoredEquivalent();
     Position end = m_end.parentAnchoredEquivalent();
+    if (start.isNull() || start.isOrphan() || end.isNull() || end.isOrphan())
+        return nullptr;
     return Range::create(start.anchorNode()->document(), start, end);
 }
 
 PassRefPtr<Range> VisibleSelection::toNormalizedRange() const
 {
-    if (isNone())
+    if (isNoneOrOrphaned())
         return 0;
 
     // Make sure we have an updated layout since this function is called
@@ -144,7 +146,7 @@ PassRefPtr<Range> VisibleSelection::toNormalizedRange() const
     m_start.anchorNode()->document().updateLayout();
 
     // Check again, because updating layout can clear the selection.
-    if (isNone())
+    if (isNoneOrOrphaned())
         return 0;
 
     Position s, e;

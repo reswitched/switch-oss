@@ -642,8 +642,12 @@ public:
                 break;
 
             case PatternTerm::TypeDotStarEnclosure:
+                ASSERT(!m_pattern.m_saveInitialStartValue);
                 alternative->m_hasFixedSize = false;
                 term.inputPosition = initialInputPosition;
+                m_pattern.m_initialStartValueFrameLocation = currentCallFrameSize;
+                currentCallFrameSize += YarrStackSpaceForDotStarEnclosure;
+                m_pattern.m_saveInitialStartValue = true;
                 break;
             }
         }
@@ -870,6 +874,7 @@ YarrPattern::YarrPattern(const String& pattern, bool ignoreCase, bool multiline,
     , m_containsBOL(false)
     , m_containsUnsignedLengthPattern(false)
     , m_hasCopiedParenSubexpressions(false)
+    , m_saveInitialStartValue(false)
     , m_numSubpatterns(0)
     , m_maxBackReference(0)
     , newlineCached(0)

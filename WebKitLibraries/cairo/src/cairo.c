@@ -194,7 +194,7 @@
  * @page: An integer specifying the page number in the PDF file to link to.
  *
  * @pos: [optional] An array of two floats specifying the x,y position
- * on the page. Default is 0,0.
+ * on the page.
  *
  * An example of the link attributes to link to a page and x,y position:
  * <programlisting>
@@ -228,8 +228,9 @@
  *
  *  @page: An integer specifying the page number in the PDF file.
  *
- *  @pos: [optional] An array of two floats specifying the x,y position
- *  on the page. Default is 0,0.
+ *  @pos: [optional] An array of two floats specifying the x,y
+ *  position on the page. Position coordinates in external files are in PDF
+ *  coordinates (0,0 at bottom left).
  *
  * An example of the link attributes to PDF file:
  * <programlisting>
@@ -237,7 +238,7 @@
  * </programlisting>
  *
  * # Destination Tags # {#dest}
-
+ *
  * A destination is specified by enclosing the destination drawing
  * operations with the %CAIRO_TAG_DEST tag.
  *
@@ -844,7 +845,7 @@ slim_hidden_def (cairo_set_operator);
 
 
 #if 0
-/**
+/*
  * cairo_set_opacity:
  * @cr: a #cairo_t
  * @opacity: the level of opacity to use when compositing
@@ -854,9 +855,7 @@ slim_hidden_def (cairo_set_operator);
  * using the alpha value.
  *
  * The default opacity is 1.
- *
- * Since: TBD
- **/
+ */
 void
 cairo_set_opacity (cairo_t *cr, double opacity)
 {

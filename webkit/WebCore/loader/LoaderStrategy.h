@@ -26,7 +26,7 @@
 #ifndef LoaderStrategy_h
 #define LoaderStrategy_h
 
-#include "ResourceHandleTypes.h"
+#include "ResourceLoaderOptions.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

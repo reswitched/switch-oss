@@ -92,7 +92,15 @@ JSValue toJS(ExecState*, JSDOMGlobalObject* globalObject, CSSValue* value)
     else if (value->isSVGColor())
         wrapper = CREATE_DOM_WRAPPER(globalObject, SVGColor, value);
     else if (value->isPrimitiveValue())
+#if !PLATFORM(WKC)
         wrapper = CREATE_DOM_WRAPPER(globalObject, CSSPrimitiveValue, value);
+#else
+      // Workaround for a link error on VS2015.
+      {
+          Ref<CSSPrimitiveValue> ref(*static_cast<CSSPrimitiveValue*>(value));
+          wrapper = JSCSSPrimitiveValue::create(getDOMStructure<JSCSSPrimitiveValue>(globalObject->vm(), globalObject), globalObject, WTF::move(ref));
+      }
+#endif
     else
         wrapper = CREATE_DOM_WRAPPER(globalObject, CSSValue, value);
 

@@ -251,9 +251,9 @@ void TypingCommand::ensureLastEditCommandHasCurrentSelectionIfOpenForMoreTyping(
 
 void TypingCommand::doApply()
 {
-    if (!endingSelection().isNonOrphanedCaretOrRange())
+    if (endingSelection().isNoneOrOrphaned())
         return;
-        
+
     if (m_commandType == DeleteKey)
         if (m_commands.isEmpty())
             m_openedByBackwardDelete = true;

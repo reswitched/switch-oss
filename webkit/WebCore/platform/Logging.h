@@ -43,6 +43,7 @@ namespace WebCore {
     M(BackForward) \
     M(Compositing) \
     M(ContentFiltering) \
+    M(DatabaseTracker) \
     M(DOMTimers) \
     M(Editing) \
     M(Events) \

@@ -272,10 +272,7 @@ public:
     virtual unsigned long long fileSize() const { return 0; }
 
 #if ENABLE(MEDIA_SOURCE)
-    virtual unsigned long totalVideoFrames() { return 0; }
-    virtual unsigned long droppedVideoFrames() { return 0; }
-    virtual unsigned long corruptedVideoFrames() { return 0; }
-    virtual MediaTime totalFrameDelay() { return MediaTime::zeroTime(); }
+    virtual Optional<PlatformVideoPlaybackQualityMetrics> videoPlaybackQualityMetrics() { return Nullopt; }
 #endif
 
 #if ENABLE(AVF_CAPTIONS)

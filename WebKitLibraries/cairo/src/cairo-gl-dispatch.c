@@ -124,6 +124,10 @@ _cairo_gl_dispatch_init_buffers (cairo_gl_dispatch_t *dispatch,
 	else
 	    return CAIRO_STATUS_DEVICE_ERROR;
     }
+    else if (gl_flavor == CAIRO_GL_FLAVOR_ES3)
+    {
+	dispatch_name = CAIRO_GL_DISPATCH_NAME_CORE;
+    }
     else if (gl_flavor == CAIRO_GL_FLAVOR_ES2 &&
 	     gl_version >= CAIRO_GL_VERSION_ENCODE (2, 0))
     {
@@ -155,6 +159,10 @@ _cairo_gl_dispatch_init_shaders (cairo_gl_dispatch_t *dispatch,
 	    dispatch_name = CAIRO_GL_DISPATCH_NAME_EXT;
 	else
 	    return CAIRO_STATUS_DEVICE_ERROR;
+    }
+    else if (gl_flavor == CAIRO_GL_FLAVOR_ES3)
+    {
+	dispatch_name = CAIRO_GL_DISPATCH_NAME_CORE;
     }
     else if (gl_flavor == CAIRO_GL_FLAVOR_ES2 &&
 	     gl_version >= CAIRO_GL_VERSION_ENCODE (2, 0))
@@ -188,6 +196,10 @@ _cairo_gl_dispatch_init_fbo (cairo_gl_dispatch_t *dispatch,
 	    dispatch_name = CAIRO_GL_DISPATCH_NAME_EXT;
 	else
 	    return CAIRO_STATUS_DEVICE_ERROR;
+    }
+    else if (gl_flavor == CAIRO_GL_FLAVOR_ES3)
+    {
+	dispatch_name = CAIRO_GL_DISPATCH_NAME_CORE;
     }
     else if (gl_flavor == CAIRO_GL_FLAVOR_ES2 &&
 	     gl_version >= CAIRO_GL_VERSION_ENCODE (2, 0))

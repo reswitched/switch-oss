@@ -33,7 +33,7 @@
  *	Kristian Høgsberg <krh@redhat.com>
  */
 
-#define _BSD_SOURCE /* for snprintf() */
+#define _DEFAULT_SOURCE /* for snprintf() */
 #include "cairoint.h"
 
 #include "cairo-output-stream-private.h"
@@ -312,7 +312,7 @@ _cairo_dtostr (char *buffer, size_t size, double d, cairo_bool_t limited_precisi
     if (d == 0.0)
 	d = 0.0;
 
-    decimal_point = cairo_get_locale_decimal_point ();
+    decimal_point = _cairo_get_locale_decimal_point ();
     decimal_point_len = strlen (decimal_point);
 
     assert (decimal_point_len != 0);
@@ -490,9 +490,13 @@ _cairo_output_stream_vprintf (cairo_output_stream_t *stream,
                           single_fmt, va_arg (ap, long int));
             }
 	    break;
-	case 's':
-	    snprintf (buffer, sizeof buffer,
-		      single_fmt, va_arg (ap, const char *));
+	case 's': {
+	    /* Write out strings as they may be larger than the buffer. */
+	    const char *s = va_arg (ap, const char *);
+	    int len = strlen(s);
+	    _cairo_output_stream_write (stream, s, len);
+	    buffer[0] = 0;
+	    }
 	    break;
 	case 'f':
 	    _cairo_dtostr (buffer, sizeof buffer, va_arg (ap, double), FALSE);
@@ -653,11 +657,16 @@ _cairo_output_stream_create_for_filename (const char *filename)
 {
     stdio_stream_t *stream;
     FILE *file;
+    cairo_status_t status;
 
     if (filename == NULL)
 	return _cairo_null_stream_create ();
 
-    file = fopen (filename, "wb");
+    status = _cairo_fopen (filename, "wb", &file);
+
+    if (status != CAIRO_STATUS_SUCCESS)
+	return _cairo_output_stream_create_in_error (status);
+
     if (file == NULL) {
 	switch (errno) {
 	case ENOMEM:

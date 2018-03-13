@@ -459,7 +459,7 @@ bool JSArray::setLength(ExecState* exec, unsigned newLength, bool throwException
     case ArrayWithContiguous: {
         if (newLength == m_butterfly->publicLength())
             return true;
-        if (newLength >= MAX_ARRAY_INDEX // This case ensures that we can do fast push.
+        if (newLength > MAX_STORAGE_VECTOR_LENGTH // This check ensures that we can do fast push.
             || (newLength >= MIN_SPARSE_ARRAY_INDEX
                 && !isDenseEnoughForVector(newLength, countElements()))) {
             return setLengthWithArrayStorage(

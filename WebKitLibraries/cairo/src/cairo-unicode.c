@@ -357,8 +357,6 @@ int
 _cairo_ucs4_to_utf16 (uint32_t  unicode,
 		      uint16_t *utf16)
 {
-    int len;
-
     if (unicode < 0x10000) {
 	if (utf16)
 	    utf16[0] = unicode;

@@ -62,6 +62,9 @@ endif
 ifeq ($(CAIRO_HAS_GLESV2_SURFACE),1)
 	@echo "#define CAIRO_HAS_GLESV2_SURFACE 1" >> $(top_srcdir)/src/cairo-features.h
 endif
+ifeq ($(CAIRO_HAS_GLESV3_SURFACE),1)
+	@echo "#define CAIRO_HAS_GLESV3_SURFACE 1" >> $(top_srcdir)/src/cairo-features.h
+endif
 ifeq ($(CAIRO_HAS_COGL_SURFACE),1)
 	@echo "#define CAIRO_HAS_COGL_SURFACE 1" >> $(top_srcdir)/src/cairo-features.h
 endif

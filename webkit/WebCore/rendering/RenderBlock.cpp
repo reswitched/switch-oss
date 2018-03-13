@@ -2104,6 +2104,8 @@ LayoutUnit RenderBlock::logicalLeftSelectionOffset(RenderBlock& rootBlock, Layou
         ASSERT(currentCache);
         auto info = currentCache->containingBlockInfo(*cb);
         cb = info.block();
+        if (!cb)
+            break;
         currentCache = info.cache();
     }
     return logicalLeft;

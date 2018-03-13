@@ -1,6 +1,6 @@
-<?xml version='1.0' encoding='UTF-8'?> 
+<?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
-                "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
+		"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
 <!ENTITY version SYSTEM "version.xml">
 ]>
 <refentry id="cairo-PostScript-Surfaces">
@@ -68,6 +68,32 @@
 <title role="desc.title">Description</title>
 <para>The PostScript surface is used to render cairo graphics to Adobe
 PostScript files and is a multi-page vector surface backend.</para>
+<para>The following mime types are supported: <link linkend="CAIRO-MIME-TYPE-JPEG:CAPS"><literal>CAIRO_MIME_TYPE_JPEG</literal></link>,
+<link linkend="CAIRO-MIME-TYPE-UNIQUE-ID:CAPS"><literal>CAIRO_MIME_TYPE_UNIQUE_ID</literal></link>,
+<link linkend="CAIRO-MIME-TYPE-CCITT-FAX:CAPS"><literal>CAIRO_MIME_TYPE_CCITT_FAX</literal></link>, <link linkend="CAIRO-MIME-TYPE-CCITT-FAX-PARAMS:CAPS"><literal>CAIRO_MIME_TYPE_CCITT_FAX_PARAMS</literal></link>,
+<link linkend="CAIRO-MIME-TYPE-CCITT-FAX:CAPS"><literal>CAIRO_MIME_TYPE_CCITT_FAX</literal></link>, <link linkend="CAIRO-MIME-TYPE-CCITT-FAX-PARAMS:CAPS"><literal>CAIRO_MIME_TYPE_CCITT_FAX_PARAMS</literal></link>,
+<link linkend="CAIRO-MIME-TYPE-EPS:CAPS"><literal>CAIRO_MIME_TYPE_EPS</literal></link>, <link linkend="CAIRO-MIME-TYPE-EPS-PARAMS:CAPS"><literal>CAIRO_MIME_TYPE_EPS_PARAMS</literal></link>.</para>
+<para>Source surfaces used by the PostScript surface that have a
+<link linkend="CAIRO-MIME-TYPE-UNIQUE-ID:CAPS"><literal>CAIRO_MIME_TYPE_UNIQUE_ID</literal></link> mime type will be stored in PostScript
+printer memory for the duration of the print
+job. <link linkend="CAIRO-MIME-TYPE-UNIQUE-ID:CAPS"><literal>CAIRO_MIME_TYPE_UNIQUE_ID</literal></link> should only be used for small
+frequently used sources.</para>
+<para>The <link linkend="CAIRO-MIME-TYPE-CCITT-FAX:CAPS"><literal>CAIRO_MIME_TYPE_CCITT_FAX</literal></link> and <link linkend="CAIRO-MIME-TYPE-CCITT-FAX-PARAMS:CAPS"><literal>CAIRO_MIME_TYPE_CCITT_FAX_PARAMS</literal></link> mime types
+are documented in <link linkend="ccitt">CCITT Fax Images</link>.</para>
+<refsect2 id="eps"><title>Embedding EPS files</title><para>Encapsulated PostScript files can be embedded in the PS output by
+setting the CAIRO_MIME_TYPE_EPS mime data on a surface to the EPS
+data and painting the surface.  The EPS will be scaled and
+translated to the extents of the surface the EPS data is attached
+to.</para>
+<para>The <link linkend="CAIRO-MIME-TYPE-EPS:CAPS"><literal>CAIRO_MIME_TYPE_EPS</literal></link> mime type requires the
+<link linkend="CAIRO-MIME-TYPE-EPS-PARAMS:CAPS"><literal>CAIRO_MIME_TYPE_EPS_PARAMS</literal></link> mime data to also be provided in order
+to specify the embeddding parameters.  <link linkend="CAIRO-MIME-TYPE-EPS-PARAMS:CAPS"><literal>CAIRO_MIME_TYPE_EPS_PARAMS</literal></link>
+mime data must contain a string of the form "bbox=[llx lly urx
+ury]" that specifies the bounding box (in PS coordinates) of the
+EPS graphics. The parameters are: lower left x, lower left y, upper
+right x, upper right y. Normally the bbox data is identical to the
+%%<link linkend="BoundingBox"><literal>BoundingBox</literal></link> data in the EPS file.</para>
+</refsect2>
 
 </refsect1>
 <refsect1 id="cairo-PostScript-Surfaces.functions_details" role="details">

@@ -107,6 +107,12 @@ _cairo_win32_tmpfile (void);
 #undef MAX
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
+#if _XOPEN_SOURCE >= 600 || defined (_ISOC99_SOURCE)
+#define ISFINITE(x) isfinite (x)
+#else
+#define ISFINITE(x) ((x) * (x) >= 0.) /* check for NaNs */
+#endif
+
 #ifndef FALSE
 #define FALSE 0
 #endif
@@ -477,7 +483,8 @@ typedef enum _cairo_scaled_glyph_info {
     CAIRO_SCALED_GLYPH_INFO_METRICS	 = (1 << 0),
     CAIRO_SCALED_GLYPH_INFO_SURFACE	 = (1 << 1),
     CAIRO_SCALED_GLYPH_INFO_PATH	 = (1 << 2),
-    CAIRO_SCALED_GLYPH_INFO_RECORDING_SURFACE = (1 << 3)
+    CAIRO_SCALED_GLYPH_INFO_RECORDING_SURFACE = (1 << 3),
+    CAIRO_SCALED_GLYPH_INFO_COLOR_SURFACE = (1 << 4)
 } cairo_scaled_glyph_info_t;
 
 typedef struct _cairo_scaled_font_subset {
@@ -607,6 +614,9 @@ struct _cairo_scaled_font_backend {
                            long                  offset,
                            unsigned char        *buffer,
                            unsigned long        *length);
+
+    cairo_bool_t
+    (*has_color_glyphs)   (void                 *scaled_font);
 };
 
 struct _cairo_font_face_backend {
@@ -909,7 +919,10 @@ cairo_private void
 _cairo_intern_string_reset_static_data (void);
 
 cairo_private const char *
-cairo_get_locale_decimal_point (void);
+_cairo_get_locale_decimal_point (void);
+
+cairo_private double
+_cairo_strtod (const char *nptr, char **endptr);
 
 /* cairo-path-fixed.c */
 cairo_private cairo_path_fixed_t *
@@ -1255,6 +1268,11 @@ _cairo_scaled_glyph_set_recording_surface (cairo_scaled_glyph_t *scaled_glyph,
                                            cairo_scaled_font_t *scaled_font,
                                            cairo_surface_t *recording_surface);
 
+cairo_private void
+_cairo_scaled_glyph_set_color_surface (cairo_scaled_glyph_t *scaled_glyph,
+		                       cairo_scaled_font_t *scaled_font,
+		                       cairo_image_surface_t *surface);
+
 cairo_private cairo_int_status_t
 _cairo_scaled_glyph_lookup (cairo_scaled_font_t *scaled_font,
 			    unsigned long index,
@@ -1317,6 +1335,9 @@ _cairo_stroke_style_dash_approximate (const cairo_stroke_style_t *style,
 
 
 /* cairo-surface.c */
+
+cairo_private cairo_bool_t
+_cairo_surface_has_mime_image (cairo_surface_t *surface);
 
 cairo_private cairo_status_t
 _cairo_surface_copy_mime_data (cairo_surface_t *dst,
@@ -1900,6 +1921,10 @@ _cairo_matrix_multiply (cairo_matrix_t *r,
 
 cairo_private void
 _cairo_observers_notify (cairo_list_t *observers, void *arg);
+
+/* Open a file with a UTF-8 filename */
+cairo_private cairo_status_t
+_cairo_fopen (const char *filename, const char *mode, FILE **file_out);
 
 /* Avoid unnecessary PLT entries.  */
 slim_hidden_proto (cairo_clip_preserve);

@@ -376,7 +376,7 @@ template<size_t length> struct make_index_sequence : public make_index_sequence_
 #endif
 
 // std::exchange
-#if !COMPILER(CLANG)
+#if !COMPILER(CLANG) && COMPILER(MSVC) && _MSC_VER < 1900
 template<class T, class U = T>
 T exchange(T& t, U&& newValue)
 {

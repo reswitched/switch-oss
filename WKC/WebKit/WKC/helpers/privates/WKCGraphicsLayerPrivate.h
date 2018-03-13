@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -122,6 +122,7 @@ public:
     const char* name();
 
     bool isVideo() const;
+    int zIndex() const;
 
 public:
     bool ensureOffscreen(int, int);

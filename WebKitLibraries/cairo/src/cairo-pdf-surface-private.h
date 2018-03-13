@@ -76,15 +76,18 @@ typedef struct _cairo_pdf_source_surface_entry {
     cairo_bool_t interpolate;
     cairo_bool_t stencil_mask;
     cairo_bool_t smask;
+    cairo_bool_t need_transp_group;
     cairo_pdf_resource_t surface_res;
     cairo_pdf_resource_t smask_res;
 
-    /* Extents of the source surface. If bounded is false,
-     * extents is the ink extents. */
+    /* True if surface will be emitted as an Image XObject. */
+    cairo_bool_t emit_image;
+
+    /* Extents of the source surface. */
     cairo_bool_t bounded;
     cairo_rectangle_int_t extents;
 
-    /* Union of source extents requried for all operations using this source */
+    /* Union of source extents required for all operations using this source */
     cairo_rectangle_int_t required_extents;
 } cairo_pdf_source_surface_entry_t;
 
@@ -175,27 +178,26 @@ typedef struct _cairo_pdf_struct_tree_node {
     struct _cairo_pdf_struct_tree_node *parent;
     cairo_list_t children;
     cairo_array_t mcid; /* array of struct page_mcid */
-    struct {
-	struct tag_extents extents;
-	cairo_pdf_resource_t res;
-	cairo_link_attrs_t link_attrs;
-	double page_height;
-    } annot;
+    cairo_pdf_resource_t annot_res; /* 0 if no annot */
+    struct tag_extents extents;
     cairo_list_t link;
 } cairo_pdf_struct_tree_node_t;
+
+typedef struct _cairo_pdf_annotation {
+    cairo_pdf_struct_tree_node_t *node; /* node containing the annotation */
+    cairo_link_attrs_t link_attrs;
+} cairo_pdf_annotation_t;
 
 typedef struct _cairo_pdf_named_dest {
     cairo_hash_entry_t base;
     struct tag_extents extents;
     cairo_dest_attrs_t attrs;
     int page;
-    double page_height;
-    cairo_bool_t referenced;
 } cairo_pdf_named_dest_t;
 
 typedef struct _cairo_pdf_outline_entry {
     char *name;
-    char *dest;
+    cairo_link_attrs_t link_attrs;
     cairo_pdf_outline_flags_t flags;
     cairo_pdf_resource_t res;
     struct _cairo_pdf_outline_entry *parent;
@@ -227,6 +229,7 @@ typedef struct _cairo_pdf_interchange {
     cairo_pdf_struct_tree_node_t *end_page_node;
     cairo_array_t parent_tree; /* parent tree resources */
     cairo_array_t mcid_to_tree; /* mcid to tree node mapping for current page */
+    cairo_array_t annots; /* array of pointers to cairo_pdf_annotation_t */
     cairo_pdf_resource_t parent_tree_res;
     cairo_list_t extents_list;
     cairo_hash_table_t *named_dests;
@@ -263,10 +266,12 @@ struct _cairo_pdf_surface {
     cairo_array_t alpha_linear_functions;
     cairo_array_t page_patterns;
     cairo_array_t page_surfaces;
+    cairo_array_t doc_surfaces;
     cairo_hash_table_t *all_surfaces;
     cairo_array_t smask_groups;
     cairo_array_t knockout_group;
     cairo_array_t jbig2_global;
+    cairo_array_t page_heights;
 
     cairo_scaled_font_subsets_t *font_subsets;
     cairo_array_t fonts;

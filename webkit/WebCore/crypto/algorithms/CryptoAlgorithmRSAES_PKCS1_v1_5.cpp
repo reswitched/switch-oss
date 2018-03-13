@@ -88,9 +88,15 @@ void CryptoAlgorithmRSAES_PKCS1_v1_5::generateKey(const CryptoAlgorithmParameter
 {
     const CryptoAlgorithmRsaKeyGenParams& rsaParameters = downcast<CryptoAlgorithmRsaKeyGenParams>(parameters);
 
+#if !PLATFORM(WKC)
     auto keyPairCallback = [callback](CryptoKeyPair& pair) {
         callback(nullptr, &pair);
     };
+#else
+    std::function<void(CryptoKeyPair& pair)> keyPairCallback(std::allocator_arg, WTF::voidFuncAllocator(), [callback](CryptoKeyPair& pair) {
+        callback(nullptr, &pair);
+    });
+#endif
 
     CryptoKeyRSA::generatePair(CryptoAlgorithmIdentifier::RSAES_PKCS1_v1_5, rsaParameters.modulusLength, rsaParameters.publicExponent, extractable, usages, WTF::move(keyPairCallback), WTF::move(failureCallback));
 }

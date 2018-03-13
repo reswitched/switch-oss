@@ -282,7 +282,8 @@ _cairo_gl_gradient_create (cairo_gl_context_t           *ctx,
      * In OpenGL ES 2.0 no format conversion is allowed i.e. 'internalFormat'
      * must match 'format' in glTexImage2D.
      */
-    if (_cairo_gl_get_flavor () == CAIRO_GL_FLAVOR_ES2)
+    if (_cairo_gl_get_flavor () == CAIRO_GL_FLAVOR_ES3 ||
+	_cairo_gl_get_flavor () == CAIRO_GL_FLAVOR_ES2)
 	internal_format = GL_BGRA;
     else
 	internal_format = GL_RGBA;

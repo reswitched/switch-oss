@@ -1079,14 +1079,14 @@ public:
         UNUSED_PARAM(term);
         unsigned matchBegin = context->matchBegin;
 
-        if (matchBegin) {
+        if (matchBegin > startOffset) {
             for (matchBegin--; true; matchBegin--) {
                 if (testCharacterClass(pattern->newlineCharacterClass, input.reread(matchBegin))) {
                     ++matchBegin;
                     break;
                 }
 
-                if (!matchBegin)
+                if (matchBegin == startOffset)
                     break;
             }
         }
@@ -1451,6 +1451,7 @@ public:
         , output(output)
         , input(input, start, length)
         , allocatorPool(0)
+        , startOffset(start)
         , remainingMatchCount(matchLimit)
     {
     }
@@ -1460,6 +1461,7 @@ private:
     unsigned* output;
     InputStream input;
     BumpPointerPool* allocatorPool;
+    unsigned startOffset;
     unsigned remainingMatchCount;
 };
 

@@ -1,3 +1,7 @@
+Jan.25.2018 ACCESS Co.,Ltd.
+    * src/cairo-misc.c
+    fix: use fopen also on Windows.
+
 Nov.01.2016 ACCESS Co.,Ltd.
     * src/cairo-traps-compositor.c
     fix: modify inappropriate return value.

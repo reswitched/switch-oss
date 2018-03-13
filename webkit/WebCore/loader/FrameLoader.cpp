@@ -1259,7 +1259,7 @@ void FrameLoader::loadURL(const FrameLoadRequest& frameLoadRequest, const String
             continueLoadAfterNewWindowPolicy(request, formState, frameName, action, shouldContinue, allowNavigationToInvalidURL, openerPolicy);
         });
 #else
-        std::function<void(const ResourceRequest&, PassRefPtr<FormState>, const String&, const NavigationAction&, bool)> p(std::allocator_arg, WTF::voidFuncAllocator(), [this, allowNavigationToInvalidURL, openerPolicy](const ResourceRequest& request, PassRefPtr<FormState> formState, const String& frameName, const NavigationAction& action, bool shouldContinue) {
+        NewWindowPolicyDecisionFunction p(std::allocator_arg, policyChecker().newWindowFunctionAllocator(), [this, allowNavigationToInvalidURL, openerPolicy](const ResourceRequest& request, PassRefPtr<FormState> formState, const String& frameName, const NavigationAction& action, bool shouldContinue) {
             continueLoadAfterNewWindowPolicy(request, formState, frameName, action, shouldContinue, allowNavigationToInvalidURL, openerPolicy);
         });
         policyChecker().checkNewWindowPolicy(action, request, formState.release(), frameName, p);
@@ -1280,9 +1280,16 @@ void FrameLoader::loadURL(const FrameLoadRequest& frameLoadRequest, const String
         oldDocumentLoader->setLastCheckedRequest(ResourceRequest());
         policyChecker().stopCheck();
         policyChecker().setLoadType(newLoadType);
+#if PLATFORM(WKC)
+        NavigationPolicyDecisionFunction p(std::allocator_arg, policyChecker().navigationFunctionAllocator(), [this](const ResourceRequest& request, PassRefPtr<FormState>, bool shouldContinue) {
+            continueFragmentScrollAfterNavigationPolicy(request, shouldContinue);
+        });
+        policyChecker().checkNavigationPolicy(request, oldDocumentLoader.get(), formState.release(), p);
+#else
         policyChecker().checkNavigationPolicy(request, oldDocumentLoader.get(), formState.release(), [this](const ResourceRequest& request, PassRefPtr<FormState>, bool shouldContinue) {
             continueFragmentScrollAfterNavigationPolicy(request, shouldContinue);
         });
+#endif
         return;
     }
 
@@ -1333,9 +1340,16 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
 
     if (request.shouldCheckNewWindowPolicy()) {
         NavigationAction action(request.resourceRequest(), NavigationType::Other, passedRequest.shouldOpenExternalURLsPolicy());
+#if PLATFORM(WKC)
+        NewWindowPolicyDecisionFunction p(std::allocator_arg, policyChecker().newWindowFunctionAllocator(), [this](const ResourceRequest& request, PassRefPtr<FormState> formState, const String& frameName, const NavigationAction& action, bool shouldContinue) {
+            continueLoadAfterNewWindowPolicy(request, formState, frameName, action, shouldContinue, AllowNavigationToInvalidURL::Yes, NewFrameOpenerPolicy::Suppress);
+        });
+        policyChecker().checkNewWindowPolicy(action, request.resourceRequest(), nullptr, request.frameName(), p);
+#else
         policyChecker().checkNewWindowPolicy(action, request.resourceRequest(), nullptr, request.frameName(), [this](const ResourceRequest& request, PassRefPtr<FormState> formState, const String& frameName, const NavigationAction& action, bool shouldContinue) {
             continueLoadAfterNewWindowPolicy(request, formState, frameName, action, shouldContinue, AllowNavigationToInvalidURL::Yes, NewFrameOpenerPolicy::Suppress);
         });
+#endif
 
         return;
     }
@@ -1470,9 +1484,16 @@ void FrameLoader::loadWithDocumentLoader(DocumentLoader* loader, FrameLoadType t
         oldDocumentLoader->setTriggeringAction(action);
         oldDocumentLoader->setLastCheckedRequest(ResourceRequest());
         policyChecker().stopCheck();
+#if PLATFORM(WKC)
+        NavigationPolicyDecisionFunction p(std::allocator_arg, policyChecker().navigationFunctionAllocator(), [this](const ResourceRequest& request, PassRefPtr<FormState>, bool shouldContinue) {
+            continueFragmentScrollAfterNavigationPolicy(request, shouldContinue);
+        });
+        policyChecker().checkNavigationPolicy(loader->request(), oldDocumentLoader.get(), formState, p);
+#else
         policyChecker().checkNavigationPolicy(loader->request(), oldDocumentLoader.get(), formState, [this](const ResourceRequest& request, PassRefPtr<FormState>, bool shouldContinue) {
             continueFragmentScrollAfterNavigationPolicy(request, shouldContinue);
         });
+#endif
         return;
     }
 
@@ -1895,7 +1916,7 @@ void FrameLoader::commitProvisionalLoad()
         if (m_frame.document()->doctype() && m_frame.page())
             m_frame.page()->chrome().didReceiveDocType(&m_frame);
 #endif
-        m_frame.document()->resume();
+        m_frame.document()->resume(ActiveDOMObject::PageCache);
 
         // Force a layout to update view size and thereby update scrollbars.
 #if PLATFORM(IOS)
@@ -2740,9 +2761,16 @@ void FrameLoader::loadPostRequest(const FrameLoadRequest& request, const String&
             return;
         }
 
+#if PLATFORM(WKC)
+        NewWindowPolicyDecisionFunction p(std::allocator_arg, policyChecker().newWindowFunctionAllocator(), [this, allowNavigationToInvalidURL, openerPolicy](const ResourceRequest& request, PassRefPtr<FormState> formState, const String& frameName, const NavigationAction& action, bool shouldContinue) {
+            continueLoadAfterNewWindowPolicy(request, formState, frameName, action, shouldContinue, allowNavigationToInvalidURL, openerPolicy);
+        });
+        policyChecker().checkNewWindowPolicy(action, workingResourceRequest, formState.release(), frameName, p);
+#else
         policyChecker().checkNewWindowPolicy(action, workingResourceRequest, formState.release(), frameName, [this, allowNavigationToInvalidURL, openerPolicy](const ResourceRequest& request, PassRefPtr<FormState> formState, const String& frameName, const NavigationAction& action, bool shouldContinue) {
             continueLoadAfterNewWindowPolicy(request, formState, frameName, action, shouldContinue, allowNavigationToInvalidURL, openerPolicy);
         });
+#endif
         return;
     }
 
@@ -3128,9 +3156,16 @@ void FrameLoader::continueLoadAfterNavigationPolicy(const ResourceRequest& reque
         return;
     }
 
+#if PLATFORM(WKC)
+    FramePolicyFunction p(std::allocator_arg, policyChecker().frameFunctionAllocator(), [this](PolicyAction action) {
+        policyChecker().continueLoadAfterWillSubmitForm(action);
+    });
+    m_client.dispatchWillSubmitForm(formState, p);
+#else
     m_client.dispatchWillSubmitForm(formState, [this](PolicyAction action) {
         policyChecker().continueLoadAfterWillSubmitForm(action);
     });
+#endif
 }
 
 void FrameLoader::continueLoadAfterNewWindowPolicy(const ResourceRequest& request,
@@ -3642,6 +3677,10 @@ RefPtr<Frame> createWindow(Frame& openerFrame, Frame& lookupFrame, const FrameLo
         return nullptr;
     }
 
+    // FIXME: Provide line number information with respect to the opener's document.
+    if (protocolIsJavaScript(request.resourceRequest().url()) && !openerFrame.document()->contentSecurityPolicy()->allowJavaScriptURLs(openerFrame.document()->url(), { }))
+        return nullptr;
+ 
     // FIXME: Setting the referrer should be the caller's responsibility.
     FrameLoadRequest requestWithReferrer = request;
     String referrer = SecurityPolicy::generateReferrerHeader(openerFrame.document()->referrerPolicy(), request.resourceRequest().url(), openerFrame.loader().outgoingReferrer());

@@ -33,7 +33,6 @@
 #include "DocumentLoader.h"
 #include "EventNames.h"
 #include "ExceptionCode.h"
-#include "FocusController.h"
 #include "FrameLoader.h"
 #include "FrameLoaderClient.h"
 #include "FrameView.h"
@@ -89,8 +88,8 @@ void CachedFrameBase::restore()
         m_document->accessSVGExtensions().unpauseAnimations();
 
     frame.animation().resumeAnimationsForDocument(m_document.get());
-    m_document->resumeActiveDOMObjects(ActiveDOMObject::PageCache);
-    m_document->resumeScriptedAnimationControllerCallbacks();
+
+    m_document->resume(ActiveDOMObject::PageCache);
 
     // It is necessary to update any platform script objects after restoring the
     // cached page.
@@ -126,7 +125,7 @@ void CachedFrameBase::restore()
         m_document->page()->chrome().client().needTouchEvents(true);
 #endif
 
-    m_document->resume();
+    frame.view()->didRestoreFromPageCache();
 }
 
 CachedFrame::CachedFrame(Frame& frame)
@@ -139,9 +138,6 @@ CachedFrame::CachedFrame(Frame& frame)
     ASSERT(m_documentLoader);
     ASSERT(m_view);
 
-    if (frame.page()->focusController().focusedFrame() == &frame)
-        frame.page()->focusController().setFocusedFrame(&frame.mainFrame());
-
     // Custom scrollbar renderers will get reattached when the document comes out of the page cache
     m_view->detachCustomScrollbars();
 
@@ -152,7 +148,7 @@ CachedFrame::CachedFrame(Frame& frame)
         m_childFrames.append(std::make_unique<CachedFrame>(*child));
 
     // Active DOM objects must be suspended before we cache the frame script data.
-    m_document->suspend();
+    m_document->suspend(ActiveDOMObject::PageCache);
 
     m_cachedFrameScriptData = std::make_unique<ScriptCachedFrameData>(frame);
 

@@ -5,7 +5,7 @@
  *  Copyright (C) 2008, 2009 Collabora Ltd.  All rights reserved.
  *  Copyright (C) 2009 Gustavo Noronha Silva <gns@gnome.org>
  *  Copyright (C) Research In Motion Limited 2009. All rights reserved.
- *  Copyright (c) 2010-2016 ACCESS CO., LTD. All rights reserved.
+ *  Copyright (c) 2010-2018 ACCESS CO., LTD. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -1342,13 +1342,6 @@ bool
 FrameLoaderClientWKC::allowScript(bool enabledPerSettings)
 {
     return m_appClient->allowScript(enabledPerSettings);
-}
-
-bool
-FrameLoaderClientWKC::allowRunningInsecureContent(bool enabledPerSettings, WebCore::SecurityOrigin* origin, const WebCore::URL& url)
-{
-    SecurityOriginPrivate o(origin);
-    return m_appClient->allowRunningInsecureContent(enabledPerSettings, &o.wkc(), url);
 }
 
 #if ENABLE(WEBGL)

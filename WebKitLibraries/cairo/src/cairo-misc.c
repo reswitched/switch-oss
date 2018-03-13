@@ -41,6 +41,9 @@
 #include "cairoint.h"
 #include "cairo-error-private.h"
 
+#include <stdio.h>
+#include <errno.h>
+
 COMPILE_TIME_ASSERT ((int)CAIRO_STATUS_LAST_STATUS < (int)CAIRO_INT_STATUS_UNSUPPORTED);
 COMPILE_TIME_ASSERT (CAIRO_INT_STATUS_LAST_STATUS <= 127);
 
@@ -771,7 +774,7 @@ _cairo_half_from_float (float f)
 # include <locale.h>
 
 const char *
-cairo_get_locale_decimal_point (void)
+_cairo_get_locale_decimal_point (void)
 {
     struct lconv *locale_data = localeconv ();
     return locale_data->decimal_point;
@@ -780,11 +783,130 @@ cairo_get_locale_decimal_point (void)
 #else
 /* Android's Bionic libc doesn't provide decimal_point */
 const char *
-cairo_get_locale_decimal_point (void)
+_cairo_get_locale_decimal_point (void)
 {
     return ".";
 }
 #endif
+
+/* strtod replacement that ignores locale and only accepts decimal points */
+double
+_cairo_strtod (const char *nptr, char **endptr)
+{
+    const char *decimal_point;
+    int decimal_point_len;
+    const char *p;
+    char buf[100];
+    char *bufptr;
+    char *bufend = buf + sizeof(buf) - 1;
+    double value;
+    char *end;
+    int delta;
+    cairo_bool_t have_dp;
+
+    decimal_point = _cairo_get_locale_decimal_point ();
+    decimal_point_len = strlen (decimal_point);
+    assert (decimal_point_len != 0);
+
+    p = nptr;
+    bufptr = buf;
+    delta = 0;
+    have_dp = FALSE;
+    while (*p && _cairo_isspace (*p)) {
+	p++;
+	delta++;
+    }
+
+    while (*p && (bufptr + decimal_point_len < bufend)) {
+	if (_cairo_isdigit (*p)) {
+	    *bufptr++ = *p;
+	} else if (*p == '.') {
+	    if (have_dp)
+		break;
+	    strncpy (bufptr, decimal_point, decimal_point_len);
+	    bufptr += decimal_point_len;
+	    delta -= decimal_point_len - 1;
+	    have_dp = TRUE;
+	} else {
+	    break;
+	}
+	p++;
+    }
+    *bufptr = 0;
+
+    value = strtod (buf, &end);
+    if (endptr) {
+	if (end == buf)
+	    *endptr = (char*)(nptr);
+	else
+	    *endptr = (char*)(nptr + (end - buf) + delta);
+    }
+
+    return value;
+}
+
+/**
+ * _cairo_fopen:
+ * @filename: filename to open
+ * @mode: mode string with which to open the file
+ * @file_out: reference to file handle
+ *
+ * Exactly like the C library function, but possibly doing encoding
+ * conversion on the filename. On all platforms, the filename is
+ * passed directly to the system, but on Windows, the filename is
+ * interpreted as UTF-8, rather than in a codepage that would depend
+ * on system settings.
+ *
+ * Return value: CAIRO_STATUS_SUCCESS when the filename was converted
+ * successfully to the native encoding, or the error reported by
+ * _cairo_utf8_to_utf16 otherwise. To check if the file handle could
+ * be obtained, dereference file_out and compare its value against
+ * NULL
+ **/
+cairo_status_t
+_cairo_fopen (const char *filename, const char *mode, FILE **file_out)
+{
+    FILE *result;
+#ifdef _WIN32 /* also defined on x86_64 */
+# ifndef WKC_CAIRO_CUSTOMIZE
+    uint16_t *filename_w;
+    uint16_t *mode_w;
+    cairo_status_t status;
+
+    *file_out = NULL;
+
+    if (filename == NULL || mode == NULL) {
+	errno = EINVAL;
+	return CAIRO_STATUS_SUCCESS;
+    }
+
+    if ((status = _cairo_utf8_to_utf16 (filename, -1, &filename_w, NULL)) != CAIRO_STATUS_SUCCESS) {
+	errno = EINVAL;
+	return status;
+    }
+
+    if ((status = _cairo_utf8_to_utf16 (mode, -1, &mode_w, NULL)) != CAIRO_STATUS_SUCCESS) {
+	free (filename_w);
+	errno = EINVAL;
+	return status;
+    }
+
+    result = _wfopen(filename_w, mode_w);
+
+    free (filename_w);
+    free (mode_w);
+# else
+    result = fopen (filename, mode);
+# endif
+
+#else /* Use fopen directly */
+    result = fopen (filename, mode);
+#endif
+
+    *file_out = result;
+
+    return CAIRO_STATUS_SUCCESS;
+}
 
 #ifdef _WIN32
 

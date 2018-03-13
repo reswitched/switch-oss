@@ -415,7 +415,7 @@ void FilterEffect::copyUnmultipliedImage(Uint8ClampedArray* destination, const I
 #endif
             unsigned char* sourceComponent = m_premultipliedImageResult->data();
             unsigned char* destinationComponent = m_unmultipliedImageResult->data();
-            unsigned char* end = sourceComponent + (inputSize.width() * inputSize.height() * 4);
+            unsigned char* end = sourceComponent + (inputSize.area() * 4).unsafeGet();
             while (sourceComponent < end) {
                 int alpha = sourceComponent[3];
                 if (alpha) {
@@ -455,7 +455,7 @@ void FilterEffect::copyPremultipliedImage(Uint8ClampedArray* destination, const 
 #endif
             unsigned char* sourceComponent = m_unmultipliedImageResult->data();
             unsigned char* destinationComponent = m_premultipliedImageResult->data();
-            unsigned char* end = sourceComponent + (inputSize.width() * inputSize.height() * 4);
+            unsigned char* end = sourceComponent + (inputSize.area() * 4).unsafeGet();
             while (sourceComponent < end) {
                 int alpha = sourceComponent[3];
                 destinationComponent[0] = static_cast<int>(sourceComponent[0]) * alpha / 255;

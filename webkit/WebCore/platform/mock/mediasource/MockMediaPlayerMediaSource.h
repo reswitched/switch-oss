@@ -81,10 +81,7 @@ private:
     virtual MediaTime currentMediaTime() const override;
     virtual MediaTime durationMediaTime() const override;
     virtual void seekWithTolerance(const MediaTime&, const MediaTime&, const MediaTime&) override;
-    virtual unsigned long totalVideoFrames() override;
-    virtual unsigned long droppedVideoFrames() override;
-    virtual unsigned long corruptedVideoFrames() override;
-    virtual MediaTime totalFrameDelay() override;
+    Optional<PlatformVideoPlaybackQualityMetrics> videoPlaybackQualityMetrics() override;
 
     MediaPlayer* m_player;
     RefPtr<MockMediaSourcePrivate> m_mediaSourcePrivate;

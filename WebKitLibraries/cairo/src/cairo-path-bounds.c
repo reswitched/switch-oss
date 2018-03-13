@@ -200,8 +200,8 @@ _cairo_path_fixed_stroke_extents (const cairo_path_fixed_t	*path,
     cairo_stroke_style_t style;
 
     /* When calculating extents for vector surfaces, ensure lines thinner
-     * than the fixed point resolution are not optimized away. */
-    double min_line_width = _cairo_fixed_to_double (CAIRO_FIXED_EPSILON*2);
+     * than one point are not optimized away. */
+    double min_line_width = _cairo_matrix_transformed_circle_major_axis (ctm_inverse, 1.0);
     if (stroke_style->line_width < min_line_width)
     {
 	style = *stroke_style;

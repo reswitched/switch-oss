@@ -90,6 +90,7 @@ public:
 #endif
 
 #if PLATFORM(WKC)
+    WKCAllocator<FramePolicyFunction>& frameFunctionAllocator() { return m_framePolicyFunctionAllocator; }
     WKCAllocator<NavigationPolicyDecisionFunction>& navigationFunctionAllocator() { return m_navigationFunctionAllocator; }
     WKCAllocator<NewWindowPolicyDecisionFunction>& newWindowFunctionAllocator() { return m_newWindowFunctionAllocator; }
     WKCAllocator<ContentPolicyDecisionFunction>& contentFunctionAllocator() { return m_contentFunctionAllocator; }

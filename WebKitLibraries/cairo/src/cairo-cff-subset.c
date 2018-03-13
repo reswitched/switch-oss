@@ -41,7 +41,7 @@
  * http://www.adobe.com/content/dam/Adobe/en/devnet/font/pdfs/5177.Type2.pdf
  */
 
-#define _BSD_SOURCE /* for snprintf(), strdup() */
+#define _DEFAULT_SOURCE /* for snprintf(), strdup() */
 #include "cairoint.h"
 
 #include "cairo-array-private.h"
@@ -295,20 +295,11 @@ decode_nibble (int n, char *buf)
 static unsigned char *
 decode_real (unsigned char *p, double *real)
 {
-    const char *decimal_point;
-    int decimal_point_len;
-    int n;
     char buffer[100];
-    char buffer2[200];
-    char *q;
     char *buf = buffer;
     char *buf_end = buffer + sizeof (buffer);
-
-    decimal_point = cairo_get_locale_decimal_point ();
-    decimal_point_len = strlen (decimal_point);
-
-    assert (decimal_point_len != 0);
-    assert (sizeof(buffer) + decimal_point_len < sizeof(buffer2));
+    char *end;
+    int n;
 
     p++;
     while (buf + 2 < buf_end) {
@@ -324,19 +315,7 @@ decode_real (unsigned char *p, double *real)
     };
     *buf = 0;
 
-    buf = buffer;
-    if (strchr (buffer, '.')) {
-	 q = strchr (buffer, '.');
-	 strncpy (buffer2, buffer, q - buffer);
-	 buf = buffer2 + (q - buffer);
-	 strncpy (buf, decimal_point, decimal_point_len);
-	 buf += decimal_point_len;
-	 strcpy (buf, q + 1);
-	 buf = buffer2;
-    }
-
-    if (sscanf(buf, "%lf", real) != 1)
-        *real = 0.0;
+    *real = _cairo_strtod (buffer, &end);
 
     return p;
 }

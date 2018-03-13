@@ -259,7 +259,7 @@ JSValue JSInjectedScriptHost::getInternalProperties(ExecState* exec)
         JSArray* array = constructEmptyArray(exec, nullptr, 3);
         array->putDirectIndex(exec, index++, constructInternalProperty(exec, "targetFunction", boundFunction->targetFunction()));
         array->putDirectIndex(exec, index++, constructInternalProperty(exec, "boundThis", boundFunction->boundThis()));
-        array->putDirectIndex(exec, index++, constructInternalProperty(exec, "boundArgs", boundFunction->boundArgs()));
+        array->putDirectIndex(exec, index++, constructInternalProperty(exec, "boundArgs", boundFunction->boundArgsCopy(exec)));
         return array;
     }
 

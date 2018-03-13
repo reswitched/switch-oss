@@ -555,11 +555,6 @@ void HTMLConstructionSite::insertTextNode(const String& characters, WhitespaceMo
     if (shouldFosterParent())
         findFosterSite(task);
 
-#if ENABLE(TEMPLATE_ELEMENT)
-    if (is<HTMLTemplateElement>(*task.parent))
-        task.parent = downcast<HTMLTemplateElement>(*task.parent).content();
-#endif
-
     // Strings composed entirely of whitespace are likely to be repeated.
     // Turn them into AtomicString so we share a single string for each.
     bool shouldUseAtomicString = whitespaceMode == AllWhitespace

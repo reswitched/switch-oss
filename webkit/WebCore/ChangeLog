@@ -1,3 +1,1630 @@
+2017-10-27  Daniel Bates  <dabates@apple.com>
+
+        Only allow non-mixed content protected subresources to ask for credentials
+        https://bugs.webkit.org/show_bug.cgi?id=178919
+        <rdar://problem/35015245>
+
+        Reviewed by Alex Christensen.
+
+        Only allow non-mixed content protected subresources to ask for credentials. It is not meaningful
+        to allow protected mixed-content subresources to ask for credentials.
+
+        Tests: http/tests/security/mixedContent/insecure-image-redirects-to-basic-auth-secure-image.html
+               http/tests/security/mixedContent/insecure-script-redirects-to-basic-auth-secure-script.html
+               http/tests/security/mixedContent/insecure-stylesheet-redirects-to-basic-auth-secure-stylesheet.html
+               http/tests/security/mixedContent/secure-redirect-to-insecure-redirect-to-basic-auth-secure-image.https.html
+               http/tests/security/mixedContent/secure-redirect-to-secure-redirect-to-basic-auth-insecure-image.https.html
+               http/tests/security/mixedContent/secure-redirect-to-secure-redirect-to-basic-auth-secure-image.https.html
+
+        * loader/ResourceLoader.cpp:
+        (WebCore::ResourceLoader::ResourceLoader): Initialize m_canAskClientForCredentials based on the
+        specified resource loader options.
+        (WebCore::ResourceLoader::init): Update m_canAskClientForCredentials based on the URL of the initial
+        request.
+        (WebCore::ResourceLoader::isMixedContent const): Helper function to check if the specified URL
+        represents a mixed content resource.
+        (WebCore::ResourceLoader::willSendRequestInternal): If the original request or the redirect request
+        is mixed content then update state such that we will disallow asking for credentials.
+        (WebCore::ResourceLoader::isAllowedToAskUserForCredentials const): Modified to use m_canAskClientForCredentials
+        when determining whether the request is allowed to ask for credentials.
+        * loader/ResourceLoader.h:
+
+2016-07-26  Youenn Fablet  <youenn@apple.com>
+
+        Remove ClientCredentialPolicy cross-origin option from ResourceLoaderOptions
+        https://bugs.webkit.org/show_bug.cgi?id=159413
+
+        Reviewed by Alex Christensen.
+
+        ClientCredentialPolicy had three values (not ask, ask, ask only for same origin).
+        The distinction between allowing cross-origin or same-origin credentials is misleading as it is not supported
+        for synchronous loads and not supported by Network process.
+        It is best replaced by a boolean option (ask or not ask).
+
+        Same-origin ClientCredentialPolicy option was only used by DocumentThreadableLoader for asynchronous loads.
+        Since DocumentThreadableLoader is already computing whether the request is cross-origin, it can also compute
+        whether credentials may be requested or not. In case of cross-origin redirections, credentials are omitted, thus
+        disabling any possibility for requesting credentials for cross-origin resources after redirections.
+
+        Moving ClientCredentialPolicy to ResourceLoaderOptions since it is not used by platform code except for some
+        mac-specific code that is already using ResourceLoaderOptions.
+
+        Covered by existing tests.
+
+        * loader/CrossOriginPreflightChecker.cpp:
+        (WebCore::CrossOriginPreflightChecker::startPreflight): Setting clearly credential mode to Omit credentials.
+        (WebCore::CrossOriginPreflightChecker::doPreflight): Ditto.
+        * loader/DocumentLoader.cpp:
+        (WebCore::DocumentLoader::startLoadingMainResource): AskClientForAllCredentials ->
+        ClientCredentialPolicy::MayAskClientForCredentials.
+        * loader/DocumentThreadableLoader.cpp:
+        (WebCore::DocumentThreadableLoader::loadRequest): Disabling requesting credentials for any cross-origin request.
+        * loader/FrameLoader.h:
+        * loader/MediaResourceLoader.cpp:
+        (WebCore::MediaResourceLoader::requestResource): AskClientForAllCredentials -> ClientCredentialPolicy::MayAskClientForCredentials.
+        * loader/NetscapePlugInStreamLoader.cpp:
+        (WebCore::NetscapePlugInStreamLoader::NetscapePlugInStreamLoader): Ditto.
+        * loader/ResourceLoader.cpp:
+        (WebCore::ResourceLoader::isAllowedToAskUserForCredentials): Disabling client credential request if ClientCredentialPolicy is CannotAskClientForCredentials.
+        Otherwise, returns true if fetch credentials mode allows it.
+        * loader/ResourceLoaderOptions.h:
+        (WebCore::ResourceLoaderOptions::ResourceLoaderOptions):
+        (WebCore::ResourceLoaderOptions::clientCredentialPolicy): Deleted.
+        (WebCore::ResourceLoaderOptions::setClientCredentialPolicy): Deleted.
+        * loader/cache/CachedResourceLoader.cpp:
+        (WebCore::CachedResourceLoader::requestUserCSSStyleSheet): AskClientForAllCredentials -> ClientCredentialPolicy::MayAskClientForCredentials.
+        (WebCore::CachedResourceLoader::defaultCachedResourceOptions): AskClientForAllCredentials -> ClientCredentialPolicy::MayAskClientForCredentials.
+        * loader/icon/IconLoader.cpp:
+        (WebCore::IconLoader::startLoading): DoNotAskClientForAnyCredentials -> ClientCredentialPolicy::CannotAskClientForCredentials.
+        * platform/graphics/avfoundation/cf/WebCoreAVCFResourceLoader.cpp:
+        (WebCore::WebCoreAVCFResourceLoader::startLoading): DoNotAskClientForCrossOriginCredentials -> ClientCredentialPolicy::CannotAskClientForCredentials.
+        This is ok as credentials mode is omit and stored credentials are not allowed.
+        * platform/graphics/avfoundation/objc/WebCoreAVFResourceLoader.mm:
+        (WebCore::WebCoreAVFResourceLoader::startLoading): Ditto.
+        * platform/network/ResourceHandleTypes.h:
+        * xml/XSLTProcessorLibxslt.cpp: DoNotAskClientForCrossOriginCredentials -> ClientCredentialPolicy::MayAskClientForCredentials.
+        This is ok as this is a synchronous load.
+        (WebCore::docLoaderFunc):
+        * xml/parser/XMLDocumentParserLibxml2.cpp:
+        (WebCore::openFunc): DoNotAskClientForCrossOriginCredentials -> ClientCredentialPolicy::MayAskClientForCredentials.
+        This is ok as this is a synchronous load.
+
+2016-07-05  Youenn Fablet  <youenn@apple.com>
+
+        Remove CredentialRequest ResourceLoaderOptions
+        https://bugs.webkit.org/show_bug.cgi?id=159404
+
+        Reviewed by Sam Weinig.
+
+        No observable change of behavior.
+        Removing CredentialRequest from ResourceLoaderOptions and replacing it by FetchOptions::Credentials.
+        As per https://fetch.spec.whatwg.org/#http-fetch, credentials flag is set according FetchOptions::Credentials.
+
+        * loader/DocumentLoader.cpp:
+        (WebCore::DocumentLoader::startLoadingMainResource): Set credentials mode to Include.
+        * loader/DocumentThreadableLoader.cpp:
+        (WebCore::DocumentThreadableLoader::redirectReceived): Disable credentials if credentials mode is SameOrigin
+        (request being cross origin).
+        * loader/MediaResourceLoader.cpp: Refqctoring to use CachedResourceReauest::setAsPotentiallyCrossOrigin.
+        Removed unnecessary ResourceRequest copy by using the mutable request of CachedResourceRequest.
+        (WebCore::MediaResourceLoader::requestResource):
+        * loader/NetscapePlugInStreamLoader.cpp:
+        (WebCore::NetscapePlugInStreamLoader::NetscapePlugInStreamLoader): Set credential mode  to Include
+        * loader/ResourceLoaderOptions.h: Removing CredentialRequest option.
+        (WebCore::ResourceLoaderOptions::ResourceLoaderOptions):
+        (WebCore::ResourceLoaderOptions::credentialRequest): Deleted.
+        (WebCore::ResourceLoaderOptions::setCredentialRequest): Deleted.
+        * loader/cache/CachedResourceLoader.cpp:
+        (WebCore::CachedResourceLoader::requestUserCSSStyleSheet): Set credential mode to Include.
+        (WebCore::CachedResourceLoader::defaultCachedResourceOptions): Ditto.
+        * loader/cache/CachedResourceRequest.cpp:
+        (WebCore::CachedResourceRequest::setAsPotentiallyCrossOrigin): Set credential mode according crossorigin
+        atribute value.
+        * loader/icon/IconLoader.cpp:
+        (WebCore::IconLoader::startLoading): Set credential mode to Omit.
+        * page/EventSource.cpp:
+        (WebCore::EventSource::connect): Set credential mode according crossorigin atribute value.
+        * platform/graphics/avfoundation/cf/WebCoreAVCFResourceLoader.cpp:
+        (WebCore::WebCoreAVCFResourceLoader::startLoading): Set credential mode to Omit.
+        * platform/graphics/avfoundation/objc/WebCoreAVFResourceLoader.mm:
+        (WebCore::WebCoreAVFResourceLoader::startLoading): Ditto.
+        * platform/network/ResourceHandleTypes.h: Removed definition of CredentialRequest.
+        * xml/XMLHttpRequest.cpp:
+        (WebCore::XMLHttpRequest::createRequest): Set credential mode according crossorigin atribute value.
+
+2016-07-01  Youenn Fablet  <youenn@apple.com>
+
+        Make ResourceLoaderOptions derive from FetchOptions
+        https://bugs.webkit.org/show_bug.cgi?id=159345
+
+        Reviewed by Alex Christensen.
+
+        No change of behavior.
+
+        * Modules/fetch/FetchLoader.cpp:
+        (WebCore::FetchLoader::start):
+        * loader/CrossOriginPreflightChecker.cpp:
+        (WebCore::CrossOriginPreflightChecker::startPreflight):
+        * loader/ResourceLoaderOptions.h:
+        (WebCore::ResourceLoaderOptions::fetchOptions): Deleted.
+        (WebCore::ResourceLoaderOptions::setFetchOptions): Deleted.
+        * loader/SubresourceLoader.cpp:
+        (WebCore::SubresourceLoader::willSendRequestInternal):
+        * loader/ThreadableLoader.h: Removing securityOrigin field (left over from https://bugs.webkit.org/show_bug.cgi?id=159221)
+
+2016-06-27  Jer Noble  <jer.noble@apple.com>
+
+        Cross-domain video loads do not prompt for authorization.
+        https://bugs.webkit.org/show_bug.cgi?id=159195
+        <rdar://problem/26234612>
+
+        Reviewed by Brent Fulgham.
+
+        Test: http/tests/media/video-auth.html (modified)
+
+        We should prompt for authorization when a cross-origin <video> is embedded
+        in a web page.
+
+        * loader/MediaResourceLoader.cpp:
+        (WebCore::MediaResourceLoader::requestResource):
+
+2016-05-24  Youenn Fablet  <youenn.fablet@crf.canon.fr>
+
+        [Fetch API] Implement Fetch redirect mode
+        https://bugs.webkit.org/show_bug.cgi?id=157837
+
+        Reviewed by Alex Christensen.
+
+        Implementing step 5 of https://fetch.spec.whatwg.org/#http-fetch.
+        Making ResourceLoaderOptions include FetchOptions.
+        This allows SubresourceLoader to follow or not redirections based on that option.
+        CachedResource is made responsible to handle the type of the response (opaqueredirect, opaque, cors, basic...).
+        If redirection is not to be followed, either an error is returned or an empty response is returned.
+
+        Moved Response type and redirected flag from FetchResponse to ResourceResponse.
+        This allows CachedResource to easily communicate that information to FetchResponse.
+
+        Made some clean-up refactoring in ThreadableLoaderOptions.
+
+        http/tests/fetch/caching-with-different-options.html ensures that
+        caching at CachedResourceLoader will not have bad effects on fetch.
+        Covered by updated and rebased tests.
+
+        * Modules/fetch/FetchLoader.cpp:
+        (WebCore::FetchLoader::start):
+        * Modules/fetch/FetchResponse.cpp:
+        (WebCore::FetchResponse::error):
+        (WebCore::FetchResponse::redirect):
+        (WebCore::FetchResponse::FetchResponse):
+        (WebCore::FetchResponse::clone):
+        (WebCore::FetchResponse::startFetching):
+        * Modules/fetch/FetchResponse.h:
+        * WebCore.xcodeproj/project.pbxproj:
+        * loader/FetchOptions.h: Moved from Source/WebCore/Modules/fetch/FetchOptions.h.
+        * loader/ResourceLoaderOptions.h:
+        (WebCore::ResourceLoaderOptions::fetchOptions):
+        (WebCore::ResourceLoaderOptions::setFetchOptions):
+        * loader/SubresourceLoader.cpp:
+        (WebCore::SubresourceLoader::willSendRequestInternal):
+        * loader/ThreadableLoader.cpp:
+        * loader/ThreadableLoader.h:
+        * loader/cache/CachedResource.cpp:
+        (WebCore::CachedResource::setResponse):
+        * loader/cache/CachedResource.h:
+        (WebCore::CachedResource::setOpaqueRedirect):
+        * platform/network/ResourceResponseBase.cpp:
+        (WebCore::ResourceResponseBase::adopt):
+        (WebCore::ResourceResponseBase::copyData):
+        * platform/network/ResourceResponseBase.h:
+        (WebCore::ResourceResponseBase::type):
+        (WebCore::ResourceResponseBase::setType):
+        (WebCore::ResourceResponseBase::encode):
+        (WebCore::ResourceResponseBase::decode):
+
+2016-06-09  John Wilander  <wilander@apple.com>
+
+        Restrict HTTP/0.9 responses to default ports and cancel HTTP/0.9 resource loads if the document was loaded with another HTTP protocol
+        https://bugs.webkit.org/show_bug.cgi?id=158589
+        <rdar://problem/25757454>
+
+        Reviewed by Brent Fulgham.
+
+        No new tests. Our layout test environment does not allow for headerless responses
+        nor does it allow you to set an explicit HTTP/0.9 status header in PHP. I have
+        manually tested this change with a Python socket setup doing both headerless and
+        HTTP/0.9 header tests for positive and negative cases.
+
+        * loader/DocumentLoader.cpp:
+        (WebCore::DocumentLoader::responseReceived):
+            Cancel loads if the request was made to a non-default port.
+        * loader/ResourceLoader.cpp:
+        (WebCore::ResourceLoader::didReceiveResponse):
+            Cancel loads if the request was made to a non-default port or if the document
+            was loaded with another protocol. Cancelation is handled as a fail so as to
+            fire the onerror event and allow sites to handle it gracefully.
+
+2017-11-22  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r224398. rdar://problem/35329715
+
+    2017-11-03  Daniel Bates  <dabates@apple.com>
+
+            Invalidate node list when associated form control element is removed
+            https://bugs.webkit.org/show_bug.cgi?id=179232
+            <rdar://problem/35308269>
+
+            Reviewed by Ryosuke Niwa.
+
+            A node list represents a live view of the DOM. Invalidate the node list
+            associated with a form element whenever one of its associated form control
+            elements is removed.
+
+            Test: fast/forms/node-list-remove-button-from-form.html
+
+            * html/HTMLFormElement.cpp:
+            (WebCore::HTMLFormElement::removeFormElement):
+
+2018-01-05  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r226457. rdar://problem/36323985
+
+    2018-01-05  Said Abou-Hallawa  <sabouhallawa@apple.com>
+
+            SVGAnimatedListPropertyTearOff::synchronizeWrappersIfNeeded() should do nothing if the property is not animating
+            https://bugs.webkit.org/show_bug.cgi?id=181316
+            <rdar://problem/36147545>
+
+            Reviewed by Simon Fraser.
+
+            This is a speculative change to fix a crash which appeared after r226065.
+            The crash is very intermittent and sometimes very hard to reproduce. The
+            basic code analysis did not show how this crash can even happen.
+
+            * svg/SVGAnimatedTypeAnimator.h:
+            (WebCore::SVGAnimatedTypeAnimator::resetFromBaseValues): For SVG property
+            with two values, e.g. <SVGAngleValue, SVGMarkerOrientType>,  we need to
+            detach the wrappers of the animated property if the animated values are
+            going to change. This is similar to what we did in resetFromBaseValue().
+
+            * svg/properties/SVGAnimatedListPropertyTearOff.h:
+            (WebCore::SVGAnimatedListPropertyTearOff::synchronizeWrappersIfNeeded):
+
+2017-12-18  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r226065. rdar://problem/36080413
+
+    2017-12-18  Zalan Bujtas  <zalan@apple.com>
+
+            [SVG] Detach list wrappers before resetting the base value.
+            https://bugs.webkit.org/show_bug.cgi?id=180912
+            <rdar://problem/36017970>
+
+            Reviewed by Simon Fraser.
+
+            Before resetting the animation value (and destroying the assigned SVG object -SVGLengthValue in this case),
+            we need to check if there's an associated tear off wrapper for the said SVG object and make a copy of it.
+            This is currently done in the wrong order through animValDidChange.
+
+            Test: svg/animations/crash-when-animation-is-running-while-getting-value.html
+
+            * svg/SVGAnimatedTypeAnimator.h:
+            (WebCore::SVGAnimatedTypeAnimator::resetFromBaseValue):
+            * svg/properties/SVGAnimatedPropertyTearOff.h:
+            * svg/properties/SVGAnimatedStaticPropertyTearOff.h:
+            (WebCore::SVGAnimatedStaticPropertyTearOff::synchronizeWrappersIfNeeded):
+
+2017-10-10  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r221831. rdar://problem/34891283
+
+    2017-09-08  Dean Jackson  <dino@apple.com>
+
+            gl.detachShader breaks shader program
+            https://bugs.webkit.org/show_bug.cgi?id=137689
+            <rdar://problem/34025056>
+
+            Reviewed by Sam Weinig.
+
+            It should be possible to compile shaders, attach them to a program,
+            link the program, detach the shaders, delete the shaders, and then
+            ask for the uniform and attribute locations. That is, once you've
+            linked, the shaders can be thrown away.
+
+            We were using the attached shaders to look up uniform locations, so
+            we now keep around a separate map that remembers what shaders were
+            attached when the program links.
+
+            This fixes the bug, but the whole area is still a bit messy. For one,
+            we're keeping around all the shader information even after it is
+            no longer used.
+            See https://bugs.webkit.org/show_bug.cgi?id=98204
+
+            Test: fast/canvas/webgl/detachShader-before-accessing-uniform.html
+
+            * platform/graphics/GraphicsContext3D.h: Add another map to remember
+            what shaders were used when a program was linked.
+            * platform/graphics/opengl/GraphicsContext3DOpenGLCommon.cpp:
+            (WebCore::GraphicsContext3D::mappedSymbolInShaderSourceMap): New helper
+            to look up a name in our source maps.
+            (WebCore::GraphicsContext3D::mappedSymbolName): Use the helper, and look
+            at linked shaders if there are no attached shaders.
+            (WebCore::GraphicsContext3D::originalSymbolInShaderSourceMap): Does the
+            reverse of the above.
+            (WebCore::GraphicsContext3D::originalSymbolName):
+            (WebCore::GraphicsContext3D::linkProgram): Add to the new map.
+            (WebCore::GraphicsContext3D::deleteProgram): Delete the program from
+            our shader entries.
+
+2017-10-09  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r221046. rdar://problem/34891067
+
+    2017-08-22  Jer Noble  <jer.noble@apple.com>
+
+            Refactor videoPerformanceQuality() MediaPlayer methods into single call.
+            https://bugs.webkit.org/show_bug.cgi?id=175830
+
+            Reviewed by Eric Carlson.
+
+            Allow MediaPlayerPrivate subclasses to return all the metrics required for VideoPerformanceQuality in
+            a single call. For clients which incur significant overhead to request this data, this reduces the cost
+            of requesting data by the number of calls removed.
+
+            * html/HTMLMediaElement.cpp:
+            (WebCore::HTMLMediaElement::getVideoPlaybackQuality):
+            * platform/graphics/MediaPlayer.cpp:
+            (WebCore::MediaPlayer::videoPlaybackQualityMetrics):
+            (WebCore::MediaPlayer::totalVideoFrames): Deleted.
+            (WebCore::MediaPlayer::droppedVideoFrames): Deleted.
+            (WebCore::MediaPlayer::corruptedVideoFrames): Deleted.
+            (WebCore::MediaPlayer::totalFrameDelay): Deleted.
+            * platform/graphics/MediaPlayer.h:
+            (WebCore::PlatformVideoPlaybackQualityMetrics::PlatformVideoPlaybackQualityMetrics):
+            * platform/graphics/MediaPlayerPrivate.h:
+            (WebCore::MediaPlayerPrivateInterface::videoPlaybackQualityMetrics):
+            (WebCore::MediaPlayerPrivateInterface::totalVideoFrames): Deleted.
+            (WebCore::MediaPlayerPrivateInterface::droppedVideoFrames): Deleted.
+            (WebCore::MediaPlayerPrivateInterface::corruptedVideoFrames): Deleted.
+            (WebCore::MediaPlayerPrivateInterface::totalFrameDelay): Deleted.
+            * platform/graphics/avfoundation/objc/MediaPlayerPrivateMediaSourceAVFObjC.h:
+            * platform/graphics/avfoundation/objc/MediaPlayerPrivateMediaSourceAVFObjC.mm:
+            (WebCore::MediaPlayerPrivateMediaSourceAVFObjC::videoPlaybackQualityMetrics):
+            (WebCore::MediaPlayerPrivateMediaSourceAVFObjC::totalVideoFrames): Deleted.
+            (WebCore::MediaPlayerPrivateMediaSourceAVFObjC::droppedVideoFrames): Deleted.
+            (WebCore::MediaPlayerPrivateMediaSourceAVFObjC::corruptedVideoFrames): Deleted.
+            (WebCore::MediaPlayerPrivateMediaSourceAVFObjC::totalFrameDelay): Deleted.
+            * platform/graphics/gstreamer/mse/MediaPlayerPrivateGStreamerMSE.h:
+            * platform/mock/mediasource/MockMediaPlayerMediaSource.cpp:
+            (WebCore::MockMediaPlayerMediaSource::videoPlaybackQualityMetrics):
+            (WebCore::MockMediaPlayerMediaSource::totalVideoFrames): Deleted.
+            (WebCore::MockMediaPlayerMediaSource::droppedVideoFrames): Deleted.
+            (WebCore::MockMediaPlayerMediaSource::corruptedVideoFrames): Deleted.
+            (WebCore::MockMediaPlayerMediaSource::totalFrameDelay): Deleted.
+            * platform/mock/mediasource/MockMediaPlayerMediaSource.h:
+            * platform/mock/mediasource/MockMediaSourcePrivate.cpp:
+            (WebCore::MockMediaSourcePrivate::videoPlaybackQualityMetrics):
+            * platform/mock/mediasource/MockMediaSourcePrivate.h:
+
+2017-10-19  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r223442. rdar://problem/34745623
+
+    2017-10-16  Maureen Daum  <mdaum@apple.com>
+
+            If an origin doesn't have databases in the Databases table we should still remove its information from disk in DatabaseTracker::deleteOrigin()
+            https://bugs.webkit.org/show_bug.cgi?id=178281
+            <rdar://problem/34576132>
+
+            Reviewed by Brent Fulgham.
+
+            New test:
+            DatabaseTracker.DeleteOriginWithMissingEntryInDatabasesTable
+
+            * Modules/webdatabase/DatabaseTracker.cpp:
+            (WebCore::DatabaseTracker::deleteOrigin):
+            If databaseNames is empty, don't bail early. Instead, delete everything in the directory
+            containing the databases for this origin. This condition indicates that we previously
+            tried to remove the origin but didn't get all of the way through the deletion process.
+            Because we have lost track of the databases for this origin, we can assume that no
+            other process is accessing them. This means it should be safe to delete them outright.
+
+2017-10-19  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r223438. rdar://problem/34745623
+
+    2017-10-16  Ryan Haddad  <ryanhaddad@apple.com>
+
+            Unreviewed attempt to fix the Windows debug build.
+
+            * Modules/webdatabase/DatabaseTracker.cpp:
+            (WebCore::DatabaseTracker::deleteOrigin):
+
+2017-10-19  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r223427. rdar://problem/34745623
+
+    2017-10-16  Maureen Daum  <mdaum@apple.com>
+
+            If we fail to delete any database file, don't remove its information from the tracker database
+            <rdar://problem/34576132> and https://bugs.webkit.org/show_bug.cgi?id=178251
+
+            Reviewed by Brady Eidson.
+
+            New tests:
+            DatabaseTracker.DeleteDatabase
+            DatabaseTracker.DeleteDatabaseWhenDatabaseDoesNotExist
+            DatabaseTracker.DeleteOrigin
+            DatabaseTracker.DeleteOriginWhenDeletingADatabaseFails
+            DatabaseTracker.DeleteOriginWhenDatabaseDoesNotExist
+
+            * Modules/webdatabase/DatabaseTracker.cpp:
+            (WebCore::DatabaseTracker::deleteDatabasesModifiedSince):
+            If the database doesn't exist, we previously deleted it but failed to remove the
+            information from the tracker database. We still want to delete all of the information
+            associated with this database from the tracker database, so add it to databaseNamesToDelete.
+            (WebCore::DatabaseTracker::deleteOrigin):
+            If a database doesn't exist, don't try to delete it. We don't need to, but more
+            importantly, deleteDatabaseFile() will fail if the database doesn't exist, which
+            will cause us to incorrectly think we failed to remove database information from disk.
+            If we actually fail to delete any database file, return before we remove the origin
+            information from the tracker database so we don't lose track of the database.
+            (WebCore::DatabaseTracker::deleteDatabase):
+            If a database doesn't exist, don't try to delete it. We don't need to, but also it
+            will cause us to incorrectly think that we were unable to delete a database, so we
+            would bail before we remove the database information from the tracker database. We
+            want to remove the database information from the tracker database because the database
+            doesn't exist.
+            * Modules/webdatabase/DatabaseTracker.h:
+            Expose fullPathForDatabase() for use by tests.
+            * platform/Logging.h:
+            Add a logging channel.
+
+2017-10-18  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r223423. rdar://problem/34745623
+
+    2017-10-16  Maureen Daum  <mdaum@apple.com>
+
+            We should wrap the removal of information from the tracker database in a transaction in DatabaseTracker::deleteOrigin()
+            https://bugs.webkit.org/show_bug.cgi?id=178274
+            <rdar://problem/34576132>
+
+            Reviewed by Tim Horton.
+
+            * Modules/webdatabase/DatabaseTracker.cpp:
+            (WebCore::DatabaseTracker::deleteOrigin):
+            Wrap the removal of information from the tracker database in a transaction so that
+            we don't end up in a case where only one of the tables contains information about
+            an origin.
+            If anything goes wrong when we're modifying the tracker database, rollback the transaction
+            before bailing.
+
+2017-10-18  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r223228. rdar://problem/35061705
+
+    2017-10-11  Brent Fulgham  <bfulgham@apple.com>
+
+            Correct nullptr deref in selection handling.
+            https://bugs.webkit.org/show_bug.cgi?id=178189
+            <rdar://problem/33833012>
+
+            Reviewed by Ryosuke Niwa.
+
+            The VisibleSelection::toNormalizedRange returns nullptr for certain conditions (e.g., 'isNone'
+            and 'isOrphaned' cases). It's possible to crash the WebProcess by executing a code path with
+            an orphaned selection range.
+
+            The return value of 'toNormalizedRange' is checked for nullptr in many places, but not everywhere.
+            This patch adds those missing nullptr checks.
+
+            * accessibility/ios/WebAccessibilityObjectWrapperIOS.mm:
+            (-[WebAccessibilityObjectWrapper textMarkerRangeForSelection]):
+            * editing/DeleteSelectionCommand.cpp:
+            (WebCore::DeleteSelectionCommand::makeStylingElementsDirectChildrenOfEditableRootToPreventStyleLoss):
+            * editing/EditingStyle.cpp:
+            (WebCore::EditingStyle::styleAtSelectionStart):
+            * editing/Editor.cpp:
+            (WebCore::Editor::misspelledWordAtCaretOrRange const):
+            * page/DOMSelection.cpp:
+            (WebCore::DOMSelection::containsNode const):
+            * page/DragController.cpp:
+            (WebCore::DragController::concludeEditDrag):
+
+2017-10-18  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r221971. rdar://problem/34958928
+
+    2017-09-13  Ms2ger  <Ms2ger@igalia.com>
+
+            Make WebGLRenderingContextBase::TypedList::data() const-correct.
+            https://bugs.webkit.org/show_bug.cgi?id=176833
+
+            Reviewed by Sam Weinig.
+
+            No change of behavior.
+
+            * html/canvas/WebGLRenderingContextBase.cpp:
+            (WebCore::WebGLRenderingContextBase::validateUniformMatrixParameters):
+            * html/canvas/WebGLRenderingContextBase.h:
+            (WebCore::WebGLRenderingContextBase::TypedList::data const):
+            * platform/graphics/GraphicsContext3D.h:
+            * platform/graphics/opengl/GraphicsContext3DOpenGLCommon.cpp:
+            (WebCore::GraphicsContext3D::uniform1fv):
+            (WebCore::GraphicsContext3D::uniform2fv):
+            (WebCore::GraphicsContext3D::uniform3fv):
+            (WebCore::GraphicsContext3D::uniform4fv):
+            (WebCore::GraphicsContext3D::uniform1iv):
+            (WebCore::GraphicsContext3D::uniform2iv):
+            (WebCore::GraphicsContext3D::uniform3iv):
+            (WebCore::GraphicsContext3D::uniform4iv):
+            (WebCore::GraphicsContext3D::uniformMatrix2fv):
+            (WebCore::GraphicsContext3D::uniformMatrix3fv):
+            (WebCore::GraphicsContext3D::uniformMatrix4fv):
+            (WebCore::GraphicsContext3D::vertexAttrib1fv):
+            (WebCore::GraphicsContext3D::vertexAttrib2fv):
+            (WebCore::GraphicsContext3D::vertexAttrib3fv):
+            (WebCore::GraphicsContext3D::vertexAttrib4fv):
+
+2017-10-18  Dean Jackson  <dino@apple.com>
+
+        Cherry-pick r223640. rdar://problem/35063901
+
+    2017-10-18  Dean Jackson  <dino@apple.com>
+
+            Some older hardware can't actually use renderbuffers at the size they advertise
+            https://bugs.webkit.org/show_bug.cgi?id=178417
+            <rdar://problem/35042291>
+
+            Reviewed by Tim Horton.
+
+            The change in r223567 caused some older hardware to fail, because even though
+            they claimed to support a maximum renderbuffer and viewport of 16K, they were
+            unable to actually handle one. Rather than trying to identify such hardware,
+            clamp all buffers to a maximum of 8192. This is bigger than the previous value
+            of 4096, and large enough to have a full-screen buffer on a Retina 5K iMac.
+
+            * platform/graphics/opengl/GraphicsContext3DOpenGL.cpp:
+            (WebCore::GraphicsContext3D::getIntegerv):
+
+2017-10-17  Dean Jackson  <dino@apple.com>
+
+        Cherry-pick r223567. rdar://problem/35041476
+
+    2017-10-16  Dean Jackson  <dino@apple.com>
+
+            WebGL clamps drawingBufferWidth to 4096 pixels on a 5120 monitor/canvas
+            https://bugs.webkit.org/show_bug.cgi?id=178223
+            <rdar://problem/34597567>
+
+            Reviewed by Antoine Quint.
+
+            Remove the limit of 4k on the width/height of the renderbuffer.
+
+            Test: fast/canvas/webgl/large-drawing-buffer-resize.html
+
+            * html/canvas/WebGLRenderingContextBase.cpp:
+            (WebCore::WebGLRenderingContextBase::reshape):
+
+2017-10-17  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r223313. rdar://problem/35042269
+
+    2017-10-13  Brent Fulgham  <bfulgham@apple.com>
+
+            Protect FrameView during style calculations
+            https://bugs.webkit.org/show_bug.cgi?id=178300
+            <rdar://problem/34869329>
+
+            Reviewed by Ryosuke Niwa.
+
+            Protect the FrameView during layout and style updates in case arbitrary script
+            is run that might clear it.
+
+            Test: fast/html/marquee-reparent-check.html
+
+            * page/FrameView.cpp:
+            (WebCore::FrameView::updateLayoutAndStyleIfNeededRecursive):
+
+2017-10-11  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r222963. rdar://problem/34891307
+
+    2017-10-05  Dean Jackson  <dino@apple.com>
+
+            [WebGL] Safari performance is slow due to high MSAA usage
+            https://bugs.webkit.org/show_bug.cgi?id=177949
+            <rdar://problem/34835619>
+
+            Reviewed by Sam Weinig.
+
+            On some hardware, typically integrated GPUs, using MSAA with a sample
+            count above 4 produces bad performance. Limit the number of samples to
+            4 universally.
+
+            * platform/graphics/opengl/GraphicsContext3DOpenGL.cpp:
+            (WebCore::GraphicsContext3D::reshapeFBOs):
+
+2017-10-10  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r221937. rdar://problem/34893195
+
+    2017-09-12  Jer Noble  <jer.noble@apple.com>
+
+            [MSE] Don't increase the reported totalFrameDelay for non-displayed frames (or frames coming in while paused).
+            https://bugs.webkit.org/show_bug.cgi?id=175900
+
+            Reviewed by Eric Carlson.
+
+            When seeking to a specific time, the decompression session necessarily needs to be fed samples from before that
+            time (i.e., all samples from the previous I-frame forward). These shouldn't contribute to the "total frame
+            delay" metric. Neither should samples delivered when the video is paused (like, during seeking), as a frame can't
+            be "late" if time is not moving forward.
+
+            * platform/graphics/cocoa/WebCoreDecompressionSession.mm:
+            (WebCore::WebCoreDecompressionSession::handleDecompressionOutput):
+            * platform/cf/CoreMediaSoftLink.cpp:
+            * platform/cf/CoreMediaSoftLink.h:
+
+2017-10-02  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r221016. rdar://problem/34770830
+
+    2017-08-22  Jer Noble  <jer.noble@apple.com>
+
+            Autoplay Muted Videos Don't Play When Outside Viewport
+            https://bugs.webkit.org/show_bug.cgi?id=175748
+            <rdar://problem/33974383>
+
+            Reviewed by Eric Carlson.
+
+            Test: media/video-restricted-invisible-autoplay-not-allowed-source.html
+
+            The media session is notified that its client (the media element) will begin autoplaying inside
+            prepareForLoad(), where the m_autoplaying flag is also set. But loading via <source> elements does not go
+            through prepareForLoad(); the HTML standard states that the <source> element loading path does not trigger the
+            "media element load algorithm" which is implemented in prepareForLoad(). Since the m_autoplaying flag is
+            initially set to true, notify the media session that the element will begin autoplaying inside the element's
+            constructor.
+
+            Drive-by fix: Doing the above causes other tests to crash, as purturbing play state during style change can cause
+            re-entrancy in the native controls code, or fail, since we will transition from autoplay -> play even if there's
+            not yet a src or source to the media element. Add a task queue for updating the autoplay state and check the ready
+            state before allowing autoplay to transition to play.
+
+            * html/HTMLMediaElement.cpp:
+            (WebCore::HTMLMediaElement::HTMLMediaElement):
+            (WebCore::HTMLMediaElement::~HTMLMediaElement):
+            (WebCore::HTMLMediaElement::canTransitionFromAutoplayToPlay const):
+            (WebCore::HTMLMediaElement::isVisibleInViewportChanged):
+
+2017-10-02  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r221128. rdar://problem/34771005
+
+    2017-08-23  Wenson Hsieh  <wenson_hsieh@apple.com>
+
+            DeleteSelectionCommand should be robust when starting and ending editable positions cannot be found
+            https://bugs.webkit.org/show_bug.cgi?id=175914
+            <rdar://problem/29792688>
+
+            Reviewed by Ryosuke Niwa.
+
+            DeleteSelectionCommand can cause a null dereference if editable start and end positions are not found. This can
+            happen when attempting to delete after selecting the contents within a canvas or output element with `read-write`
+            `-webkit-user-modify` style. To fix this, we make the initialization step of the DeleteSelectionCommand robust
+            when editable start and end positions are missing.
+
+            Test: editing/execCommand/forward-delete-read-write-canvas.html
+
+            * editing/DeleteSelectionCommand.cpp:
+            (WebCore::DeleteSelectionCommand::initializePositionData):
+
+            Make this initialization helper indicate failure via a bool return value. DeleteSelectionCommand::doApply bails
+            early if initializePositionData returned false.
+
+            (WebCore::DeleteSelectionCommand::doApply):
+            * editing/DeleteSelectionCommand.h:
+
+2016-06-24  Mark Lam  <mark.lam@apple.com>
+
+        [JSC] Error prototypes are called on remote scripts.
+        https://bugs.webkit.org/show_bug.cgi?id=52192
+
+        Reviewed by Keith Miller.
+
+        Test: http/tests/security/regress-52192.html
+
+        Parsing errors are reported to the main script's window.onerror function.  AFAIK,
+        both Chrome and Firefox have the error reporting mechanism use an internal
+        sanitized version of Error.prototype.toString() that will not invoke any getters
+        or proxies instead.
+
+        This patch fixes this issue by matching Chrome and Firefox's behavior.
+
+        Note: we did not choose to make error objects and prototypes read-only because
+        that was observed to have broken the web.
+        See https://bugs.chromium.org/p/chromium/issues/detail?id=69187#c73
+
+        Credit for reporting this issue goes to Daniel Divricean (http://divricean.ro).
+
+        * bindings/js/JSDOMBinding.cpp:
+        (WebCore::reportException):
+        * ForwardingHeaders/runtime/ErrorInstance.h: Added.
+
+2018-01-07  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Reduce the precision of "high" resolution time to 1ms
+        https://bugs.webkit.org/show_bug.cgi?id=180910
+        <rdar://problem/36085943>
+
+        Reviewed by Saam Barati.
+
+        Reduced the high prevision time's resolution to 1ms, the same precision as Date.now().
+
+        Also fixed the bug in fillRTCStats that we weren't reducing the time resolution in RTCStats dictionaries.
+
+        * Modules/mediastream/libwebrtc/LibWebRTCMediaEndpoint.cpp:
+        (WebCore::fillRTCStats):
+        * page/Performance.cpp:
+        (WebCore::Performance::reduceTimeResolution):
+
+2016-08-22  Johan K. Jensen  <johan_jensen@apple.com>
+
+        Make NetworkLoadTiming use double for higher precision in Resource Timing
+        https://bugs.webkit.org/show_bug.cgi?id=161051
+
+        Reviewed by Alex Christensen.
+
+        Test: http/tests/misc/resource-timing-resolution.html
+
+        * page/Performance.h:
+        * page/Performance.cpp:
+        (WebCore::Performance::now):
+        (WebCore::Performance::reduceTimeResolution):
+        Add new function to reduce time resolution.
+
+        * page/PerformanceResourceTiming.cpp:
+        (WebCore::monotonicTimeToDocumentMilliseconds):
+        (WebCore::PerformanceResourceTiming::resourceTimeToDocumentMilliseconds):
+        Only use the reduced timing resolution for full timestamps and deltas.
+
+        (WebCore::PerformanceResourceTiming::connectStart): Use doubles.
+        * page/PerformanceResourceTiming.h: Use doubles.
+        * page/PerformanceTiming.cpp: Use doubles.
+        (WebCore::toIntegerMilliseconds): Use doubles.
+        (WebCore::PerformanceTiming::connectStart): Use doubles.
+        (WebCore::PerformanceTiming::resourceLoadTimeRelativeToFetchStart): Use doubles.
+        * page/PerformanceTiming.h: Use doubles.
+        * platform/network/NetworkLoadTiming.h: Use doubles.
+        * platform/network/curl/ResourceHandleManager.cpp: Use doubles.
+        (WebCore::milisecondsSinceRequest): Use doubles.
+        (WebCore::calculateWebTimingInformations): Use doubles.
+        * platform/network/soup/ResourceHandleSoup.cpp: Use doubles.
+        (WebCore::milisecondsSinceRequest): Use doubles.
+        (WebCore::networkEventCallback): Use doubles.
+
+2016-07-05  David Kilzer  <ddkilzer@apple.com>
+
+        Throw exceptions for invalid number of channels for ConvolverNode
+        <https://webkit.org/b/159238>
+
+        Reviewed by Brent Fulgham.
+
+        Fix based on a Blink change (patch by <rtoy@chromium.org>):
+        <https://chromium.googlesource.com/chromium/src.git/+/0cc26bbb7175aec77910d0b47faf9f8c8a640fe5>
+
+        Also includes a related fix for ReverbConvolverStage (patch by <rtoy@chromium.org>):
+        <https://src.chromium.org/viewvc/blink?revision=157832&view=revision>
+
+        Test: webaudio/convolver-channels.html
+
+        * Modules/webaudio/ConvolverNode.cpp:
+        (WebCore::ConvolverNode::setBuffer): Throw an exception for
+        anything but 1, 2 or 4 channels.
+        * platform/audio/ReverbConvolverStage.cpp:
+        (WebCore::ReverbConvolverStage::ReverbConvolverStage): Don't read past the end of
+        the impulseResponse array.
+
+2015-10-23  Hyemi Shin  <hyemi.sin@samsung.com>
+
+        ConvolverNode.buffer must have same sample-rate as the AudioContext 
+        https://bugs.webkit.org/show_bug.cgi?id=150385 
+
+        Reviewed by Chris Dumez.
+
+        ConvolverNode.buffer must be of the same sample-rate as the AudioContext
+        or an NOT_SUPPORTED_ERR exception MUST be thrown.
+
+        Test : webaudio/convolver-setBuffer-different-samplerate.html
+
+        * Modules/webaudio/ConvolverNode.cpp:
+        (WebCore::ConvolverNode::setBuffer):
+        * Modules/webaudio/ConvolverNode.h:
+        * Modules/webaudio/ConvolverNode.idl:
+
+2016-08-03  Eric Carlson  <eric.carlson@apple.com>
+
+        Cleanup HTMLMediaElement track lists.
+        https://bugs.webkit.org/show_bug.cgi?id=160470
+
+        Reviewed by Brent Fulgham.
+
+        * html/track/AudioTrack.cpp:
+        (WebCore::AudioTrack::willRemove): Remove unnecessary ASSERT and NULL check.
+
+        * html/track/TextTrackList.cpp:
+        (TextTrackList::~TextTrackList): Call clearElement so media element and client pointers are
+        cleared.
+
+2016-07-10  Zalan Bujtas  <zalan@apple.com>
+
+        Fix LogicalSelectionOffsetCaches to work with detached render tree.
+        https://bugs.webkit.org/show_bug.cgi?id=159605
+        <rdar://problem/27248845>
+
+        Reviewed by Brent Fulgham.
+
+        When the renderer that is being destroyed is on a selection boundary,
+        we need to ensure that all its cached pointers across the selection code (e.g. SelectionSubtreeData)
+        are getting reset. In order to do that, we call clearSelection() on the RenderView.
+        One of the last steps of clearing selection is to collect the selection gaps. Selection gaps uses this
+        LogicalSelectionOffsetCaches helper class to collect selection information across blocks.
+        LogicalSelectionOffsetCaches normally operates on rooted renderers. However we need to ensure sure that
+        it can also handle renderers that are no longer part of the render tree.
+
+        Test: fast/text/selection-on-a-detached-tree.html
+
+        * rendering/LogicalSelectionOffsetCaches.h:
+        (WebCore::LogicalSelectionOffsetCaches::ContainingBlockInfo::setBlock):
+        (WebCore::LogicalSelectionOffsetCaches::ContainingBlockInfo::logicalLeftSelectionOffset):
+        (WebCore::LogicalSelectionOffsetCaches::ContainingBlockInfo::logicalRightSelectionOffset):
+        * rendering/RenderBlock.cpp:
+        (WebCore::RenderBlock::logicalLeftSelectionOffset):
+        (WebCore::RenderBlock::logicalRightSelectionOffset):
+
+2016-06-29  David Kilzer  <ddkilzer@apple.com>
+
+        Crash when 'input' event handler for input[type=color] changes the input type
+        <https://webkit.org/b/159262>
+        <rdar://problem/27020404>
+
+        Reviewed by Daniel Bates.
+
+        Fix based on a Blink change (patch by <tkent@chromium.org>):
+        <https://chromium.googlesource.com/chromium/src.git/+/a17cb3ecef49a078657524cdeaba33ad2083646c>
+
+        Test: fast/forms/color/color-type-change-on-input-crash.html
+
+        * html/ColorInputType.cpp:
+        (WebCore::ColorInputType::didChooseColor): Add EventQueueScope
+        before setValueFromRenderer() to fix the bug.
+        * html/HTMLInputElement.h:
+        (WebCore::HTMLInputElement::setValueFromRenderer): Add comment
+        about how to use this method.
+
+2015-08-31  Yusuke Suzuki  <utatane.tea@gmail.com>
+
+        The error handler of ReadableJSStream should own stream object
+        https://bugs.webkit.org/show_bug.cgi?id=148653
+
+        Reviewed by Sam Weinig.
+
+        ReadableJSStream's m_errorFunction does not own the readable stream.
+        So when this error callback is executed asynchronously through Promises,
+        the stream could be already destroyed.
+        The fulfill callback which is jointly configured with this error callback
+        owns the stream. However, when the promise is rejected, the following things
+        occur.
+
+        1. Promise clears the fulfill handlers immediately.
+        2. queue the reject handlers to the microtask queue.
+        3. When draining the microtasks, the rejected handler will be executed.
+
+        At the time of 2 or 3, the references to the fulfill handlers are already discarded.
+        So when GC occurs at the time of 2 or 3, it will collect the fulfill handlers and the
+        stream object owned by the fulfill handlers even if the error callback will touch the
+        stream object later.
+
+        Before r189124, this fault does not occur. This is because the std::function in the
+        fulfill handler is not destroyed before that patch. Since the std::function owns the
+        stream object, the std::function and the stream object were leaked and never destroyed.
+        After that patch, the std::function in the fulfill handler becomes destroyed. And it
+        makes this fault happen.
+
+        In this patch, we separate the error callback from the stream object. Previously, the
+        error callback resides in the stream object as the member. To avoid the cyclic references,
+        this error callback did not own the stream object. But this causes this fault.
+        Instead of caching the error callback in the stream object, we always create the error
+        callback, when it is needed. The created error callback owns the stream object as well as
+        the fulfill callbacks owns the stream object.
+
+        No behavior change.
+
+        * bindings/js/ReadableJSStream.cpp:
+        (WebCore::createGenericErrorRejectedFunction):
+        (WebCore::ReadableJSStream::doStart):
+        (WebCore::ReadableJSStream::doPull):
+        (WebCore::ReadableJSStream::ReadableJSStream): Deleted.
+        * bindings/js/ReadableJSStream.h:
+
+2016-06-07  Ryosuke Niwa  <rniwa@webkit.org>
+
+        REGRESSION (r201667): ASSERTION FAILED: !m_anchorNode || !editingIgnoresContent(*m_anchorNode)
+        https://bugs.webkit.org/show_bug.cgi?id=158373
+        <rdar://problem/26690795>
+
+        Reviewed by Brent Fulgham.
+
+        The bug was caused by VisibleSelection::toNormalizedRange calling parentAnchoredEquivalent on an orphaned Position.
+        Fixed it by checking that condition and exiting early since we can't create a Range with a detached node anyway.
+
+        Also renamed isNonOrphanedCaretOrRange to isNoneOrOrphaned after negating the semantics for clarity.
+
+        Test: editing/selection/selection-in-iframe-removed-crash.html
+
+        * editing/EditorCommand.cpp:
+        (WebCore::valueFormatBlock):
+        * editing/FrameSelection.cpp:
+        (WebCore::FrameSelection::setSelectionWithoutUpdatingAppearance):
+        * editing/InsertLineBreakCommand.cpp:
+        (WebCore::InsertLineBreakCommand::doApply):
+        * editing/InsertListCommand.cpp:
+        (WebCore::InsertListCommand::doApply):
+        * editing/InsertParagraphSeparatorCommand.cpp:
+        (WebCore::InsertParagraphSeparatorCommand::doApply):
+        * editing/InsertTextCommand.cpp:
+        (WebCore::InsertTextCommand::doApply):
+        * editing/RemoveFormatCommand.cpp:
+        (WebCore::RemoveFormatCommand::doApply):
+        * editing/ReplaceSelectionCommand.cpp:
+        (WebCore::ReplaceSelectionCommand::doApply):
+        * editing/SetSelectionCommand.cpp:
+        (WebCore::SetSelectionCommand::doApply):
+        (WebCore::SetSelectionCommand::doUnapply):
+        * editing/TypingCommand.cpp:
+        (WebCore::TypingCommand::doApply):
+        * editing/VisibleSelection.cpp:
+        (WebCore::VisibleSelection::firstRange): Also added a check for isNoneOrOrphaned since this function can hit the same
+        assertion when the selection end points are orphaned.
+        (WebCore::VisibleSelection::toNormalizedRange): Fixed the bug.
+        * editing/VisibleSelection.h:
+        (WebCore::VisibleSelection::isNoneOrOrphaned): Renamed from isNonOrphanedCaretOrRange and negated the semantics.
+
+2016-06-03  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Crash under VisibleSelection::firstRange()
+        https://bugs.webkit.org/show_bug.cgi?id=158241
+
+        Reviewed by Enrica Casucci.
+
+        The crash was commonly caused by parentAnchoredEquivalent returning null when the anchored node was a shadow root.
+        Fixed it by returning a shadow root in parentAnchoredEquivalent.
+
+        Also guard against other kinds of crashes by adding a null check in VisibleSelection::firstRange() since we've seen
+        a crash in the same code path outside of a shadow tree.
+
+        This patch also fixes other Position methods to stop using nonShadowBoundaryParentNode in place of parentNode as
+        that would cause a similar crash and/or a bug elsewhere.
+
+        Test: fast/shadow-dom/selection-at-shadow-root-crash.html
+
+        * accessibility/AXObjectCache.cpp:
+        (AXObjectCache::startCharacterOffsetOfParagraph): Fixed a bug uncovered by the assertion fix in Position::Position.
+        This code was sometimes creating a position inside a BR, which is wrong.
+        (AXObjectCache::endCharacterOffsetOfParagraph): Ditto.
+        * dom/Position.cpp:
+        (WebCore::Position::Position): Fixed an assertion which was checking that this constructor wasn't being called
+        with m_anchorNode set to an element editing ignores content of. ||ing it with isShadowRoot() made this assertion
+        useless because it's true whenever m_anchorNode is not a shadow root.
+        (WebCore::Position::containerNode): Use parentNode() instead of findParent() which calls nonShadowBoundaryParentNode
+        since Position should
+        (WebCore::Position::parentAnchoredEquivalent): Fixed the bug by letting this function return a shadow root.
+        (WebCore::Position::previous): Use parentNode() instead of findParent().
+        (WebCore::Position::next): Ditto.
+        (WebCore::Position::atStartOfTree): Ditto.
+        (WebCore::Position::atEndOfTree): Ditto.
+        (WebCore::Position::findParent): Deleted.
+        * dom/Position.h:
+        * editing/VisibleSelection.cpp:
+        (VisibleSelection::firstRange): Added a null check. 
+
+2016-07-13  Brent Fulgham  <bfulgham@apple.com>
+
+        CSSStyleSheet members should clear their owner node when destroyed
+        https://bugs.webkit.org/show_bug.cgi?id=117470
+
+        Reviewed by Chris Dumez.
+
+        Make sure that CSSStyleSheet members are detached from their owner node when
+        the owning object is destroyed.
+
+        I audited other CSSStyleSheet uses, and found one other place where the owner node was not
+        being cleared during destruction. The Inspector also uses CSSStyleSheet, but seems to
+        handle the node ownership properly.
+
+        Fix based on a Blink change (patch by <haraken@chromium.org>):
+        <https://chromium.googlesource.com/chromium/blink/+/c4949bfdeb2a613701afa1410bdae70531b8f6bf>
+
+        Also includes a follow-up fix (patch by <haraken@chromium.org>):
+        <https://chromium.googlesource.com/chromium/blink/+/9c3932dc80b33429db3a5873cb266b726c8a19bf>
+
+        No test case. Was found by the Chromium team through review of their crash traces under minor DOM GC.
+
+        * contentextensions/ContentExtensionStyleSheet.cpp:
+        (WebCore::ContentExtensions::ContentExtensionStyleSheet::~ContentExtensionStyleSheet):
+        * contentextensions/ContentExtensionStyleSheet.h:
+        * dom/InlineStyleSheetOwner.cpp:
+        (WebCore::InlineStyleSheetOwner::~InlineStyleSheetOwner):
+        (WebCore::authorStyleSheetsForElement):
+
+2016-10-21  David Kilzer  <ddkilzer@apple.com>
+
+        Bug 163762: IntSize::area() should used checked arithmetic
+        <https://webkit.org/b/163762>
+
+        Reviewed by Darin Adler.
+
+        No new tests since no change in nominal behavior.
+
+        * platform/graphics/IntSize.h:
+        (WebCore::IntSize::area): Change to return a
+        Checked<unsigned, T> value. Use WTF:: namespace to avoid
+        including another header.
+
+        * platform/graphics/IntRect.h:
+        (WebCore::IntRect::area): Ditto.
+
+        The remaining changes are to use the Checked<unsigned> return
+        value of IntSize::area() and IntRect::area() correctly in
+        context, in addition to items noted below.
+
+        * html/HTMLPlugInImageElement.cpp:
+        (WebCore::HTMLPlugInImageElement::isTopLevelFullPagePlugin):
+        Declare contentWidth and contentHeight as float values to
+        prevent overflow when computing the area, and to make the
+        inequality comparison in the return statement uses the same type
+        for both sides.
+        * html/ImageData.cpp:
+        (WebCore::ImageData::ImageData):
+        * html/MediaElementSession.cpp:
+        (WebCore::isElementRectMostlyInMainFrame):
+        * platform/graphics/ImageBackingStore.h:
+        (WebCore::ImageBackingStore::setSize): Restructure logic to
+        compute area only once.
+        (WebCore::ImageBackingStore::clear):
+        * platform/graphics/ImageFrame.h:
+        (WebCore::ImageFrame::frameBytes):
+        * platform/graphics/ImageSource.cpp:
+        (WebCore::ImageSource::maximumSubsamplingLevel):
+        * platform/graphics/ca/LayerPool.cpp:
+        (WebCore::LayerPool::backingStoreBytesForSize):
+        * platform/graphics/cg/ImageDecoderCG.cpp:
+        (WebCore::ImageDecoder::frameBytesAtIndex):
+        * platform/graphics/filters/FEGaussianBlur.cpp:
+        (WebCore::FEGaussianBlur::platformApplySoftware):
+        * platform/graphics/filters/FilterEffect.cpp:
+        (WebCore::FilterEffect::asUnmultipliedImage):
+        (WebCore::FilterEffect::asPremultipliedImage):
+        (WebCore::FilterEffect::copyUnmultipliedImage):
+        (WebCore::FilterEffect::copyPremultipliedImage):
+        (WebCore::FilterEffect::createUnmultipliedImageResult):
+        (WebCore::FilterEffect::createPremultipliedImageResult):
+        * platform/graphics/win/ImageBufferDataDirect2D.cpp:
+        (WebCore::ImageBufferData::getData): Update overflow check,
+        rename local variable to numBytes, and compute numBytes once.
+        * platform/graphics/win/ImageDecoderDirect2D.cpp:
+        (WebCore::ImageDecoder::frameBytesAtIndex):
+        * platform/image-decoders/ImageDecoder.cpp:
+        (WebCore::ImageDecoder::frameBytesAtIndex):
+        * platform/ios/LegacyTileLayerPool.mm:
+        (WebCore::LegacyTileLayerPool::bytesBackingLayerWithPixelSize):
+        * rendering/RenderLayerCompositor.cpp:
+        (WebCore::RenderLayerCompositor::requiresCompositingForCanvas):
+        * rendering/shapes/Shape.cpp:
+        (WebCore::Shape::createRasterShape):
+
+2017-01-02  Andreas Kling  <akling@apple.com>
+
+        Drop the render tree for documents in the page cache.
+        <https://webkit.org/b/121798>
+
+        Reviewed by Antti Koivisto.
+
+        To save memory and reduce complexity, have documents tear down their render tree
+        when entering the page cache. I've wanted to do this for a long time and it seems
+        like we can actually do it now.
+
+        This patch will enable a number of clean-ups since it's no longer valid for renderers
+        to exist while the document is in page cache.
+
+        * dom/Document.cpp:
+        (WebCore::Document::destroyRenderTree): Remove assertion that we're not in the page cache
+        since we will now be tearing down render trees right as they enter the page cache.
+
+        * dom/PageCache.cpp:
+        (WebCore::destroyRenderTree):
+        (WebCore::PageCache::addIfCacheable): Tear down the render tree right before setting
+        the in-cache flag. The render tree is destroyed in bottom-up order to ensure that the
+        main frame renderers die last.
+
+        * history/CachedFrame.cpp:
+        (WebCore::CachedFrameBase::restore):
+        * page/FrameView.h:
+        * page/FrameView.cpp:
+        (WebCore::FrameView::didRestoreFromPageCache): Update the scollable area set after restoring
+        a frame from the page cache. This dirties the scrolling tree, which was covered by tests.
+
+        * page/animation/AnimationBase.cpp:
+        (WebCore::AnimationBase::setNeedsStyleRecalc):
+        * page/animation/AnimationController.cpp:
+        (WebCore::AnimationController::cancelAnimations): Make these no-ops if called
+        while the render tree is being torn down. This fixes some assertion failures
+        on layout tests and avoids pointless style invalidation.
+
+2016-01-28  Antti Koivisto  <antti@apple.com>
+
+        Tab suspension code hits asserts
+             
+
+        Reviewed by Chris Dumez.
+
+        Enabling tab suspension and navigating around in a few tabs hits an assert in
+        ScriptExecutionContext::suspendActiveDOMObject. This is because suspend/resume reasons don't pair properly
+
+        * dom/Document.cpp:
+        (WebCore::Document::documentWillBecomeInactive):
+        (WebCore::Document::suspend):
+        (WebCore::Document::resume):
+
+            Provide the reason as argument.
+
+        * dom/Document.h:
+        * history/CachedFrame.cpp:
+        (WebCore::CachedFrameBase::restore):
+
+            No need to call resumeActiveDOMObjects/resumeScriptedAnimationControllerCallbacks explicitly as Document::resume does that.
+
+        (WebCore::CachedFrame::CachedFrame):
+        * loader/FrameLoader.cpp:
+        (WebCore::FrameLoader::commitProvisionalLoad):
+        * page/Page.cpp:
+        (WebCore::Page::canTabSuspend):
+        (WebCore::Page::setIsTabSuspended):
+
+2017-06-13  Chris Dumez  <cdumez@apple.com>
+
+        Event handlers should not be called in frameless documents
+        https://bugs.webkit.org/show_bug.cgi?id=173233
+
+        Reviewed by Sam Weinig.
+
+        As per the HTML specification [1], for event handlers on elements, we should use the
+        element's document to check if scripting is disabled [2]. Scripting is considered to
+        be disabled if the document has no browsing context (i.e. a frame in WebKit terms).
+
+        In JSLazyEventListener::initializeJSFunction(), instead of using the element's
+        document to do the checks, we would use the script execution context. In most cases,
+        a node's document and its script execution context are the same so this is not an
+        issue. However, if the node's document is a document created via JS, its nodes'
+        script execution context will be the document's context document (i.e the one that
+        created the document, see implementation of Node::scriptExecutionContext()). In those
+        cases, using the wrong document is an issue because the document's context document
+        (aka script execution context) may allow scripting but we still do not want to call
+        the event handler because its document is frameless.
+
+        This impacts documents created by JS, using the following APIs:
+        - DOMParser.parseFromHTML
+        - new Document()
+        - DOMImplementation.createDocument / createHTMLDocument
+        - XHRs whose responseType is Document.
+
+        [1] https://html.spec.whatwg.org/multipage/webappapis.html#getting-the-current-value-of-the-event-handler (step 1.1.)
+        [2] https://html.spec.whatwg.org/multipage/webappapis.html#concept-n-noscript
+
+        Tests: fast/events/event-handler-detached-document-dispatchEvent.html
+               fast/events/event-handler-detached-document.html
+
+        * bindings/js/JSLazyEventListener.cpp:
+        (WebCore::JSLazyEventListener::initializeJSFunction):
+
+2017-05-18  Antti Koivisto  <antti@apple.com>
+
+        Design mode should not affect UA shadow trees
+        https://bugs.webkit.org/show_bug.cgi?id=171854
+        <rdar://problem/32071037>
+
+        Reviewed by Zalan Bujtas.
+
+        Test: editing/deleting/search-shadow-tree-delete.html
+
+        * html/HTMLElement.cpp:
+        (WebCore::HTMLElement::editabilityFromContentEditableAttr):
+
+            Ignore design mode for UA shadow trees.
+
+        * html/SearchInputType.cpp:
+        (WebCore::SearchInputType::~SearchInputType):
+        (WebCore::SearchInputType::createShadowSubtree):
+        (WebCore::SearchInputType::resultsButtonElement):
+        (WebCore::SearchInputType::cancelButtonElement):
+        * html/SearchInputType.h:
+
+            Use RefPtr.
+
+2017-09-20  Said Abou-Hallawa  <sabouhallawa@apple.com>
+
+        REGRESSION(r191731): SVGPatternElement can only reference another SVGPatternElement in the same SVG document
+        https://bugs.webkit.org/show_bug.cgi?id=176221
+
+        Reviewed by Tim Horton.
+
+        According to the specs:
+
+        https://www.w3.org/TR/SVG11/filters.html#FilterElementHrefAttribute
+        https://www.w3.org/TR/SVG11/pservers.html#LinearGradientElementHrefAttribute
+        https://www.w3.org/TR/SVG11/pservers.html#RadialGradientElementHrefAttribute
+        https://www.w3.org/TR/SVG11/pservers.html#PatternElementHrefAttribute
+
+        The xlink:href attribute of the SVG filter, gradient and pattern elements
+        must reference another element within the current SVG of the same type.
+
+        In r191731, the code of SVGPatternElement::collectPatternAttributes() was
+        removed and replaced by RenderSVGResourcePattern::collectPatternAttributes()
+        to avoid cyclic reference in the pattern element. The problem is the old
+        code used to check whether the referenced element is<SVGPatternElement>
+        before casting it. This code was not copied to the new function. So we
+        now allow the SVGPatternElement to reference any SVG resource element.
+
+        To fix this issue, we need to prevent SVGResources from chaining an incorrect
+        type of element to the SVG filter, gradient and pattern elements.
+
+        We also need to use the SVGResources for getting the referenced element
+        when collecting the attributes for the gradient elements. SVGResources solves
+        the cyclic referencing issue so there is no need to repeat the same code
+        in many places. Also, from now on the SVGResources will have valid linked
+        resource only. So casting the referenced element should always be valid.
+
+        Tests: svg/custom/pattern-invalid-content-inheritance.svg
+
+        * rendering/svg/RenderSVGResourcePattern.cpp:
+        (WebCore::RenderSVGResourcePattern::collectPatternAttributes const): Asserts
+        the linkedResource is of type RenderSVGResourcePattern.
+        * rendering/svg/SVGResources.cpp:
+        (WebCore::SVGResources::SVGResources):
+        (WebCore::isChainableResource): Ensure that an SVG resource can reference
+        only an SVG resource with the valid type.
+        (WebCore::SVGResources::buildCachedResources):
+        * rendering/svg/SVGResources.h:
+
+2017-10-27  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Crash in addChildNodesToDeletionQueue
+        https://bugs.webkit.org/show_bug.cgi?id=178974
+        <rdar://problem/35234372>
+
+        Reviewed by Brent Fulgham.
+
+        The bug was caused by HTMLConstructionSite::insertTextNode constructing an ill-formed tree
+        when fostering parent under a template element by adjusting HTMLConstructionSiteTask's parent
+        without clearing nextChild. Fixed the crash by simply removing this code since executeTask
+        already takes care of fostering the parent in static inline insert(HTMLConstructionSiteTask&).
+
+        Test: fast/parser/foster-parent-under-template.html
+
+        * html/parser/HTMLConstructionSite.cpp:
+        (WebCore::HTMLConstructionSite::insertTextNode):
+
+2017-07-07  Daniel Bates  <dabates@apple.com>
+
+        [AppCache] Ignore fallback entries whose namespace is not prefixed with manifest path
+        https://bugs.webkit.org/show_bug.cgi?id=174273
+        <rdar://problem/33011682>
+
+        Reviewed by Brent Fulgham.
+
+        As per <https://html.spec.whatwg.org/multipage/offline.html#parsing-cache-manifests> (07/06/2017)
+        we should ignore fallback entires whose fallback namespace URL is not prefixed with
+        the manifest path. For now we only apply this policy when the manifest is served with
+        a non-standard Content-Type to minimize web compatibility risk.
+
+        Test: http/tests/appcache/fallback-namespace-outside-manifest-path.html
+
+        * loader/appcache/ApplicationCacheGroup.cpp:
+        (WebCore::ApplicationCacheGroup::didFinishLoadingManifest): Pass the MIME type of the manifest.
+        * loader/appcache/ManifestParser.cpp:
+        (WebCore::manifestPath): Computes the manifest path from a manifest URL.
+        (WebCore::parseManifest): Modified to take the MIME type of the manifest. If the MIME type is
+        non-standard (i.e. not text/cached-manifest) then skip fallback entries whose namespace is not
+        prefixed with the manifest path. Otherwise, process fallback entries as we do now. Also cleaned
+        up the code a bit while I was here, including renaming a local variable to be more descriptive
+        and using a const character array for the manifest signature to avoid the need to document the
+        length of the manifest signature in a comment.
+        * loader/appcache/ManifestParser.h:
+
+2017-05-06  Chris Dumez  <cdumez@apple.com>
+
+        Implement the concept of cookie-averse document
+        https://bugs.webkit.org/show_bug.cgi?id=171746
+        <rdar://problem/32004466>
+
+        Reviewed by Sam Weinig.
+
+        Implement the concept of cookie-averse document:
+        - https://html.spec.whatwg.org/#cookie-averse-document-object
+
+        Test: fast/cookies/cookie-averse-document.html
+
+        * dom/Document.cpp:
+        (WebCore::Document::isCookieAverse):
+        (WebCore::Document::cookie):
+        (WebCore::Document::setCookie):
+        * dom/Document.h:
+
+2016-03-31  Daniel Bates  <dabates@apple.com>
+
+        REGRESSION (r195605): ASSERTION FAILED: !NoEventDispatchAssertion::isEventDispatchForbidden()
+        when pressing the back button on a page with a focused subframe
+        https://bugs.webkit.org/show_bug.cgi?id=156033
+        <rdar://problem/25446561>
+
+        Reviewed by Chris Dumez.
+
+        Fixes an assertion failure when navigating back, by pressing the browser back button, to
+        the previous page from a page with a focused subframe.
+
+        Following r195605 (https://bugs.webkit.org/show_bug.cgi?id=153449), the responsibility for
+        dispatching a DOM pagehide event moved from CachedFrame to PageCache and we now instantiate
+        a NoEventDispatchAssertion object to enforce the invariant that no additional DOM events are
+        dispatched as part of adding a page to the page cache. When adding a page with a focused
+        subframe to the page cache we focus its main frame, which implicitly defocuses the subframe
+        and dispatches a DOM blur event at it. Therefore an assertion failure occurs when dispatching
+        this DOM blur event (because a NoEventDispatchAssertion object was allocated on the stack).
+
+        Test: fast/history/back-from-page-with-focused-iframe.html
+
+        * history/CachedFrame.cpp:
+        (WebCore::CachedFrame::CachedFrame): Move logic to focus the main frame from here...
+        * history/PageCache.cpp:
+        (WebCore::PageCache::addIfCacheable): to here such that any DOM blur and focus events
+        are dispatched before instantiate the NoEventDispatchAssertion object and enter the page
+        cache.
+
+2015-07-17  Myles C. Maxfield  <mmaxfield@apple.com>
+
+        style.fontFamily accessor crashes on unstyled node created from DOMParser().parseFromString()
+        https://bugs.webkit.org/show_bug.cgi?id=147026
+        <rdar://problem/21864487>
+
+        Reviewed by Andreas Kling.
+
+        Font CSS properties are a little special because they are used as indices into caches.
+        Normally, StyleResolver gives all nodes a default font family, so our cache works correctly.
+        However, if the document doesn't have a Settings object, StyleResolver wasn't doing this.
+        Documents created from DOMParser().parseFromString() don't have a Settings object.
+
+        Test: fast/text/crash-font-family-parsed.html
+
+        * css/StyleResolver.cpp:
+        (WebCore::StyleResolver::defaultStyleForElement):
+        (WebCore::StyleResolver::initializeFontStyle): Set a font family even if we don't have a
+        Settings object.
+
+2015-10-08  Jiewen Tan  <jiewen_tan@apple.com>
+
+        Gracefully handle XMLDocumentParser being detached by mutation events.
+        https://bugs.webkit.org/show_bug.cgi?id=149485
+        <rdar://problem/22811489>
+
+        This is a merge of Blink change 200026,
+        https://codereview.chromium.org/1267283002
+
+        Reviewed by Darin Adler.
+
+        Test: fast/parser/xhtml-dom-character-data-modified-crash.html
+
+        * xml/parser/XMLDocumentParser.cpp:
+        (WebCore::XMLDocumentParser::createLeafTextNode):
+        Renamed from enterText() to make it more descriptive. 
+
+        (WebCore::XMLDocumentParser::updateLeafTextNode):
+        Renamed from exitText to firm up this stage.
+
+        (WebCore::XMLDocumentParser::end):
+        Gracefully handle stopped states.
+
+        (WebCore::XMLDocumentParser::enterText): Deleted.
+        (WebCore::XMLDocumentParser::exitText): Deleted.
+
+        * xml/parser/XMLDocumentParser.h:
+        Rename enterText to createLeafTextNode.
+        Rename exitText to updateLeafTextNode.
+
+        * xml/parser/XMLDocumentParserLibxml2.cpp:
+        (WebCore::XMLDocumentParser::startElementNs):
+        (WebCore::XMLDocumentParser::endElementNs):
+        (WebCore::XMLDocumentParser::characters):
+        (WebCore::XMLDocumentParser::processingInstruction):
+        (WebCore::XMLDocumentParser::cdataBlock):
+        (WebCore::XMLDocumentParser::comment):
+        (WebCore::XMLDocumentParser::endDocument):
+        Rename function calls and firm up updateLeafTextNode stage accordingly.
+
+2015-11-02  Jiewen Tan  <jiewen_tan@apple.com>
+
+        Null dereference loading Blink layout test fast/css/background-repeat-null-y-crash.html
+        https://bugs.webkit.org/show_bug.cgi?id=150211
+        <rdar://problem/23137321>
+
+        Reviewed by Alex Christensen.
+
+        This is a merge of Blink r188842:
+        https://codereview.chromium.org/846933002
+
+        By setting the backgroundRepeatY property to null it can
+        happen that accessing that CSS value returns a null pointer.
+        In that case simply bail out early.
+
+        Test: fast/css/background-repeat-null-y-crash.html
+
+        * css/StyleProperties.cpp:
+        (WebCore::StyleProperties::getLayeredShorthandValue):
+
+2016-02-08  Said Abou-Hallawa  <sabouhallawa@apple.com>
+
+        REGRESSION(r181345): SVG polyline and polygon leak page
+        https://bugs.webkit.org/show_bug.cgi?id=152759
+
+        Reviewed by Darin Adler.
+
+        The leak happens because of cyclic reference between SVGListPropertyTearOff 
+        and SVGAnimatedListPropertyTearOff which is derived from SVGAnimatedProperty.
+        There is also cyclic reference between SVGAnimatedProperty and SVGElement
+        and this causes the whole document to be leaked. So if the JS requests, for
+        example, an instance of SVGPolylineElement.points, the whole document will be
+        leaked.
+
+        The fix depends on having the cyclic reference as is since the owning and the
+        owned classes have to live together if any of them is referenced. But the owning
+        class caches a raw 'ref-counted' pointer of the owned class. If it is requested
+        for an instance of the owned class it returned a RefPtr<> of it. Once the owned
+        class is not used, it can delete itself. The only thing needed here is to notify
+        the owner class of the deletion so it cleans its caches and be able to create a
+        new pointer if it is requested for an instance of the owned class later.
+
+        Revert the change of r181345 in SVGAnimatedProperty::lookupOrCreateWrapper()
+        to break the cyclic reference between SVGElement and SVGAnimatedProperty.
+        
+        Also apply the same approach in SVGAnimatedListPropertyTearOff::baseVal() and
+        animVal() to break cyclic reference between SVGListPropertyTearOff and
+        SVGAnimatedListPropertyTearOff.
+
+        Test: svg/animations/smil-leak-list-property-instances.svg
+
+        * bindings/scripts/CodeGeneratorJS.pm:
+        (NativeToJSValue): The SVG non-string list tear-off properties became of
+        type RefPtr<>. So we need to use get() with the casting expressions.
+        
+        * svg/SVGMarkerElement.cpp:
+        (WebCore::SVGMarkerElement::orientType):
+        Use 'auto' type for the return of SVGAnimatedProperty::lookupWrapper().
+
+        * svg/SVGPathElement.cpp:
+        (WebCore::SVGPathElement::pathByteStream):
+        (WebCore::SVGPathElement::lookupOrCreateDWrapper):
+        Since SVGAnimatedProperty::lookupWrappe() returns a RefPtr<> we need to 
+        use get() for the casting expressions.
+        
+        (WebCore::SVGPathElement::pathSegList):
+        (WebCore::SVGPathElement::normalizedPathSegList):
+        (WebCore::SVGPathElement::animatedPathSegList):
+        (WebCore::SVGPathElement::animatedNormalizedPathSegList):
+        * svg/SVGPathElement.h:
+        Change the return value from raw pointer to RefPtr<>.
+
+        * svg/SVGPathSegWithContext.h:
+        (WebCore::SVGPathSegWithContext::animatedProperty):
+        Change the return type to be RefPtr<> to preserve the value from being deleted.
+        
+        * svg/SVGPolyElement.cpp:
+        (WebCore::SVGPolyElement::parseAttribute):
+        Since SVGAnimatedProperty::lookupWrapper() returns a RefPtr<> we need to 
+        use get() for the casting expressions.
+        
+        (WebCore::SVGPolyElement::points):
+        (WebCore::SVGPolyElement::animatedPoints):
+        * svg/SVGPolyElement.h:
+        Change the return value from raw pointer to RefPtr<>.
+        
+        * svg/SVGViewSpec.cpp:
+        (WebCore::SVGViewSpec::setTransformString):
+        Since SVGAnimatedProperty::lookupWrapper() returns a RefPtr<> we need to 
+        use get() for the casting expressions.
+
+        (WebCore::SVGViewSpec::transform):
+        * svg/SVGViewSpec.h:
+        Change the return value from raw pointer to RefPtr<>.
+        
+        * svg/properties/SVGAnimatedListPropertyTearOff.h:
+        (WebCore::SVGAnimatedListPropertyTearOff::baseVal):
+        (WebCore::SVGAnimatedListPropertyTearOff::animVal):
+        Change the return value from raw pointer to RefPtr<> and change the cached
+        value from RefPtr<> to raw pointer. If the property is null, it will be
+        created, its raw pointer will be cached and the only ref-counted RefPtr<>
+        will be returned. This will guarantee, the RefPtr<> will be deleted once
+        it is not used anymore. 
+        
+        (WebCore::SVGAnimatedListPropertyTearOff::propertyWillBeDeleted):
+        Clean the raw pointer caches m_baseVal and m_animVal upon deleting the
+        actual pointer. This function will be called from the destructor of
+        SVGListPropertyTearOff.
+        
+        (WebCore::SVGAnimatedListPropertyTearOff::findItem):
+        (WebCore::SVGAnimatedListPropertyTearOff::removeItemFromList):
+        We have to ensure the baseVal() is created before using it.
+        
+        (WebCore::SVGAnimatedListPropertyTearOff::detachListWrappers):
+        (WebCore::SVGAnimatedListPropertyTearOff::currentAnimatedValue):
+        (WebCore::SVGAnimatedListPropertyTearOff::animationStarted):
+        (WebCore::SVGAnimatedListPropertyTearOff::animationEnded):
+        (WebCore::SVGAnimatedListPropertyTearOff::synchronizeWrappersIfNeeded):
+        (WebCore::SVGAnimatedListPropertyTearOff::animValWillChange):
+        (WebCore::SVGAnimatedListPropertyTearOff::animValDidChange):
+        For animation, a separate RefPtr<> 'm_animatingAnimVal' will be assigned
+        to the animVal(). This will prevent deleting m_animVal while animation.
+        
+        * svg/properties/SVGAnimatedPathSegListPropertyTearOff.h:
+        (WebCore::SVGAnimatedPathSegListPropertyTearOff::baseVal):
+        (WebCore::SVGAnimatedPathSegListPropertyTearOff::animVal):
+        Same as what is done in SVGAnimatedListPropertyTearOff.
+        
+        (WebCore::SVGAnimatedPathSegListPropertyTearOff::findItem):
+        (WebCore::SVGAnimatedPathSegListPropertyTearOff::removeItemFromList):
+        Same as what is done in SVGAnimatedListPropertyTearOff.
+        
+        * svg/properties/SVGAnimatedProperty.h:
+        (WebCore::SVGAnimatedProperty::lookupOrCreateWrapper):
+        Change the return value from raw reference to Ref<> and change the
+        cached value from Ref<> to raw pointer. This reverts the change of
+        r181345 in this function.
+        
+        (WebCore::SVGAnimatedProperty::lookupWrapper):
+        Change the return value from raw pointer to RefPtr<>.
+        
+        * svg/properties/SVGAnimatedPropertyMacros.h:
+        Use 'auto' type for the return of SVGAnimatedProperty::lookupWrapper().
+        
+        * svg/properties/SVGAnimatedTransformListPropertyTearOff.h:
+        (WebCore::SVGAnimatedTransformListPropertyTearOff::baseVal):
+        (WebCore::SVGAnimatedTransformListPropertyTearOff::animVal):
+        Same as what is done in SVGAnimatedListPropertyTearOff.
+
+        * svg/properties/SVGListPropertyTearOff.h:
+        (WebCore::SVGListPropertyTearOff::~SVGListPropertyTearOff):
+        Call the SVGAnimatedListPropertyTearOff::propertyWillBeDeleted() to clean
+        its raw pointers when the RefPtr<> deletes itself.
+
+2016-04-14  Dean Jackson  <dino@apple.com>
+
+        CrashTracer: com.apple.WebKit.WebContent at com.apple.WebCore: WebCore::CachedResource::addClientToSet + 27
+        https://bugs.webkit.org/show_bug.cgi?id=156602
+        <rdar://problem/18921091>
+
+        Reviewed by Simon Fraser.
+
+        The CSS property list-style-image is inherited, so a transition on a parent
+        might cause a transition on a child. On that child, the value might be between
+        two generated crossfade images which haven't yet resolved, causing a crash.
+
+        Test: transitions/crossfade-transition.html
+
+        * css/CSSCrossfadeValue.cpp:
+        (WebCore::CSSCrossfadeValue::blend): Return null if there are no cached images.
+        * page/animation/CSSPropertyAnimation.cpp:
+        (WebCore::blendFunc): If we don't have an actual image to blend between, fall
+        out to the default case.
+
+
 2015-09-18  Dean Jackson  <dino@apple.com>
 
         Null dereference loading Blink layout test svg/filters/feImage-failed-load-crash.html

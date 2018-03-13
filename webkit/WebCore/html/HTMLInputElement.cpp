@@ -814,6 +814,13 @@ String HTMLInputElement::altText() const
     return alt;
 }
 
+#if PLATFORM(WKC)
+bool HTMLInputElement::canBeSuccessfulSubmitButton() const
+{
+    return m_inputType->canBeSuccessfulSubmitButton();
+}
+#endif
+
 bool HTMLInputElement::isSuccessfulSubmitButton() const
 {
     // HTML spec says that buttons must have names to be considered successful.

@@ -463,6 +463,8 @@ bool DOMSelection::containsNode(Node* n, bool allowPartial) const
 
     RefPtr<Node> node = n;
     RefPtr<Range> selectedRange = selection.selection().toNormalizedRange();
+    if (!selectedRange)
+        return false;
 
     ContainerNode* parentNode = node->parentNode();
     if (!parentNode || !parentNode->inDocument())

@@ -3,7 +3,7 @@
  * Copyright (C) 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Jurg Billeter <j@bitron.ch>
  * Copyright (C) 2008 Dominik Rottsches <dominik.roettsches@access-company.com>
- * Copyright (c) 2010-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2018 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -42,7 +42,7 @@ ensureUChar(StringView str, const UChar*& s, int& len)
     }
 
     const LChar* c = str.characters8();
-    int l = strlen((const char *)c);
+    int l = str.length();
     UChar* d = (UChar *)WTF::fastMalloc((l+1)*sizeof(UChar));
     memset((void *)d, 0, (l+1) * sizeof(UChar));
     for (int i=0; i<l; i++) {

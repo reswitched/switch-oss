@@ -417,6 +417,12 @@ void RenderNamedFlowThread::layout()
         setDispatchRegionOversetChangeEvent(true);
         updatePreviousRegionCount();
     }
+
+#if PLATFORM(WKC) && (defined(WKC_FORCE_FIXED_ELEMENTS_NONFIXED_LAYOUT) && WKC_FORCE_FIXED_ELEMENTS_NONFIXED_LAYOUT)
+    // TODO relayout only if necessary...
+    setNeedsPositionedMovementLayoutBit(true);
+    layoutPositionedObjects(true);
+#endif
 }
 
 void RenderNamedFlowThread::dispatchNamedFlowEvents()

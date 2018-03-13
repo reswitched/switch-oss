@@ -472,6 +472,8 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
 #endif
 
     registerWithDocument(document);
+
+    mediaSession().clientWillBeginAutoplaying();
 }
 
 HTMLMediaElement::~HTMLMediaElement()
@@ -538,6 +540,7 @@ HTMLMediaElement::~HTMLMediaElement()
 #endif
 
     m_seekTaskQueue.close();
+    m_visibilityChangeTaskQueue.close();
 
     m_completelyLoaded = true;
 
@@ -2289,7 +2292,7 @@ void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
         if (isPotentiallyPlaying && oldState <= HAVE_CURRENT_DATA)
             scheduleEvent(eventNames().playingEvent);
 
-        if (elementCanTransitionFromAutoplayToPlay(*this)) {
+        if (m_readyState == HAVE_ENOUGH_DATA && elementCanTransitionFromAutoplayToPlay(*this)) {
             m_paused = false;
             invalidateCachedTime();
             scheduleEvent(eventNames().playEvent);
@@ -6525,14 +6528,15 @@ RefPtr<VideoPlaybackQuality> HTMLMediaElement::getVideoPlaybackQuality()
     double now = loader ? 1000.0 * loader->timing().monotonicTimeToZeroBasedDocumentTime(monotonicallyIncreasingTime()) : 0;
 #endif
 
-    if (!m_player)
+    auto metrics = m_player ? m_player->videoPlaybackQualityMetrics() : Nullopt;
+    if (!metrics)
         return VideoPlaybackQuality::create(now, 0, 0, 0, 0);
 
     return VideoPlaybackQuality::create(now,
-        m_droppedVideoFrames + m_player->totalVideoFrames(),
-        m_droppedVideoFrames + m_player->droppedVideoFrames(),
-        m_player->corruptedVideoFrames(),
-        m_player->totalFrameDelay().toDouble());
+        metrics.value().totalVideoFrames + m_droppedVideoFrames,
+        metrics.value().droppedVideoFrames + m_droppedVideoFrames,
+        metrics.value().corruptedVideoFrames,
+        metrics.value().totalFrameDelay);
 }
 #endif
 
@@ -6762,7 +6766,7 @@ void HTMLMediaElement::resumeAutoplaying()
     LOG(Media, "HTMLMediaElement::resumeAutoplaying(%p) - paused = %s", this, boolString(paused()));
     m_autoplaying = true;
 
-    if (elementCanTransitionFromAutoplayToPlay(*this))
+    if (m_readyState == HAVE_ENOUGH_DATA && elementCanTransitionFromAutoplayToPlay(*this))
         play();
 }
 
@@ -7031,7 +7035,16 @@ static bool mediaElementIsAllowedToAutoplay(const HTMLMediaElement& element)
 
 void HTMLMediaElement::isVisibleInViewportChanged()
 {
-    updateShouldAutoplay();
+#if !PLATFORM(WKC)
+    m_visibilityChangeTaskQueue.enqueueTask([this] {
+        updateShouldAutoplay();
+    });
+#else
+    std::function<void()> p(std::allocator_arg, WTF::voidFuncAllocator(), [this] {
+        updateShouldAutoplay();
+    });
+    m_visibilityChangeTaskQueue.enqueueTask(WTF::move(p));
+#endif
 }
 
 void HTMLMediaElement::updateShouldAutoplay()

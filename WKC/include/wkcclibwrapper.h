@@ -16,7 +16,7 @@ extern "C" {
 #ifdef __BUILDING_IN_VS__
 
 #define snprintf _snprintf
-#define abort    wkc_abort
+// #define abort    wkc_abort
 #define exit     wkc_exit
 
 #define gettimeofday(tv,tz)   wkc_gettimeofday((tv),(tz))

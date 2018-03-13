@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ResourceLoaderOptions_h
-#define ResourceLoaderOptions_h
+#pragma once
 
+#include "FetchOptions.h"
 #include "ResourceHandleTypes.h"
 
 namespace WebCore {
-    
+
 enum SendCallbackPolicy {
     SendCallbacks,
     DoNotSendCallbacks
@@ -71,7 +71,12 @@ enum class ContentSecurityPolicyImposition : uint8_t {
     DoPolicyCheck
 };
 
-struct ResourceLoaderOptions {
+enum class ClientCredentialPolicy {
+    CannotAskClientForCredentials,
+    MayAskClientForCredentials
+};
+
+struct ResourceLoaderOptions : public FetchOptions {
 #if PLATFORM(WKC)
     WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -81,24 +86,24 @@ public:
         , m_sniffContent(DoNotSniffContent)
         , m_dataBufferingPolicy(BufferData)
         , m_allowCredentials(DoNotAllowStoredCredentials)
-        , m_clientCredentialPolicy(DoNotAskClientForAnyCredentials)
         , m_securityCheck(DoSecurityCheck)
         , m_requestOriginPolicy(UseDefaultOriginRestrictionsForType)
         , m_certificateInfoPolicy(DoNotIncludeCertificateInfo)
     {
     }
 
-    ResourceLoaderOptions(SendCallbackPolicy sendLoadCallbacks, ContentSniffingPolicy sniffContent, DataBufferingPolicy dataBufferingPolicy, StoredCredentials allowCredentials, ClientCredentialPolicy credentialPolicy, SecurityCheckPolicy securityCheck, RequestOriginPolicy requestOriginPolicy, CertificateInfoPolicy certificateInfoPolicy, ContentSecurityPolicyImposition contentSecurityPolicyImposition)
+    ResourceLoaderOptions(SendCallbackPolicy sendLoadCallbacks, ContentSniffingPolicy sniffContent, DataBufferingPolicy dataBufferingPolicy, StoredCredentials allowCredentials, ClientCredentialPolicy credentialPolicy, FetchOptions::Credentials credentials, SecurityCheckPolicy securityCheck, RequestOriginPolicy requestOriginPolicy, CertificateInfoPolicy certificateInfoPolicy, ContentSecurityPolicyImposition contentSecurityPolicyImposition)
         : m_sendLoadCallbacks(sendLoadCallbacks)
         , m_sniffContent(sniffContent)
         , m_dataBufferingPolicy(dataBufferingPolicy)
         , m_allowCredentials(allowCredentials)
-        , m_clientCredentialPolicy(credentialPolicy)
         , m_securityCheck(securityCheck)
         , m_requestOriginPolicy(requestOriginPolicy)
         , m_certificateInfoPolicy(certificateInfoPolicy)
         , m_contentSecurityPolicyImposition(contentSecurityPolicyImposition)
+        , clientCredentialPolicy(credentialPolicy)
     {
+        this->credentials = credentials;
     }
 
     SendCallbackPolicy sendLoadCallbacks() const { return static_cast<SendCallbackPolicy>(m_sendLoadCallbacks); }
@@ -109,8 +114,6 @@ public:
     void setDataBufferingPolicy(DataBufferingPolicy policy) { m_dataBufferingPolicy = policy; }
     StoredCredentials allowCredentials() const { return static_cast<StoredCredentials>(m_allowCredentials); }
     void setAllowCredentials(StoredCredentials allow) { m_allowCredentials = allow; }
-    ClientCredentialPolicy clientCredentialPolicy() const { return static_cast<ClientCredentialPolicy>(m_clientCredentialPolicy); }
-    void setClientCredentialPolicy(ClientCredentialPolicy policy) { m_clientCredentialPolicy = policy; }
     SecurityCheckPolicy securityCheck() const { return static_cast<SecurityCheckPolicy>(m_securityCheck); }
     void setSecurityCheck(SecurityCheckPolicy check) { m_securityCheck = check; }
     RequestOriginPolicy requestOriginPolicy() const { return static_cast<RequestOriginPolicy>(m_requestOriginPolicy); }
@@ -124,13 +127,12 @@ public:
     unsigned m_sniffContent : 1;
     unsigned m_dataBufferingPolicy : 1;
     unsigned m_allowCredentials : 1; // Whether HTTP credentials and cookies are sent with the request.
-    unsigned m_clientCredentialPolicy : 2; // When we should ask the client for credentials (if we allow credentials at all).
     unsigned m_securityCheck : 1;
     unsigned m_requestOriginPolicy : 2;
     unsigned m_certificateInfoPolicy : 1; // Whether the response should include certificate info.
     ContentSecurityPolicyImposition m_contentSecurityPolicyImposition { ContentSecurityPolicyImposition::DoPolicyCheck };
+
+    ClientCredentialPolicy clientCredentialPolicy { ClientCredentialPolicy::CannotAskClientForCredentials };
 };
 
-} // namespace WebCore    
-
-#endif // ResourceLoaderOptions_h
+} // namespace WebCore

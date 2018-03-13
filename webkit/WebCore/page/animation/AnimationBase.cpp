@@ -82,9 +82,11 @@ AnimationBase::AnimationBase(Animation& animation, RenderElement* renderer, Comp
 
 void AnimationBase::setNeedsStyleRecalc(Element* element)
 {
+    if (!element || element->document().renderTreeBeingDestroyed())
+        return;
+
     ASSERT(!element || !element->document().inPageCache());
-    if (element)
-        element->setNeedsStyleRecalc(SyntheticStyleChange);
+    element->setNeedsStyleRecalc(SyntheticStyleChange);
 }
 
 double AnimationBase::duration() const

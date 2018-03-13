@@ -404,9 +404,10 @@ check_composite (const cairo_composite_rectangles_t *extents)
 static const cairo_compositor_t *
 no_traps_compositor_get (void)
 {
+    static cairo_atomic_once_t once = CAIRO_ATOMIC_ONCE_INIT;
     static cairo_traps_compositor_t compositor;
 
-    if (compositor.base.delegate == NULL) {
+    if (_cairo_atomic_init_once_enter(&once)) {
 	_cairo_traps_compositor_init (&compositor,
 				      no_fallback_compositor_get ());
 
@@ -426,6 +427,8 @@ no_traps_compositor_get (void)
 	compositor.composite_traps = composite_traps;
 	compositor.check_composite_glyphs = check_composite_glyphs;
 	compositor.composite_glyphs = composite_glyphs;
+
+	_cairo_atomic_init_once_leave(&once);
     }
 
     return &compositor.base;
@@ -434,9 +437,10 @@ no_traps_compositor_get (void)
 static const cairo_compositor_t *
 no_spans_compositor_get (void)
 {
+    static cairo_atomic_once_t once = CAIRO_ATOMIC_ONCE_INIT;
     static cairo_spans_compositor_t compositor;
 
-    if (compositor.base.delegate == NULL) {
+    if (_cairo_atomic_init_once_enter(&once)) {
 	_cairo_spans_compositor_init (&compositor,
 				      no_traps_compositor_get());
 
@@ -448,6 +452,8 @@ no_spans_compositor_get (void)
 	//compositor.check_span_renderer = check_span_renderer;
 	compositor.renderer_init = span_renderer_init;
 	compositor.renderer_fini = span_renderer_fini;
+
+	_cairo_atomic_init_once_leave(&once);
     }
 
     return &compositor.base;

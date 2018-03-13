@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -796,6 +796,19 @@ GraphicsLayerPrivate::isVideo() const
     return false;
 }
 
+int
+GraphicsLayerPrivate::zIndex() const
+{
+    WebCore::GraphicsLayerClient& client = m_webcore->client();
+    WebCore::RenderLayer* renderLayer = client.owningLayerPtr();
+    if (renderLayer) {
+        return renderLayer->zIndex();
+    }
+
+    return 0;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 
 GraphicsLayer::GraphicsLayer(GraphicsLayerPrivate& parent)
@@ -1021,6 +1034,12 @@ bool
 GraphicsLayer::isVideo() const
 {
     return m_private.isVideo();
+}
+
+int
+GraphicsLayer::zIndex() const
+{
+    return m_private.zIndex();
 }
 
 } // namespace

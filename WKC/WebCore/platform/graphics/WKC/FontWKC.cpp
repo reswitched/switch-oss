@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007 Kevin Ollivier.  All rights reserved.
  * Copyright (C) 2014 Igalia S.L.
- * Copyright (c) 2010-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -107,12 +107,12 @@ combineCharsInText(const UChar*& inout_str, int& inout_len)
 
     WKC_DEFINE_STATIC_PTR(UChar*, gGlyphBuf, 0);
     if (!gGlyphBuf) {
-        gGlyphBuf = (UChar *)fastMalloc(sizeof(UChar*) * cGlyphBufMaxLen);
+        gGlyphBuf = (UChar *)fastMalloc(cGlyphBufMaxLen * sizeof(UChar));
     }
     UChar* buf = gGlyphBuf;
     bool needdelete = false;
     if (inout_len >= cGlyphBufMaxLen - 1) {
-        buf = (UChar *)fastMalloc(inout_len + 1);
+        buf = (UChar *)fastMalloc(inout_len * sizeof(UChar) + 1);
         needdelete = true;
     }
 
@@ -232,7 +232,7 @@ drawTextShadow(GraphicsContext* graphicscontext, void* in_platformcontext, const
         return;
     }
 
-    FloatRect fontRect(*in_textbox);
+    FloatRect fontRect(*in_clip);
 //    fontRect.inflate(graphicscontext->state().blurDistance);
     GraphicsContext* shadowContext = shadow.beginShadowLayer(graphicscontext, fontRect);
     if (shadowContext) {

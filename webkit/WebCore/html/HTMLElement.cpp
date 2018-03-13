@@ -52,6 +52,7 @@
 #include "RenderElement.h"
 #include "ScriptController.h"
 #include "Settings.h"
+#include "ShadowRoot.h"
 #include "StyleProperties.h"
 #include "SubframeLoader.h"
 #include "Text.h"
@@ -447,6 +448,10 @@ Node::Editability HTMLElement::editabilityFromContentEditableAttr(const Node& no
             }
         }
     }
+
+    auto* containingShadowRoot = node.containingShadowRoot();
+    if (containingShadowRoot && containingShadowRoot->type() == ShadowRoot::UserAgentShadowRoot)
+        return Editability::ReadOnly;
 
     auto& document = node.document();
     if (is<HTMLDocument>(document))

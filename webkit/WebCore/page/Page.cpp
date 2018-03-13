@@ -1806,7 +1806,17 @@ void Page::setAllowsMediaDocumentInlinePlayback(bool flag)
 
 bool Page::canTabSuspend()
 {
-    return s_tabSuspensionIsEnabled && !m_isPrerender && (m_pageThrottler.activityState() == PageActivityState::NoFlags) && PageCache::singleton().canCache(*this);
+    if (!s_tabSuspensionIsEnabled)
+        return false;
+    if (m_isPrerender)
+        return false;
+    if (m_pageThrottler.activityState() != PageActivityState::NoFlags)
+        return false;
+    // FIXME: PageCache::canCache does a bunch of checks that are not needed for the tab suspension case. There should be a specific check.
+    if (!PageCache::singleton().canCache(*this))
+        return false;
+
+    return true;
 }
 
 void Page::setIsTabSuspended(bool shouldSuspend)
@@ -1814,9 +1824,9 @@ void Page::setIsTabSuspended(bool shouldSuspend)
     for (Frame* frame = &mainFrame(); frame; frame = frame->tree().traverseNext()) {
         if (auto* document = frame->document()) {
             if (shouldSuspend)
-                document->suspend();
+                document->suspend(ActiveDOMObject::PageWillBeSuspended);
             else
-                document->resume();
+                document->resume(ActiveDOMObject::PageWillBeSuspended);
         }
     }
 }

@@ -158,7 +158,11 @@ bool Storage::contains(const String& key, ExceptionCode& ec) const
 
 bool Storage::isDisabledByPrivateBrowsing() const
 {
+#if !PLATFORM(WKC)
     if (!m_frame->page()->usesEphemeralSession())
+#else
+    if (!m_frame || !m_frame->page() || !m_frame->page()->usesEphemeralSession())
+#endif
         return false;
 
     if (m_storageArea->storageType() == LocalStorage) {

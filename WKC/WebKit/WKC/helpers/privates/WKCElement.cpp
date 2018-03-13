@@ -24,6 +24,8 @@
 
 #include "Element.h"
 #include "HTMLFormControlElement.h"
+#include "RenderElement.h"
+#include "RenderLayer.h"
 
 #include "helpers/WKCNode.h"
 #include "helpers/WKCQualifiedName.h"
@@ -194,6 +196,20 @@ ElementPrivate::traverseToChildAt(unsigned index)
 
 }
 
+int
+ElementPrivate::zIndex() const
+{
+    WebCore::RenderElement* renderer = webcore()->renderer();
+    if (!renderer)
+        return 0;
+
+    WebCore::RenderLayer* layer = renderer->enclosingLayer();
+    if (!layer)
+        return 0;
+
+    return layer->zIndex();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 Element::Element(Element* other)
@@ -277,6 +293,12 @@ Element::traverseToChildAt(unsigned index)
 {
     return static_cast<ElementPrivate&>(priv()).traverseToChildAt(index);
 
+}
+
+int
+Element::zIndex() const
+{
+    return static_cast<ElementPrivate&>(priv()).zIndex();
 }
 
 } // namespace

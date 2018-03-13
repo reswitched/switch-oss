@@ -1,9 +1,9 @@
-<?xml version='1.0' encoding='UTF-8'?> 
+<?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
-                "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
+		"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
 <!ENTITY version SYSTEM "version.xml">
 ]>
-<book lang="en" id="cairo" xmlns:xi="http://www.w3.org/2003/XInclude"> 
+<book lang="en" id="cairo" xmlns:xi="http://www.w3.org/2003/XInclude">
 <title>Cairo: A Vector Graphics Library</title>
   <bookinfo>
     <title>Cairo: A Vector Graphics Library</title>

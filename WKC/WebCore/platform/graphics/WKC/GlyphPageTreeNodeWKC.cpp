@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2006 Apple Computer, Inc.  All rights reserved.
- * Copyright (c) 2010, 2011, 2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,6 +32,9 @@
 #include "GlyphPage.h"
 #include "FontCache.h"
 #include "Font.h"
+#include "FontPlatformDataWKC.h"
+
+#include <wkc/wkcgpeer.h>
 
 namespace WebCore
 {
@@ -47,9 +50,32 @@ bool GlyphPage::mayUseMixedFontsWhenFilling(const UChar* characterBuffer, unsign
 
 bool GlyphPage::fill(unsigned offset, unsigned length, UChar* buffer, unsigned bufferLength, const Font* fontData)
 {
-    const Font* supplementalFontData = nullptr;
-    const Font* emojiFontData = nullptr;
-    if (length!=bufferLength) {
+    if (length == bufferLength) {
+
+        bool haveGlyphs = false;
+        unsigned short localGlyphBuffer[GlyphPage::size * 2];
+
+        bool result = wkcFontGetGlyphsForCharactersPeer(fontData->platformData().font()->font(), buffer, bufferLength, localGlyphBuffer);
+        if (!result)
+            return false;
+
+        for (unsigned i = 0; i < length; i++) {
+            Glyph glyph = localGlyphBuffer[i];
+            if (!glyph)
+                setGlyphDataForIndex(offset + i, 0, 0);
+            else {
+                setGlyphDataForIndex(offset + i, glyph, fontData);
+                haveGlyphs = true;
+            }
+        }
+
+        return haveGlyphs;
+
+    } else {
+
+        const Font* supplementalFontData = nullptr;
+        const Font* emojiFontData = nullptr;
+
         FontPlatformData pf0(fontData->platformData());
         pf0.setIsSupplemental(true);
         pf0.setIsEmoji(false);
@@ -59,25 +85,20 @@ bool GlyphPage::fill(unsigned offset, unsigned length, UChar* buffer, unsigned b
         pf1.setIsSupplemental(true);
         pf1.setIsEmoji(true);
         emojiFontData = &Font::create(pf1).leakRef();
-    }
-    for (unsigned i = 0; i < length; i++) {
-        Glyph character;
-        if (length==bufferLength) {
-            character = buffer[i];
-            setGlyphDataForIndex(offset + i, character, fontData);
-        } else {
+
+        for (unsigned i = 0; i < length; i++) {
             UChar c0 = buffer[i*2+0];
             UChar c1 = buffer[i*2+1];
             UChar32 v = U16_GET_SUPPLEMENTARY(c0, c1);
             bool isemoji = false;
             if (v>=0x01f000 && v<=0x01f9ff)
                 isemoji = true;
-            character = v&0xffff;
-            setGlyphDataForIndex(offset + i, character, isemoji ? emojiFontData : supplementalFontData);
+            Glyph glyph = v&0xffff;
+            setGlyphDataForIndex(offset + i, glyph, isemoji ? emojiFontData : supplementalFontData);
         }
-    }
 
-    return true;
+        return true;
+    }
 }
 
 }

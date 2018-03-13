@@ -1,3 +1,121 @@
+Release 1.15.10    (2017-12-07 Bryce Harrington <bryce@osg.samsung.com>)
+========================================================================
+This release adds GLESv3 support to the cairo_gl backend, adds
+tracking of SVG units in generated svg documents, and cleans up numerous
+test failures and related issues in the PDF and Postscript backends.
+
+For a complete log of changes, please see
+
+    http://cairographics.org/releases/ChangeLog.1.15.10
+
+Features and Enhancements
+-------------------------
+* Add support for OpenGL ES 3.0 to the gl backend.
+* Use Reusable streams for forms in Level 3 Postscript.
+* Add CAIRO_MIME_TYPE_EPS mime type for embedding EPS files.
+* Add CCITT_FAX mime type for PDF and PS surfaces
+* svg: add a new function to specify the SVG document unit
+  (Bug #90166)
+* Use UTF-8 filenames on Windows
+
+API Changes
+-----------
+* cairo_svg_surface_set_document_unit() and
+  cairo_svg_surface_get_document_unit()
+
+Dependency Changes
+------------------
+None
+
+Performance Optimizations
+-------------------------
+None
+
+Bug Fixes
+---------
+* Fix regression in gles version detection
+* Fix undefined-behavior with integer math.
+* Handle SOURCE and CLEAR operators when painting color glyphs.
+  (Bug #102661)
+* Convert images to rgba or a8 formats when uploading with GLESv2
+* Use _WIN32 instead of windows.h to check for windows build.
+* Fix sigabrt printing documents with fonts lacking the mandatory .nodef
+  glyph.
+  (Bug #102922)
+* Prevent curved strokes in small ctms from being culled from vector
+  surfaces
+  (Bug #103071)
+* Fix painting an unbounded recording surface with the SVG backend.
+* Fix falling back to system font with PDFs using certain embedded
+  fonts, due to truncated font names.
+  (Bug #103249)
+* Fix handling of truetype fonts with excessively long font names
+  (Bug #103249)
+* Fix race conditions with cairo_mask_compositor_t
+  (Bug #103037)
+* Fix build error with util/font-view
+* Fix assertion hit with PDFs using Type 4 fonts rendered with user
+  fonts, due to error when destroying glyph page.
+  (Bug #103335)
+* Set default creation date for PDFs
+* Prevent invalid ptr access for > 4GB images.
+  (Bug #98165)
+* Prevent self-copy infinite loop in Postscript surface.
+* Fix padded image crash in Postscript surface.
+* Fix annotation bugs in PDFs and related memory leaks
+* Fix test failures and other assorted issues in ps and pdf code.
+* Fix code generation when using GCC legacy atomic operations
+  (Bug #103559)
+* Fix various compilation warnings and errors.
+* Fix various distcheck errors with private symbols, doxygen formatting,
+  etc.
+
+Release 1.15.8     (2017-08-29 Bryce Harrington <bryce@osg.samsung.com>)
+========================================================================
+This small snapshot provides new colored emoji glyph support, and a
+handful of minor fixes.
+
+For a complete log of changes, please see
+
+    http://cairographics.org/releases/ChangeLog.1.15.8
+
+Features and Enhancements
+-------------------------
+* Support colored emoji glyphs, stored as PNG images in OpenType fonts.
+
+
+API Changes
+-----------
+None
+
+Dependency Changes
+------------------
+None
+
+Performance Optimizations
+-------------------------
+None
+
+Bug Fixes
+---------
+
+* pdf: Fix internal links pointing to other pages, by pre-calculating
+  page heights so that link positions can be calculated more accurately.
+
+* image: Fix crash on negative lengths
+
+* win32: Fix initialization of mutexes for static builds
+
+* pdf: Don't emit /PageLabel dict when no labels defined
+
+* font: Fix color font loading on big-endian systems
+
+* font:	Fix color font support infinite-loop with empty glyphs
+
+* Fix off by one check in cairo-image-info.c
+
+
+
 Release 1.15.6     (2017-06-13 Bryce Harrington <bryce@osg.samsung.com>)
 ========================================================================
 This new snapshot incorporates changes over the past half-year since the

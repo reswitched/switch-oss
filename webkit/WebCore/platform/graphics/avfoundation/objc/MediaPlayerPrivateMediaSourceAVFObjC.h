@@ -167,10 +167,7 @@ private:
 
     virtual size_t extraMemoryCost() const override;
 
-    virtual unsigned long totalVideoFrames() override;
-    virtual unsigned long droppedVideoFrames() override;
-    virtual unsigned long corruptedVideoFrames() override;
-    virtual MediaTime totalFrameDelay() override;
+    Optional<PlatformVideoPlaybackQualityMetrics> videoPlaybackQualityMetrics() override;
 
 #if ENABLE(WIRELESS_PLAYBACK_TARGET)
     virtual bool isCurrentPlaybackTargetWireless() const override;

@@ -48,6 +48,7 @@
 #include <wtf/MediaTime.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/text/StringHash.h>
+#include <wtf/Optional.h>
 
 #if ENABLE(AVF_CAPTIONS)
 #include "PlatformTextTrack.h"
@@ -133,6 +134,20 @@ public:
         isMediaStream = false;
 #endif
     }
+};
+struct PlatformVideoPlaybackQualityMetrics {
+    PlatformVideoPlaybackQualityMetrics(unsigned long totalVideoFrames, unsigned long droppedVideoFrames, unsigned long corruptedVideoFrames, double totalFrameDelay)
+        : totalVideoFrames(totalVideoFrames)
+        , droppedVideoFrames(droppedVideoFrames)
+        , corruptedVideoFrames(corruptedVideoFrames)
+        , totalFrameDelay(totalFrameDelay)
+    {
+    }
+
+    unsigned long totalVideoFrames;
+    unsigned long droppedVideoFrames;
+    unsigned long corruptedVideoFrames;
+    double totalFrameDelay;
 };
 
 extern const PlatformMedia NoPlatformMedia;
@@ -619,10 +634,7 @@ public:
     unsigned long long fileSize() const;
 
 #if ENABLE(MEDIA_SOURCE)
-    unsigned long totalVideoFrames();
-    unsigned long droppedVideoFrames();
-    unsigned long corruptedVideoFrames();
-    MediaTime totalFrameDelay();
+    Optional<PlatformVideoPlaybackQualityMetrics> videoPlaybackQualityMetrics();
 #endif
 
     bool shouldWaitForResponseToAuthenticationChallenge(const AuthenticationChallenge&);

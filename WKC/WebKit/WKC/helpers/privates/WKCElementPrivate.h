@@ -69,6 +69,8 @@ public:
     unsigned countChildNodes() const;
     Node* traverseToChildAt(unsigned);
 
+    int zIndex() const;
+
 private:
     ElementWrap m_wkc;
 

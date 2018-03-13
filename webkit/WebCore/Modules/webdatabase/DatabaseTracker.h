@@ -70,7 +70,8 @@ public:
     bool retryCanEstablishDatabase(DatabaseContext*, const String& name, unsigned long estimatedSize, DatabaseError&);
 
     void setDatabaseDetails(SecurityOrigin*, const String& name, const String& displayName, unsigned long estimatedSize);
-    String fullPathForDatabase(SecurityOrigin*, const String& name, bool createIfDoesNotExist = true);
+    //String fullPathForDatabase(SecurityOrigin*, const String& name, bool createIfDoesNotExist = true);
+    WEBCORE_EXPORT String fullPathForDatabase(SecurityOrigin*, const String& name, bool createIfDoesNotExist);
 
     void addOpenDatabase(Database*);
     void removeOpenDatabase(Database*);

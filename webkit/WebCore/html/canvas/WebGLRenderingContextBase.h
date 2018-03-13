@@ -762,7 +762,7 @@ protected:
     bool validateUniformParameters(const char* functionName, const WebGLUniformLocation*, Int32Array*, GC3Dsizei mod);
     bool validateUniformParameters(const char* functionName, const WebGLUniformLocation*, void*, GC3Dsizei, GC3Dsizei mod);
     bool validateUniformMatrixParameters(const char* functionName, const WebGLUniformLocation*, GC3Dboolean transpose, Float32Array*, GC3Dsizei mod);
-    bool validateUniformMatrixParameters(const char* functionName, const WebGLUniformLocation*, GC3Dboolean transpose, void*, GC3Dsizei, GC3Dsizei mod);
+    bool validateUniformMatrixParameters(const char* functionName, const WebGLUniformLocation*, GC3Dboolean transpose, const void*, GC3Dsizei, GC3Dsizei mod);
 
     // Helper function to validate parameters for bufferData.
     // Return the current bound buffer to target, or 0 if parameters are invalid.

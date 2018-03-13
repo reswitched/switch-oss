@@ -1888,14 +1888,6 @@ bool RenderLayerBacking::isSimpleContainerCompositingLayer() const
             return false;
     }
 
-#if PLATFORM(WKC)
-    // Reject anything that has a solid color or a background image.
-    if (rendererBackgroundColor() != Color())
-        return false;
-    if (hasBoxDecorationsOrBackgroundImage(renderer().style()))
-        return false;
-#endif
-
     return true;
 }
 
@@ -1960,6 +1952,11 @@ bool RenderLayerBacking::isPaintDestinationForDescendantLayers() const
 
 bool RenderLayerBacking::containsPaintedContent(bool isSimpleContainer) const
 {
+#if PLATFORM(WKC)
+    // we want to call setDrawsContent(true) for the simple container with a solid color or a background image.
+    if (isSimpleContainer && (rendererBackgroundColor() != Color() || hasBoxDecorationsOrBackgroundImage(renderer().style())))
+        return true;
+#endif
     if (isSimpleContainer || paintsIntoWindow() || paintsIntoCompositedAncestor() || m_artificiallyInflatedBounds || m_owningLayer.isReflection())
         return false;
 

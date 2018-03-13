@@ -107,6 +107,7 @@ public:
 private:
 #if PLATFORM(WKC)
     void findFocusableNodeInDirection(Node* container, Node* startingElement, const LayoutRect& startingRect, FocusDirection direction, KeyboardEvent* event, FocusCandidate& closest, const LayoutRect* scope);
+    Element* findNearestFocusableElementFromPoint(Element* start, const LayoutPoint& point, const LayoutRect& scope);
     // get child element preferentially
     Element* findNearestClickableElementFromPoint(const Element* start, const LayoutPoint& point, const LayoutRect& scope);
 #endif

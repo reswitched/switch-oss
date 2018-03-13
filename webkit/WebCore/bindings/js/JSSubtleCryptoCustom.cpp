@@ -731,7 +731,7 @@ JSValue JSSubtleCrypto::wrapKey(ExecState* exec)
         return throwTypeError(exec);
 
     RefPtr<CryptoKey> wrappingKey = JSCryptoKey::toWrapped(exec->uncheckedArgument(2));
-    if (!key)
+    if (!wrappingKey)
         return throwTypeError(exec);
 
     if (!wrappingKey->allows(CryptoKeyUsageWrapKey)) {

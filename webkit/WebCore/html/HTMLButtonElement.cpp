@@ -157,6 +157,13 @@ bool HTMLButtonElement::willRespondToMouseClickEvents()
     return !isDisabledFormControl();
 }
 
+#if PLATFORM(WKC)
+bool HTMLButtonElement::canBeSuccessfulSubmitButton() const
+{
+    return m_type == SUBMIT;
+}
+#endif
+
 bool HTMLButtonElement::isSuccessfulSubmitButton() const
 {
     // HTML spec says that buttons must have names to be considered successful.

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2004, 2006 Apple Computer, Inc.  All rights reserved.
- * Copyright (c) 2011-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -170,6 +170,8 @@ public:
     CURL* m_handle;
     bool m_cancelled;
     bool m_datasent;
+    unsigned long long m_bytesSent;
+    unsigned long long m_totalBytesToBeSent;
     char* m_url;
     char* m_urlhost;
     bool m_fileLoading;
@@ -235,6 +237,8 @@ public:
     bool m_serverpush;
 
     RefPtr<SharedBuffer> m_receivedData;
+
+    Vector<RefPtr<BlobData>> m_sendingBlobDataList;
 
     ResourceHandle::FailureType m_scheduledFailureType;
     Timer m_failureTimer;

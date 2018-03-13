@@ -55,7 +55,7 @@ private:
 
     void initializeStartEnd(Position&, Position&);
     void setStartingSelectionOnSmartDelete(const Position&, const Position&);
-    void initializePositionData();
+    bool initializePositionData();
     void saveTypingStyleState();
     void insertPlaceholderForAncestorBlockContent();
     bool handleSpecialCaseBRDelete();

@@ -8,7 +8,7 @@
  * Copyright (C) 2009 Appcelerator Inc.
  * Copyright (C) 2009 Brent Fulgham <bfulgham@webkit.org>
  * All rights reserved.
- * Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2018 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -735,6 +735,22 @@ static size_t writeCallback(void* ptr, size_t size, size_t nmemb, void* data)
     return totalSize;
 }
 
+static int xferinfoCallback(void *clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow)
+{
+    ResourceHandle* job = static_cast<ResourceHandle*>(clientp);
+    ResourceHandleInternal* d = job->getInternal();
+
+    if (ulnow > d->m_bytesSent) {
+        wkcMutexLockPeer(d->m_curlDataMutex);
+        d->m_datasent = true;
+        d->m_bytesSent = static_cast<unsigned long long>(ulnow);
+        d->m_totalBytesToBeSent = static_cast<unsigned long long>(ultotal);
+        wkcMutexUnlockPeer(d->m_curlDataMutex);
+    }
+
+    return 0;
+}
+
 size_t ResourceHandleManager::downloadTimerWriteCallback(ResourceHandle* job, ResourceHandleInternal* d, const unsigned char* ptrData, size_t totalSize)
 {
     nxLog_in2("job:%p totalSize:%d", job, totalSize);
@@ -747,12 +763,6 @@ size_t ResourceHandleManager::downloadTimerWriteCallback(ResourceHandle* job, Re
 #endif
     if (d->m_cancelled) {
         return 0;
-    }
-
-    if (!d->m_datasent) {
-        d->m_datasent = true;
-        if (d->client())
-            d->client()->didSendData(job, 1024, 1024); // not required to pass real bytes. only for XHR
     }
 
     // this shouldn't be necessary but apparently is. CURL writes the data
@@ -1558,6 +1568,21 @@ void ResourceHandleManager::updateProxyAuthenticate(ResourceHandleInternal* d)
 
 void ResourceHandleManager::sendDataFromBufferToWebCore(ResourceHandle* job, ResourceHandleInternal* d)
 {
+    if (!d->m_cancelled) {
+        wkcMutexLockPeer(d->m_curlDataMutex);
+        bool didSendData = d->m_datasent;
+        unsigned long long bytesSent = d->m_bytesSent;
+        unsigned long long totalBytesToBeSent = d->m_totalBytesToBeSent;
+        d->m_datasent = false;
+        wkcMutexUnlockPeer(d->m_curlDataMutex);
+
+        if (didSendData) {
+            if (d->client()) {
+                d->client()->didSendData(job, bytesSent, totalBytesToBeSent);
+            }
+        }
+    }
+
     while (!d->m_curlData.isEmpty()) {
         wkcMutexLockPeer(d->m_curlDataMutex);
         RefPtr<Uint8Array> dataArray = d->m_curlData.takeFirst();
@@ -2038,6 +2063,8 @@ ResourceHandleManager::serverPushCallback(CURL *parent, CURL *easy, size_t num_h
     d->m_handle = easy;
     d->m_cancelled = false;
     d->m_datasent = false;
+    d->m_bytesSent = 0;
+    d->m_totalBytesToBeSent = 0;
     d->m_serverpush = true;
     job->setFrame(nullptr);
     job->setMainFrame(nullptr, nullptr);
@@ -2047,6 +2074,9 @@ ResourceHandleManager::serverPushCallback(CURL *parent, CURL *easy, size_t num_h
     curl_easy_setopt(d->m_handle, CURLOPT_WRITEDATA, job);
     curl_easy_setopt(d->m_handle, CURLOPT_HEADERFUNCTION, headerCallback);
     curl_easy_setopt(d->m_handle, CURLOPT_WRITEHEADER, job);
+    curl_easy_setopt(d->m_handle, CURLOPT_XFERINFOFUNCTION, xferinfoCallback);
+    curl_easy_setopt(d->m_handle, CURLOPT_XFERINFODATA, job);
+    curl_easy_setopt(d->m_handle, CURLOPT_NOPROGRESS, 0);
 
     d->m_urlhost = fastStrdup(hostAndPort(kurl).latin1().data());
     d->m_response.setResourceHandle(job);
@@ -2219,7 +2249,9 @@ bool ResourceHandleManager::setupMethod(ResourceHandle* job, struct curl_slist**
     static const long long maxCurlOffT = (1LL << (expectedSizeOfCurlOffT * 8 - 1)) - 1;
     curl_off_t size = 0;
     bool chunkedTransfer = false;
+    d->m_sendingBlobDataList.resize(numElements);
     for (size_t i = 0; i < numElements; i++) {
+        d->m_sendingBlobDataList[i] = nullptr;
         FormDataElement element = elements[i];
         if (element.m_type == FormDataElement::Type::EncodedFile) {
             long long fileSizeResult;
@@ -2245,6 +2277,9 @@ bool ResourceHandleManager::setupMethod(ResourceHandle* job, struct curl_slist**
                     break;
                 size += data->length();
             }
+            // We hold a strong reference to the blob data here, and it will be referred to in FormDataStream::read.
+            // This is a workaround for the fact that the blob data may be deleted by GC before sent.
+            d->m_sendingBlobDataList[i] = blobData;
         } else
             size += elements[i].m_data.size();
     }
@@ -2954,6 +2989,8 @@ void ResourceHandleManager::initializeHandle(ResourceHandle* job)
     }
     d->m_cancelled = false;
     d->m_datasent = false;
+    d->m_bytesSent = 0;
+    d->m_totalBytesToBeSent = 0;
 
     URL kurl = job->firstRequest().url();
     String url = kurl.string();
@@ -3009,6 +3046,9 @@ void ResourceHandleManager::initializeHandle(ResourceHandle* job)
     curl_easy_setopt(d->m_handle, CURLOPT_WRITEDATA, job);
     curl_easy_setopt(d->m_handle, CURLOPT_HEADERFUNCTION, headerCallback);
     curl_easy_setopt(d->m_handle, CURLOPT_WRITEHEADER, job);
+    curl_easy_setopt(d->m_handle, CURLOPT_XFERINFOFUNCTION, xferinfoCallback);
+    curl_easy_setopt(d->m_handle, CURLOPT_XFERINFODATA, job);
+    curl_easy_setopt(d->m_handle, CURLOPT_NOPROGRESS, 0);
     if (d->m_firstRequest.sendAutoHTTPReferfer())
         curl_easy_setopt(d->m_handle, CURLOPT_AUTOREFERER, 1);
     curl_easy_setopt(d->m_handle, CURLOPT_SHARE, m_curlShareHandle);

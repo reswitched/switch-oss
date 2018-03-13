@@ -85,6 +85,9 @@ public:
     // Return true for a successful control (see HTML4-17.13.2).
     virtual bool appendFormData(FormDataList&, bool) override { return false; }
 
+#if PLATFORM(WKC)
+    virtual bool canBeSuccessfulSubmitButton() const { return false; }
+#endif
     virtual bool isSuccessfulSubmitButton() const { return false; }
     virtual bool isActivatedSubmit() const { return false; }
     virtual void setActivatedSubmit(bool) { }

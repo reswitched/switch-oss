@@ -110,6 +110,8 @@ struct Scope {
         , m_isFunction(isFunction)
         , m_isFunctionBoundary(false)
         , m_isValidStrictMode(true)
+        , m_constructorKind(static_cast<unsigned>(ConstructorKind::None))
+        , m_expectedSuperBinding(static_cast<unsigned>(SuperBinding::NotNeeded))
         , m_loopDepth(0)
         , m_switchDepth(0)
     {
@@ -127,6 +129,8 @@ struct Scope {
         , m_isFunction(rhs.m_isFunction)
         , m_isFunctionBoundary(rhs.m_isFunctionBoundary)
         , m_isValidStrictMode(rhs.m_isValidStrictMode)
+        , m_constructorKind(rhs.m_constructorKind)
+        , m_expectedSuperBinding(rhs.m_expectedSuperBinding)
         , m_loopDepth(rhs.m_loopDepth)
         , m_switchDepth(rhs.m_switchDepth)
     {
@@ -258,18 +262,23 @@ struct Scope {
     void setNeedsFullActivation() { m_needsFullActivation = true; }
 
 #if ENABLE(ES6_CLASS_SYNTAX)
-    bool hasDirectSuper() { return m_hasDirectSuper; }
+    bool hasDirectSuper() const { return m_hasDirectSuper; }
 #else
-    bool hasDirectSuper() { return false; }
+    bool hasDirectSuper() const { return false; }
 #endif
-    void setHasDirectSuper() { m_hasDirectSuper = true; }
+    bool setHasDirectSuper() { return std::exchange(m_hasDirectSuper, true); }
 
 #if ENABLE(ES6_CLASS_SYNTAX)
-    bool needsSuperBinding() { return m_needsSuperBinding; }
+    bool needsSuperBinding() const { return m_needsSuperBinding; }
 #else
-    bool needsSuperBinding() { return false; }
+    bool needsSuperBinding() const { return false; }
 #endif
-    void setNeedsSuperBinding() { m_needsSuperBinding = true; }
+    bool setNeedsSuperBinding() { return std::exchange(m_needsSuperBinding, true); }
+    
+    void setExpectedSuperBinding(SuperBinding superBinding) { m_expectedSuperBinding = static_cast<unsigned>(superBinding); }
+    SuperBinding expectedSuperBinding() const { return static_cast<SuperBinding>(m_expectedSuperBinding); }
+    void setConstructorKind(ConstructorKind constructorKind) { m_constructorKind = static_cast<unsigned>(constructorKind); }
+    ConstructorKind constructorKind() const { return static_cast<ConstructorKind>(m_constructorKind); }
 
     bool collectFreeVariables(Scope* nestedScope, bool shouldTrackClosedVariables)
     {
@@ -364,13 +373,15 @@ private:
     bool m_shadowsArguments : 1;
     bool m_usesEval : 1;
     bool m_needsFullActivation : 1;
-    bool m_hasDirectSuper : 1;
-    bool m_needsSuperBinding : 1;
+    bool m_hasDirectSuper;
+    bool m_needsSuperBinding;
     bool m_allowsNewDecls : 1;
     bool m_strictMode : 1;
     bool m_isFunction : 1;
     bool m_isFunctionBoundary : 1;
     bool m_isValidStrictMode : 1;
+    unsigned m_constructorKind : 2;
+    unsigned m_expectedSuperBinding : 2;
     int m_loopDepth;
     int m_switchDepth;
 
@@ -470,6 +481,19 @@ private:
     {
         return ScopeRef(&m_scopeStack, m_scopeStack.size() - 1);
     }
+
+    ScopeRef currentFunctionScope()
+    {
+        unsigned i = m_scopeStack.size() - 1;
+        ASSERT(i < m_scopeStack.size());
+        while (i && !m_scopeStack[i].isFunctionBoundary()) {
+            i--;
+            ASSERT(i < m_scopeStack.size());
+        }
+        // When reaching the top level scope (it can be non function scope), we return it.
+        return ScopeRef(&m_scopeStack, i);
+    }
+
     
     ScopeRef pushScope()
     {

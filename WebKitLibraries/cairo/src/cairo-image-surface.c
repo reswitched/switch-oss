@@ -371,8 +371,8 @@ _cairo_image_surface_create_with_pixman_format (unsigned char		*data,
  * @height: height of the surface, in pixels
  *
  * Creates an image surface of the specified format and
- * dimensions. Initially the surface contents are all
- * 0. (Specifically, within each pixel, each color or alpha channel
+ * dimensions. Initially the surface contents are set to 0.
+ * (Specifically, within each pixel, each color or alpha channel
  * belonging to format will be 0. The contents of bits within a pixel,
  * but not belonging to the given format are undefined).
  *

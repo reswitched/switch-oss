@@ -264,8 +264,16 @@ cairo_egl_sources =
 cairo_glx_sources =
 cairo_wgl_sources =
 
-_cairo_pdf_operators_private = cairo-pdf-operators-private.h cairo-pdf-shading-private.h
-_cairo_pdf_operators_sources = cairo-pdf-operators.c cairo-pdf-shading.c
+_cairo_pdf_operators_private = \
+	cairo-pdf-operators-private.h \
+	cairo-pdf-shading-private.h \
+	cairo-tag-attributes-private.h \
+	$(NULL)
+_cairo_pdf_operators_sources = \
+	cairo-pdf-operators.c \
+	cairo-pdf-shading.c \
+	cairo-tag-attributes.c \
+	$(NULL)
 cairo_private += $(_cairo_pdf_operators_private)
 cairo_sources += $(_cairo_pdf_operators_sources)
 
@@ -279,8 +287,8 @@ _cairo_deflate_stream_sources = cairo-deflate-stream.c
 cairo_sources += $(_cairo_deflate_stream_sources)
 
 cairo_pdf_headers = cairo-pdf.h
-cairo_pdf_private = cairo-pdf-surface-private.h cairo-tag-stack-private.h cairo-tag-attributes-private.h
-cairo_pdf_sources = cairo-pdf-surface.c cairo-pdf-interchange.c cairo-tag-stack.c cairo-tag-attributes.c
+cairo_pdf_private = cairo-pdf-surface-private.h cairo-tag-stack-private.h
+cairo_pdf_sources = cairo-pdf-surface.c cairo-pdf-interchange.c cairo-tag-stack.c
 
 cairo_svg_headers = cairo-svg.h
 cairo_svg_private = cairo-svg-surface-private.h
@@ -406,6 +414,10 @@ cairo_gl_sources = cairo-gl-composite.c \
 cairo_glesv2_headers = $(cairo_gl_headers)
 cairo_glesv2_private = $(cairo_gl_private)
 cairo_glesv2_sources = $(cairo_gl_sources)
+
+cairo_glesv3_headers = $(cairo_gl_headers)
+cairo_glesv3_private = $(cairo_gl_private)
+cairo_glesv3_sources = $(cairo_gl_sources)
 
 cairo_egl_sources += cairo-egl-context.c
 cairo_glx_sources += cairo-glx-context.c

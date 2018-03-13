@@ -52,7 +52,6 @@ public:
 
     void dispatchFormControlInputEvent();
     void dispatchFormControlChangeEvent();
-    bool isSuccessfulSubmitButton() const;
     const AtomicString& type();
 
 private:

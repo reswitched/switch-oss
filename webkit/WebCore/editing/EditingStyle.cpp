@@ -1517,9 +1517,10 @@ PassRefPtr<EditingStyle> EditingStyle::styleAtSelectionStart(const VisibleSelect
     // Also, if the selection is a range, ignore the background color at the start of selection,
     // and find the background color of the common ancestor.
     if (shouldUseBackgroundColorInEffect && (selection.isRange() || hasTransparentBackgroundColor(style->m_mutableStyle.get()))) {
-        RefPtr<Range> range(selection.toNormalizedRange());
-        if (PassRefPtr<CSSValue> value = backgroundColorInEffect(range->commonAncestorContainer(IGNORE_EXCEPTION)))
-            style->setProperty(CSSPropertyBackgroundColor, value->cssText());
+        if (RefPtr<Range> range = selection.toNormalizedRange()) {
+            if (PassRefPtr<CSSValue> value = backgroundColorInEffect(range->commonAncestorContainer(IGNORE_EXCEPTION)))
+                style->setProperty(CSSPropertyBackgroundColor, value->cssText());
+        }
     }
 
     return style;

@@ -102,6 +102,15 @@ JSDOMGlobalObject* ReadableJSStream::globalObject()
     return jsDynamicCast<JSDOMGlobalObject*>(m_source->globalObject());
 }
 
+static inline JSFunction* createGenericErrorRejectedFunction(ExecState& state, ReadableJSStream& readableStream)
+{
+    RefPtr<ReadableJSStream> stream = &readableStream;
+    return JSNativeStdFunction::create(state.vm(), state.callee()->globalObject(), 1, String(), [stream](ExecState* state) {
+        stream->storeError(*state, state->argument(0));
+        return JSValue::encode(jsUndefined());
+    });
+}
+
 static inline JSFunction* createStartResultFulfilledFunction(ExecState& state, ReadableStream& readableStream)
 {
     RefPtr<ReadableStream> stream = &readableStream;
@@ -140,7 +149,7 @@ void ReadableJSStream::doStart(ExecState& exec)
         return;
     }
 
-    thenPromise(exec, promise, createStartResultFulfilledFunction(exec, *this), m_errorFunction.get());
+    thenPromise(exec, promise, createStartResultFulfilledFunction(exec, *this), createGenericErrorRejectedFunction(exec, *this));
 }
 
 static inline JSFunction* createPullResultFulfilledFunction(ExecState& exec, ReadableJSStream& stream)
@@ -160,7 +169,7 @@ bool ReadableJSStream::doPull()
     JSPromise* promise = invoke(state, "pull", jsController(state, globalObject()));
 
     if (promise)
-        thenPromise(state, promise, createPullResultFulfilledFunction(state, *this), m_errorFunction.get());
+        thenPromise(state, promise, createPullResultFulfilledFunction(state, *this), createGenericErrorRejectedFunction(state, *this));
 
     if (state.hadException()) {
         storeException(state);
@@ -258,12 +267,6 @@ ReadableJSStream::ReadableJSStream(ExecState& state, JSObject* source, double hi
     , m_highWaterMark(highWaterMark)
 {
     m_source.set(state.vm(), source);
-    // We do not take a Ref to the stream as this would cause a Ref cycle.
-    // The resolution callback used jointly with m_errorFunction as promise callbacks should protect the stream instead.
-    m_errorFunction.set(state.vm(), JSFunction::create(state.vm(), state.callee()->globalObject(), 1, String(), [this](ExecState* state) {
-        storeError(*state, state->argument(0));
-        return JSValue::encode(jsUndefined());
-    }));
     if (sizeFunction)
         m_sizeFunction.set(state.vm(), sizeFunction);
 }

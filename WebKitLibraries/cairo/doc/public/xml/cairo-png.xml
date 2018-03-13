@@ -1,6 +1,6 @@
-<?xml version='1.0' encoding='UTF-8'?> 
+<?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
-                "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
+		"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
 <!ENTITY version SYSTEM "version.xml">
 ]>
 <refentry id="cairo-PNG-Support">
@@ -84,7 +84,8 @@ given PNG file.</para>
 <colspec colname="parameters_annotations" colwidth="200px"/>
 <tbody>
 <row><entry role="parameter_name"><para>filename</para></entry>
-<entry role="parameter_description"><para>name of PNG file to load</para></entry>
+<entry role="parameter_description"><para>name of PNG file to load. On Windows this filename
+is encoded in UTF-8.</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
 </refsect3><refsect3 id="cairo-image-surface-create-from-png.returns" role="returns">
@@ -199,7 +200,8 @@ image.</para>
 <entry role="parameter_description"><para>a <link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> with pixel contents</para></entry>
 <entry role="parameter_annotations"></entry></row>
 <row><entry role="parameter_name"><para>filename</para></entry>
-<entry role="parameter_description"><para>the name of a file to write to</para></entry>
+<entry role="parameter_description"><para>the name of a file to write to; on Windows this filename
+is encoded in UTF-8.</para></entry>
 <entry role="parameter_annotations"></entry></row>
 </tbody></tgroup></informaltable>
 </refsect3><refsect3 id="cairo-surface-write-to-png.returns" role="returns">

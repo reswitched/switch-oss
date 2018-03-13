@@ -325,6 +325,22 @@ ifeq ($(CAIRO_HAS_GLESV2_SURFACE),1)
 enabled_cairo_pkgconf += cairo-glesv2.pc
 endif
 
+unsupported_cairo_headers += $(cairo_glesv3_headers)
+all_cairo_headers += $(cairo_glesv3_headers)
+all_cairo_private += $(cairo_glesv3_private)
+all_cairo_cxx_sources += $(cairo_glesv3_cxx_sources)
+all_cairo_sources += $(cairo_glesv3_sources)
+ifeq ($(CAIRO_HAS_GLESV3_SURFACE),1)
+enabled_cairo_headers += $(cairo_glesv3_headers)
+enabled_cairo_private += $(cairo_glesv3_private)
+enabled_cairo_cxx_sources += $(cairo_glesv3_cxx_sources)
+enabled_cairo_sources += $(cairo_glesv3_sources)
+endif
+all_cairo_pkgconf += cairo-glesv3.pc
+ifeq ($(CAIRO_HAS_GLESV3_SURFACE),1)
+enabled_cairo_pkgconf += cairo-glesv3.pc
+endif
+
 unsupported_cairo_headers += $(cairo_cogl_headers)
 all_cairo_headers += $(cairo_cogl_headers)
 all_cairo_private += $(cairo_cogl_private)

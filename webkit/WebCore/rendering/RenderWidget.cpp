@@ -366,7 +366,11 @@ RenderWidget* RenderWidget::find(const Widget* widget)
 
 bool RenderWidget::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction action)
 {
+#if !PLATFORM(WKC)
     if (request.allowsChildFrameContent() && is<FrameView>(widget()) && downcast<FrameView>(*widget()).renderView()) {
+#else
+    if (visibleToHitTesting() && request.allowsChildFrameContent() && is<FrameView>(widget()) && downcast<FrameView>(*widget()).renderView()) {
+#endif
         FrameView& childFrameView = downcast<FrameView>(*widget());
         RenderView& childRoot = *childFrameView.renderView();
 

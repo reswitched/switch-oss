@@ -197,6 +197,9 @@ RenderBoxModelObject::~RenderBoxModelObject()
 
 void RenderBoxModelObject::willBeDestroyed()
 {
+#if PLATFORM(WKC)
+    CRASH_IF_STACK_OVERFLOW(WKC_STACK_MARGIN_DEFAULT);
+#endif
     if (hasContinuation()) {
         continuation()->destroy();
         setContinuation(nullptr);

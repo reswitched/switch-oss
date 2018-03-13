@@ -1373,36 +1373,13 @@ unsigned long long MediaPlayer::fileSize() const
 }
 
 #if ENABLE(MEDIA_SOURCE)
-unsigned long MediaPlayer::totalVideoFrames()
+Optional<PlatformVideoPlaybackQualityMetrics> MediaPlayer::videoPlaybackQualityMetrics()
 {
     if (!m_private)
-        return 0;
+        return Nullopt;
 
-    return m_private->totalVideoFrames();
-}
+    return m_private->videoPlaybackQualityMetrics();
 
-unsigned long MediaPlayer::droppedVideoFrames()
-{
-    if (!m_private)
-        return 0;
-
-    return m_private->droppedVideoFrames();
-}
-
-unsigned long MediaPlayer::corruptedVideoFrames()
-{
-    if (!m_private)
-        return 0;
-
-    return m_private->corruptedVideoFrames();
-}
-
-MediaTime MediaPlayer::totalFrameDelay()
-{
-    if (!m_private)
-        return MediaTime::zeroTime();
-
-    return m_private->totalFrameDelay();
 }
 #endif
 

@@ -246,14 +246,6 @@ the public iOS SDK. We will also need to update the FeatureDefines.xcconfig file
 #define ENABLE_CURSOR_VISIBILITY 1
 #endif
 
-#if !defined(ENABLE_INPUT_TYPE_COLOR)
-#define ENABLE_INPUT_TYPE_COLOR 0
-#endif
-
-#if !defined(ENABLE_INPUT_TYPE_COLOR_POPOVER)
-#define ENABLE_INPUT_TYPE_COLOR_POPOVER 0
-#endif
-
 #if !defined(ENABLE_FILE_REPLACEMENT)
 #define ENABLE_FILE_REPLACEMENT 1
 #endif

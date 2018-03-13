@@ -1,6 +1,6 @@
-<?xml version='1.0' encoding='UTF-8'?> 
+<?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE indexdiv PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
-                "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
+		"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
 <!ENTITY version SYSTEM "version.xml">
 ]>
 <indexdiv id="api-index-1.2">
@@ -58,7 +58,6 @@
 <indexentry><primaryie linkends="cairo-svg-surface-create"><link linkend="cairo-svg-surface-create">cairo_svg_surface_create</link>, function in <link linkend="cairo-SVG-Surfaces">SVG Surfaces</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-svg-surface-create-for-stream"><link linkend="cairo-svg-surface-create-for-stream">cairo_svg_surface_create_for_stream</link>, function in <link linkend="cairo-SVG-Surfaces">SVG Surfaces</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-svg-surface-restrict-to-version"><link linkend="cairo-svg-surface-restrict-to-version">cairo_svg_surface_restrict_to_version</link>, function in <link linkend="cairo-SVG-Surfaces">SVG Surfaces</link></primaryie></indexentry>
-<indexentry><primaryie linkends="cairo-svg-version-t"><link linkend="cairo-svg-version-t">cairo_svg_version_t</link>, enum in <link linkend="cairo-SVG-Surfaces">SVG Surfaces</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-svg-version-to-string"><link linkend="cairo-svg-version-to-string">cairo_svg_version_to_string</link>, function in <link linkend="cairo-SVG-Surfaces">SVG Surfaces</link></primaryie></indexentry>
 </indexdiv>
 <indexdiv><title>W</title>

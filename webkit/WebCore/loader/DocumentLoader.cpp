@@ -397,6 +397,11 @@ void DocumentLoader::notifyFinished(CachedResource* resource)
 
 void DocumentLoader::finishedLoading(double finishTime)
 {
+#if PLATFORM(WKC)
+    if (!m_frame->page())
+        return;
+#endif
+
     // There is a bug in CFNetwork where callbacks can be dispatched even when loads are deferred.
     // See <rdar://problem/6304600> for more details.
 #if !USE(CF)
@@ -583,9 +588,16 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
 
     ASSERT(!m_waitingForNavigationPolicy);
     m_waitingForNavigationPolicy = true;
+#if PLATFORM(WKC)
+    NavigationPolicyDecisionFunction p(std::allocator_arg, frameLoader()->policyChecker().navigationFunctionAllocator(), [this](const ResourceRequest& request, PassRefPtr<FormState>, bool shouldContinue) {
+        continueAfterNavigationPolicy(request, shouldContinue);
+    });
+    frameLoader()->policyChecker().checkNavigationPolicy(newRequest, p);
+#else
     frameLoader()->policyChecker().checkNavigationPolicy(newRequest, [this](const ResourceRequest& request, PassRefPtr<FormState>, bool shouldContinue) {
         continueAfterNavigationPolicy(request, shouldContinue);
     });
+#endif
 }
 
 void DocumentLoader::continueAfterNavigationPolicy(const ResourceRequest&, bool shouldContinue)
@@ -632,16 +644,19 @@ void DocumentLoader::responseReceived(CachedResource* resource, const ResourceRe
     if (willLoadFallback)
         return;
 
+    ASSERT(m_identifierForLoadWithoutResourceLoader || m_mainResource);
+    unsigned long identifier = m_identifierForLoadWithoutResourceLoader ? m_identifierForLoadWithoutResourceLoader : m_mainResource->identifier();
+    ASSERT(identifier);
+    
+    auto url = response.url();
+
     const auto& commonHeaders = response.httpHeaderFields().commonHeaders();
     auto it = commonHeaders.find(HTTPHeaderName::XFrameOptions);
     if (it != commonHeaders.end()) {
         String content = it->value;
-        ASSERT(m_identifierForLoadWithoutResourceLoader || m_mainResource);
-        unsigned long identifier = m_identifierForLoadWithoutResourceLoader ? m_identifierForLoadWithoutResourceLoader : m_mainResource->identifier();
-        ASSERT(identifier);
-        if (frameLoader()->shouldInterruptLoadForXFrameOptions(content, response.url(), identifier)) {
+        if (frameLoader()->shouldInterruptLoadForXFrameOptions(content, url, identifier)) {
             InspectorInstrumentation::continueAfterXFrameOptionsDenied(m_frame, *this, identifier, response);
-            String message = "Refused to display '" + response.url().stringCenterEllipsizedToLength() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.";
+            String message = "Refused to display '" + url.stringCenterEllipsizedToLength() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.";
             frame()->document()->addConsoleMessage(MessageSource::Security, MessageLevel::Error, message, identifier);
             frame()->document()->enforceSandboxFlags(SandboxOrigin);
             if (HTMLFrameOwnerElement* ownerElement = frame()->ownerElement())
@@ -696,16 +711,32 @@ void DocumentLoader::responseReceived(CachedResource* resource, const ResourceRe
 #endif
 
     if (m_response.isHttpVersion0_9()) {
+        // Non-HTTP responses are interpreted as HTTP/0.9 which may allow exfiltration of data
+        // from non-HTTP services. Therefore cancel if the request was to a non-default port.
+        if (!isDefaultPortForProtocol(url.port(), url.protocol())) {
+            String message = "Stopped document load from '" + url.string() + "' because it is using HTTP/0.9 on a non-default port.";
+            m_frame->document()->addConsoleMessage(MessageSource::Security, MessageLevel::Error, message, identifier);
+            stopLoading();
+            return;
+        }
+
         ASSERT(m_identifierForLoadWithoutResourceLoader || m_mainResource);
         unsigned long identifier = m_identifierForLoadWithoutResourceLoader ? m_identifierForLoadWithoutResourceLoader : m_mainResource->identifier();
-        String message = "Sandboxing '" + response.url().string() + "' because it is using HTTP/0.9.";
+        String message = "Sandboxing '" + url.string() + "' because it is using HTTP/0.9.";
         m_frame->document()->addConsoleMessage(MessageSource::Security, MessageLevel::Error, message, identifier);
         frameLoader()->forceSandboxFlags(SandboxScripts | SandboxPlugins);
     }
 
+#if PLATFORM(WKC)
+    ContentPolicyDecisionFunction p(std::allocator_arg, frameLoader()->policyChecker().contentFunctionAllocator(), [this](PolicyAction policy) {
+        continueAfterContentPolicy(policy);
+    });
+    frameLoader()->policyChecker().checkContentPolicy(m_response, p);
+#else
     frameLoader()->policyChecker().checkContentPolicy(m_response, [this](PolicyAction policy) {
         continueAfterContentPolicy(policy);
     });
+#endif
 }
 
 void DocumentLoader::continueAfterContentPolicy(PolicyAction policy)
@@ -1469,12 +1500,12 @@ void DocumentLoader::startLoadingMainResource()
     request.makeUnconditional();
 
 #if !PLATFORM(WKC)
-    static NeverDestroyed<ResourceLoaderOptions> mainResourceLoadOptions(SendCallbacks, SniffContent, BufferData, AllowStoredCredentials, AskClientForAllCredentials, SkipSecurityCheck, UseDefaultOriginRestrictionsForType, IncludeCertificateInfo, ContentSecurityPolicyImposition::DoPolicyCheck);
+    static NeverDestroyed<ResourceLoaderOptions> mainResourceLoadOptions(SendCallbacks, SniffContent, BufferData, AllowStoredCredentials, ClientCredentialPolicy::MayAskClientForCredentials, FetchOptions::Credentials::Include, SkipSecurityCheck, UseDefaultOriginRestrictionsForType, IncludeCertificateInfo, ContentSecurityPolicyImposition::DoPolicyCheck);
     CachedResourceRequest cachedResourceRequest(request, mainResourceLoadOptions);
 #else
     WKC_DEFINE_STATIC_PTR(ResourceLoaderOptions*, mainResourceLoadOptions, 0);
     if (!mainResourceLoadOptions)
-        mainResourceLoadOptions = new ResourceLoaderOptions(SendCallbacks, SniffContent, BufferData, AllowStoredCredentials, AskClientForAllCredentials, SkipSecurityCheck, UseDefaultOriginRestrictionsForType, IncludeCertificateInfo, ContentSecurityPolicyImposition::DoPolicyCheck);
+        mainResourceLoadOptions = new ResourceLoaderOptions(SendCallbacks, SniffContent, BufferData, AllowStoredCredentials, ClientCredentialPolicy::MayAskClientForCredentials, FetchOptions::Credentials::Include, SkipSecurityCheck, UseDefaultOriginRestrictionsForType, IncludeCertificateInfo, ContentSecurityPolicyImposition::DoPolicyCheck);
     CachedResourceRequest cachedResourceRequest(request, *mainResourceLoadOptions);
 #endif
     cachedResourceRequest.setInitiator(*this);

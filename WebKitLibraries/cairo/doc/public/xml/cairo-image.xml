@@ -1,6 +1,6 @@
-<?xml version='1.0' encoding='UTF-8'?> 
+<?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
-                "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
+		"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
 <!ENTITY version SYSTEM "version.xml">
 ]>
 <refentry id="cairo-Image-Surfaces">
@@ -116,12 +116,10 @@ cairo_image_surface_create (<parameter><link linkend="cairo-format-t"><type>cair
                             <parameter><link linkend="int"><type>int</type></link> width</parameter>,
                             <parameter><link linkend="int"><type>int</type></link> height</parameter>);</programlisting>
 <para>Creates an image surface of the specified format and
-dimensions. Initially the surface contents are all</para>
-<orderedlist>
-<listitem><para>(Specifically, within each pixel, each color or alpha channel
+dimensions. Initially the surface contents are set to 0.
+(Specifically, within each pixel, each color or alpha channel
 belonging to format will be 0. The contents of bits within a pixel,
-but not belonging to the given format are undefined).</para></listitem>
-</orderedlist>
+but not belonging to the given format are undefined).</para>
 <refsect3 id="cairo-image-surface-create.parameters" role="parameters">
 <title>Parameters</title>
 <informaltable role="parameters_table" pgwide="1" frame="none">

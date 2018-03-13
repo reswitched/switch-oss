@@ -658,7 +658,8 @@ _cairo_gl_operand_bind_to_shader (cairo_gl_context_t *ctx,
 	 * with CAIRO_EXTEND_NONE). When bilinear filtering is enabled,
 	 * these shaders need the texture dimensions for their calculations.
 	 */
-	if (ctx->gl_flavor == CAIRO_GL_FLAVOR_ES2 &&
+	if ((ctx->gl_flavor == CAIRO_GL_FLAVOR_ES3 ||
+	     ctx->gl_flavor == CAIRO_GL_FLAVOR_ES2) &&
 	    _cairo_gl_operand_get_extend (operand) == CAIRO_EXTEND_NONE &&
 	    _cairo_gl_operand_get_gl_filter (operand) == GL_LINEAR)
 	{

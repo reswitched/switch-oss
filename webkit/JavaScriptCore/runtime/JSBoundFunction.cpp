@@ -99,6 +99,23 @@ JSBoundFunction::JSBoundFunction(VM& vm, JSGlobalObject* globalObject, Structure
 {
 }
 
+JSArray* JSBoundFunction::boundArgsCopy(ExecState* exec)
+{
+    VM& vm = exec->vm();
+    JSArray* result = constructEmptyArray(exec, nullptr, globalObject());
+    if (UNLIKELY(vm.exception()))
+        return nullptr;
+    JSArray* boundArgs = jsDynamicCast<JSArray*>(m_boundArgs.get());
+    if (!boundArgs)
+        return nullptr;
+    for (unsigned i = 0; i < boundArgs->length(); ++i) {
+        result->push(exec, boundArgs->getIndexQuickly(i));
+        if (UNLIKELY(vm.exception()))
+            return nullptr;
+    }
+    return result;
+}
+
 void JSBoundFunction::finishCreation(VM& vm, NativeExecutable* executable, int length, const String& name)
 {
     Base::finishCreation(vm, executable, length, name);

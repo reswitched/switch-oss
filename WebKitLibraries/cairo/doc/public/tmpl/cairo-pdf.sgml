@@ -9,12 +9,10 @@ cairo-pdf
 
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 
@@ -134,7 +132,7 @@ cairo-pdf
 @surface: 
 @parent_id: 
 @utf8: 
-@dest: 
+@link_attribs: 
 @flags: 
 @Returns: 
 

@@ -5,7 +5,7 @@
  * Copyright (C) 2007 Holger Hans Peter Freyther
  * Copyright (C) 2008 Collabora Ltd.
  * All rights reserved.
- * Copyright (c) 2010-2015 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2018 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -98,7 +98,9 @@ size_t FormDataStream::read(void* ptr, size_t blockSize, size_t numberOfBlocks)
         }
     } else if (element.m_type == FormDataElement::Type::EncodedBlob) {
         BlobData* blobData = static_cast<BlobRegistryImpl&>(blobRegistry()).getBlobDataFromURL(element.m_url);
-        if (!blobData) {
+        if (!blobData)
+            blobData = d->m_sendingBlobDataList[m_formDataElementIndex].get();
+        if (!blobData || blobData->items().isEmpty()) {
             nxLog_e("no blob data");
             return 0;
         }

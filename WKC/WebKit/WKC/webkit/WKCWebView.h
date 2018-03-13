@@ -1,7 +1,7 @@
 /*
  * WKCWebView.h
  *
- * Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2018 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -368,16 +368,6 @@ WKC_API void WKCWebKitWakeUp(void* in_timer, void* in_data);
 Get current tick count
 */
 WKC_API unsigned int WKCWebKitGetTickCount();
-
-/**
-@brief Sets time zone offset
-@param offset Time zone offset value
-@param isSummerTime The time zone is in summer time or not.
-@return 0:succeed -1:failed
-@details
-Sets time zone offset.
-*/
-WKC_API int WKCWebKitSetTimeZone(int offset, bool isSummerTime);
 
 /**
 @brief Sets a proc for getting current time.

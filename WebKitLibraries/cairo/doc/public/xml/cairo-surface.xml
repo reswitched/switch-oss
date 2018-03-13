@@ -1,6 +1,6 @@
-<?xml version='1.0' encoding='UTF-8'?> 
+<?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
-                "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
+		"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd" [
 <!ENTITY version SYSTEM "version.xml">
 ]>
 <refentry id="cairo-cairo-surface-t">
@@ -96,6 +96,10 @@
 <colspec colname="description"/>
 <tbody>
 <row><entry role="define_keyword">#define</entry><entry role="function_name"><link linkend="CAIRO-HAS-MIME-SURFACE:CAPS">CAIRO_HAS_MIME_SURFACE</link></entry></row>
+<row><entry role="define_keyword">#define</entry><entry role="function_name"><link linkend="CAIRO-MIME-TYPE-CCITT-FAX:CAPS">CAIRO_MIME_TYPE_CCITT_FAX</link></entry></row>
+<row><entry role="define_keyword">#define</entry><entry role="function_name"><link linkend="CAIRO-MIME-TYPE-CCITT-FAX-PARAMS:CAPS">CAIRO_MIME_TYPE_CCITT_FAX_PARAMS</link></entry></row>
+<row><entry role="define_keyword">#define</entry><entry role="function_name"><link linkend="CAIRO-MIME-TYPE-EPS:CAPS">CAIRO_MIME_TYPE_EPS</link></entry></row>
+<row><entry role="define_keyword">#define</entry><entry role="function_name"><link linkend="CAIRO-MIME-TYPE-EPS-PARAMS:CAPS">CAIRO_MIME_TYPE_EPS_PARAMS</link></entry></row>
 <row><entry role="define_keyword">#define</entry><entry role="function_name"><link linkend="CAIRO-MIME-TYPE-JBIG2:CAPS">CAIRO_MIME_TYPE_JBIG2</link></entry></row>
 <row><entry role="define_keyword">#define</entry><entry role="function_name"><link linkend="CAIRO-MIME-TYPE-JBIG2-GLOBAL:CAPS">CAIRO_MIME_TYPE_JBIG2_GLOBAL</link></entry></row>
 <row><entry role="define_keyword">#define</entry><entry role="function_name"><link linkend="CAIRO-MIME-TYPE-JBIG2-GLOBAL-ID:CAPS">CAIRO_MIME_TYPE_JBIG2_GLOBAL_ID</link></entry></row>
@@ -1012,7 +1016,8 @@ memory and disk space.</para>
 <para>The recognized MIME types are the following: <link linkend="CAIRO-MIME-TYPE-JPEG:CAPS"><literal>CAIRO_MIME_TYPE_JPEG</literal></link>,
 <link linkend="CAIRO-MIME-TYPE-PNG:CAPS"><literal>CAIRO_MIME_TYPE_PNG</literal></link>, <link linkend="CAIRO-MIME-TYPE-JP2:CAPS"><literal>CAIRO_MIME_TYPE_JP2</literal></link>, <link linkend="CAIRO-MIME-TYPE-URI:CAPS"><literal>CAIRO_MIME_TYPE_URI</literal></link>,
 <link linkend="CAIRO-MIME-TYPE-UNIQUE-ID:CAPS"><literal>CAIRO_MIME_TYPE_UNIQUE_ID</literal></link>, <link linkend="CAIRO-MIME-TYPE-JBIG2:CAPS"><literal>CAIRO_MIME_TYPE_JBIG2</literal></link>,
-<link linkend="CAIRO-MIME-TYPE-JBIG2-GLOBAL:CAPS"><literal>CAIRO_MIME_TYPE_JBIG2_GLOBAL</literal></link>, <link linkend="CAIRO-MIME-TYPE-JBIG2-GLOBAL-ID:CAPS"><literal>CAIRO_MIME_TYPE_JBIG2_GLOBAL_ID</literal></link>.</para>
+<link linkend="CAIRO-MIME-TYPE-JBIG2-GLOBAL:CAPS"><literal>CAIRO_MIME_TYPE_JBIG2_GLOBAL</literal></link>, <link linkend="CAIRO-MIME-TYPE-JBIG2-GLOBAL-ID:CAPS"><literal>CAIRO_MIME_TYPE_JBIG2_GLOBAL_ID</literal></link>,
+<link linkend="CAIRO-MIME-TYPE-CCITT-FAX:CAPS"><literal>CAIRO_MIME_TYPE_CCITT_FAX</literal></link>, <link linkend="CAIRO-MIME-TYPE-CCITT-FAX-PARAMS:CAPS"><literal>CAIRO_MIME_TYPE_CCITT_FAX_PARAMS</literal></link>.</para>
 <para>See corresponding backend surface docs for details about which MIME
 types it can handle. Caution: the associated MIME data will be
 discarded if you draw on the surface afterwards. Use this function
@@ -1210,6 +1215,38 @@ results in undefined behavior.</para>
 <para>
 </para>
 </refsect2>
+<refsect2 id="CAIRO-MIME-TYPE-CCITT-FAX:CAPS" role="macro" condition="since:1.16">
+<title>CAIRO_MIME_TYPE_CCITT_FAX</title>
+<indexterm zone="CAIRO-MIME-TYPE-CCITT-FAX:CAPS" role="1.16"><primary sortas="MIME_TYPE_CCITT_FAX">CAIRO_MIME_TYPE_CCITT_FAX</primary></indexterm>
+<programlisting language="C">#define CAIRO_MIME_TYPE_CCITT_FAX "image/g3fax"
+</programlisting>
+<para>Group 3 or Group 4 CCITT facsimile encoding (International
+Telecommunication Union, Recommendations T.4 and T.6.)</para>
+<para role="since">Since: <link linkend="api-index-1.16">1.16</link></para></refsect2>
+<refsect2 id="CAIRO-MIME-TYPE-CCITT-FAX-PARAMS:CAPS" role="macro" condition="since:1.16">
+<title>CAIRO_MIME_TYPE_CCITT_FAX_PARAMS</title>
+<indexterm zone="CAIRO-MIME-TYPE-CCITT-FAX-PARAMS:CAPS" role="1.16"><primary sortas="MIME_TYPE_CCITT_FAX_PARAMS">CAIRO_MIME_TYPE_CCITT_FAX_PARAMS</primary></indexterm>
+<programlisting language="C">#define CAIRO_MIME_TYPE_CCITT_FAX_PARAMS "application/x-cairo.ccitt.params"
+</programlisting>
+<para>Decode parameters for Group 3 or Group 4 CCITT facsimile encoding.
+See <link linkend="ccitt">CCITT Fax Images</link>.</para>
+<para role="since">Since: <link linkend="api-index-1.16">1.16</link></para></refsect2>
+<refsect2 id="CAIRO-MIME-TYPE-EPS:CAPS" role="macro" condition="since:1.16">
+<title>CAIRO_MIME_TYPE_EPS</title>
+<indexterm zone="CAIRO-MIME-TYPE-EPS:CAPS" role="1.16"><primary sortas="MIME_TYPE_EPS">CAIRO_MIME_TYPE_EPS</primary></indexterm>
+<programlisting language="C">#define CAIRO_MIME_TYPE_EPS "application/postscript"
+</programlisting>
+<para>Encapsulated PostScript file.
+<ulink url="http://wwwimages.adobe.com/content/dam/Adobe/endevnet/postscript/pdfs/5002.EPSF_Spec.pdf">Encapsulated PostScript File Format Specification</ulink></para>
+<para role="since">Since: <link linkend="api-index-1.16">1.16</link></para></refsect2>
+<refsect2 id="CAIRO-MIME-TYPE-EPS-PARAMS:CAPS" role="macro" condition="since:1.16">
+<title>CAIRO_MIME_TYPE_EPS_PARAMS</title>
+<indexterm zone="CAIRO-MIME-TYPE-EPS-PARAMS:CAPS" role="1.16"><primary sortas="MIME_TYPE_EPS_PARAMS">CAIRO_MIME_TYPE_EPS_PARAMS</primary></indexterm>
+<programlisting language="C">#define CAIRO_MIME_TYPE_EPS_PARAMS "application/x-cairo.eps.params"
+</programlisting>
+<para>Embedding parameters Encapsulated PostScript data.
+See <link linkend="eps">Embedding EPS files</link>.</para>
+<para role="since">Since: <link linkend="api-index-1.16">1.16</link></para></refsect2>
 <refsect2 id="CAIRO-MIME-TYPE-JBIG2:CAPS" role="macro" condition="since:1.14">
 <title>CAIRO_MIME_TYPE_JBIG2</title>
 <indexterm zone="CAIRO-MIME-TYPE-JBIG2:CAPS" role="1.14"><primary sortas="MIME_TYPE_JBIG2">CAIRO_MIME_TYPE_JBIG2</primary></indexterm>

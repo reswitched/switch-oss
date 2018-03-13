@@ -128,9 +128,10 @@ public:
             m_height = minimumSize.height();
     }
 
-    int area() const
+    template <typename T = WTF::CrashOnOverflow>
+    Checked<unsigned, T> area() const
     {
-        return m_width * m_height;
+        return Checked<unsigned, T>(abs(m_width)) * abs(m_height);
     }
 
     int diagonalLengthSquared() const

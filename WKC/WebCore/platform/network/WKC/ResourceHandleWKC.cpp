@@ -2,7 +2,7 @@
  * Copyright (C) 2004, 2006 Apple Computer, Inc.  All rights reserved.
  * Copyright (C) 2005, 2006 Michael Emmel mike.emmel@gmail.com
  * All rights reserved.
- * Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2018 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,6 +29,7 @@
 #include "config.h"
 #include "ResourceHandle.h"
 #include "ResourceLoader.h"
+#include "ResourceLoaderOptions.h"
 
 #include "Page.h"
 #include "ProgressTracker.h"
@@ -79,7 +80,7 @@ private:
 };
 
 WebCoreSynchronousLoader::WebCoreSynchronousLoader(Frame* frame)
-    : ResourceLoader(frame, ResourceLoaderOptions(SendCallbackPolicy::SendCallbacks, ContentSniffingPolicy::SniffContent, DataBufferingPolicy::BufferData, StoredCredentials::DoNotAllowStoredCredentials, ClientCredentialPolicy::DoNotAskClientForCrossOriginCredentials, SecurityCheckPolicy::DoSecurityCheck, RequestOriginPolicy::UseDefaultOriginRestrictionsForType, CertificateInfoPolicy::IncludeCertificateInfo, ContentSecurityPolicyImposition::DoPolicyCheck))
+    : ResourceLoader(frame, ResourceLoaderOptions(SendCallbackPolicy::SendCallbacks, ContentSniffingPolicy::SniffContent, DataBufferingPolicy::BufferData, StoredCredentials::DoNotAllowStoredCredentials, ClientCredentialPolicy::CannotAskClientForCredentials, FetchOptions::Credentials::Omit, SecurityCheckPolicy::DoSecurityCheck, RequestOriginPolicy::UseDefaultOriginRestrictionsForType, CertificateInfoPolicy::IncludeCertificateInfo, ContentSecurityPolicyImposition::DoPolicyCheck))
     , m_frame(frame)
     , m_identifier(0)
 {
@@ -154,6 +155,17 @@ ResourceHandleInternal::~ResourceHandleInternal()
     if (m_curlDataMutex) {
         wkcMutexDeletePeer(m_curlDataMutex);
     }
+
+    if (m_sslCipherVersion) {
+        fastFree(m_sslCipherVersion);
+        m_sslCipherVersion = 0;
+    }
+
+    if (m_sslCipherName) {
+        fastFree(m_sslCipherName);
+        m_sslCipherName = 0;
+    }
+
     m_client = 0;
 }
 

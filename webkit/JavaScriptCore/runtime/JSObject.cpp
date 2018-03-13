@@ -418,14 +418,18 @@ void JSObject::put(JSCell* cell, ExecState* exec, PropertyName propertyName, JSV
 
             JSValue gs = obj->getDirect(offset);
             if (gs.isGetterSetter()) {
-                callSetter(exec, cell, gs, value, slot.isStrictMode() ? StrictMode : NotStrictMode);
+                // We need to make sure that we decide to cache this property before we potentially execute aribitrary JS.
                 if (!thisObject->structure()->isDictionary())
                     slot.setCacheableSetter(obj, offset);
+
+                callSetter(exec, cell, gs, value, slot.isStrictMode() ? StrictMode : NotStrictMode);
                 return;
             }
             if (gs.isCustomGetterSetter()) {
-                callCustomSetter(exec, gs, obj, slot.thisValue(), value);
+                // We need to make sure that we decide to cache this property before we potentially execute aribitrary JS.
                 slot.setCustomProperty(obj, jsCast<CustomGetterSetter*>(gs.asCell())->setter());
+
+                callCustomSetter(exec, gs, obj, slot.thisValue(), value);
                 return;
             }
             ASSERT(!(attributes & Accessor));
@@ -644,7 +648,7 @@ void JSObject::notifyPresenceOfIndexedAccessors(VM& vm)
 
 Butterfly* JSObject::createInitialIndexedStorage(VM& vm, unsigned length, size_t elementSize)
 {
-    ASSERT(length < MAX_ARRAY_INDEX);
+    ASSERT(length <= MAX_STORAGE_VECTOR_LENGTH);
     IndexingType oldType = indexingType();
     ASSERT_UNUSED(oldType, !hasIndexedProperties(oldType));
     ASSERT(!structure()->needsSlowPutIndexing());
@@ -2480,7 +2484,7 @@ bool JSObject::increaseVectorLength(VM& vm, unsigned newLength)
 
 bool JSObject::ensureLengthSlow(VM& vm, unsigned length)
 {
-    ASSERT(length < MAX_ARRAY_INDEX);
+    ASSERT(length <= MAX_STORAGE_VECTOR_LENGTH);
     ASSERT(hasContiguous(indexingType()) || hasInt32(indexingType()) || hasDouble(indexingType()) || hasUndecided(indexingType()));
     ASSERT(length > m_butterfly->vectorLength());
     
@@ -2508,8 +2512,7 @@ bool JSObject::ensureLengthSlow(VM& vm, unsigned length)
 
 void JSObject::reallocateAndShrinkButterfly(VM& vm, unsigned length)
 {
-    ASSERT(length < MAX_ARRAY_INDEX);
-    ASSERT(length < MAX_STORAGE_VECTOR_LENGTH);
+    ASSERT(length <= MAX_STORAGE_VECTOR_LENGTH);
     ASSERT(hasContiguous(indexingType()) || hasInt32(indexingType()) || hasDouble(indexingType()) || hasUndecided(indexingType()));
     ASSERT(m_butterfly->vectorLength() > length);
     ASSERT(!m_butterfly->indexingHeader()->preCapacity(structure()));

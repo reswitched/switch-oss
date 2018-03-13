@@ -1,5 +1,18 @@
 Here are the steps to follow to create a new cairo release:
 
+0) Decide type of release and checkout the appropriate branch.
+
+	The Cairo project makes three types of releases: Development
+	snapshot releases, stable minor releases, and stable micro (aka
+	"point") releases.  Micro releases should be only bugfixes and
+	no API additions.  If there are API additions consider making a
+	Minor release.  Snapshot releases can be done of the current
+	development tree between Minor releases, as desired.
+
+	For stable releases (both minor and micro), the work should be
+	done on the given release branch.  E.g. for 1.14.12, check out
+	the 1.14 branch via "git checkout origin/1.14 -b 1.14".
+
 1) Ensure that there are no local, uncommitted/unpushed mods.
 
 	You're probably in a good state if both "git diff
@@ -45,12 +58,6 @@ Here are the steps to follow to create a new cairo release:
 
 3) Decide what the new version number for the release will be.
 
-	There are three types of releases:  Minor, Micro, and
-	Snapshot.  Micro releases should be only bugfixes and no API
-	additions.  If there are API additions consider making a Minor
-	release.  Snapshot releases can be done of the current
-	development tree between Minor releases, as desired.
-
 	Cairo uses even numbers for official releases, and odd numbers
 	for development snapshots.  Thus, for a Minor release it would
 	be:
@@ -75,8 +82,6 @@ Here are the steps to follow to create a new cairo release:
 
 		LAST_RELEASE="X.Y.Z"     # e.g. 1.15.2
 		THIS_RELEASE="X.Y.Z+2"   # e.g. 1.15.4
-
-
 
 4) Fill out an entry in the NEWS file
 
@@ -117,12 +122,21 @@ Here are the steps to follow to create a new cairo release:
 	Otherwise, (i.e. there are only bug fixes), increment
 	cairo_version_micro to the next larger (even) number.
 
-5) Commit the changes to NEWS and cairo-version.h
+5) For Minor releases, add an index entry to doc/public/cairo-docs.xml
+
+        Towards the end of the file, add a new section for the stable
+	release.  It'll look something like:
+
+	<index id="index-X.Y" role="X.Y">
+	  <title>Index of new symbols in X.Y</title>
+	</index>
+
+6) Commit the changes to NEWS and cairo-version.h
 
 	It's especially important to mention the new version number in your
 	commit log.
 
-6) Run "make release-publish" which will perform the following steps
+7) Run "make release-publish" which will perform the following steps
    for you:
 
 	* Generate ChangeLog files out of git repository
@@ -159,7 +173,7 @@ Here are the steps to follow to create a new cairo release:
 	previous versions, remove manual-${THIS_RELEASE} and
 	release/cairo-${THIS_RELEASE}.
 
-7) Update trunk (or the stable branch) version number.
+8) Update master (or the stable branch) version number.
 
 	For Micro releases (X.Y.Z), increment cairo_version_micro to the
 	next larger (odd) number in cairo-version.h, commit, and push.
@@ -168,17 +182,17 @@ Here are the steps to follow to create a new cairo release:
 	next larger (odd) number, and set cairo_version_micro to 1.  Then
 	commit and push.
 
-8) Push the new tag out to the central tree with a command like:
+9) Push the new tag out to the central tree with a command like:
 
 	git push origin master ${THIS_RELEASE}
 
-9) Edit the cairo bugzilla product and add the new version numbers.
+10) Edit the cairo bugzilla product and add the new version numbers.
 
 	Note that you need to add two versions.  One for the
 	release/snapshot (with an even micro version), another with the
 	post-release version (with an odd micro version).
 
-10) Send out an announcement message.
+11) Send out an announcement message.
 
 	Send a message to cairo-announce@cairographics.org and CC
 	cairo@cairographics.org, gnome-announce-list@gnome.org and
@@ -189,5 +203,5 @@ Here are the steps to follow to create a new cairo release:
 
 		git shortlog ${LAST_RELEASE}...
 
-11) Add the announcement to the NEWS page and the front page.
+12) Add the announcement to the NEWS page and the front page.
 

@@ -3,7 +3,7 @@
  * Copyright (C) 2006 Apple Computer, Inc.  All rights reserved.
  * Copyright (C) 2008 Collabora Ltd. All rights reserved.
  * All rights reserved.
- * Copyright (c) 2010-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2018 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -208,7 +208,6 @@ public:
     virtual void didChangeScrollOffset() override;
 
     virtual bool allowScript(bool enabledPerSettings) override;
-    virtual bool allowRunningInsecureContent(bool enabledPerSettings, WebCore::SecurityOrigin*, const WebCore::URL&);
 
     virtual bool shouldForceUniversalAccessFromLocalURL(const WebCore::URL&) override;
 

@@ -47,12 +47,6 @@
 #include "cairo-scaled-font-private.h"
 #include "cairo-surface-backend-private.h"
 
-#if _XOPEN_SOURCE >= 600 || defined (_ISOC99_SOURCE)
-#define ISFINITE(x) isfinite (x)
-#else
-#define ISFINITE(x) ((x) * (x) >= 0.) /* check for NaNs */
-#endif
-
 /**
  * SECTION:cairo-scaled-font
  * @Title: cairo_scaled_font_t
@@ -225,6 +219,9 @@ _cairo_scaled_glyph_fini (cairo_scaled_font_t *scaled_font,
 	cairo_surface_finish (scaled_glyph->recording_surface);
 	cairo_surface_destroy (scaled_glyph->recording_surface);
     }
+
+    if (scaled_glyph->color_surface != NULL)
+	cairo_surface_destroy (&scaled_glyph->color_surface->base);
 }
 
 #define ZOMBIE 0
@@ -2831,6 +2828,24 @@ _cairo_scaled_glyph_set_recording_surface (cairo_scaled_glyph_t *scaled_glyph,
 	scaled_glyph->has_info &= ~CAIRO_SCALED_GLYPH_INFO_RECORDING_SURFACE;
 }
 
+void
+_cairo_scaled_glyph_set_color_surface (cairo_scaled_glyph_t *scaled_glyph,
+	                               cairo_scaled_font_t *scaled_font,
+	                               cairo_image_surface_t *surface)
+{
+    if (scaled_glyph->color_surface != NULL)
+	cairo_surface_destroy (&scaled_glyph->color_surface->base);
+
+    /* sanity check the backend glyph contents */
+    _cairo_debug_check_image_surface_is_defined (&surface->base);
+    scaled_glyph->color_surface = surface;
+
+    if (surface != NULL)
+	scaled_glyph->has_info |= CAIRO_SCALED_GLYPH_INFO_COLOR_SURFACE;
+    else
+	scaled_glyph->has_info &= ~CAIRO_SCALED_GLYPH_INFO_COLOR_SURFACE;
+}
+
 static cairo_bool_t
 _cairo_scaled_glyph_page_can_remove (const void *closure)
 {
@@ -2909,6 +2924,7 @@ _cairo_scaled_font_free_last_glyph (cairo_scaled_font_t *scaled_font,
 {
     cairo_scaled_glyph_page_t *page;
 
+    assert (scaled_font->cache_frozen);
     assert (! cairo_list_is_empty (&scaled_font->glyph_pages));
     page = cairo_list_last_entry (&scaled_font->glyph_pages,
                                   cairo_scaled_glyph_page_t,
@@ -2918,6 +2934,9 @@ _cairo_scaled_font_free_last_glyph (cairo_scaled_font_t *scaled_font,
     _cairo_scaled_glyph_fini (scaled_font, scaled_glyph);
 
     if (--page->num_glyphs == 0) {
+	_cairo_scaled_font_thaw_cache (scaled_font);
+	CAIRO_MUTEX_LOCK (scaled_font->mutex);
+
 	CAIRO_MUTEX_LOCK (_cairo_scaled_glyph_page_cache_mutex);
 	/* Temporarily disconnect callback to avoid recursive locking */
 	cairo_scaled_glyph_page_cache.entry_destroy = NULL;
@@ -2926,6 +2945,9 @@ _cairo_scaled_font_free_last_glyph (cairo_scaled_font_t *scaled_font,
 	_cairo_scaled_glyph_page_destroy (scaled_font, page);
 	cairo_scaled_glyph_page_cache.entry_destroy = _cairo_scaled_glyph_page_pluck;
 	CAIRO_MUTEX_UNLOCK (_cairo_scaled_glyph_page_cache_mutex);
+
+	CAIRO_MUTEX_UNLOCK (scaled_font->mutex);
+	_cairo_scaled_font_freeze_cache (scaled_font);
     }
 }
 
@@ -3182,3 +3204,11 @@ wkcResetVariables_cairo_scale_font_c(void)
     }
 }
 #endif
+cairo_bool_t
+_cairo_scaled_font_has_color_glyphs (cairo_scaled_font_t *scaled_font)
+{
+    if (scaled_font->backend != NULL && scaled_font->backend->has_color_glyphs != NULL)
+        return scaled_font->backend->has_color_glyphs (scaled_font);
+    else
+       return FALSE;
+}

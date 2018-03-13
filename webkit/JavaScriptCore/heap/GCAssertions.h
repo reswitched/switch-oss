@@ -48,8 +48,12 @@
 #if COMPILER(CLANG) && !PLATFORM(WKC)
 #define STATIC_ASSERT_IS_TRIVIALLY_DESTRUCTIBLE(klass) static_assert(std::is_trivially_destructible<klass>::value, #klass " must have a trivial destructor")
 #elif COMPILER(MSVC)
+#if _MSC_VER < 1900
 // An earlier verison of the C++11 spec used to call this type trait std::has_trivial_destructor, and that's what MSVC uses.
 #define STATIC_ASSERT_IS_TRIVIALLY_DESTRUCTIBLE(klass) static_assert(std::has_trivial_destructor<klass>::value, #klass " must have a trivial destructor")
+#else
+#define STATIC_ASSERT_IS_TRIVIALLY_DESTRUCTIBLE(klass) static_assert(std::is_trivially_destructible<klass>::value, #klass " must have a trivial destructor")
+#endif
 #else
 // This is not enabled on GCC due to http://gcc.gnu.org/bugzilla/show_bug.cgi?id=52702
 #define STATIC_ASSERT_IS_TRIVIALLY_DESTRUCTIBLE(klass)

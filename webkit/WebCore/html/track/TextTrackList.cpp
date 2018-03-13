@@ -44,6 +44,7 @@ TextTrackList::TextTrackList(HTMLMediaElement* element, ScriptExecutionContext* 
 
 TextTrackList::~TextTrackList()
 {
+    clearElement();
 }
 
 unsigned TextTrackList::length() const

@@ -234,7 +234,7 @@ CachedResourceHandle<CachedCSSStyleSheet> CachedResourceLoader::requestUserCSSSt
     memoryCache.add(*userSheet);
     // FIXME: loadResource calls setOwningCachedResourceLoader() if the resource couldn't be added to cache. Does this function need to call it, too?
 
-    userSheet->load(*this, ResourceLoaderOptions(DoNotSendCallbacks, SniffContent, BufferData, AllowStoredCredentials, AskClientForAllCredentials, SkipSecurityCheck, UseDefaultOriginRestrictionsForType, DoNotIncludeCertificateInfo, ContentSecurityPolicyImposition::SkipPolicyCheck));
+    userSheet->load(*this, ResourceLoaderOptions(DoNotSendCallbacks, SniffContent, BufferData, AllowStoredCredentials, ClientCredentialPolicy::MayAskClientForCredentials, FetchOptions::Credentials::Include, SkipSecurityCheck, UseDefaultOriginRestrictionsForType, DoNotIncludeCertificateInfo, ContentSecurityPolicyImposition::SkipPolicyCheck));
     
     return userSheet;
 }
@@ -1121,7 +1121,7 @@ void CachedResourceLoader::printPreloadStats()
             printf("HIT COMPLETE PRELOAD %s\n", res->url().latin1().data());
         else if (res->preloadResult() == CachedResource::PreloadReferencedWhileLoading)
             printf("HIT LOADING PRELOAD %s\n", res->url().latin1().data());
-        
+
         if (res->type() == CachedResource::Script) {
             scripts++;
             if (res->preloadResult() < CachedResource::PreloadReferencedWhileLoading)
@@ -1135,14 +1135,14 @@ void CachedResourceLoader::printPreloadStats()
             if (res->preloadResult() < CachedResource::PreloadReferencedWhileLoading)
                 imageMisses++;
         }
-        
+
         if (res->errorOccurred())
             MemoryCache::singleton().remove(res);
-        
+
         res->decreasePreloadCount();
     }
     m_preloads = nullptr;
-    
+
     if (scripts)
         printf("SCRIPTS: %d (%d hits, hit rate %d%%)\n", scripts, scripts - scriptMisses, (scripts - scriptMisses) * 100 / scripts);
     if (stylesheets)
@@ -1155,10 +1155,10 @@ void CachedResourceLoader::printPreloadStats()
 const ResourceLoaderOptions& CachedResourceLoader::defaultCachedResourceOptions()
 {
 #if !PLATFORM(WKC)
-    static ResourceLoaderOptions options(SendCallbacks, SniffContent, BufferData, AllowStoredCredentials, AskClientForAllCredentials, DoSecurityCheck, UseDefaultOriginRestrictionsForType, DoNotIncludeCertificateInfo, ContentSecurityPolicyImposition::DoPolicyCheck);
+    static ResourceLoaderOptions options(SendCallbacks, SniffContent, BufferData, AllowStoredCredentials, ClientCredentialPolicy::MayAskClientForCredentials, FetchOptions::Credentials::Include, DoSecurityCheck, UseDefaultOriginRestrictionsForType, DoNotIncludeCertificateInfo, ContentSecurityPolicyImposition::DoPolicyCheck);
     return options;
 #else
-    WKC_DEFINE_STATIC_PTR(ResourceLoaderOptions*, options, new ResourceLoaderOptions(SendCallbacks, SniffContent, BufferData, AllowStoredCredentials, AskClientForAllCredentials, DoSecurityCheck, UseDefaultOriginRestrictionsForType, DoNotIncludeCertificateInfo, ContentSecurityPolicyImposition::DoPolicyCheck));
+    WKC_DEFINE_STATIC_PTR(ResourceLoaderOptions*, options, new ResourceLoaderOptions(SendCallbacks, SniffContent, BufferData, AllowStoredCredentials, ClientCredentialPolicy::MayAskClientForCredentials, FetchOptions::Credentials::Include, DoSecurityCheck, UseDefaultOriginRestrictionsForType, DoNotIncludeCertificateInfo, ContentSecurityPolicyImposition::DoPolicyCheck));
     return *options;
 #endif
 }

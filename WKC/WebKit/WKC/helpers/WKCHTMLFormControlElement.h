@@ -33,7 +33,6 @@ class WKC_API HTMLFormControlElement : public HTMLElement {
 public:
     void dispatchFormControlInputEvent();
     void dispatchFormControlChangeEvent();
-    bool isSuccessfulSubmitButton() const;
     const AtomicString& type() const;
 
     HTMLFormElement* form() const;

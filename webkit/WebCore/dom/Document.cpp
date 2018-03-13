@@ -2200,7 +2200,6 @@ void Document::disconnectFromFrame()
 void Document::destroyRenderTree()
 {
     ASSERT(hasLivingRenderTree());
-    ASSERT(m_pageCacheState != InPageCache);
 
     TemporaryChange<bool> change(m_renderTreeBeingDestroyed, true);
 
@@ -4222,14 +4221,31 @@ HTMLFrameOwnerElement* Document::ownerElement() const
     return frame()->ownerElement();
 }
 
+// https://html.spec.whatwg.org/#cookie-averse-document-object
+bool Document::isCookieAverse() const
+{
+    // A Document that has no browsing context is cookie-averse.
+    if (!frame())
+        return true;
+
+    URL cookieURL = this->cookieURL();
+
+    // This is not part of the specification but we have historically allowed cookies over file protocol
+    // and some developers rely on this for testing.
+    if (cookieURL.isLocalFile())
+        return false;
+
+    // A Document whose URL's scheme is not a network scheme is cookie-averse (https://fetch.spec.whatwg.org/#network-scheme).
+    return !cookieURL.protocolIsInHTTPFamily() && !cookieURL.protocolIs("ftp");
+}
+
 String Document::cookie(ExceptionCode& ec)
 {
     if (page() && !page()->settings().cookieEnabled())
         return String();
 
-    // FIXME: The HTML5 DOM spec states that this attribute can raise an
-    // INVALID_STATE_ERR exception on getting if the Document has no
-    // browsing context.
+    if (isCookieAverse())
+        return String();
 
     if (!securityOrigin()->canAccessCookies()) {
         ec = SECURITY_ERR;
@@ -4251,9 +4267,8 @@ void Document::setCookie(const String& value, ExceptionCode& ec)
     if (page() && !page()->settings().cookieEnabled())
         return;
 
-    // FIXME: The HTML5 DOM spec states that this attribute can raise an
-    // INVALID_STATE_ERR exception on setting if the Document has no
-    // browsing context.
+    if (isCookieAverse())
+        return;
 
     if (!securityOrigin()->canAccessCookies()) {
         ec = SECURITY_ERR;
@@ -4571,7 +4586,7 @@ void Document::documentWillBecomeInactive()
         renderView()->setIsInWindow(false);
 }
 
-void Document::suspend()
+void Document::suspend(ActiveDOMObject::ReasonForSuspension reason)
 {
     if (m_isSuspended)
         return;
@@ -4596,7 +4611,7 @@ void Document::suspend()
     }
 
     suspendScriptedAnimationControllerCallbacks();
-    suspendActiveDOMObjects(ActiveDOMObject::PageCache);
+    suspendActiveDOMObjects(reason);
 
     ASSERT(m_frame);
     m_frame->clearTimers();
@@ -4607,7 +4622,7 @@ void Document::suspend()
     m_isSuspended = true;
 }
 
-void Document::resume()
+void Document::resume(ActiveDOMObject::ReasonForSuspension reason)
 {
     if (!m_isSuspended)
         return;
@@ -4627,7 +4642,7 @@ void Document::resume()
     m_frame->loader().client().dispatchDidBecomeFrameset(isFrameSet());
     m_frame->animation().resumeAnimationsForDocument(this);
 
-    resumeActiveDOMObjects(ActiveDOMObject::PageWillBeSuspended);
+    resumeActiveDOMObjects(reason);
     resumeScriptedAnimationControllerCallbacks();
 
     m_visualUpdatesAllowed = true;
@@ -5659,15 +5674,6 @@ void Document::webkitCancelFullScreen()
     // context's document and subsequently empty that document's fullscreen element stack."
     Document& topDocument = this->topDocument();
 
-#if PLATFORM(WKC)
-    // Workaround:
-    //  The original implementation forcibly clears m_fullScreenElementStack of the descendant documents
-    //  and then exitFullScreenForElement() will never be called for the elements inside frames...
-    //  To handle such elements, we here call webkitExitFullscreen() of this, but not topDocument().
-    if (topDocument != *this)
-        webkitExitFullscreen();
-#endif
-
     if (!topDocument.webkitFullscreenElement())
         return;
 
@@ -5678,6 +5684,13 @@ void Document::webkitCancelFullScreen()
     topDocument.m_fullScreenElementStack.swap(replacementFullscreenElementStack);
 
     topDocument.webkitExitFullscreen();
+
+#if PLATFORM(WKC)
+    // The original implementation forcibly clears m_fullScreenElementStack of the descendant documents
+    // and then exitFullScreenForElement() will never be called for the elements inside frames.
+    if (page())
+        page()->chrome().client().exitFullScreenForElement(m_fullScreenElement.get());
+#endif
 }
 
 void Document::webkitExitFullscreen()
@@ -5743,9 +5756,6 @@ void Document::webkitExitFullscreen()
     // Only exit out of full screen window mode if there are no remaining elements in the 
     // full screen stack.
     if (!newTop) {
-#if PLATFORM(WKC)
-        if (m_fullScreenElement)
-#endif
         page()->chrome().client().exitFullScreenForElement(m_fullScreenElement.get());
         return;
     }

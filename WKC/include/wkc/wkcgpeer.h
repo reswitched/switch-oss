@@ -472,6 +472,8 @@ WKC_PEER_API float wkcFontDrawTextPeer(void* in_font, int in_flags, const unsign
 
 WKC_PEER_API void wkcFontSetNotifyNoMemoryProcPeer(void(*in_proc)());
 
+WKC_PEER_API bool wkcFontGetGlyphsForCharactersPeer(void* in_font, const unsigned short* in_str, int in_strlen, unsigned short* out_glyphs);
+
 // skin peer
 
 enum {

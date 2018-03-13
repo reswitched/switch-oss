@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2015 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -47,11 +47,14 @@ class WKC_API RenderObject {
 public:
     bool isTextControl() const;
     bool isTextArea() const;
+    bool isInline() const;
+    bool isRenderFullScreen() const;
     WKCRect absoluteBoundingBoxRect(bool usetransform = false) const;
     WKCRingRects* focusRingRects() const;
     WKCRect absoluteClippedOverflowRect();
     bool hasOutline() const;
     RenderStyle* style() const;
+    RenderObject* parent() const;
 
     RenderObjectPrivate& priv() const { return m_private; }
 

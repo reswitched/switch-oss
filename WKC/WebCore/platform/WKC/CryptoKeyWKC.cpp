@@ -308,6 +308,11 @@ CryptoAlgorithmAES_CBC::platformDecrypt(const CryptoAlgorithmAesCbcParams& param
     Vector<uint8_t> out(data.second);
     AES_cbc_encrypt(data.first, out.data(), data.second, &aes, (unsigned char *)params.iv.data(), AES_DECRYPT);
 
+    if (out.isEmpty()) {
+        ec = ABORT_ERR;
+        failureCallback();
+        return;
+    }
     size_t destlen = ::strlen((char *)out.data());
     if (destlen > AES_BLOCK_SIZE && !(destlen % AES_BLOCK_SIZE)) {
         destlen -= AES_BLOCK_SIZE;

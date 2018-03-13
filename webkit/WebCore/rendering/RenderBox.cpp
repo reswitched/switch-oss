@@ -4,7 +4,7 @@
  *           (C) 2005 Allan Sandfeld Jensen (kde@carewolf.com)
  *           (C) 2005, 2006 Samuel Weinig (sam.weinig@gmail.com)
  * Copyright (C) 2005-2010, 2015 Apple Inc. All rights reserved.
- * Copyright (c) 2016-2017 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2016-2018 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -3243,7 +3243,9 @@ LayoutUnit RenderBox::containingBlockLogicalWidthForPositioned(const RenderBoxMo
 #if PLATFORM(WKC) && (defined(WKC_FORCE_FIXED_ELEMENTS_NONFIXED_LAYOUT) && WKC_FORCE_FIXED_ELEMENTS_NONFIXED_LAYOUT)
     if (is<RenderBox>(*containingBlock)) {
         if (style().position() == FixedPosition) {
-            if (FrameView* view = document().view()) {
+            if ((containingBlock->hasTransform() && containingBlock->isRenderBlock()) || containingBlock->isSVGForeignObject()) {
+                return adjustForAbsoluteZoom(downcast<RenderBox>(*containingBlock).clientLogicalWidth(), containingBlock->style());
+            } else if (FrameView* view = document().view()) {
                 if (RenderView* renderView = document().renderView())
                     return adjustForAbsoluteZoom(view->visibleWidth(), renderView->style()); // but not view->layoutWidth() to enforce non-fixed layout
             }
@@ -3317,7 +3319,9 @@ LayoutUnit RenderBox::containingBlockLogicalHeightForPositioned(const RenderBoxM
 #if PLATFORM(WKC) && (defined(WKC_FORCE_FIXED_ELEMENTS_NONFIXED_LAYOUT) && WKC_FORCE_FIXED_ELEMENTS_NONFIXED_LAYOUT)
     if (is<RenderBox>(*containingBlock)) {
         if (style().position() == FixedPosition) {
-            if (FrameView* view = document().view()) {
+            if ((containingBlock->hasTransform() && containingBlock->isRenderBlock()) || containingBlock->isSVGForeignObject()) {
+                return adjustForAbsoluteZoom(downcast<RenderBox>(*containingBlock).clientLogicalHeight(), containingBlock->style());
+            } else if (FrameView* view = document().view()) {
                 if (RenderView* renderView = document().renderView())
                     return adjustForAbsoluteZoom(view->visibleHeight(), renderView->style()); // but not view->layoutWidth() to enforce non-fixed layout
             }

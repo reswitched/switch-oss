@@ -47,6 +47,8 @@ public:
     unsigned countChildNodes() const;
     Node* traverseToChildAt(unsigned index);
 
+    int zIndex() const;
+
 protected:
     // Applications must not create/destroy WKC helper instances by new/delete.
     // Or, it causes memory leaks or crashes.

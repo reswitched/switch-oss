@@ -1242,14 +1242,38 @@ check_composite (const cairo_composite_rectangles_t *extents)
     return CAIRO_STATUS_SUCCESS;
 }
 
+#ifdef WKC_CAIRO_CUSTOMIZE
+static cairo_atomic_once_t once_traps;
+static cairo_atomic_once_t once_mask;
+static cairo_atomic_once_t once;
+static cairo_spans_compositor_t spans;
+static cairo_compositor_t shape;
+void wkcResetVariables_cairo_image_compositor_c(void)
+{
+	memset(&once_traps, CAIRO_ATOMIC_ONCE_INIT, sizeof(cairo_atomic_once_t));
+	memset(&once_mask, CAIRO_ATOMIC_ONCE_INIT, sizeof(cairo_atomic_once_t));
+	memset(&once, CAIRO_ATOMIC_ONCE_INIT, sizeof(cairo_atomic_once_t));
+	memset(&spans, 0, sizeof(cairo_spans_compositor_t));
+	memset(&shape, 0, sizeof(cairo_compositor_t));
+}
+#endif
+
 const cairo_compositor_t *
 _cairo_image_traps_compositor_get (void)
 {
+#ifndef WKC_CAIRO_CUSTOMIZE
+    static cairo_atomic_once_t once = CAIRO_ATOMIC_ONCE_INIT;
+#endif
     static cairo_traps_compositor_t compositor;
 
-    if (compositor.base.delegate == NULL) {
-	_cairo_traps_compositor_init (&compositor,
-				      &__cairo_no_compositor);
+#ifndef WKC_CAIRO_CUSTOMIZE
+    if (_cairo_atomic_init_once_enter(&once)) {
+#else
+    if (_cairo_atomic_init_once_enter(&once_traps)) {
+#endif
+
+	_cairo_traps_compositor_init(&compositor,
+				     &__cairo_no_compositor);
 	compositor.acquire = acquire;
 	compositor.release = release;
 	compositor.set_clip_region = set_clip_region;
@@ -1270,6 +1294,12 @@ _cairo_image_traps_compositor_get (void)
 #endif
 	compositor.check_composite_glyphs = check_composite_glyphs;
 	compositor.composite_glyphs = composite_glyphs;
+
+#ifndef WKC_CAIRO_CUSTOMIZE
+	_cairo_atomic_init_once_leave(&once);
+#else
+    _cairo_atomic_init_once_leave(&once_traps);
+#endif
     }
 
     return &compositor.base;
@@ -1278,9 +1308,17 @@ _cairo_image_traps_compositor_get (void)
 const cairo_compositor_t *
 _cairo_image_mask_compositor_get (void)
 {
+#ifndef WKC_CAIRO_CUSTOMIZE
+    static cairo_atomic_once_t once = CAIRO_ATOMIC_ONCE_INIT;
+#endif
     static cairo_mask_compositor_t compositor;
 
-    if (compositor.base.delegate == NULL) {
+#ifndef WKC_CAIRO_CUSTOMIZE
+    if (_cairo_atomic_init_once_enter(&once)) {
+#else
+    if (_cairo_atomic_init_once_enter(&once_mask)) {
+#endif
+
 	_cairo_mask_compositor_init (&compositor,
 				     _cairo_image_traps_compositor_get ());
 	compositor.acquire = acquire;
@@ -1297,6 +1335,13 @@ _cairo_image_mask_compositor_get (void)
 	compositor.composite_boxes = composite_boxes;
 	compositor.check_composite_glyphs = check_composite_glyphs;
 	compositor.composite_glyphs = composite_glyphs;
+
+#ifndef WKC_CAIRO_CUSTOMIZE
+	_cairo_atomic_init_once_leave(&once);
+#else
+    _cairo_atomic_init_once_leave(&once_mask);
+#endif
+
     }
 
     return &compositor.base;
@@ -1576,7 +1621,7 @@ typedef struct _cairo_image_span_renderer {
     pixman_image_t *src, *mask;
     union {
 	struct fill {
-	    int stride;
+	    ptrdiff_t stride;
 	    uint8_t *data;
 	    uint32_t pixel;
 	} fill;
@@ -1595,7 +1640,7 @@ typedef struct _cairo_image_span_renderer {
 	struct finish {
 	    cairo_rectangle_int_t extents;
 	    int src_x, src_y;
-	    int stride;
+	    ptrdiff_t stride;
 	    uint8_t *data;
 	} mask;
     } u;
@@ -1764,7 +1809,7 @@ _fill16_spans (void *abstract_renderer, int y, int h,
 	    if (spans[0].coverage) {
 		int len = spans[1].x - spans[0].x;
 		uint16_t *d = (uint16_t*)(r->u.fill.data + r->u.fill.stride*y + spans[0].x*2);
-		while (len--)
+		while (len-- > 0)
 		    *d++ = r->u.fill.pixel;
 	    }
 	    spans++;
@@ -1776,7 +1821,7 @@ _fill16_spans (void *abstract_renderer, int y, int h,
 		do {
 		    int len = spans[1].x - spans[0].x;
 		    uint16_t *d = (uint16_t*)(r->u.fill.data + r->u.fill.stride*yy + spans[0].x*2);
-		    while (len--)
+		    while (len-- > 0)
 			*d++ = r->u.fill.pixel;
 		    yy++;
 		} while (--hh);
@@ -1806,7 +1851,7 @@ _fill32_spans (void *abstract_renderer, int y, int h,
 				 spans[0].x, y, len, 1, r->u.fill.pixel);
 		} else {
 		    uint32_t *d = (uint32_t*)(r->u.fill.data + r->u.fill.stride*y + spans[0].x*4);
-		    while (len--)
+		    while (len-- > 0)
 			*d++ = r->u.fill.pixel;
 		}
 	    }
@@ -1824,7 +1869,7 @@ _fill32_spans (void *abstract_renderer, int y, int h,
 		    do {
 			int len = spans[1].x - spans[0].x;
 			uint32_t *d = (uint32_t*)(r->u.fill.data + r->u.fill.stride*yy + spans[0].x*4);
-			while (len--)
+			while (len-- > 0)
 			    *d++ = r->u.fill.pixel;
 			yy++;
 		    } while (--hh);
@@ -2181,7 +2226,7 @@ _fill_a8_lerp_opaque_spans (void *abstract_renderer, int y, int h,
 		    uint8_t s = mul8_8(a, r->u.fill.pixel);
 		    uint8_t *dst = d + spans[0].x;
 		    a = ~a;
-		    while (len--) {
+		    while (len-- > 0) {
 			uint8_t t = mul8_8(*dst, a);
 			*dst++ = t + s;
 		    }
@@ -2207,7 +2252,7 @@ _fill_a8_lerp_opaque_spans (void *abstract_renderer, int y, int h,
 		    do {
 			int len = spans[1].x - spans[0].x;
 			uint8_t *d = r->u.fill.data + r->u.fill.stride*yy + spans[0].x;
-			while (len--) {
+			while (len-- > 0) {
 			    uint8_t t = mul8_8(*d, a);
 			    *d++ = t + s;
 			}
@@ -2271,7 +2316,7 @@ _fill_xrgb32_lerp_opaque_spans (void *abstract_renderer, int y, int h,
 			do {
 			    int len = spans[1].x - spans[0].x;
 			    uint32_t *d = (uint32_t*)(r->u.fill.data + r->u.fill.stride*yy + spans[0].x*4);
-			    while (len--)
+			    while (len-- > 0)
 				*d++ = r->u.fill.pixel;
 			    yy++;
 			} while (--hh);
@@ -2281,7 +2326,7 @@ _fill_xrgb32_lerp_opaque_spans (void *abstract_renderer, int y, int h,
 		    do {
 			int len = spans[1].x - spans[0].x;
 			uint32_t *d = (uint32_t *)(r->u.fill.data + r->u.fill.stride*yy + spans[0].x*4);
-			while (len--) {
+			while (len-- > 0) {
 			    *d = lerp8x4 (r->u.fill.pixel, a, *d);
 			    d++;
 			}
@@ -2313,7 +2358,7 @@ _fill_a8_lerp_spans (void *abstract_renderer, int y, int h,
 		uint8_t *d = r->u.fill.data + r->u.fill.stride*y + spans[0].x;
 		uint16_t p = (uint16_t)a * r->u.fill.pixel + 0x7f;
 		uint16_t ia = ~a;
-		while (len--) {
+		while (len-- > 0) {
 		    uint16_t t = *d*ia + p;
 		    *d++ = (t + (t>>8)) >> 8;
 		}
@@ -2330,7 +2375,7 @@ _fill_a8_lerp_spans (void *abstract_renderer, int y, int h,
 		do {
 		    int len = spans[1].x - spans[0].x;
 		    uint8_t *d = r->u.fill.data + r->u.fill.stride*yy + spans[0].x;
-		    while (len--) {
+		    while (len-- > 0) {
 			uint16_t t = *d*ia + p;
 			*d++ = (t + (t>>8)) >> 8;
 		    }
@@ -2359,7 +2404,7 @@ _fill_xrgb32_lerp_spans (void *abstract_renderer, int y, int h,
 	    if (a) {
 		int len = spans[1].x - spans[0].x;
 		uint32_t *d = (uint32_t*)(r->u.fill.data + r->u.fill.stride*y + spans[0].x*4);
-		while (len--) {
+		while (len-- > 0) {
 		    *d = lerp8x4 (r->u.fill.pixel, a, *d);
 		    d++;
 		}
@@ -2374,7 +2419,7 @@ _fill_xrgb32_lerp_spans (void *abstract_renderer, int y, int h,
 		do {
 		    int len = spans[1].x - spans[0].x;
 		    uint32_t *d = (uint32_t *)(r->u.fill.data + r->u.fill.stride*yy + spans[0].x*4);
-		    while (len--) {
+		    while (len-- > 0) {
 			*d = lerp8x4 (r->u.fill.pixel, a, *d);
 			d++;
 		    }
@@ -2412,7 +2457,7 @@ _blit_xrgb32_lerp_spans (void *abstract_renderer, int y, int h,
 		    else
 			memcpy(d, s, len*4);
 		} else {
-		    while (len--) {
+		    while (len-- > 0) {
 			*d = lerp8x4 (*s, a, *d);
 			s++, d++;
 		    }
@@ -2435,7 +2480,7 @@ _blit_xrgb32_lerp_spans (void *abstract_renderer, int y, int h,
 			else
 			    memcpy(d, s, len * 4);
 		    } else {
-			while (len--) {
+			while (len-- > 0) {
 			    *d = lerp8x4 (*s, a, *d);
 			    s++, d++;
 			}
@@ -3113,25 +3158,16 @@ span_renderer_fini (cairo_abstract_span_renderer_t *_r,
 }
 #endif
 
-#ifdef WKC_CAIRO_CUSTOMIZE
-static cairo_spans_compositor_t spans;
-static cairo_compositor_t shape;
-void wkcResetVariables_cairo_image_compositor_c(void)
-{
-    memset(&spans, 0, sizeof(cairo_spans_compositor_t));
-    memset(&shape, 0, sizeof(cairo_compositor_t));
-}
-#endif
-
 const cairo_compositor_t *
 _cairo_image_spans_compositor_get (void)
 {
 #ifndef WKC_CAIRO_CUSTOMIZE
+    static cairo_atomic_once_t once = CAIRO_ATOMIC_ONCE_INIT;
     static cairo_spans_compositor_t spans;
     static cairo_compositor_t shape;
 #endif
 
-    if (spans.base.delegate == NULL) {
+    if (_cairo_atomic_init_once_enter(&once)) {
 	_cairo_shape_mask_compositor_init (&shape,
 					   _cairo_image_traps_compositor_get());
 	shape.glyphs = NULL;
@@ -3154,6 +3190,8 @@ _cairo_image_spans_compositor_get (void)
 	//spans.check_span_renderer = check_span_renderer;
 	spans.renderer_init = span_renderer_init;
 	spans.renderer_fini = span_renderer_fini;
+
+	_cairo_atomic_init_once_leave(&once);
     }
 
     return &spans.base;

@@ -1860,6 +1860,9 @@ RegisterID* BytecodeGenerator::emitNewFunctionExpression(RegisterID* dst, FuncEx
 
 RegisterID* BytecodeGenerator::emitNewArrowFunctionExpression(RegisterID* dst, ArrowFuncExprNode* func)
 {
+#if PLATFORM(WKC)
+    wkcReportArrowFunctionPeer();
+#endif
     bool isClassConstructor = m_codeBlock->isConstructor() && constructorKind() != ConstructorKind::None;
     if (isClassConstructor)
         emitTDZCheck(thisRegister());
@@ -2137,7 +2140,7 @@ RegisterID* BytecodeGenerator::emitUnaryNoDstOp(OpcodeID opcodeID, RegisterID* s
     return src;
 }
 
-RegisterID* BytecodeGenerator::emitConstruct(RegisterID* dst, RegisterID* func, ExpectedFunction expectedFunction, CallArguments& callArguments, const JSTextPosition& divot, const JSTextPosition& divotStart, const JSTextPosition& divotEnd)
+RegisterID* BytecodeGenerator::emitConstruct(RegisterID* dst, RegisterID* func, RegisterID* lazyThis, ExpectedFunction expectedFunction, CallArguments& callArguments, const JSTextPosition& divot, const JSTextPosition& divotStart, const JSTextPosition& divotEnd)
 {
     ASSERT(func->refCount());
 
@@ -2151,12 +2154,15 @@ RegisterID* BytecodeGenerator::emitConstruct(RegisterID* dst, RegisterID* func, 
             auto expression = static_cast<SpreadExpressionNode*>(n->m_expr)->expression();
             RefPtr<RegisterID> argumentRegister;
             argumentRegister = expression->emitBytecode(*this, callArguments.argumentRegister(0));
+            emitMove(callArguments.thisRegister(), lazyThis);
             return emitConstructVarargs(dst, func, callArguments.thisRegister(), argumentRegister.get(), newTemporary(), 0, divot, divotStart, divotEnd);
         }
         
         for (ArgumentListNode* n = argumentsNode->m_listNode; n; n = n->m_next)
             emitNode(callArguments.argumentRegister(argument++), n);
     }
+
+    emitMove(callArguments.thisRegister(), lazyThis);
 
     // Reserve space for call frame.
     Vector<RefPtr<RegisterID>, JSStack::CallFrameHeaderSize, UnsafeVectorOverflow> callFrame;
@@ -3060,10 +3066,8 @@ void BytecodeGenerator::invalidateForInContextForLocal(RegisterID* localRegister
     // reassigned from its original value.
     for (size_t i = m_forInContextStack.size(); i--; ) {
         ForInContext* context = m_forInContextStack[i].get();
-        if (context->local() != localRegister)
-            continue;
-        context->invalidate();
-        break;
+        if (context->local() == localRegister)
+            context->invalidate();
     }
 }
 

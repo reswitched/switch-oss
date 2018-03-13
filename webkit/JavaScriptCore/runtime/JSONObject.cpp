@@ -325,7 +325,10 @@ Stringifier::StringifyResult Stringifier::appendStringifiedValue(StringBuilder& 
     }
 
     if (value.isString()) {
-        builder.appendQuotedJSONString(asString(value)->value(m_exec));
+        const String& string = asString(value)->value(m_exec);
+        if (UNLIKELY(m_exec->vm().exception()))
+            return StringifyFailed;
+        builder.appendQuotedJSONString(string);
         return StringifySucceeded;
     }
 

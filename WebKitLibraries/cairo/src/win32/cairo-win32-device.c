@@ -131,6 +131,8 @@ _cairo_win32_device_get (void)
 {
     cairo_win32_device_t *device;
 
+    CAIRO_MUTEX_INITIALIZE ();
+
     if (__cairo_win32_device)
 	return cairo_device_reference (__cairo_win32_device);
 

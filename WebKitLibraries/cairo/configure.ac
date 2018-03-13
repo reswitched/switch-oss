@@ -12,6 +12,7 @@ AC_CONFIG_SRCDIR(src/cairo.h)
 AC_CONFIG_HEADERS(config.h)
 
 AC_CHECK_HEADERS([unistd.h sys/ioctl.h])
+AC_C_TYPEOF
 
 AM_INIT_AUTOMAKE([1.11 foreign -Wall no-define no-dist-gzip dist-xz])
 AM_SILENT_RULES([yes])
@@ -380,6 +381,29 @@ CAIRO_ENABLE_SURFACE_BACKEND(glesv2, OpenGLESv2, no, [
 
   if test "x$use_glesv2" = "xyes" -a "x$use_gl" = "xyes"; then
       AC_MSG_ERROR([use either --enable-gl=yes or --enable-glesv2=yes. Not both at the same time.])
+  fi
+
+  need_egl_functions=yes
+])
+
+dnl ===========================================================================
+CAIRO_ENABLE_SURFACE_BACKEND(glesv3, OpenGLESv3, no, [
+  glesv3_REQUIRES="glesv3"
+  PKG_CHECK_MODULES(glesv3, $glesv3_REQUIRES,, [
+	 dnl Fallback to searching for headers
+	 AC_CHECK_HEADER(GLES3/gl3.h,, [use_glesv3="no (glesv3.pc nor OpenGL ES 3.0 headers not found)"])
+	 if test "x$use_glesv3" = "xyes"; then
+	     glesv3_NONPKGCONFIG_CFLAGS=
+	     dnl glesv3 is provided by the libGLESv2 library (there is no separate libGLESv3)
+	     glesv3_NONPKGCONFIG_LIBS="-lGLESv2"
+	 fi])
+
+  if test "x$have_dl" = "xyes" -a "x$have_dlsym" = "xyes"; then
+    glesv3_LIBS="$glesv3_LIBS -ldl"
+  fi
+
+  if test "x$use_glesv3" = "xyes" -a "x$use_gl" = "xyes"; then
+      AC_MSG_ERROR([use either --enable-gl=yes or --enable-glesv3=yes. Not both at the same time.])
   fi
 
   need_egl_functions=yes

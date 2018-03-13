@@ -138,81 +138,6 @@ detach_proxy (cairo_surface_t *proxy)
 }
 
 static cairo_int_status_t
-_analyze_recording_surface_pattern (cairo_analysis_surface_t *surface,
-				    const cairo_pattern_t    *pattern,
-				    cairo_rectangle_int_t    *extents)
-{
-    const cairo_surface_pattern_t *surface_pattern;
-    cairo_analysis_surface_t *tmp;
-    cairo_surface_t *source, *proxy;
-    cairo_matrix_t p2d;
-    cairo_status_t status, analysis_status;
-    cairo_bool_t surface_is_unbounded;
-    cairo_bool_t unused;
-
-    assert (pattern->type == CAIRO_PATTERN_TYPE_SURFACE);
-    surface_pattern = (const cairo_surface_pattern_t *) pattern;
-    assert (surface_pattern->surface->type == CAIRO_SURFACE_TYPE_RECORDING);
-    source = surface_pattern->surface;
-
-    proxy = _cairo_surface_has_snapshot (source, &proxy_backend);
-    if (proxy != NULL) {
-	/* nothing untoward found so far */
-	return CAIRO_STATUS_SUCCESS;
-    }
-
-    tmp = (cairo_analysis_surface_t *)
-	_cairo_analysis_surface_create (surface->target);
-    if (unlikely (tmp->base.status))
-	return tmp->base.status;
-    proxy = attach_proxy (source, &tmp->base);
-
-    p2d = pattern->matrix;
-    status = cairo_matrix_invert (&p2d);
-    assert (status == CAIRO_STATUS_SUCCESS);
-    _cairo_analysis_surface_set_ctm (&tmp->base, &p2d);
-
-    source = _cairo_surface_get_source (source, NULL);
-    surface_is_unbounded = (pattern->extend == CAIRO_EXTEND_REPEAT
-				     || pattern->extend == CAIRO_EXTEND_REFLECT);
-    status = _cairo_recording_surface_replay_and_create_regions (source,
-								 &pattern->matrix,
-								 &tmp->base,
-								 surface_is_unbounded);
-    if (tmp->has_supported) {
-	surface->has_supported = TRUE;
-	unused = cairo_region_union (&surface->supported_region, &tmp->supported_region);
-    }
-
-    if (tmp->has_unsupported) {
-	surface->has_unsupported = TRUE;
-	unused = cairo_region_union (&surface->fallback_region, &tmp->fallback_region);
-    }
-
-    analysis_status = tmp->has_unsupported ? CAIRO_INT_STATUS_IMAGE_FALLBACK : CAIRO_INT_STATUS_SUCCESS;
-
-    if (pattern->extend != CAIRO_EXTEND_NONE) {
-	_cairo_unbounded_rectangle_init (extents);
-    } else if (source->content & CAIRO_CONTENT_ALPHA) {
-	status = cairo_matrix_invert (&tmp->ctm);
-	_cairo_matrix_transform_bounding_box_fixed (&tmp->ctm,
-						    &tmp->page_bbox, NULL);
-	_cairo_box_round_to_rectangle (&tmp->page_bbox, extents);
-    } else {
-	/* black background fills entire extents */
-	_cairo_surface_get_extents (source, extents);
-    }
-
-    detach_proxy (proxy);
-    cairo_surface_destroy (&tmp->base);
-
-    if (unlikely (status))
-	return status;
-
-    return analysis_status;
-}
-
-static cairo_int_status_t
 _add_operation (cairo_analysis_surface_t *surface,
 		cairo_rectangle_int_t    *rect,
 		cairo_int_status_t        backend_status)
@@ -327,6 +252,103 @@ _add_operation (cairo_analysis_surface_t *surface,
 	return CAIRO_INT_STATUS_IMAGE_FALLBACK;
     else
 	return status;
+}
+
+static cairo_int_status_t
+_analyze_recording_surface_pattern (cairo_analysis_surface_t *surface,
+				    const cairo_pattern_t    *pattern,
+				    cairo_rectangle_int_t    *extents)
+{
+    const cairo_surface_pattern_t *surface_pattern;
+    cairo_analysis_surface_t *tmp;
+    cairo_surface_t *source, *proxy;
+    cairo_matrix_t p2d;
+    cairo_int_status_t status, analysis_status;
+    cairo_bool_t surface_is_unbounded;
+    cairo_bool_t unused;
+
+    assert (pattern->type == CAIRO_PATTERN_TYPE_SURFACE);
+    surface_pattern = (const cairo_surface_pattern_t *) pattern;
+    assert (surface_pattern->surface->type == CAIRO_SURFACE_TYPE_RECORDING);
+    source = surface_pattern->surface;
+
+    proxy = _cairo_surface_has_snapshot (source, &proxy_backend);
+    if (proxy != NULL) {
+	/* nothing untoward found so far */
+	return CAIRO_STATUS_SUCCESS;
+    }
+
+    tmp = (cairo_analysis_surface_t *)
+	_cairo_analysis_surface_create (surface->target);
+    if (unlikely (tmp->base.status)) {
+	status =tmp->base.status;
+	goto cleanup1;
+    }
+    proxy = attach_proxy (source, &tmp->base);
+
+    p2d = pattern->matrix;
+    status = cairo_matrix_invert (&p2d);
+    assert (status == CAIRO_INT_STATUS_SUCCESS);
+    _cairo_analysis_surface_set_ctm (&tmp->base, &p2d);
+
+
+    source = _cairo_surface_get_source (source, NULL);
+    surface_is_unbounded = (pattern->extend == CAIRO_EXTEND_REPEAT
+				     || pattern->extend == CAIRO_EXTEND_REFLECT);
+    status = _cairo_recording_surface_replay_and_create_regions (source,
+								 &pattern->matrix,
+								 &tmp->base,
+								 surface_is_unbounded);
+    if (unlikely (status))
+	goto cleanup2;
+
+    /* black background or mime data fills entire extents */
+    if (!(source->content & CAIRO_CONTENT_ALPHA) || _cairo_surface_has_mime_image (source)) {
+	cairo_rectangle_int_t rect;
+
+	if (_cairo_surface_get_extents (source, &rect)) {
+	    cairo_box_t bbox;
+
+	    _cairo_box_from_rectangle (&bbox, &rect);
+	    _cairo_matrix_transform_bounding_box_fixed (&p2d, &bbox, NULL);
+	    _cairo_box_round_to_rectangle (&bbox, &rect);
+	    status = _add_operation (tmp, &rect, CAIRO_INT_STATUS_SUCCESS);
+	    if (status == CAIRO_INT_STATUS_IMAGE_FALLBACK)
+		status = CAIRO_INT_STATUS_SUCCESS;
+	    if (unlikely (status))
+		goto cleanup2;
+	}
+    }
+
+    if (tmp->has_supported) {
+	surface->has_supported = TRUE;
+	unused = cairo_region_union (&surface->supported_region, &tmp->supported_region);
+    }
+
+    if (tmp->has_unsupported) {
+	surface->has_unsupported = TRUE;
+	unused = cairo_region_union (&surface->fallback_region, &tmp->fallback_region);
+    }
+
+    analysis_status = tmp->has_unsupported ? CAIRO_INT_STATUS_IMAGE_FALLBACK : CAIRO_INT_STATUS_SUCCESS;
+    if (pattern->extend != CAIRO_EXTEND_NONE) {
+	_cairo_unbounded_rectangle_init (extents);
+    } else {
+	status = cairo_matrix_invert (&tmp->ctm);
+	_cairo_matrix_transform_bounding_box_fixed (&tmp->ctm,
+						    &tmp->page_bbox, NULL);
+	_cairo_box_round_to_rectangle (&tmp->page_bbox, extents);
+    }
+
+  cleanup2:
+    detach_proxy (proxy);
+  cleanup1:
+    cairo_surface_destroy (&tmp->base);
+
+    if (unlikely (status))
+	return status;
+
+    return analysis_status;
 }
 
 static cairo_status_t

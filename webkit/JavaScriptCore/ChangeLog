@@ -1,3 +1,602 @@
+2016-02-02  Caitlin Potter  <caitp@igalia.com>
+
+        JSSymbolTableObject::deleteProperty() crashes deleting Symbols
+        https://bugs.webkit.org/show_bug.cgi?id=153816
+
+        Reviewed by Darin Adler.
+
+        Changes JSSymbolTableObject::deleteProperty() to check if its
+        symbolTable() contains the property's uid() rather than publicName().
+        This ensures that it will not crash in the case of Symbols.
+
+        * runtime/JSSymbolTableObject.cpp:
+        (JSC::JSSymbolTableObject::deleteProperty):
+        * tests/es6/Object_static_methods_Object.getOwnPropertyDescriptors.js:
+        (testGlobalProxy):
+        * tests/stress/regress-153816.js: Added.
+        (deleteSymbolFromJSSymbolTableObject):
+
+2016-04-28  Skachkov Oleksandr  <gskachkov@gmail.com>
+
+        Crash for non-static super property call in derived class constructor
+        https://bugs.webkit.org/show_bug.cgi?id=157089
+
+        Reviewed by Darin Adler.
+       
+        Added tdz check of the 'this' before access to the 'super' for FunctionCallBracketNode, 
+        the same as it was done for FunctionCallDotNode.
+
+        * bytecompiler/NodesCodegen.cpp:
+        (JSC::FunctionCallBracketNode::emitBytecode):
+
+2016-05-04  Yusuke Suzuki  <utatane.tea@gmail.com>
+
+        Assertion failure for super() call in direct eval in method function
+        https://bugs.webkit.org/show_bug.cgi?id=157091
+
+        Reviewed by Darin Adler.
+
+        While we ensure that direct super is under the correct context,
+        we don't check it for the eval code. This patch moves the check from the end of parsing the function
+        to the places where we found the direct super or the super bindings. This covers the direct eval that
+        contains the direct super calls.
+
+        * parser/Parser.cpp:
+        (JSC::Parser<LexerType>::parseGeneratorFunctionSourceElements):
+        (JSC::Parser<LexerType>::parseFunctionInfo):
+        (JSC::Parser<LexerType>::parseMemberExpression):
+        * parser/Parser.h:
+        (JSC::Scope::hasDirectSuper):
+        (JSC::Scope::setHasDirectSuper):
+        (JSC::Scope::needsSuperBinding):
+        (JSC::Scope::setNeedsSuperBinding):
+        (JSC::Parser::closestParentOrdinaryFunctionNonLexicalScope):
+        * tests/stress/eval-and-super.js: Added.
+        (shouldBe):
+        (shouldThrow):
+        (prototype.m):
+        (prototype.n):
+        * tests/stress/generator-and-super.js: Added.
+        (testSyntaxError):
+        (testSyntaxError.Base.prototype.hello):
+        (testSyntaxError.Base.prototype.ok):
+        (testSyntaxError.Base):
+        (Hello.prototype.gen):
+        (Hello):
+        (testSyntaxError.hello):
+
+2016-02-08  Skachkov Oleksandr  <gskachkov@gmail.com>
+
+        [ES6] Arrow function syntax. Using 'super' in arrow function that declared out of the class should lead to Syntax error
+        https://bugs.webkit.org/show_bug.cgi?id=150893
+
+        Reviewed by Saam Barati.
+
+        'super' and 'super()' inside of the arrow function should lead to syntax error if they are used 
+        out of the class context or they wrapped by ordinary function. Now JSC returns ReferenceError but 
+        should return SyntaxError according to the following specs:
+        http://www.ecma-international.org/ecma-262/6.0/#sec-function-definitions-static-semantics-early-errors
+        and http://www.ecma-international.org/ecma-262/6.0/#sec-arrow-function-definitions-runtime-semantics-evaluation 
+        Curren patch implemented only one case when super/super() are used inside of the arrow function
+        Case when super/super() are used within the eval:
+           class A {} 
+           class B extends A { 
+               costructor() { eval("super()");} 
+           }
+        is not part of this patch and will be implemented in this issue https://bugs.webkit.org/show_bug.cgi?id=153864. 
+        The same for case when eval with super/super() is invoked in arrow function will be 
+        implemented in issue https://bugs.webkit.org/show_bug.cgi?id=153977. 
+ 
+        * parser/Parser.cpp:
+        (JSC::Parser<LexerType>::parseFunctionInfo):
+        * parser/Parser.h:
+        (JSC::Scope::Scope):
+        (JSC::Scope::setExpectedSuperBinding):
+        (JSC::Scope::expectedSuperBinding):
+        (JSC::Scope::setConstructorKind):
+        (JSC::Scope::constructorKind):
+        (JSC::Parser::closestParentNonArrowFunctionNonLexicalScope):
+        * tests/stress/arrowfunction-lexical-bind-supercall-4.js:
+        * tests/stress/arrowfunction-lexical-bind-superproperty.js:
+
+2015-11-20  Yusuke Suzuki  <utatane.tea@gmail.com>
+
+        Super use should be recorded in per-function scope
+        https://bugs.webkit.org/show_bug.cgi?id=151500
+
+        Reviewed by Geoffrey Garen.
+
+        "super" use is prohibited under the non-constructor / non-class-method-related functions.
+        This "super" use should be recorded in per-function scope to check its incorrect use after
+        parsing a function.
+        Currently, we accidentally record it to a lexical current scope. So when using "super" inside
+        a block scope, our "super" use guard miss it.
+
+        * parser/Parser.cpp:
+        (JSC::Parser<LexerType>::parseMemberExpression):
+        * parser/Parser.h:
+        (JSC::Parser::currentVariableScope):
+        (JSC::Parser::currentFunctionScope):
+        (JSC::Parser::declareVariable):
+        * tests/stress/super-in-lexical-scope.js: Added.
+        (testSyntax):
+        (testSyntaxError):
+        (testSyntaxError.test):
+
+2017-12-04  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r225239. rdar://problem/35838157
+
+    2017-11-27  JF Bastien  <jfbastien@apple.com>
+
+            JavaScript rest function parameter with negative index leads to bad DFG abstract interpretation
+            https://bugs.webkit.org/show_bug.cgi?id=180051
+            <rdar://problem/35614371>
+
+            Reviewed by Saam Barati.
+
+            Checking for int32 isn't sufficient when uint32 is expected
+            afterwards. While we're here, also use Checked<>.
+
+            * dfg/DFGAbstractInterpreterInlines.h:
+            (JSC::DFG::AbstractInterpreter<AbstractStateType>::executeEffects):
+
+2017-11-22  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r224426. rdar://problem/35364697
+
+    2017-11-03  Michael Saboff  <msaboff@apple.com>
+
+            The Abstract Interpreter needs to change similar to clobberize() in r224366
+            https://bugs.webkit.org/show_bug.cgi?id=179267
+
+            Reviewed by Saam Barati.
+
+            Add clobberWorld() to HasGenericProperty, HasStructureProperty & GetPropertyEnumerator
+            cases in the abstract interpreter to match what was done for r224366.
+
+            * dfg/DFGAbstractInterpreterInlines.h:
+            (JSC::DFG::AbstractInterpreter<AbstractStateType>::executeEffects):
+
+2017-11-22  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r224366. rdar://problem/35329723
+
+    2017-11-02  Michael Saboff  <msaboff@apple.com>
+
+            DFG needs to handle code motion of code in for..in loop bodies
+            https://bugs.webkit.org/show_bug.cgi?id=179212
+
+            Reviewed by Keith Miller.
+
+            The processing of the DFG nodes HasGenericProperty, HasStructureProperty & GetPropertyEnumerator
+            make calls with side effects.  Updated clobberize() for those nodes to take that into account.
+
+            * dfg/DFGClobberize.h:
+            (JSC::DFG::clobberize):
+
+2017-11-22  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r224349. rdar://problem/35329732
+
+    2017-11-02  Filip Pizlo  <fpizlo@apple.com>
+
+            AI does not correctly model the clobber case of ArithClz32
+            https://bugs.webkit.org/show_bug.cgi?id=179188
+
+            Reviewed by Michael Saboff.
+
+            The non-Int32 case clobbers the world because it may call valueOf.
+
+            * dfg/DFGAbstractInterpreterInlines.h:
+            (JSC::DFG::AbstractInterpreter<AbstractStateType>::executeEffects):
+
+2017-11-22  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r224302. rdar://problem/35323829
+
+    2017-11-01  Michael Saboff  <msaboff@apple.com>
+
+            Integer overflow in code generated by LoadVarargs processing in DFG and FTL.
+            https://bugs.webkit.org/show_bug.cgi?id=179140
+
+            Reviewed by Saam Barati.
+
+            Added overflow checks to computation of arg count plus this.
+
+            * dfg/DFGSpeculativeJIT32_64.cpp:
+            (JSC::DFG::SpeculativeJIT::compile):
+            * dfg/DFGSpeculativeJIT64.cpp:
+            (JSC::DFG::SpeculativeJIT::compile):
+            * ftl/FTLLowerDFGToB3.cpp:
+            (JSC::FTL::DFG::LowerDFGToB3::compileLoadVarargs):
+
+2017-10-21  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r223645. rdar://problem/34820875
+
+    2017-10-18  Mark Lam  <mark.lam@apple.com>
+
+            RegExpObject::defineOwnProperty() does not need to compare values if no descriptor value is specified.
+            https://bugs.webkit.org/show_bug.cgi?id=177600
+            <rdar://problem/34710985>
+
+            Reviewed by Saam Barati.
+
+            According to http://www.ecma-international.org/ecma-262/8.0/#sec-validateandapplypropertydescriptor,
+            section 9.1.6.3-7.a.ii, we should only check if the value is the same if the
+            descriptor value is present.
+
+            * runtime/RegExpObject.cpp:
+            (JSC::RegExpObject::defineOwnProperty):
+
+2017-10-16  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r222417. rdar://problem/35010839
+
+    2017-09-22  Fujii Hironori  <Hironori.Fujii@sony.com>
+
+            [Win64] Crashes in Yarr JIT compiled code
+            https://bugs.webkit.org/show_bug.cgi?id=177293
+
+            Reviewed by Yusuke Suzuki.
+
+            In x64 Windows, rcx register is used for the address of allocated
+            space for the return value. But, rcx is used for regT1 since
+            r221052. Save rcx in the stack.
+
+            * yarr/YarrJIT.cpp:
+            (JSC::Yarr::YarrGenerator::generateEnter): Push ecx.
+            (JSC::Yarr::YarrGenerator::generateReturn): Pop ecx.
+
+2017-10-02  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r221400. rdar://problem/34771396
+
+    2017-08-30  Saam Barati  <sbarati@apple.com>
+
+            semicolon is being interpreted as an = in the LiteralParser
+            https://bugs.webkit.org/show_bug.cgi?id=176114
+
+            Reviewed by Oliver Hunt.
+
+            * stress/jsonp-literal-parser-semicolon-is-not-assignment.js: Added.            * stress/resources/literal-parser-test-case.js: Added.
+
+2016-06-24  Mark Lam  <mark.lam@apple.com>
+
+        [JSC] Error prototypes are called on remote scripts.
+        https://bugs.webkit.org/show_bug.cgi?id=52192
+
+        Reviewed by Keith Miller.
+
+        Added a sanitizedToString() to the Error instance object so that it can be used
+        to get an error string without invoking getters and proxies.
+
+        * runtime/ErrorInstance.cpp:
+        (JSC::ErrorInstance::finishCreation):
+        (JSC::ErrorInstance::sanitizedToString):
+        * runtime/ErrorInstance.h:
+        (JSC::ErrorInstance::createStructure):
+        (JSC::ErrorInstance::runtimeTypeForCause):
+        (JSC::ErrorInstance::clearRuntimeTypeForCause):
+
+2016-02-12  Keith Miller  <keith_miller@apple.com>
+
+        AdaptiveInferredPropertyValueWatchpoint can trigger a GC that frees its CodeBlock and thus itself
+        https://bugs.webkit.org/show_bug.cgi?id=154146
+
+        Reviewed by Filip Pizlo.
+
+        Consider the following: there is some CodeBlock, C, that is watching some object, O, with a
+        structure, S, for replacements. Also, suppose that C has no references anymore and is due to
+        be GCed. Now, when some new property is added to O, S will create a new structure S' and
+        fire its transition watchpoints. Since C is watching S for replacements it will attempt to
+        have its AdaptiveInferredPropertyValueWatchpoint relocate itself to S'. To do so, it needs
+        it allocate RareData on S'. This allocation may cause a GC, which frees C while still
+        executing its watchpoint handler. The solution to this is to defer GC while running
+        AdaptiveInferredPropertyValueWatchpointBase handlers.
+
+        * bytecode/AdaptiveInferredPropertyValueWatchpointBase.cpp:
+        (JSC::AdaptiveInferredPropertyValueWatchpointBase::fire):
+
+2017-05-10  Filip Pizlo  <fpizlo@apple.com>
+
+        Null pointer dereference in WTF::RefPtr<WTF::StringImpl>::operator!() under slow_path_get_direct_pname
+        https://bugs.webkit.org/show_bug.cgi?id=171801
+
+        Reviewed by Michael Saboff.
+        
+        This was a goofy oversight. The for-in optimization relies on the bytecode generator
+        to detect when the loop's index variable gets mutated. We forgot to have the hooks for
+        detecting this in prefix and postfix operations (++i and i++).
+
+        * bytecompiler/NodesCodegen.cpp:
+        (JSC::PostfixNode::emitResolve):
+        (JSC::PrefixNode::emitResolve):
+
+2017-05-18  Filip Pizlo  <fpizlo@apple.com>
+
+        Constructor calls set this too early
+        https://bugs.webkit.org/show_bug.cgi?id=172302
+
+        Reviewed by Saam Barati.
+        
+        We were setting this before evaluating the arguments, so this code:
+        
+            var x = 42;
+            new x(x = function() { });
+        
+        Would crash because we would pass 42 as this, and create_this would treat it as a cell.
+        Dereferencing a non-cell is guaranteed to crash.
+
+        * bytecompiler/BytecodeGenerator.cpp:
+        (JSC::BytecodeGenerator::emitConstruct):
+        * bytecompiler/BytecodeGenerator.h:
+        * bytecompiler/NodesCodegen.cpp:
+        (JSC::NewExprNode::emitBytecode):
+        (JSC::FunctionCallValueNode::emitBytecode):
+
+2015-08-03  Yusuke Suzuki  <utatane.tea@gmail.com>
+
+        JavascriptCore Crash in JSC::ASTBuilder::Property JSC::Parser<JSC::Lexer<unsigned char> >::parseProperty<JSC::ASTBuilder>(JSC::ASTBuilder&, bool)
+        https://bugs.webkit.org/show_bug.cgi?id=147538
+
+        Reviewed by Geoffrey Garen.
+
+        Due to the order of the ARROWFUNCTION token in JSTokenType enum, it is categorized as the one of the Keyword.
+        As a result, when lexing the property name that can take the keywords, the ARROWFUNCTION token is accidentally accepted.
+        This patch changes the order of the ARROWFUNCTION token in JSTokenType to make it the operator token.
+
+        * parser/ParserTokens.h:
+        * tests/stress/arrow-function-token-is-not-keyword.js: Added.
+        (testSyntaxError):
+
+2017-09-27  Mark Lam  <mark.lam@apple.com>
+
+        JSArray::canFastCopy() should fail if the source and destination arrays are the same.
+        https://bugs.webkit.org/show_bug.cgi?id=177584
+        <rdar://problem/34463903>
+
+        Reviewed by Saam Barati.
+
+        If the source and destination arrays are the same, we may be copying overlapping
+        regions.  Hence, we need to take the slow path.
+
+        * runtime/JSArrayInlines.h:
+        (JSC::JSArray::canFastCopy):
+
+2017-10-19  Mark Lam  <mark.lam@apple.com>
+
+        Stringifier::appendStringifiedValue() is missing an exception check.
+        https://bugs.webkit.org/show_bug.cgi?id=178386
+        <rdar://problem/35027610>
+
+        Reviewed by Saam Barati.
+
+        * runtime/JSONObject.cpp:
+        (JSC::Stringifier::appendStringifiedValue):
+
+2017-11-03  Keith Miller  <keith_miller@apple.com>
+
+        PutProperytSlot should inform the IC about the property before effects.
+        https://bugs.webkit.org/show_bug.cgi?id=179262
+
+        Reviewed by Mark Lam.
+
+        This patch fixes an issue where we choose to cache setters based on
+        incorrect information. If we did so we might end up OSR exiting
+        more than we would otherwise need to. The new model is that the
+        PutPropertySlot should inform the IC of what the property looked
+        like before any potential side effects might have occurred.
+
+        * runtime/JSObject.cpp:
+        (JSC::JSObject::putInlineSlow):
+        * runtime/Lookup.h:
+        (JSC::putEntry):
+
+2017-06-30  Michael Saboff  <msaboff@apple.com>
+
+        RegExp's  anchored with .* with \g flag can return wrong match start for strings with multiple matches
+        https://bugs.webkit.org/show_bug.cgi?id=174044
+
+        Reviewed by Oliver Hunt.
+
+        The .* enclosure optimization didn't respect that we can start matching from a non-zero
+        index.  This optimization treats /.*<some-terms>.*/ by first matching the <some-terms> and
+        then finding the extent of the match by going back to the beginning of the line and going
+        forward to the end of the line.  The code that went back to the beginning of the line
+        checked for an index of 0 instead of comparing the index to the start position.  This start
+        position is passed as the initial index.
+
+        Added another temporary register to the YARR JIT to contain the start position for
+        platforms that have spare registers.
+
+        * yarr/Yarr.h:
+        * yarr/YarrInterpreter.cpp:
+        (JSC::Yarr::Interpreter::matchDotStarEnclosure):
+        (JSC::Yarr::Interpreter::Interpreter):
+        * yarr/YarrJIT.cpp:
+        (JSC::Yarr::YarrGenerator::generateDotStarEnclosure):
+        (JSC::Yarr::YarrGenerator::compile):
+        * yarr/YarrPattern.cpp:
+        (JSC::Yarr::YarrPattern::YarrPattern):
+        * yarr/YarrPattern.h:
+        (JSC::Yarr::YarrPattern::reset):
+
+2015-09-09  Chris Dumez  <cdumez@apple.com>
+
+        HTMLTableElement.tHead / tFoot / caption should be nullable
+        https://bugs.webkit.org/show_bug.cgi?id=148991
+
+        Reviewed by Ryosuke Niwa.
+
+        According to the specification, HTMLTableElement.tHead / tFoot / caption
+        should be nullable:
+        https://html.spec.whatwg.org/multipage/tables.html#htmltableelement
+
+        Upon assigning null, we are supposed to remove the existing tHead / tFoot
+        / caption element. However, we had a bug causing us to throw an exception
+        after removing the element. This is because we would try to insert a null
+        element and ContainerNode::insertBefore() throws when doing so.
+
+        Also, as per the specification, setting tHead / tFoot to something else
+        than a thead / tfoot element should throw a HierarchyRequestError:
+        https://html.spec.whatwg.org/multipage/tables.html#dom-table-thead
+        https://html.spec.whatwg.org/multipage/tables.html#dom-table-tfoot
+
+        Previously, WebKit did not check the tag and was happy inserting the
+        element as long as it was an HTMLTableSectionElement. This means that
+        you could set a tfoot by assigning table.tHead.
+
+        This patch corrects both bugs and adds test coverage for it.
+
+        Test: fast/dom/HTMLTableElement/nullable-attributes.html
+
+        * html/HTMLTableElement.cpp:
+        (WebCore::HTMLTableElement::setCaption):
+        Only call insertBefore() if newCaption is not null as insertBefore()
+        will throw an exception otherwise.
+
+        (WebCore::HTMLTableElement::setTHead):
+        - Throw a HierarchyRequestError if the HTMLTableSectionElement is not
+          null or a <thead> element, as per the specification.
+        - Only call insertBefore() if newHead is not null as insertBefore()
+          will throw an exception otherwise.
+
+        (WebCore::HTMLTableElement::setTFoot):
+        - Throw a HierarchyRequestError if the HTMLTableSectionElement is not
+          null or a <tfoot> element, as per the specification.
+        - Only call insertBefore() if newFoot is not null as insertBefore()
+          will throw an exception otherwise.
+
+        * html/HTMLTableElement.idl:
+        Use [StrictTypeChecking] for these 3 attributes so that the bindings
+        will throw a TypeError if the JS tries to assign a value with the
+        wrong type. When the implementation is called with null, we now know
+        this is because the JS assigned null (and not an invalid value).
+        This is important as assigning null is valid since those attributes
+        are nullable.
+
+2017-06-30  Filip Pizlo  <fpizlo@apple.com>
+
+        RegExpCachedResult::setInput should reify left and right contexts
+        https://bugs.webkit.org/show_bug.cgi?id=173818
+
+        Reviewed by Keith Miller.
+       
+        If you don't reify them in setInput, then when you later try to reify them, you'll end up
+        using indices into an old input string to create a substring of a new input string. That
+        never goes well.
+
+        * runtime/RegExpCachedResult.cpp:
+        (JSC::RegExpCachedResult::setInput):
+
+2017-06-06  Mark Lam  <mark.lam@apple.com>
+
+        Contiguous storage butterfly length should not exceed MAX_STORAGE_VECTOR_LENGTH.
+        https://bugs.webkit.org/show_bug.cgi?id=173035
+        <rdar://problem/32554593>
+
+        Reviewed by Geoffrey Garen and Filip Pizlo.
+
+        Also added and fixed up some assertions.
+
+        * runtime/ArrayConventions.h:
+        * runtime/JSArray.cpp:
+        (JSC::JSArray::setLength):
+        * runtime/JSObject.cpp:
+        (JSC::JSObject::createInitialIndexedStorage):
+        (JSC::JSObject::ensureLengthSlow):
+        (JSC::JSObject::reallocateAndShrinkButterfly):
+        * runtime/JSObject.h:
+        (JSC::JSObject::ensureLength):
+        * runtime/RegExpObject.cpp:
+        (JSC::collectMatches):
+        * runtime/RegExpPrototype.cpp:
+        (JSC::regExpProtoFuncSplitFast):
+
+2017-05-11  Filip Pizlo  <fpizlo@apple.com>
+
+        Callers of JSString::unsafeView() should check exceptions
+        https://bugs.webkit.org/show_bug.cgi?id=171995
+
+        Reviewed by Mark Lam.
+        
+        unsafeView() can throw OOME. So, callers of unsafeView() should check for exceptions before trying
+        to access the view.
+
+        Also, I made the functions surrounding unsafeView() take ExecState* not ExecState&, to comply with
+        the rest of JSC.
+
+        * dfg/DFGOperations.cpp:
+        * jsc.cpp:
+        (printInternal):
+        (functionDebug):
+        * runtime/ArrayPrototype.cpp:
+        (JSC::arrayProtoFuncJoin):
+        * runtime/FunctionConstructor.cpp:
+        (JSC::constructFunctionSkippingEvalEnabledCheck):
+        * runtime/IntlCollatorPrototype.cpp:
+        (JSC::IntlCollatorFuncCompare):
+        * runtime/JSGenericTypedArrayViewPrototypeFunctions.h:
+        (JSC::genericTypedArrayViewProtoFuncJoin):
+        * runtime/JSGlobalObjectFunctions.cpp:
+        (JSC::globalFuncParseFloat):
+        * runtime/JSONObject.cpp:
+        (JSC::JSONProtoFuncParse):
+        * runtime/JSString.cpp:
+        (JSC::JSString::getPrimitiveNumber):
+        (JSC::JSString::toNumber):
+        * runtime/JSString.h:
+        (JSC::JSString::getIndex):
+        (JSC::JSRopeString::unsafeView):
+        (JSC::JSRopeString::viewWithUnderlyingString):
+        (JSC::JSString::unsafeView):
+        (JSC::JSString::viewWithUnderlyingString):
+        * runtime/JSStringJoiner.h:
+        (JSC::JSStringJoiner::appendWithoutSideEffects):
+        (JSC::JSStringJoiner::append):
+        * runtime/ParseInt.h:
+        (JSC::toStringView):
+        * runtime/StringPrototype.cpp:
+        (JSC::stringProtoFuncRepeatCharacter):
+        (JSC::stringProtoFuncCharAt):
+        (JSC::stringProtoFuncCharCodeAt):
+        (JSC::stringProtoFuncIndexOf):
+        (JSC::stringProtoFuncNormalize):
+
+2017-05-09  Filip Pizlo  <fpizlo@apple.com>
+
+        JSInjectedScriptHost should get a copy of the boundArgs
+        https://bugs.webkit.org/show_bug.cgi?id=171897
+
+        Reviewed by Joseph Pecoraro.
+        
+        The boundArgs array is very special - it cannot be mutated in any way. So, it makes sense
+        for the inspector to get a copy of it.
+
+        * inspector/JSInjectedScriptHost.cpp:
+        (Inspector::JSInjectedScriptHost::getInternalProperties):
+        * runtime/JSBoundFunction.cpp:
+        (JSC::JSBoundFunction::boundArgsCopy):
+        * runtime/JSBoundFunction.h:
+        (JSC::JSBoundFunction::boundArgs):
+
+2017-07-06  Saam Barati  <sbarati@apple.com>
+
+        We are missing places where we invalidate the for-in context
+        https://bugs.webkit.org/show_bug.cgi?id=174184
+
+        Reviewed by Geoffrey Garen.
+
+        * bytecompiler/BytecodeGenerator.cpp:
+        (JSC::BytecodeGenerator::invalidateForInContextForLocal):
+        * bytecompiler/NodesCodegen.cpp:
+        (JSC::EmptyLetExpression::emitBytecode):
+        (JSC::ForInNode::emitLoopHeader):
+        (JSC::ForOfNode::emitBytecode):
+        (JSC::BindingNode::bindValue):
+
 2016-10-31  Joseph Pecoraro  <pecoraro@apple.com>
 
         Web Inspector: Provide an opportunity to clear ScriptValues associated with debugged target

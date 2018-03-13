@@ -52,6 +52,93 @@
 #include "cairo-error-private.h"
 #include "cairo-image-surface-private.h"
 
+/* FIXME: Copy of same routine in cairo-gl-msaa-compositor.c */
+static cairo_int_status_t
+_draw_int_rect (cairo_gl_context_t      *ctx,
+		cairo_gl_composite_t    *setup,
+		cairo_rectangle_int_t   *rect)
+{
+    cairo_box_t box;
+    cairo_point_t quad[4];
+
+    _cairo_box_from_rectangle (&box, rect);
+    quad[0].x = box.p1.x;
+    quad[0].y = box.p1.y;
+    quad[1].x = box.p1.x;
+    quad[1].y = box.p2.y;
+    quad[2].x = box.p2.x;
+    quad[2].y = box.p2.y;
+    quad[3].x = box.p2.x;
+    quad[3].y = box.p1.y;
+
+    return _cairo_gl_composite_emit_quad_as_tristrip (ctx, setup, quad);
+}
+
+static cairo_int_status_t
+_blit_texture_to_renderbuffer (cairo_gl_surface_t *surface)
+{
+    cairo_gl_context_t *ctx = NULL;
+    cairo_gl_composite_t setup;
+    cairo_surface_pattern_t pattern;
+    cairo_rectangle_int_t extents;
+    cairo_int_status_t status;
+
+    /* FIXME: This only permits blit when glesv3 is enabled.  But note that
+       glesv2 with the ANGLE extension should also be able to support this feature,
+       so once the ANGLE support code is in place this check can be relaxed. */
+    if (((cairo_gl_context_t *)surface->base.device)->gl_flavor != CAIRO_GL_FLAVOR_ES3)
+	return CAIRO_INT_STATUS_SUCCESS;
+
+    if (! surface->content_in_texture)
+	return CAIRO_INT_STATUS_SUCCESS;
+
+    memset (&setup, 0, sizeof (cairo_gl_composite_t));
+
+    status = _cairo_gl_composite_set_operator (&setup,
+					       CAIRO_OPERATOR_SOURCE,
+					       FALSE);
+
+    if (status)
+	return status;
+
+    setup.dst = surface;
+    setup.clip_region = surface->clip_region;
+
+    _cairo_pattern_init_for_surface (&pattern, &surface->base);
+    status = _cairo_gl_composite_set_source (&setup, &pattern.base,
+					     NULL, NULL, FALSE);
+    _cairo_pattern_fini (&pattern.base);
+
+    if (unlikely (status))
+	goto FAIL;
+
+    _cairo_gl_composite_set_multisample (&setup);
+
+    status = _cairo_gl_composite_begin (&setup, &ctx);
+
+    if (unlikely (status))
+	goto FAIL;
+
+    extents.x = extents.y = 0;
+    extents.width = surface->width;
+    extents.height = surface->height;
+
+    status = _draw_int_rect (ctx, &setup, &extents);
+
+    if (status == CAIRO_INT_STATUS_SUCCESS)
+	surface->content_in_texture = FALSE;
+
+FAIL:
+    _cairo_gl_composite_fini (&setup);
+
+    if (ctx) {
+	_cairo_gl_composite_flush (ctx);
+	status = _cairo_gl_context_release (ctx, status);
+    }
+
+    return status;
+}
+
 cairo_int_status_t
 _cairo_gl_composite_set_source (cairo_gl_composite_t *setup,
 			        const cairo_pattern_t *pattern,
@@ -68,8 +155,13 @@ void
 _cairo_gl_composite_set_source_operand (cairo_gl_composite_t *setup,
 					const cairo_gl_operand_t *source)
 {
+    cairo_int_status_t status;
+
     _cairo_gl_operand_destroy (&setup->src);
     _cairo_gl_operand_copy (&setup->src, source);
+
+    if (source->type == CAIRO_GL_OPERAND_TEXTURE)
+	status = _cairo_gl_surface_resolve_multisampling (source->texture.surface);
 }
 
 void
@@ -99,9 +191,13 @@ void
 _cairo_gl_composite_set_mask_operand (cairo_gl_composite_t *setup,
 				      const cairo_gl_operand_t *mask)
 {
+    cairo_int_status_t status;
     _cairo_gl_operand_destroy (&setup->mask);
-    if (mask)
+    if (mask) {
 	_cairo_gl_operand_copy (&setup->mask, mask);
+	if (mask->type == CAIRO_GL_OPERAND_TEXTURE)
+	    status = _cairo_gl_surface_resolve_multisampling (mask->texture.surface);
+    }
 }
 
 void
@@ -174,7 +270,8 @@ _cairo_gl_texture_set_extend (cairo_gl_context_t *ctx,
 
     switch (extend) {
     case CAIRO_EXTEND_NONE:
-	if (ctx->gl_flavor == CAIRO_GL_FLAVOR_ES2)
+	if (ctx->gl_flavor == CAIRO_GL_FLAVOR_ES3 ||
+	    ctx->gl_flavor == CAIRO_GL_FLAVOR_ES2)
 	    wrap_mode = GL_CLAMP_TO_EDGE;
 	else
 	    wrap_mode = GL_CLAMP_TO_BORDER;
@@ -1177,6 +1274,8 @@ _cairo_gl_composite_init (cairo_gl_composite_t *setup,
                           cairo_bool_t assume_component_alpha)
 {
     cairo_status_t status;
+
+    status = _blit_texture_to_renderbuffer (dst);
 
     memset (setup, 0, sizeof (cairo_gl_composite_t));
 
