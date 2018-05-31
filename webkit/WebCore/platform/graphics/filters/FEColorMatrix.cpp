@@ -147,7 +147,13 @@ void FEColorMatrix::platformApplySoftware()
     if (!resultImage)
         return;
 
+#if PLATFORM(WKC)
+    ImageBuffer* sourceImage = in->asImageBuffer();
+    if (sourceImage)
+        resultImage->context()->drawImageBuffer(sourceImage, ColorSpaceDeviceRGB, drawingRegionOfInputImage(in->absolutePaintRect()));
+#else
     resultImage->context()->drawImageBuffer(in->asImageBuffer(), ColorSpaceDeviceRGB, drawingRegionOfInputImage(in->absolutePaintRect()));
+#endif
 
     IntRect imageRect(IntPoint(), resultImage->logicalSize());
     RefPtr<Uint8ClampedArray> pixelArray = resultImage->getUnmultipliedImageData(imageRect);

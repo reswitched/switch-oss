@@ -254,14 +254,6 @@ void WebSocketChannel::resume()
         m_resumeTimer.startOneShot(0);
 }
 
-#if PLATFORM(WKC)
-bool WebSocketChannel::isConstructed() const
-{
-    return m_handle->isConstructed();
-}
-#endif
-
-
 void WebSocketChannel::willOpenSocketStream(SocketStreamHandle*)
 {
     LOG(Network, "WebSocketChannel %p willOpenSocketStream()", this);
@@ -451,13 +443,11 @@ bool WebSocketChannel::processBuffer()
         if (m_handshake->mode() == WebSocketHandshake::Connected) {
             if (m_identifier)
                 InspectorInstrumentation::didReceiveWebSocketHandshakeResponse(m_document, m_identifier, m_handshake->serverHandshakeResponse());
-            if (!m_handshake->serverSetCookie().isEmpty()) {
-                if (cookiesEnabled(m_document)) {
-                    // Exception (for sandboxed documents) ignored.
-                    m_document->setCookie(m_handshake->serverSetCookie(), IGNORE_EXCEPTION);
-                }
+            String serverSetCookie = m_handshake->serverSetCookie();
+            if (!serverSetCookie.isEmpty()) {
+                if (m_document && cookiesEnabled(m_document))
+                    setCookies(m_document, m_handshake->httpURLForAuthenticationAndCookies(), serverSetCookie);
             }
-            // FIXME: handle set-cookie2.
             LOG(Network, "WebSocketChannel %p Connected", this);
             skipBuffer(headerLength);
             m_client->didConnect();

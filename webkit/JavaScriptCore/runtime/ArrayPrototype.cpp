@@ -302,7 +302,7 @@ void unshift(ExecState* exec, JSObject* thisObj, unsigned header, unsigned curre
     RELEASE_ASSERT(currentCount <= (length - header));
 
     // Guard against overflow.
-    if (count > (UINT_MAX - length)) {
+    if (count > UINT_MAX - length) {
         throwOutOfMemoryError(exec);
         return;
     }
@@ -626,6 +626,8 @@ EncodedJSValue JSC_HOST_CALL arrayProtoFuncPush(ExecState* exec)
 
 EncodedJSValue JSC_HOST_CALL arrayProtoFuncReverse(ExecState* exec)
 {
+    VM& vm = exec->vm();
+
     JSObject* thisObject = exec->thisValue().toThis(exec, StrictMode).toObject(exec);
 
     unsigned length = getLength(exec, thisObject);
@@ -642,6 +644,8 @@ EncodedJSValue JSC_HOST_CALL arrayProtoFuncReverse(ExecState* exec)
         if (containsHole(data, length) && holesMustForwardToPrototype(*exec, thisObject))
             break;
         std::reverse(data, data + length);
+        if (!hasInt32(thisObject->indexingType()))
+            vm.heap.writeBarrier(thisObject);
         return JSValue::encode(thisObject);
     }
     case ALL_DOUBLE_INDEXING_TYPES: {
@@ -662,6 +666,7 @@ EncodedJSValue JSC_HOST_CALL arrayProtoFuncReverse(ExecState* exec)
             break;
         auto data = storage.vector().data();
         std::reverse(data, data + length);
+        vm.heap.writeBarrier(thisObject);
         return JSValue::encode(thisObject);
     }
     }

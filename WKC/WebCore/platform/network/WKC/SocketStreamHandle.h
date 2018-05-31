@@ -66,8 +66,6 @@ namespace WebCore {
         };
         int socketState() const { return m_socketState; }
 
-        bool isConstructed() const { return m_constructed; }
-
     protected:
         virtual int platformSend(const char* data, int length);
         virtual void platformClose();
@@ -89,8 +87,6 @@ namespace WebCore {
         void progressTimerFired();
 
     private:
-        bool m_constructed;
-
         bool m_needClosing;
         bool m_clientCallingFromTimer;
 

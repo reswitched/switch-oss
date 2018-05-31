@@ -309,10 +309,12 @@ void HTMLLinkElement::removedFrom(ContainerNode& insertionPoint)
     }
     document().styleSheetCollection().removeStyleSheetCandidateNode(*this);
 
+    bool wasLoading = styleSheetIsLoading();
+
     if (m_sheet)
         clearSheet();
 
-    if (styleSheetIsLoading())
+    if (wasLoading)
         removePendingSheet(RemovePendingSheetNotifyLater);
 
     if (document().hasLivingRenderTree())

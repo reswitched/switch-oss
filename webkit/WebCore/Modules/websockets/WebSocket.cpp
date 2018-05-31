@@ -239,11 +239,7 @@ void WebSocket::connect(const String& url, const Vector<String>& protocols, Exce
     }
 
     // FIXME: Convert this to check the isolated world's Content Security Policy once webkit.org/b/104520 is solved.
-    bool shouldBypassMainWorldContentSecurityPolicy = false;
-    if (is<Document>(*scriptExecutionContext())) {
-        Document& document = downcast<Document>(*scriptExecutionContext());
-        shouldBypassMainWorldContentSecurityPolicy = document.frame()->script().shouldBypassMainWorldContentSecurityPolicy();
-    }
+    bool shouldBypassMainWorldContentSecurityPolicy = ContentSecurityPolicy::shouldBypassMainWorldContentSecurityPolicy(*scriptExecutionContext());
     if (!scriptExecutionContext()->contentSecurityPolicy()->allowConnectToSource(m_url, shouldBypassMainWorldContentSecurityPolicy)) {
         m_state = CLOSED;
 
@@ -302,13 +298,6 @@ void WebSocket::connect(const String& url, const Vector<String>& protocols, Exce
         protocolString = joinStrings(protocols, subProtocolSeperator());
 
     m_channel->connect(m_url, protocolString);
-#if PLATFORM(WKC)
-    if (!m_channel->isConstructed()) {
-        m_state = CLOSED;
-        ec = QUOTA_EXCEEDED_ERR;
-        return;
-    }
-#endif
     ActiveDOMObject::setPendingActivity(this);
 }
 

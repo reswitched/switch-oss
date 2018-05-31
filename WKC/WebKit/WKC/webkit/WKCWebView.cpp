@@ -1748,6 +1748,15 @@ WKCWebView::notifyMouseMoveTest(const WKCPoint& pos, WKC::MouseButton button, Mo
 
     result = notifyMouseMove(pos, button, modifiers);
 
+    renderer = targetNode->renderer();
+
+    if (!renderer) {
+        // Since the renderer has been deleted, there is a possibility that the appearance of the content has changed,
+        // but in this case, we do not consider it to be a change for a mouse over menu.
+        contentChanged = false;
+        goto exit;
+    }
+
     renderer->frame().document()->updateStyleIfNeeded();
 
     renderer = targetNode->renderer();

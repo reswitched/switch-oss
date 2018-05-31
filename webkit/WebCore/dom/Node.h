@@ -265,7 +265,7 @@ public:
 
 #if PLATFORM(WKC)
     bool isScrollableOverFlowBlockNode() const;
-    void getNodeCompositeRect(LayoutRect* rects, int tx = 0, int ty = 0);
+    void getNodeCompositeRect(LayoutRect* rects, bool isOverflowXHidden, bool isOverflowYHidden, int tx = 0, int ty = 0);
 #endif
 
     bool isDocumentNode() const;

@@ -1,3 +1,390 @@
+2018-04-03  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r230101. rdar://problem/39155394
+
+    Out-of-bounds accesses due to a missing check for MAX_STORAGE_VECTOR_LENGTH in unshiftCountForAnyIndexingType
+    https://bugs.webkit.org/show_bug.cgi?id=183657
+    JSTests:
+    
+    Reviewed by Keith Miller.
+    
+    * stress/large-unshift-splice.js: Added.
+    (make_contig_arr):
+    
+    Source/JavaScriptCore:
+    
+    <rdar://problem/38464399>
+    
+    Reviewed by Keith Miller.
+    
+    There was just a missing check in unshiftCountForIndexingType.
+    I've also replaced 'return false' by 'return true' in the case of an 'out-of-memory' exception, because 'return false' means 'please continue to the slow path',
+    and the slow path has an assert that there is no unhandled exception (line 360 of ArrayPrototype.cpp).
+    Finally, I made the assert in ensureLength a release assert as it would have caught this bug and prevented it from being a security risk.
+    
+    * runtime/ArrayPrototype.cpp:
+    (JSC::unshift):
+    * runtime/JSArray.cpp:
+    (JSC::JSArray::unshiftCountWithAnyIndexingType):
+    * runtime/JSObject.h:
+    (JSC::JSObject::ensureLength):
+    
+    git-svn-id: https://svn.webkit.org/repository/webkit/trunk@230101 268f45cc-cd09-0410-ab3c-d52691b4dbfc
+
+    2018-03-30  Robin Morisset  <rmorisset@apple.com>
+
+            Out-of-bounds accesses due to a missing check for MAX_STORAGE_VECTOR_LENGTH in unshiftCountForAnyIndexingType
+            https://bugs.webkit.org/show_bug.cgi?id=183657
+            <rdar://problem/38464399>
+
+            Reviewed by Keith Miller.
+
+            There was just a missing check in unshiftCountForIndexingType.
+            I've also replaced 'return false' by 'return true' in the case of an 'out-of-memory' exception, because 'return false' means 'please continue to the slow path',
+            and the slow path has an assert that there is no unhandled exception (line 360 of ArrayPrototype.cpp).
+            Finally, I made the assert in ensureLength a release assert as it would have caught this bug and prevented it from being a security risk.
+
+            * runtime/ArrayPrototype.cpp:
+            (JSC::unshift):
+            * runtime/JSArray.cpp:
+            (JSC::JSArray::unshiftCountWithAnyIndexingType):
+            * runtime/JSObject.h:
+            (JSC::JSObject::ensureLength):
+
+2018-04-03  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r229850. rdar://problem/39155286
+
+    Race Condition in arrayProtoFuncReverse() causes wrong results or crash
+    https://bugs.webkit.org/show_bug.cgi?id=183901
+
+    Reviewed by Keith Miller.
+
+    JSTests:
+
+    New test.
+
+    * stress/array-reverse-doesnt-clobber.js: Added.
+    (testArrayReverse):
+    (createArrayOfArrays):
+    (createArrayStorage):
+
+    Source/JavaScriptCore:
+
+    Added write barriers to ensure the reversed contents are properly marked.
+
+    * runtime/ArrayPrototype.cpp:
+    (JSC::arrayProtoFuncReverse):
+
+
+    git-svn-id: https://svn.webkit.org/repository/webkit/trunk@229850 268f45cc-cd09-0410-ab3c-d52691b4dbfc
+
+    2018-03-22  Michael Saboff  <msaboff@apple.com>
+
+            Race Condition in arrayProtoFuncReverse() causes wrong results or crash
+            https://bugs.webkit.org/show_bug.cgi?id=183901
+
+            Reviewed by Keith Miller.
+
+            Added write barriers to ensure the reversed contents are properly marked.
+
+            * runtime/ArrayPrototype.cpp:
+            (JSC::arrayProtoFuncReverse):
+
+2017-10-26  Mark Lam  <mark.lam@apple.com>
+
+        JSRopeString::RopeBuilder::append() should check for overflows.
+        https://bugs.webkit.org/show_bug.cgi?id=178385
+        <rdar://problem/35027468>
+
+        Reviewed by Saam Barati.
+
+        1. Made RopeString check for overflow like the Checked class does.
+        2. Added a missing overflow check in objectProtoFuncToString().
+
+        * runtime/JSString.cpp:
+        (JSC::JSRopeString::RopeBuilder<RecordOverflow>::expand):
+        (JSC::JSRopeString::RopeBuilder::expand): Deleted.
+        * runtime/JSString.h:
+        * runtime/ObjectPrototype.cpp:
+        (JSC::objectProtoFuncToString):
+        * runtime/Operations.h:
+        (JSC::jsStringFromRegisterArray):
+        (JSC::jsStringFromArguments):
+
+2018-01-27  Yusuke Suzuki  <utatane.tea@gmail.com>
+
+        DFG strength reduction fails to convert NumberToStringWithValidRadixConstant for 0 to constant '0'
+        https://bugs.webkit.org/show_bug.cgi?id=182213
+
+        Reviewed by Mark Lam.
+
+        toStringWithRadixInternal is originally used for the slow path if the given value is larger than radix or negative.
+        As a result, it does not accept 0 correctly, and produces an empty string. Since DFGStrengthReductionPhase uses
+        this function, it accidentally converts NumberToStringWithValidRadixConstant(0, radix) to an empty string.
+        This patch fixes toStringWithRadixInternal to accept 0. This change fixes twitch.tv's issue.
+
+        We also add a careful cast to avoid `-INT32_MIN`. It does not produce incorrect value in x86 in practice,
+        but it is UB, and a compiler may assume that the given value is never INT32_MIN and could do an incorrect optimization.
+
+        * runtime/NumberPrototype.cpp:
+        (JSC::toStringWithRadixInternal):
+
+2018-01-23  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r227424. rdar://problem/36791625
+
+    2018-01-23  Filip Pizlo  <fpizlo@apple.com>
+
+            JSC should use a speculation fence on VM entry/exit
+            https://bugs.webkit.org/show_bug.cgi?id=181991
+
+            Reviewed by JF Bastien and Mark Lam.
+
+            This adds a WTF::speculationFence on VM entry and exit.
+
+            For a microbenchmark that just calls a native function (supplied via an Objective-C block) in a
+            tight loop from JS is a 0% regression on x86 and a 11% regression on ARM64.
+
+            * runtime/JSLock.cpp:
+            (JSC::JSLock::didAcquireLock):
+            (JSC::JSLock::willReleaseLock):
+
+2018-01-16  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r226895. rdar://problem/36568085
+
+    2018-01-12  Joseph Pecoraro  <pecoraro@apple.com>
+
+            Web Inspector: Remove unnecessary raw pointer in InspectorConsoleAgent
+            https://bugs.webkit.org/show_bug.cgi?id=181579
+            <rdar://problem/36193759>
+
+            Reviewed by Brian Burg.
+
+            * inspector/agents/InspectorConsoleAgent.h:
+            * inspector/agents/InspectorConsoleAgent.cpp:
+            (Inspector::InspectorConsoleAgent::clearMessages):
+            (Inspector::InspectorConsoleAgent::addConsoleMessage):
+            Switch from a raw pointer to m_consoleMessages.last().
+            Also move the expiration check into the if block since it can only
+            happen inside here when the number of console messages changes.
+
+            (Inspector::InspectorConsoleAgent::discardValues):
+            Also clear the expired message count when messages are cleared.
+
+2018-01-12  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r226840. rdar://problem/36479468
+
+    2018-01-11  Michael Saboff  <msaboff@apple.com>
+
+            REGRESSION(226788): AppStore Crashed @ JavaScriptCore: JSC::MacroAssemblerARM64::pushToSaveImmediateWithoutTouchingRegisters
+            https://bugs.webkit.org/show_bug.cgi?id=181570
+
+            Reviewed by Keith Miller.
+
+            * assembler/MacroAssemblerARM64.h:
+            (JSC::MacroAssemblerARM64::abortWithReason):
+            Reverting these functions to use dataTempRegister and memoryTempRegister as they are
+            JIT release asserts that will crash the program.
+
+            (JSC::MacroAssemblerARM64::pushToSaveImmediateWithoutTouchingRegisters):
+            Changed this so that it invalidates any cached dataTmpRegister contents if temp register
+            caching is enabled.
+
+2018-01-11  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r226788. rdar://problem/36450828
+
+    2018-01-11  Michael Saboff  <msaboff@apple.com>
+
+            Ensure there are no unsafe uses of MacroAssemblerARM64::dataTempRegister
+            https://bugs.webkit.org/show_bug.cgi?id=181512
+
+            Reviewed by Saam Barati.
+
+            * assembler/MacroAssemblerARM64.h:
+            (JSC::MacroAssemblerARM64::abortWithReason):
+            (JSC::MacroAssemblerARM64::pushToSaveImmediateWithoutTouchingRegisters):
+            All current uses of dataTempRegister in these functions are safe, but it makes sense to
+            fix them in case they might be used elsewhere.
+
+2018-01-11  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r226767. rdar://problem/36450818
+
+    2018-01-11  Saam Barati  <sbarati@apple.com>
+
+            Our for-in caching is wrong when we add indexed properties on things in the prototype chain
+            https://bugs.webkit.org/show_bug.cgi?id=181508
+
+            Reviewed by Yusuke Suzuki.
+
+            Our for-in caching would cache structure chains that had prototypes with
+            indexed properties. Clearly this is wrong. This caching breaks when a prototype
+            adds new indexed properties. We would continue to enumerate the old cached
+            state of properties, and not include the new indexed properties.
+
+            The old code used to prevent caching only if the base structure had
+            indexed properties. This patch extends it to prevent caching if the
+            base, or any structure in the prototype chain, has indexed properties.
+
+            * runtime/Structure.cpp:
+            (JSC::Structure::canCachePropertyNameEnumerator const):
+
+2018-01-11  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r226650. rdar://problem/36429150
+
+    2018-01-09  Mark Lam  <mark.lam@apple.com>
+
+            ASSERTION FAILED: pair.second->m_type & PropertyNode::Getter
+            https://bugs.webkit.org/show_bug.cgi?id=181388
+            <rdar://problem/36349351>
+
+            Reviewed by Saam Barati.
+
+            When there are duplicate setters or getters, we may end up overwriting a getter
+            with a setter, or vice versa.  This patch adds tracking for getters/setters that
+            have been overwritten with duplicates and ignore them.
+
+            * bytecompiler/NodesCodegen.cpp:
+            (JSC::PropertyListNode::emitBytecode):
+            * parser/NodeConstructors.h:
+            (JSC::PropertyNode::PropertyNode):
+            * parser/Nodes.h:
+            (JSC::PropertyNode::isOverriddenByDuplicate const):
+            (JSC::PropertyNode::setIsOverriddenByDuplicate):
+
+2018-01-09  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r226672. rdar://problem/36397330
+
+    2018-01-09  Keith Miller  <keith_miller@apple.com>
+
+            and32 with an Address source on ARM64 did not invalidate dataTempRegister
+            https://bugs.webkit.org/show_bug.cgi?id=181467
+
+            Reviewed by Michael Saboff.
+
+            * assembler/MacroAssemblerARM64.h:
+            (JSC::MacroAssemblerARM64::and32):
+
+2017-12-01  Saam Barati  <sbarati@apple.com>
+
+        Having a bad time needs to handle ArrayClass indexing type as well
+        https://bugs.webkit.org/show_bug.cgi?id=180274
+        <rdar://problem/35667869>
+
+        Reviewed by Keith Miller and Mark Lam.
+
+        We need to make sure to transition ArrayClass to SlowPutArrayStorage as well.
+        Otherwise, we'll end up with the wrong Structure, which will lead us to not
+        adhere to the spec. The bug was that we were not considering ArrayClass inside 
+        hasBrokenIndexing. This patch rewrites that function to automatically opt
+        in non-empty indexing types as broken, instead of having to opt out all
+        non-empty indexing types besides SlowPutArrayStorage.
+
+        * runtime/IndexingType.h:
+        (JSC::hasSlowPutArrayStorage):
+        (JSC::shouldUseSlowPut):
+        * runtime/JSGlobalObject.cpp:
+        * runtime/JSObject.cpp:
+        (JSC::JSObject::switchToSlowPutArrayStorage):
+
+2016-11-14  Mark Lam  <mark.lam@apple.com>
+
+        RegExpObject::exec/match should handle errors gracefully.
+        https://bugs.webkit.org/show_bug.cgi?id=155145
+        <rdar://problem/27435934>
+
+        Reviewed by Keith Miller.
+
+        1. Added some missing exception checks to RegExpObject::execInline() and
+           RegExpObject::matchInline().
+        2. Updated related code to work with ExceptionScope verification requirements.
+
+        * dfg/DFGOperations.cpp:
+        * runtime/RegExpObjectInlines.h:
+        (JSC::RegExpObject::execInline):
+        (JSC::RegExpObject::matchInline):
+        * runtime/RegExpPrototype.cpp:
+        (JSC::regExpProtoFuncTestFast):
+        (JSC::regExpProtoFuncExec):
+        (JSC::regExpProtoFuncMatchFast):
+
+2016-03-07  Filip Pizlo  <fpizlo@apple.com>
+
+        RegExp.prototype.exec() should call into Yarr at most once
+        https://bugs.webkit.org/show_bug.cgi?id=155139
+
+        Reviewed by Saam Barati.
+
+        For apparently no good reason, RegExp.prototype.match() was calling into Yarr twice, almost
+        as if it was hoping that the non-matching case was so common that it was best to have the
+        matching case do the work all over again.
+
+        This is a 4% speed-up on Octane/regexp. It's also a matter of common sense: we should not be
+        in the business of presuming whether someone's match will succeed or fail. The increased
+        cost of running Yarr twice is so much larger than whatever savings we were getting from
+        running a match-only regexp that this is just not a good overall deal for the engine.
+
+        Also, it's interesting that we are seeing a 4% speed-up on regexp despite the fact that a
+        majority (almost a supermajority, I think) of calls into RegExp.prototype.match() are failed
+        matches. So, this change is a 4% speed-up despite being a slow down on the common case. That
+        tells you just how bad the old behavior was on the uncommon case.
+
+        * runtime/MatchResult.h:
+        (MatchResult::MatchResult):
+        (MatchResult::failed):
+        (MatchResult::operator bool):
+        * runtime/RegExpCachedResult.cpp:
+        (JSC::RegExpCachedResult::lastResult):
+        * runtime/RegExpConstructor.h:
+        (JSC::RegExpConstructor::setMultiline):
+        (JSC::RegExpConstructor::multiline):
+        (JSC::RegExpConstructor::performMatch):
+        (JSC::RegExpConstructor::recordMatch):
+        * runtime/RegExpMatchesArray.cpp:
+        (JSC::createRegExpMatchesArray):
+        (JSC::createEmptyRegExpMatchesArray):
+        (JSC::createStructureImpl):
+        * runtime/RegExpMatchesArray.h:
+        (JSC::createRegExpMatchesArray):
+        * runtime/RegExpObject.cpp:
+        (JSC::RegExpObject::put):
+        (JSC::getLastIndexAsUnsigned):
+        (JSC::RegExpObject::exec):
+        (JSC::RegExpObject::match):
+        * runtime/RegExpObject.h:
+        (JSC::RegExpObject::getLastIndex):
+        (JSC::RegExpObject::test):
+        * runtime/StringPrototype.cpp:
+        (JSC::stringProtoFuncMatch):
+
+2016-10-21  Caitlin Potter  <caitp@igalia.com>
+
+        [JSC] don't crash when arguments to `new Function()` produce unexpected AST
+        https://bugs.webkit.org/show_bug.cgi?id=163748
+
+        Reviewed by Mark Lam.
+
+        The ASSERT(statement); and ASSERT(funcDecl); lines are removed, replaced with blocks
+        to report a generic Parser error message. These lines are only possible to be reached
+        if the input string produced an unexpected AST, which previously could be used to crash
+        the process via ASSERT failure.
+
+        The node type assertions are left in the tree, as it should be impossible for a top-level
+        `{` to produce anything other than a Block node. If the node turns out not to be a Block,
+        it indicates that the (C++) caller of this function (E.g in FunctionConstructor.cpp), is
+        doing something incorrect. Similarly, it should be impossible for the `funcDecl` node to
+        be anything other than a function declaration given the conventions of the caller of this
+        function.
+
+        * runtime/CodeCache.cpp:
+        (JSC::CodeCache::getFunctionExecutableFromGlobalCode):
+
 2016-02-02  Caitlin Potter  <caitp@igalia.com>
 
         JSSymbolTableObject::deleteProperty() crashes deleting Symbols

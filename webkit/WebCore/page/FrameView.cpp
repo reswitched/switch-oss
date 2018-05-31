@@ -173,6 +173,7 @@ FrameView::FrameView(Frame& frame)
     , m_inSynchronousPostLayout(false)
     , m_postLayoutTasksTimer(*this, &FrameView::postLayoutTimerFired)
     , m_updateEmbeddedObjectsTimer(*this, &FrameView::updateEmbeddedObjectsTimerFired)
+    , m_updateWidgetPositionsTimer(*this, &FrameView::updateWidgetPositionsTimerFired)
     , m_isTransparent(false)
     , m_baseBackgroundColor(Color::white)
     , m_mediaType("screen")
@@ -4903,6 +4904,7 @@ static Vector<RefPtr<Widget>> collectAndProtectWidgets(const HashSet<Widget*>& s
 
 void FrameView::updateWidgetPositions()
 {
+    m_updateWidgetPositionsTimer.stop();
     // updateWidgetPosition() can possibly cause layout to be re-entered (via plug-ins running
     // scripts in response to NPP_SetWindow, for example), so we need to keep the Widgets
     // alive during enumeration.
@@ -4912,6 +4914,17 @@ void FrameView::updateWidgetPositions()
             UNUSED_PARAM(ignoreWidgetState);
         }
     }
+}
+
+void FrameView::scheduleUpdateWidgetPositions()
+{
+    if (!m_updateWidgetPositionsTimer.isActive())
+        m_updateWidgetPositionsTimer.startOneShot(0);
+}
+
+void FrameView::updateWidgetPositionsTimerFired()
+{
+    updateWidgetPositions();
 }
 
 void FrameView::notifyWidgets(WidgetNotification notification)

@@ -430,8 +430,15 @@ void FilterEffectRendererHelper::applyFilterEffect(GraphicsContext* destinationC
     LayoutRect destRect = filter->outputRect();
     destRect.move(m_paintOffset.x(), m_paintOffset.y());
 
+#if PLATFORM(WKC)
+    ImageBuffer* sourceImage = filter->output();
+    if (sourceImage)
+        destinationContext->drawImageBuffer(sourceImage, m_renderLayer->renderer().style().colorSpace(),
+            snapRectToDevicePixels(destRect, m_renderLayer->renderer().document().deviceScaleFactor()));
+#else
     destinationContext->drawImageBuffer(filter->output(), m_renderLayer->renderer().style().colorSpace(),
         snapRectToDevicePixels(destRect, m_renderLayer->renderer().document().deviceScaleFactor()));
+#endif
 
     filter->clearIntermediateResults();
 }

@@ -245,9 +245,9 @@ bool HTMLFormElement::validateInteractively(Event* event)
     // Because the form has invalid controls, we abort the form submission and
     // show a validation message on a focusable form control.
 
-    // Needs to update layout now because we'd like to call isFocusable(), which
-    // has !renderer()->needsLayout() assertion.
-    document().updateLayoutIgnorePendingStylesheets();
+    // Make sure layout is up-to-date in case we call isFocusable() (which
+    // has !renderer()->needsLayout() assertion).
+    ASSERT(!document().view() || !document().view()->needsLayout());
 
     Ref<HTMLFormElement> protect(*this);
 

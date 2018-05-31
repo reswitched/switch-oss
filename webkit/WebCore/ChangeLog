@@ -1,3 +1,736 @@
+2017-12-11  Zalan Bujtas  <zalan@apple.com>
+
+        FloatingObjects/FloatingObject classes should hold weak references to renderers
+        https://bugs.webkit.org/show_bug.cgi?id=180627
+        <rdar://problem/35954069>
+
+        Reviewed by Antti Koivisto.
+
+        * rendering/FloatingObjects.cpp:
+        (WebCore::FloatingObject::FloatingObject):
+        (WebCore::ComputeFloatOffsetAdapter::ComputeFloatOffsetAdapter):
+        (WebCore::ComputeFloatOffsetForFloatLayoutAdapter::ComputeFloatOffsetForFloatLayoutAdapter):
+        (WebCore::ComputeFloatOffsetForLineLayoutAdapter::ComputeFloatOffsetForLineLayoutAdapter):
+        (WebCore::FindNextFloatLogicalBottomAdapter::FindNextFloatLogicalBottomAdapter):
+        (WebCore::FindNextFloatLogicalBottomAdapter::collectIfNeeded):
+        (WebCore::FloatingObjects::findNextFloatLogicalBottomBelow):
+        (WebCore::FloatingObjects::findNextFloatLogicalBottomBelowForBlock):
+        (WebCore::FloatingObjects::FloatingObjects):
+        (WebCore::FloatingObjects::clearLineBoxTreePointers):
+        (WebCore::FloatingObjects::logicalLeftOffsetForPositioningFloat):
+        (WebCore::FloatingObjects::logicalRightOffsetForPositioningFloat):
+        (WebCore::FloatingObjects::logicalLeftOffset):
+        (WebCore::FloatingObjects::logicalRightOffset):
+        (WebCore::ComputeFloatOffsetForFloatLayoutAdapter<FloatingObject::FloatLeft>::updateOffsetIfNeeded):
+        (WebCore::ComputeFloatOffsetForFloatLayoutAdapter<FloatingObject::FloatRight>::updateOffsetIfNeeded):
+        (WebCore::ComputeFloatOffsetForFloatLayoutAdapter<FloatTypeValue>::heightRemaining const):
+        (WebCore::ComputeFloatOffsetAdapter<FloatTypeValue>::collectIfNeeded):
+        (WebCore::ComputeFloatOffsetForLineLayoutAdapter<FloatingObject::FloatLeft>::updateOffsetIfNeeded):
+        (WebCore::ComputeFloatOffsetForLineLayoutAdapter<FloatingObject::FloatRight>::updateOffsetIfNeeded):
+        * rendering/FloatingObjects.h:
+        (WebCore::FloatingObject::renderer const):
+        (WebCore::FloatingObjects::renderer const):
+
+2018-03-09  Nan Wang  <n_wang@apple.com>
+
+        AX: AOM: More accessibility events support
+        https://bugs.webkit.org/show_bug.cgi?id=183023
+        <rdar://problem/37764380>
+
+        Reviewed by Chris Fleizach.
+
+        The test is crashing when we call updateBackingStore when 
+        the AXObjectCache object is gone. Added a check to fix that.
+
+        Modified the test by using the right format of setTimeout and extended the delay.
+
+        * accessibility/AccessibilityObject.cpp:
+        (WebCore::AccessibilityObject::updateBackingStore):
+
+2018-02-19  Fujii Hironori  <Hironori.Fujii@sony.com>
+
+        null m_lastNodeInserted dereference at ReplaceSelectionCommand::InsertedNodes::lastLeafInserted
+        https://bugs.webkit.org/show_bug.cgi?id=161947
+
+        Reviewed by Ryosuke Niwa.
+
+        InsertedNodes happened to be empty if the inserted nodes were
+        removed. Add more checks if InsertedNodes is empty.
+
+        No new tests (Covered by existing tests).
+
+        * editing/ReplaceSelectionCommand.cpp:
+        (WebCore::ReplaceSelectionCommand::doApply): Return early if InsertedNodes becomes empty.
+        * editing/ReplaceSelectionCommand.h:
+        (WebCore::ReplaceSelectionCommand::InsertedNodes::isEmpty): New method.
+        (WebCore::ReplaceSelectionCommand::InsertedNodes::lastLeafInserted const):
+        Assert m_lastNodeInserted is not null.
+        (WebCore::ReplaceSelectionCommand::InsertedNodes::pastLastLeaf const): Ditto.
+
+2018-02-13  Chris Dumez  <cdumez@apple.com>
+
+        REGRESSION (r228299): Broke reader mode in Safari
+        https://bugs.webkit.org/show_bug.cgi?id=182697
+        <rdar://problem/37399012>
+
+        Reviewed by Ryosuke Niwa.
+
+        Rework the fix for r228299 to be more targeted. I moved the policy check
+        cencelation from FrameLoader::stopLoading() to NavigationScheduler::schedule()
+        when a pending load is cancelled by another load. I have verified that the
+        sites fixed by r228299 still work with this more limited change. However,
+        reader mode is now working again.
+
+        The issue seems to be that we tell CFNetwork to continue with the load after
+        receiving the response, even if the client has not responded to the
+        decidePolicyForNavigationResponse delegate yet. As a result, CFNetwork sends
+        us the resource data and we may commit the provisional load before receiving
+        the policy response from the client. When the provisional load is committed,
+        we call FrameLoader::stopLoading() which after r228299 cancelled pending
+        policy checks. Because we did not wait for the policy check response to
+        commit the load, we would cancel it which would make the load fail.
+
+        The real fix here would be to make not tell CFNetwork to continue until after
+        we've received the policy delegate response. However, this is a larger and
+        riskier change at this point. I will follow-up on this issue.
+
+        Covered by new API test.
+
+        * loader/FrameLoader.cpp:
+        (WebCore::FrameLoader::stopLoading):
+        * loader/NavigationScheduler.cpp:
+        (WebCore::NavigationScheduler::schedule):
+
+2018-05-08  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r231236. rdar://problem/40050705
+
+    Source/WebCore:
+    Prevent Debug ASSERT when changing forms
+    https://bugs.webkit.org/show_bug.cgi?id=185173
+    <rdar://problem/39738669>
+    
+    Reviewed by Ryosuke Niwa.
+    
+    Form submission could trigger a debug assertion during validation when
+    a form is changed during an input submission. Fix this by cleaning up
+    the event handling logic and make it more consistent with modern WebKit
+    coding style.
+    
+    Test: fast/forms/form-submission-crash-3.html
+    
+    * html/HTMLButtonElement.cpp:
+    (WebCore::HTMLButtonElement::defaultEventHandler): Make sure layout runs before
+    attempting to perform event handling.
+    * html/HTMLFormElement.cpp:
+    (WebCore::HTMLFormElement::reportValidity): Ditto.
+    (WebCore::HTMLFormElement::validateInteractively): Remove call to perform layout here,
+    since we expect this to happen earlier in the layout pass. Add an assertion that the
+    tree is not dirty.
+    * html/ImageInputType.cpp:
+    (WebCore::ImageInputType::handleDOMActivateEvent): Make sure layout runs before
+    attempting to perform event handling.
+    * html/SubmitInputType.cpp:
+    (WebCore::SubmitInputType::handleDOMActivateEvent): Ditto.
+    
+    LayoutTests:
+    Prevent assertion when changing forms
+    https://bugs.webkit.org/show_bug.cgi?id=185173
+    <rdar://problem/39738669>
+    
+    Reviewed by Ryosuke Niwa.
+    
+    * fast/forms/form-submission-crash-3-expected.txt: Added.
+    * fast/forms/form-submission-crash-3.html: Added.
+    
+    git-svn-id: https://svn.webkit.org/repository/webkit/trunk@231236 268f45cc-cd09-0410-ab3c-d52691b4dbfc
+
+    2018-05-01  Brent Fulgham  <bfulgham@apple.com>
+
+            Prevent Debug ASSERT when changing forms
+            https://bugs.webkit.org/show_bug.cgi?id=185173
+            <rdar://problem/39738669>
+
+            Reviewed by Ryosuke Niwa.
+
+            Form submission could trigger a debug assertion during validation when
+            a form is changed during an input submission. Fix this by cleaning up
+            the event handling logic and make it more consistent with modern WebKit
+            coding style.
+
+            Test: fast/forms/form-submission-crash-3.html
+
+            * html/HTMLButtonElement.cpp:
+            (WebCore::HTMLButtonElement::defaultEventHandler): Make sure layout runs before
+            attempting to perform event handling.
+            * html/HTMLFormElement.cpp:
+            (WebCore::HTMLFormElement::reportValidity): Ditto.
+            (WebCore::HTMLFormElement::validateInteractively): Remove call to perform layout here,
+            since we expect this to happen earlier in the layout pass. Add an assertion that the
+            tree is not dirty.
+            * html/ImageInputType.cpp:
+            (WebCore::ImageInputType::handleDOMActivateEvent): Make sure layout runs before
+            attempting to perform event handling.
+            * html/SubmitInputType.cpp:
+            (WebCore::SubmitInputType::handleDOMActivateEvent): Ditto.
+
+2018-04-03  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r230052. rdar://problem/39155251
+
+    WebSocket cookie incorrectly stored
+    https://bugs.webkit.org/show_bug.cgi?id=184100
+    <rdar://problem/37928715>
+    
+    Reviewed by Brent Fulgham.
+    
+    Source/WebCore:
+    
+    A cookie received in a WebSocket response should be stored with respect to the
+    origin of the WebSocket server in order for it to be sent in a subsequent request.
+    
+    Also removed a FIXME about implementing support for the long since
+    deprecated Set-Cookie2 header.
+    
+    Test: http/tests/websocket/tests/hybi/websocket-cookie-overwrite-behavior.html
+    
+    * Modules/websockets/WebSocketChannel.cpp:
+    (WebCore::WebSocketChannel::processBuffer):
+    * Modules/websockets/WebSocketHandshake.h:
+    
+    LayoutTests:
+    
+    * http/tests/websocket/tests/hybi/cookie_wsh.py: Added. Downloaded from
+    <https://github.com/w3c/pywebsocket/blob/b2e1d11086fdf00b33a0d30c504f227e7d4fa86b/src/example/cookie_wsh.py>.
+    (_add_set_cookie):
+    (web_socket_do_extra_handshake):
+    (web_socket_transfer_data):
+    * http/tests/websocket/tests/hybi/websocket-cookie-overwrite-behavior-expected.txt: Added.
+    * http/tests/websocket/tests/hybi/websocket-cookie-overwrite-behavior.html: Added.
+    
+    git-svn-id: https://svn.webkit.org/repository/webkit/trunk@230052 268f45cc-cd09-0410-ab3c-d52691b4dbfc
+
+    2018-03-28  Daniel Bates  <dabates@apple.com>
+
+            WebSocket cookie incorrectly stored
+            https://bugs.webkit.org/show_bug.cgi?id=184100
+            <rdar://problem/37928715>
+
+            Reviewed by Brent Fulgham.
+
+            A cookie received in a WebSocket response should be stored with respect to the
+            origin of the WebSocket server in order for it to be sent in a subsequent request.
+
+            Also removed a FIXME about implementing support for the long since
+            deprecated Set-Cookie2 header.
+
+            Test: http/tests/websocket/tests/hybi/websocket-cookie-overwrite-behavior.html
+
+            * Modules/websockets/WebSocketChannel.cpp:
+            (WebCore::WebSocketChannel::processBuffer):
+            * Modules/websockets/WebSocketHandshake.h:
+
+2018-04-03  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r230063. rdar://problem/39155049
+
+    The SVGAnimatedProperty wrappers have to be detached from the referenced values before the SVGAnimatedType is deleted
+    https://bugs.webkit.org/show_bug.cgi?id=183972
+
+    Reviewed by Daniel Bates.
+
+    If the SVGAnimatedType is a list type, e.g. SVGLengthListValues, the wrappers
+    of the animated properties have to be detached from the items in the list
+    before it's deleted.
+
+    * svg/SVGAnimateElementBase.cpp:
+    (WebCore::SVGAnimateElementBase::clearAnimatedType):
+
+
+    git-svn-id: https://svn.webkit.org/repository/webkit/trunk@230063 268f45cc-cd09-0410-ab3c-d52691b4dbfc
+
+    2018-03-28  Said Abou-Hallawa  <sabouhallawa@apple.com>
+
+            The SVGAnimatedProperty wrappers have to be detached from the referenced values before the SVGAnimatedType is deleted
+            https://bugs.webkit.org/show_bug.cgi?id=183972
+
+            Reviewed by Daniel Bates.
+
+            If the SVGAnimatedType is a list type, e.g. SVGLengthListValues, the wrappers
+            of the animated properties have to be detached from the items in the list
+            before it's deleted.
+
+            * svg/SVGAnimateElementBase.cpp:
+            (WebCore::SVGAnimateElementBase::clearAnimatedType):
+
+2018-03-20  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r229505. rdar://problem/38651624
+
+    2018-03-09  Zalan Bujtas  <zalan@apple.com>
+
+            Turn off offset*/scroll* optimization for input elements with shadow content
+            https://bugs.webkit.org/show_bug.cgi?id=182383
+            <rdar://problem/37114190>
+
+            Reviewed by Antti Koivisto.
+
+            We normally ensure clean tree before calling offsetHeight/Width, scrollHeight/Width.
+            In certain cases (see updateLayoutIfDimensionsOutOfDate() for details), it's okay to return
+            the previously computed values even when some part of the tree is dirty.
+            In case of shadow content, updateLayoutIfDimensionsOutOfDate() might return false (no need to layout)
+            for the root, while true (needs layout) for the shadow content.
+            This could confuse the caller (Element::scrollWidth/Height etc) and lead to incorrect result.
+
+            Test: fast/forms/scrollheight-with-mutation-crash.html
+
+            * dom/Document.cpp:
+            (WebCore::Document::updateLayoutIfDimensionsOutOfDate):
+
+2018-02-20  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r228585. rdar://problem/37697677
+
+    2018-02-16  Antti Koivisto  <antti@apple.com>
+
+            Assert in mixed blend animation
+            https://bugs.webkit.org/show_bug.cgi?id=182887
+            <rdar://problem/37598140>
+
+            Reviewed by Zalan Bujtas.
+
+            Test: fast/css/calc-mixed-blend-crash.html
+
+            * platform/CalculationValue.cpp:
+            (WebCore::CalcExpressionBlendLength::CalcExpressionBlendLength):
+
+            Fix mismatch between the type test and the value used.
+
+2018-02-14  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r228476. rdar://problem/37549893
+
+    2018-02-14  Dean Jackson  <dino@apple.com>
+
+            CrashTracer: com.apple.WebKit.WebContent at com.apple.WebCore: WebCore::HTMLPlugInImageElement::didAddUserAgentShadowRoot + 618
+            https://bugs.webkit.org/show_bug.cgi?id=182798
+            <rdar://problem/23337253>
+
+            Reviewed by Eric Carlson.
+
+            Speculative fix for a crash in HTMLPlugInImageElement::didAddUserAgentShadowRoot.
+            The guess is that the m_swapRendererTimer is set, and the display state changes to
+            something that does not require a shadow root, but before the timer fires.
+            Fix this by ensuring that the timer is reset on every display state change.
+
+            * html/HTMLPlugInElement.cpp:
+            (WebCore::HTMLPlugInElement::setDisplayState): Guard for sets that wouldn't
+            actually change value, and make sure we always reset the timer.
+
+2018-02-13  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r228299. rdar://problem/37518837
+
+    2018-02-08  Chris Dumez  <cdumez@apple.com>
+
+            Form submission after navigation fails when decidePolicyForNavigationAction is async
+            https://bugs.webkit.org/show_bug.cgi?id=182412
+            <rdar://problem/35181099>
+
+            Reviewed by Alex Christensen.
+
+            When the form is submitted and schedules the load in an iframe that is already loading,
+            FrameLoader::stopLoading() is called as expected. However, because policy checks can
+            now be asynchronous, stopLoading() also needs to stop pending policy checks. Otherwise,
+            continueLoadAfterNavigationPolicy() gets called for a cancelled load and we're in trouble
+            because the FrameLoader was reused for another load since then.
+
+            Test: http/tests/navigation/sync-form-submit-iframe.html
+
+            * loader/FrameLoader.cpp:
+            (WebCore::FrameLoader::stopLoading):
+
+2018-01-29  Antti Koivisto  <antti@apple.com>
+
+        CalcExpressionBlendLength::evaluate hits stack limit
+        https://bugs.webkit.org/show_bug.cgi?id=182243
+
+        Reviewed by Zalan Bujtas.
+
+        Speculative fix to prevent nesting of CalcExpressionBlendLength.
+
+        No test, don't know how to make one.
+
+        * platform/CalculationValue.cpp:
+        (WebCore::CalcExpressionBlendLength::CalcExpressionBlendLength):
+
+        CalcExpressionBlendLength is only used in Length values of animated style. Normally such styles are not used
+        as input for further blending but there are some paths where this could in principle happen. Repeated
+        application (for each animation frame) could construct CalcExpressionBlendLength expression that blows
+        the stack when evaluated.
+
+        Speculatively fix by flattening any nesting.
+
+        * platform/CalculationValue.h:
+        (WebCore::CalcExpressionBlendLength::CalcExpressionBlendLength): Deleted.
+2018-01-30  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r227697. rdar://problem/37019483
+
+    2018-01-26  Simon Fraser  <simon.fraser@apple.com>
+
+            REGRESSiON (r226492): Crash under Element::absoluteEventBounds() on a SVGPathElement which has not been laid out yet
+            https://bugs.webkit.org/show_bug.cgi?id=182185
+            rdar://problem/36836262
+
+            Reviewed by Zalan Bujtas.
+
+            Document::absoluteRegionForEventTargets() can fire when layout is dirty, and SVGPathElement's path() can be null if it
+            hasn't been laid out yet. So protect against a null path in getBBox().
+
+            Not easily testable because internals.nonFastScrollableRects() forces layout, and the crash depends on the timing of
+            absoluteRegionForEventTargets().
+
+            * svg/SVGPathElement.cpp:
+            (WebCore::SVGPathElement::getBBox):
+
+2018-01-06  Simon Fraser  <simon.fraser@apple.com>
+
+        Possible crash computing event regions
+        https://bugs.webkit.org/show_bug.cgi?id=181368
+        rdar://problem/34847081
+
+        Reviewed by Zalan Bujtas.
+
+        Don't trigger layout in Element::absoluteEventHandlerBounds(), since this can run arbirary script
+        which might delete elements or re-enter Document::absoluteRegionForEventTargets().
+
+        It's OK to not trigger layout, because if layout is dirty, the next layout will update event regions again.
+
+        Add a LayoutDisallowedScope to check that Document::absoluteRegionForEventTargets() doesn't
+        trigger layout, and move the check for LayoutDisallowedScope::isLayoutAllowed() from Document::updateLayout()
+        to LayoutContext::layout(), since some layouts don't happen via the former (e.g. the one being removed here).
+
+        The test checks that the assertion does not fire. I was not able to get a reliable test for any crash.
+
+        Test: fast/events/event-handler-regions-layout.html
+
+        * dom/Document.cpp:
+        (WebCore::Document::updateLayout):
+        (WebCore::Document::absoluteRegionForEventTargets):
+        * dom/Element.cpp:
+        (WebCore::Element::absoluteEventHandlerBounds):
+        * page/LayoutContext.cpp:
+        (WebCore::LayoutContext::layout):
+        * rendering/LayoutDisallowedScope.h: Move the #ifdefs around to avoid defining the enum twice.
+        (WebCore::LayoutDisallowedScope::LayoutDisallowedScope):
+        (WebCore::LayoutDisallowedScope::isLayoutAllowed):
+
+2018-01-25  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r227578. rdar://problem/36873356
+
+    2018-01-24  Chris Dumez  <cdumez@apple.com>
+
+            close() operation should not be exposed inside a ServiceWorkerGlobalScope
+            https://bugs.webkit.org/show_bug.cgi?id=182057
+
+            Reviewed by Youenn Fablet.
+
+            Move close() from WorkerGlobalScope to DedicatedWorkerGlobalScope as per:
+            - https://html.spec.whatwg.org/multipage/workers.html#dedicatedworkerglobalscope
+
+            This change to the specification was made to avoid exposing this deprecated
+            features to service workers (which are new).
+
+            No new tests, rebaselined existing test.
+
+            * workers/DedicatedWorkerGlobalScope.idl:
+            * workers/WorkerGlobalScope.idl:
+
+
+2018-01-25  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r227567. rdar://problem/36873353
+
+    2018-01-24  Daniel Bates  <dabates@apple.com>
+
+            [CSP] Check policy for targeted windows when navigating to a JavaScript URL
+            https://bugs.webkit.org/show_bug.cgi?id=182018
+            <rdar://problem/36795781>
+
+            Reviewed by Brent Fulgham.
+
+            Move the CSP check to be earlier in the function.
+
+            Test: http/tests/security/contentSecurityPolicy/window-open-javascript-url-with-target-blocked.html
+
+            * loader/FrameLoader.cpp:
+            (WebCore::createWindow):
+
+2018-01-24  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r227531. rdar://problem/36830355
+
+    2018-01-24  Youenn Fablet  <youenn@apple.com>
+
+            Fetch response should copy its url from the request if null
+            https://bugs.webkit.org/show_bug.cgi?id=182048
+            Reviewed by Chris Dumez.
+
+            No change of behavior.
+
+            * loader/DocumentLoader.cpp:
+            (WebCore::DocumentLoader::responseReceived): Add assertion to check that the response URL is not null.
+
+2018-01-19  Ryosuke Niwa  <rniwa@webkit.org>
+
+        Release assertion in canExecuteScript when executing scripts during page cache restore
+        https://bugs.webkit.org/show_bug.cgi?id=181902
+
+        Reviewed by Antti Koivisto.
+
+        The crash was caused by an erroneous instantiation of ScriptDisallowedScope::InMainThread in CachedPage::restore.
+        It can execute arbitrary scripts since CachedFrame::open can update style, layout, and evaluate media queries.
+
+        This is fine because there is no way to put this page back into a page cache until the load is commited via
+        FrameLoader::commitProvisionalLoad is invoked later which only happens after CachedPage::restore had exited.
+
+        Also added a release assert to make sure this condition holds.
+
+        Tests: fast/history/page-cache-execute-script-during-restore.html
+               fast/history/page-cache-navigate-during-restore.html
+
+        * history/CachedPage.cpp:
+        (WebCore::CachedPageRestorationScope::CachedPageRestorationScope): Added.
+        (WebCore::CachedPageRestorationScope::~CachedPageRestorationScope): Added.
+        (WebCore::CachedPage::restore): Don't instantiate ScriptDisallowedScope::InMainThread. Set isRestoringCachedPage
+        on the cached pate to release-assert that there won't be any attempt to put this very page back into the cache.
+        * history/PageCache.cpp:
+        (WebCore::canCachePage): Added a release assert to make sure the page which is in the process of being restored
+        from the page cache is not put into the page cache.
+        * page/Page.h:
+        (WebCore::Page::setIsRestoringCachedPage): Added.
+        (WebCore::Page::isRestoringCachedPage const): Added.
+
+2018-01-21  Jer Noble  <jer.noble@apple.com>
+
+        REGRESSION (macOS 10.13.2): imported/w3c/web-platform-tests/media-source/mediasource-* LayoutTests failing
+        https://bugs.webkit.org/show_bug.cgi?id=181891
+
+        Reviewed by Eric Carlson.
+
+        In macOS 10.13.2, CoreMedia changed the definition of CMSampleBufferGetDuration() to return
+        the presentation duration rather than the decode duration. For media streams where those two
+        durations are identical (or at least, closely similar), this isn't a problem. But the media
+        file used in the WPT tests have an unusual frame cadence: decode durations go {3000, 1, 5999,
+        1, 5999,...} and presentation durations go {3000, 2999, 3000, 2999}. This caused one check in
+        the "Coded Frame Processing" algorithm to begin failing, where it checks that the delta
+        between the last sample's decode time and the new decode time is no more than 2x as far as
+        the last sample's duration. That's not a problem as long as the "duration" is the "decode
+        duration" and the samples are all adjacent. Once the "duration" is "presentation duration",
+        all the assumptions in the algorithm are invalidated. In the WPT test case, the delta between
+        decode times is 5999, and 2 * the presentation duration is 5998, causing all samples up to
+        the next sync sample to be dropped.
+
+        To work around this change in behavior, we'll adopt the same technique used by Mozilla's MSE
+        implementation, which was done for similar reasons. Rather than track the "last frame duration",
+        we'll record the "greatest frame duration", and use actual decode timestamps to derive this
+        duration. The "greatest frame duration" field will be reset at the same times as "last frame
+        duration", and will be used only in the part of the algorithm that checks for large decode
+        timestamp gaps.
+
+        * Modules/mediasource/SourceBuffer.cpp:
+        (WebCore::SourceBuffer::TrackBuffer::TrackBuffer):
+        (WebCore::SourceBuffer::resetParserState):
+        (WebCore::SourceBuffer::sourceBufferPrivateDidReceiveSample):
+
+2018-01-16  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r227000. rdar://problem/36567987
+
+    2018-01-16  Simon Fraser  <simon.fraser@apple.com>
+
+            Text looks bad on some CSS spec pages
+            https://bugs.webkit.org/show_bug.cgi?id=181700
+            rdar://problem/36552107
+
+            Reviewed by Tim Horton.
+
+            When making new tiles in a TileController, we failed to set their "supports antialiased layer text"
+            setting, so tile caches could end up with a mixture of layers that do and do not support
+            antialiased layer text.
+
+            No tests because the tiled drawing tests don't dump out tiles inside of tile caches.
+
+            * platform/graphics/ca/TileController.cpp:
+            (WebCore::TileController::createTileLayer):
+
+2015-10-05  Jiewen Tan  <jiewen_tan@apple.com>
+
+        Fix null pointer dereference in WebSocket::connect()        
+        https://bugs.webkit.org/show_bug.cgi?id=149311
+        <rdar://problem/22748858>
+
+        Reviewed by Chris Dumez.
+
+        This is a merge of Blink r187441,
+        https://codereview.chromium.org/785933005
+
+        Test: http/tests/websocket/construct-in-detached-frame.html
+
+        * Modules/websockets/WebSocket.cpp:
+        (WebCore::WebSocket::connect):
+        Call function implemented below instead of duplicating the code.
+        * page/ContentSecurityPolicy.cpp:
+        (WebCore::ContentSecurityPolicy::shouldBypassMainWorldContentSecurityPolicy):
+        * page/ContentSecurityPolicy.h:
+        Factor the logic to check shouldBypassMainWorldContentSecurityPolicy into 
+        a function in this class. Check Frame pointers are not null before getting 
+        shouldBypassMainWorldContentSecurityPolicy via those pointers.
+        * page/EventSource.cpp:
+        (WebCore::EventSource::create):
+        This got fixed as a bonus.
+        * xml/XMLHttpRequest.cpp:
+        (WebCore::XMLHttpRequest::open):
+        This got fixed as a bonus too.
+
+2018-01-16  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r226951. rdar://problem/36568098
+
+    2018-01-15  Youenn Fablet  <youenn@apple.com>
+
+            RealtimeMediaSource should be ThreadSafeRefCounted
+            https://bugs.webkit.org/show_bug.cgi?id=181649
+
+            Reviewed by Eric Carlson.
+
+            Difficult to write a test as this is really racy.
+            RealtimeIncomingVideoSourceCocoa::OnFrame is taking a reference on a background thread
+            to send a task to the main thread.
+            This requires it to be thread safe ref counted.
+
+            * platform/mediastream/RealtimeMediaSource.h:
+
+2018-01-16  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r226929. rdar://problem/36567962
+
+    2018-01-12  Alex Christensen  <achristensen@webkit.org>
+
+            History state should be updated during client redirects with asynchronous policy decisions
+            https://bugs.webkit.org/show_bug.cgi?id=181358
+            <rdar://problem/35547689>
+
+            Reviewed by Andy Estes.
+
+            When decidePolicyForNavigationAction is responded to asynchronously during a client redirect,
+            HistoryController::updateForRedirectWithLockedBackForwardList does not update the history because
+            the document loader has not been marked as a client redirect because the FrameLoader only looks
+            at its provisional document loader to mark it as a client redirect.  When decidePolicyForNavigationAction
+            is responded to asynchronously, though, the FrameLoader's provisional document loader has moved to
+            its policy document loader.  To get both asynchronous and synchronous cases, let's just mark the document
+            loader as a client redirect whether it's the provisional or policy document loader.
+
+            Covered by a new API test.
+
+            * loader/FrameLoader.cpp:
+            (WebCore::FrameLoader::loadURL):
+            (WebCore::FrameLoader::loadPostRequest):
+
+2018-01-16  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r226908. rdar://problem/36568060
+
+    2018-01-12  Dean Jackson  <dino@apple.com>
+
+            drawElements should be invalid if vertexAttrib0 doesn't have data
+            https://bugs.webkit.org/show_bug.cgi?id=181609
+            <rdar://problem/36392883>
+
+            Reviewed by Antoine Quint.
+
+            If a vertex attribute has been enabled, but no data provided, then
+            draw validation should fail.
+
+            Test: fast/canvas/webgl/drawElements-empty-vertex-data.html
+
+            * html/canvas/WebGLRenderingContextBase.cpp:
+            (WebCore::WebGLRenderingContextBase::validateVertexAttributes): If there were
+            never any data in the vertex buffer, then we incorrectly compared with 0.
+
+2018-01-11  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r226653. rdar://problem/36429147
+
+    2018-01-09  Antti Koivisto  <antti@apple.com>
+
+            Blank page except for inner iframes because pending stylesheets cause style.isNotFinal() to be true
+            https://bugs.webkit.org/show_bug.cgi?id=180940
+            <rdar://problem/36116507>
+
+            Reviewed by Darin Adler.
+
+            Test: http/tests/local/loading-stylesheet-import-remove.html
+
+            If a <link> referencing a stylesheet containing an @import that was still loading was removed
+            from the document, the loading state was never cleared. For head stylesheets this blocked
+            rendering permanently.
+
+            Test reduction by Justin Ridgewell.
+
+            * html/HTMLLinkElement.cpp:
+            (WebCore::HTMLLinkElement::removedFromAncestor):
+
+            Test if the stylesheet it loading before clearing the pointer.
+
+2018-01-06  Simon Fraser  <simon.fraser@apple.com>
+
+        Crash under RenderLayer::scrollTo() with marquee
+        https://bugs.webkit.org/show_bug.cgi?id=181349
+        rdar://problem/36190168
+
+        Reviewed by Zalan Bujtas.
+
+        Don't call updateWidgetPositions() synchonously during RenderLayer scrolling, because it
+        can run arbitrary script which may trigger destruction of this RenderLayer.
+
+        Instead, queue up updateWidgetPositions() on a zero-delay timer.
+
+        Under some circumstances this may allow a paint to occur before the widgets have been
+        updated (which could be fixed with a more invasive change), but in practice I saw no
+        painting issues with plug-ins or iframes inside overflow scroll, in WebKit or LegacyWebKit.
+
+        Test: fast/scrolling/marquee-scroll-crash.html
+
+        * page/FrameView.cpp:
+        (WebCore::FrameView::FrameView):
+        (WebCore::FrameView::updateWidgetPositions):
+        (WebCore::FrameView::scheduleUpdateWidgetPositions):
+        (WebCore::FrameView::updateWidgetPositionsTimerFired):
+        * page/FrameView.h:
+        * rendering/RenderLayer.cpp:
+        (WebCore::RenderLayer::scrollTo):
+
+2017-12-01  Zalan Bujtas  <zalan@apple.com>
+
+        Nullptr deref in WebCore::RenderTableCaption::containingBlockLogicalWidthForContent
+        https://bugs.webkit.org/show_bug.cgi?id=180251
+        <rdar://problem/34138562>
+
+        Reviewed by Simon Fraser.
+
+        containingBlockLogicalWidthForContent should check whether the renderer is actually
+        attached to the tree.
+
+        Test: fast/table/caption-crash-when-layer-backed.html
+
+        * rendering/RenderBoxModelObject.cpp:
+        (WebCore::RenderBoxModelObject::containingBlockLogicalWidthForContent const):
+        * rendering/RenderTableCaption.h:
+        (WebCore::RenderTableCaption::containingBlockLogicalWidthForContent const):
+
 2017-10-27  Daniel Bates  <dabates@apple.com>
 
         Only allow non-mixed content protected subresources to ask for credentials

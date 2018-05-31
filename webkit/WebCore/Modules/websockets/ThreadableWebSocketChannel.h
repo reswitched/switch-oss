@@ -79,10 +79,6 @@ public:
     virtual void suspend() = 0;
     virtual void resume() = 0;
 
-#if PLATFORM(WKC)
-    virtual bool isConstructed() const { return true; }
-#endif
-
     void ref() { refThreadableWebSocketChannel(); }
     void deref() { derefThreadableWebSocketChannel(); }
 

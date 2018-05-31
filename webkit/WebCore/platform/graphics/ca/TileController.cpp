@@ -587,6 +587,7 @@ RefPtr<PlatformCALayer> TileController::createTileLayer(const IntRect& tileRect,
 
     layer->setContentsScale(m_deviceScaleFactor * temporaryScaleFactor);
     layer->setAcceleratesDrawing(m_acceleratesDrawing);
+    layer->setSupportsSubpixelAntialiasedText(m_supportsSubpixelAntialiasedText);
 
     layer->setNeedsDisplay();
 

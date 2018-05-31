@@ -133,7 +133,13 @@ PassRefPtr<Image> CSSFilterImageValue::image(RenderElement* renderer, const Floa
         return Image::nullImage();
     filterRenderer->apply();
 
+#if PLATFORM(WKC)
+    ImageBuffer* sourceImage = filterRenderer->output();
+    if (sourceImage)
+        m_generatedImage = sourceImage->copyImage();
+#else
     m_generatedImage = filterRenderer->output()->copyImage();
+#endif
 
     return m_generatedImage.release();
 }

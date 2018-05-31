@@ -35,11 +35,12 @@ namespace JSC {
     
 const ClassInfo JSString::s_info = { "string", 0, 0, CREATE_METHOD_TABLE(JSString) };
 
-void JSRopeString::RopeBuilder::expand()
+template<>
+void JSRopeString::RopeBuilder<RecordOverflow>::expand()
 {
+    RELEASE_ASSERT(!this->hasOverflowed());
     ASSERT(m_index == JSRopeString::s_maxInternalRopeLength);
     JSString* jsString = m_jsString;
-    RELEASE_ASSERT(jsString);
     m_jsString = jsStringBuilder(&m_vm);
     m_index = 0;
     append(jsString);

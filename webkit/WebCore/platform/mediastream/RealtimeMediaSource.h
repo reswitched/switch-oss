@@ -38,7 +38,7 @@
 
 #include "MediaConstraints.h"
 #include "RealtimeMediaSourceCapabilities.h"
-#include <wtf/RefCounted.h>
+#include <wtf/ThreadSafeRefCounted.h>
 #include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
 
@@ -49,7 +49,7 @@ class MediaConstraints;
 class MediaStreamPrivate;
 class RealtimeMediaSourceStates;
 
-class RealtimeMediaSource : public RefCounted<RealtimeMediaSource> {
+class RealtimeMediaSource : public ThreadSafeRefCounted<RealtimeMediaSource> {
 public:
     class Observer {
     public:

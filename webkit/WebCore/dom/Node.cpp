@@ -780,9 +780,12 @@ LayoutRect Node::renderRect(bool* isReplaced)
 
 #if PLATFORM(WKC)
 // FIXME: Move this function to Element.
-void Node::getNodeCompositeRect(LayoutRect* rects, int tx, int ty)
+void Node::getNodeCompositeRect(LayoutRect* rects, bool isOverflowXHidden, bool isOverflowYHidden, int tx, int ty)
 {
     if (!isElementNode() || isSVGElement())
+        return;
+
+    if (isOverflowXHidden && isOverflowYHidden)
         return;
 
     for (Element* element = ElementTraversal::firstWithin((Element &)*this); element; element = ElementTraversal::nextSibling(*element)) {
@@ -791,11 +794,35 @@ void Node::getNodeCompositeRect(LayoutRect* rects, int tx, int ty)
             IntRect rect = o->absoluteBoundingBoxRect(true);
             if (!rect.isEmpty() && !(rect.x() < 0 || rect.y() < 0)) {
                 if (element->firstChild()) {
-                    element->getNodeCompositeRect(rects, tx, ty);
+                    bool x = (o->style().overflowX() == OHIDDEN);
+                    bool y = (o->style().overflowY() == OHIDDEN);
+                    element->getNodeCompositeRect(rects, (isOverflowXHidden | x), (isOverflowYHidden | y), tx, ty);
                 }
                 rect.move(-tx,-ty);
-                LayoutRect lr(rect.x(), rect.y(), rect.width(), rect.height());
-                rects->unite(enclosingIntRect(lr));
+                if (!isOverflowXHidden && !isOverflowYHidden) {
+                    LayoutRect lr(rect.x(), rect.y(), rect.width(), rect.height());
+                    rects->unite(enclosingIntRect(lr));
+                } else if (!isOverflowXHidden) {
+                    if (rects->isEmpty()) {
+                        rects->setX(rect.x());
+                        rects->setWidth(rect.width());
+                    } else {
+                        LayoutUnit newX = std::min(rects->x(), LayoutUnit(rect.x()));
+                        LayoutUnit newMaxX = std::max(rects->maxX(), LayoutUnit(rect.maxX()));
+                        rects->setX(newX);
+                        rects->setWidth(newMaxX - newX);
+                    }
+                } else if (!isOverflowYHidden) {
+                    if (rects->isEmpty()) {
+                        rects->setY(rect.y());
+                        rects->setHeight(rect.height());
+                    } else {
+                        LayoutUnit newY = std::min(rects->y(), LayoutUnit(rect.y()));
+                        LayoutUnit newMaxY = std::max(rects->maxY(), LayoutUnit(rect.maxY()));
+                        rects->setY(newY);
+                        rects->setHeight(newMaxY - newY);
+                    }
+                }
             }
         }
     }

@@ -131,9 +131,14 @@ static bool hasNonEmptyBox(RenderBoxModelObject* renderer)
     Node* node = static_cast<RenderObject*>(renderer)->node();
     if (!node)
         return false;
+    if (!node->renderer())
+        return false;
     ASSERT(is<HTMLAnchorElement>(*node));
+    RenderStyle& style = node->renderer()->style();
+    bool isOverflowXHidden = (style.overflowX() == OHIDDEN);
+    bool isOverflowYHidden = (style.overflowY() == OHIDDEN);
     LayoutRect rect;
-    node->getNodeCompositeRect(&rect);
+    node->getNodeCompositeRect(&rect, isOverflowXHidden, isOverflowYHidden);
     if (!rect.isEmpty())
         return true;
 #endif

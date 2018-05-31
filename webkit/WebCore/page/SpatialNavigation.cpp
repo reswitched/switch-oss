@@ -897,7 +897,10 @@ bool hasOffscreenRect(Node* node, FocusDirection direction)
 #if PLATFORM(WKC)
     LayoutRect rect = render->absoluteClippedOverflowRect();
     if (node->hasTagName(HTMLNames::aTag) && node->firstChild()) {
-        node->getNodeCompositeRect(&rect);
+        RenderStyle& style = render->style();
+        bool isOverflowXHidden = (style.overflowX() == OHIDDEN);
+        bool isOverflowYHidden = (style.overflowY() == OHIDDEN);
+        node->getNodeCompositeRect(&rect, isOverflowXHidden, isOverflowYHidden);
     }
 #else
     LayoutRect rect(render->absoluteClippedOverflowRect());
@@ -1222,7 +1225,10 @@ LayoutRect nodeRectInAbsoluteCoordinates(Node* node, bool ignoreBorder)
     if (RenderObject* renderer = node->renderer()) {
         rect = renderer->absoluteBoundingBoxRect(true);
         if (node->hasTagName(HTMLNames::aTag) && node->firstChild()) {
-            node->getNodeCompositeRect(&rect);
+            RenderStyle& style = renderer->style();
+            bool isOverflowXHidden = (style.overflowX() == OHIDDEN);
+            bool isOverflowYHidden = (style.overflowY() == OHIDDEN);
+            node->getNodeCompositeRect(&rect, isOverflowXHidden, isOverflowYHidden);
         }
         rect = rectToAbsoluteCoordinates(node->document().frame(), rect);
     }

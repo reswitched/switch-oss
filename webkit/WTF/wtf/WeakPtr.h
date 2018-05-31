@@ -101,7 +101,8 @@ public:
     WeakPtr& operator=(const WeakPtr& o) { m_ref = o.m_ref.copyRef(); return *this; }
     WeakPtr& operator=(std::nullptr_t) { m_ref = WeakReference<T>::create(nullptr); return *this; }
 
-    T* operator->() const { return m_ref->get(); }
+    T* operator->() const { return get(); }
+    T& operator*() const { return *get(); }
 
     void clear() { m_ref = WeakReference<T>::create(nullptr); }
 

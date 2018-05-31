@@ -84,7 +84,6 @@ protected:
     InjectedScriptManager* m_injectedScriptManager;
     std::unique_ptr<ConsoleFrontendDispatcher> m_frontendDispatcher;
     RefPtr<ConsoleBackendDispatcher> m_backendDispatcher;
-    ConsoleMessage* m_previousMessage;
     Vector<std::unique_ptr<ConsoleMessage>> m_consoleMessages;
     int m_expiredConsoleMessageCount;
     HashMap<String, unsigned> m_counts;

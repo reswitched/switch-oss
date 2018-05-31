@@ -79,7 +79,11 @@ struct SameSizeAsRenderBox : public RenderBoxModelObject {
     LayoutRect frameRect;
     LayoutBoxExtent marginBox;
     LayoutUnit preferredLogicalWidths[2];
+#if PLATFORM(WKC)
+    void* pointers[3];
+#else
     void* pointers[2];
+#endif
 };
 
 COMPILE_ASSERT(sizeof(RenderBox) == sizeof(SameSizeAsRenderBox), RenderBox_should_stay_small);
@@ -134,6 +138,9 @@ RenderBox::RenderBox(Element& element, Ref<RenderStyle>&& style, unsigned baseTy
     , m_minPreferredLogicalWidth(-1)
     , m_maxPreferredLogicalWidth(-1)
     , m_inlineBoxWrapper(nullptr)
+#if PLATFORM(WKC)
+    , m_weakFactory(this)
+#endif
 {
     setIsBox();
 }
@@ -143,6 +150,9 @@ RenderBox::RenderBox(Document& document, Ref<RenderStyle>&& style, unsigned base
     , m_minPreferredLogicalWidth(-1)
     , m_maxPreferredLogicalWidth(-1)
     , m_inlineBoxWrapper(nullptr)
+#if PLATFORM(WKC)
+    , m_weakFactory(this)
+#endif
 {
     setIsBox();
 }

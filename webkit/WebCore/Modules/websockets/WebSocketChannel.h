@@ -75,9 +75,6 @@ public:
     virtual void close(int code, const String& reason) override; // Start closing handshake.
     virtual void fail(const String& reason) override;
     virtual void disconnect() override;
-#if PLATFORM(WKC)
-    virtual bool isConstructed() const override;
-#endif
 
     virtual void suspend() override;
     virtual void resume() override;

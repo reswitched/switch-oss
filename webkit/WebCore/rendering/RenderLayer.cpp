@@ -2457,7 +2457,7 @@ void RenderLayer::scrollTo(int x, int y)
 #if ENABLE(DASHBOARD_SUPPORT)
         view.frameView().updateAnnotatedRegions();
 #endif
-        view.frameView().updateWidgetPositions();
+        view.frameView().scheduleUpdateWidgetPositions();
 
         if (!m_updatingMarqueePosition) {
             // Avoid updating compositing layers if, higher on the stack, we're already updating layer

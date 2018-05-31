@@ -321,6 +321,9 @@ public:
     void setIsClosing() { m_isClosing = true; }
     bool isClosing() const { return m_isClosing; }
 
+    void setIsRestoringCachedPage(bool value) { m_isRestoringCachedPage = value; }
+    bool isRestoringCachedPage() const { return m_isRestoringCachedPage; }
+
     void addViewStateChangeObserver(ViewStateChangeObserver&);
     void removeViewStateChangeObserver(ViewStateChangeObserver&);
 
@@ -638,6 +641,7 @@ private:
     SessionID m_sessionID;
 
     bool m_isClosing;
+    bool m_isRestoringCachedPage{ false };
     bool m_shouldTabSuspend { false };
     Timer m_tabSuspensionTimer;
 

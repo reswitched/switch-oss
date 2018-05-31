@@ -745,7 +745,7 @@ EncodedJSValue JSC_HOST_CALL stringProtoFuncRepeat(ExecState* exec)
         return JSValue::encode(repeatCharacter(exec, character, repeatCount));
     }
 
-    JSRopeString::RopeBuilder ropeBuilder(vm);
+    JSRopeString::RopeBuilder<RecordOverflow> ropeBuilder(vm);
     for (unsigned i = 0; i < repeatCount; ++i) {
         if (!ropeBuilder.append(string))
             return JSValue::encode(throwOutOfMemoryError(exec));

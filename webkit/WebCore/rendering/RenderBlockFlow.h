@@ -623,6 +623,10 @@ public:
     }
 #endif
 
+#if PLATFORM(WKC)
+    WeakPtr<RenderBlockFlow> createWeakPtr() { return m_weakFactory.createWeakPtr(); }
+#endif
+
 protected:
     std::unique_ptr<FloatingObjects> m_floatingObjects;
     std::unique_ptr<RenderBlockFlowRareData> m_rareBlockFlowData;
@@ -631,6 +635,11 @@ protected:
 
     friend class LineBreaker;
     friend class LineWidth; // Needs to know FloatingObject
+
+#if PLATFORM(WKC)
+private:
+    WeakPtrFactory<RenderBlockFlow> m_weakFactory;
+#endif
 };
 
 inline bool RenderElement::isRenderNamedFlowFragmentContainer() const

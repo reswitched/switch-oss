@@ -1,3 +1,48 @@
+2017-09-30  Antti Koivisto  <antti@apple.com>
+
+        Add makeWeakPtr for easier WeakPtr construction
+        https://bugs.webkit.org/show_bug.cgi?id=177706
+
+        Reviewed by Sam Weinig.
+
+        Standalone makeWeakPtr() returns a WeakPtr of the same type as the argument.
+
+        For this to work the argument type needs to expose a (possibly base type) WeakPtrFactory
+        as a public weakPtrFactory() member function.
+
+        * wtf/WeakPtr.h:
+        (WTF::WeakPtr::operator-> const):
+        (WTF::WeakPtr::operator* const): Also add operator*.
+        (WTF::makeWeakPtr):
+
+2017-10-26  Mark Lam  <mark.lam@apple.com>
+
+        JSRopeString::RopeBuilder::append() should check for overflows.
+        https://bugs.webkit.org/show_bug.cgi?id=178385
+        <rdar://problem/35027468>
+
+        Reviewed by Saam Barati.
+
+        * wtf/CheckedArithmetic.h:
+
+2018-01-23  Jason Marcell  <jmarcell@apple.com>
+
+        Cherry-pick r227424. rdar://problem/36791625
+
+    2018-01-23  Filip Pizlo  <fpizlo@apple.com>
+
+            JSC should use a speculation fence on VM entry/exit
+            https://bugs.webkit.org/show_bug.cgi?id=181991
+
+            Reviewed by JF Bastien and Mark Lam.
+
+            Implement speculationFence as lfence on x86 and isb on ARM64. I'm not sure if isb is
+            appropriate for all ARM64's.
+
+            * wtf/Atomics.h:
+            (WTF::speculationFence):
+            (WTF::x86_lfence):
+
 2017-10-09  Tim Horton  <timothy_horton@apple.com>
 
         Disable INPUT_TYPE_COLOR in FeatureDefines.h

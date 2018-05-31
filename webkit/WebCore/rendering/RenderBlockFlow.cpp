@@ -104,6 +104,9 @@ RenderBlockFlow::RenderBlockFlow(Element& element, Ref<RenderStyle>&& style)
     , m_widthForTextAutosizing(-1)
     , m_lineCountForTextAutosizing(NOT_SET)
 #endif
+#if PLATFORM(WKC)
+    , m_weakFactory(this)
+#endif
 {
     setChildrenInline(true);
 }
@@ -113,6 +116,9 @@ RenderBlockFlow::RenderBlockFlow(Document& document, Ref<RenderStyle>&& style)
 #if ENABLE(IOS_TEXT_AUTOSIZING)
     , m_widthForTextAutosizing(-1)
     , m_lineCountForTextAutosizing(NOT_SET)
+#endif
+#if PLATFORM(WKC)
+    , m_weakFactory(this)
 #endif
 {
     setChildrenInline(true);

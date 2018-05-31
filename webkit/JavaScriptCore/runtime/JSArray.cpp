@@ -1026,9 +1026,12 @@ bool JSArray::unshiftCountWithAnyIndexingType(ExecState* exec, unsigned startInd
         if (oldLength - startIndex >= MIN_SPARSE_ARRAY_INDEX)
             return unshiftCountWithArrayStorage(exec, startIndex, count, ensureArrayStorage(exec->vm()));
         
+        if (oldLength + count > MAX_STORAGE_VECTOR_LENGTH)
+            return false;
+
         if (!ensureLength(exec->vm(), oldLength + count)) {
             throwOutOfMemoryError(exec);
-            return false;
+            return true;
         }
 
         // We have to check for holes before we start moving things around so that we don't get halfway 
@@ -1061,9 +1064,12 @@ bool JSArray::unshiftCountWithAnyIndexingType(ExecState* exec, unsigned startInd
         if (oldLength - startIndex >= MIN_SPARSE_ARRAY_INDEX)
             return unshiftCountWithArrayStorage(exec, startIndex, count, ensureArrayStorage(exec->vm()));
         
+        if (oldLength + count > MAX_STORAGE_VECTOR_LENGTH)
+            return false;
+
         if (!ensureLength(exec->vm(), oldLength + count)) {
             throwOutOfMemoryError(exec);
-            return false;
+            return true;
         }
         
         // We have to check for holes before we start moving things around so that we don't get halfway 

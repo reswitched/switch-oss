@@ -278,8 +278,15 @@ void FEComposite::platformApplySoftware()
 
     ImageBuffer* imageBuffer = in->asImageBuffer();
     ImageBuffer* imageBuffer2 = in2->asImageBuffer();
+#if PLATFORM(WKC)
+    if (!imageBuffer)
+        return;
+    if (!imageBuffer2)
+        return;
+#else
     ASSERT(imageBuffer);
     ASSERT(imageBuffer2);
+#endif
 
     switch (m_type) {
     case FECOMPOSITE_OPERATOR_OVER:

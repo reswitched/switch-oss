@@ -54,7 +54,12 @@ void SourceAlpha::platformApplySoftware()
     GraphicsContext* filterContext = resultImage->context();
 
     ImageBuffer* imageBuffer = inputEffect(0)->asImageBuffer();
+#if PLATFORM(WKC)
+    if (!imageBuffer)
+        return;
+#else
     ASSERT(imageBuffer);
+#endif
 
     FloatRect imageRect(FloatPoint(), absolutePaintRect().size());
     filterContext->fillRect(imageRect, Color::black, ColorSpaceDeviceRGB);

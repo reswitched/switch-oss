@@ -1598,6 +1598,9 @@ unsigned AccessibilityObject::doAXLineForIndex(unsigned index)
 #if HAVE(ACCESSIBILITY)
 void AccessibilityObject::updateBackingStore()
 {
+    if (!axObjectCache())
+        return;
+
     // Updating the layout may delete this object.
     RefPtr<AccessibilityObject> protector(this);
 

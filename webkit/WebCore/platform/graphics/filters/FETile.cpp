@@ -69,7 +69,13 @@ void FETile::platformApplySoftware()
 
     GraphicsContext* tileImageContext = tileImage->context();
     tileImageContext->translate(-inMaxEffectLocation.x(), -inMaxEffectLocation.y());
+#if PLATFORM(WKC)
+    ImageBuffer* sourceImage = in->asImageBuffer();
+    if (sourceImage)
+        tileImageContext->drawImageBuffer(sourceImage, ColorSpaceDeviceRGB, in->absolutePaintRect().location());
+#else
     tileImageContext->drawImageBuffer(in->asImageBuffer(), ColorSpaceDeviceRGB, in->absolutePaintRect().location());
+#endif
 
     auto tileImageCopy = tileImage->copyImage(CopyBackingStore);
     if (!tileImageCopy)

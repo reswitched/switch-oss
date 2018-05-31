@@ -1151,6 +1151,14 @@ ArrayStorage* JSObject::ensureArrayStorageExistsAndEnterDictionaryIndexingMode(V
 void JSObject::switchToSlowPutArrayStorage(VM& vm)
 {
     switch (indexingType()) {
+    case ArrayClass:
+        ensureArrayStorage(vm);
+        RELEASE_ASSERT(hasAnyArrayStorage(indexingType()));
+        if (hasSlowPutArrayStorage(indexingType()))
+            return;
+        switchToSlowPutArrayStorage(vm);
+        break;
+
     case ALL_UNDECIDED_INDEXING_TYPES:
         convertUndecidedToArrayStorage(vm, AllocateSlowPutArrayStorage);
         break;

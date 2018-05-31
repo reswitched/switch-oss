@@ -47,6 +47,7 @@
 #include "HistoryItem.h"
 #include "InspectorInstrumentation.h"
 #include "Page.h"
+#include "PolicyChecker.h"
 #include "ScriptController.h"
 #include "Settings.h"
 #include "UserGestureIndicator.h"
@@ -533,6 +534,7 @@ void NavigationScheduler::schedule(std::unique_ptr<ScheduledNavigation> redirect
     if (redirect->wasDuringLoad()) {
         if (DocumentLoader* provisionalDocumentLoader = m_frame.loader().provisionalDocumentLoader())
             provisionalDocumentLoader->stopLoading();
+        m_frame.loader().policyChecker().stopCheck();
         m_frame.loader().stopLoading(UnloadEventPolicyUnloadAndPageHide);
     }
 

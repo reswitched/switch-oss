@@ -573,7 +573,13 @@ void FilterEffect::transformResultColorSpace(ColorSpace dstColorSpace)
 
         // FIXME: We can avoid this potentially unnecessary ImageBuffer conversion by adding
         // color space transform support for the {pre,un}multiplied arrays.
+#if PLATFORM(WKC)
+        ImageBuffer* sourceImage = asImageBuffer();
+        if (sourceImage)
+            sourceImage->transformColorSpace(m_resultColorSpace, dstColorSpace);
+#else
         asImageBuffer()->transformColorSpace(m_resultColorSpace, dstColorSpace);
+#endif
 
 #if ENABLE(OPENCL)
     }

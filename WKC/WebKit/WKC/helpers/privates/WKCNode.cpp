@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -476,8 +476,16 @@ NodePrivate::isScrollableOverFlowBlockNode() const
 void
 NodePrivate::getNodeCompositeRect(WKCRect* rect, int tx, int ty)
 {
+    WebCore::RenderObject* renderer = m_webcore->renderer();
+    if (!renderer)
+        return;
+
+    WebCore::RenderStyle& style = renderer->style();
+    bool isOverflowXHidden = (style.overflowX() == WebCore::OHIDDEN);
+    bool isOverflowYHidden = (style.overflowY() == WebCore::OHIDDEN);
+
     WebCore::LayoutRect core_rect = WebCore::LayoutRect(rect->fX, rect->fY, rect->fWidth, rect->fHeight);
-    m_webcore->getNodeCompositeRect(&core_rect, tx, ty);
+    m_webcore->getNodeCompositeRect(&core_rect, isOverflowXHidden, isOverflowYHidden, tx, ty);
     rect->fX = core_rect.x();
     rect->fY = core_rect.y();
     rect->fWidth = core_rect.width();

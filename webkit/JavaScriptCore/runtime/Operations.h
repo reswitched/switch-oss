@@ -77,7 +77,7 @@ ALWAYS_INLINE JSValue jsString(ExecState* exec, const String& u1, const String& 
 ALWAYS_INLINE JSValue jsStringFromRegisterArray(ExecState* exec, Register* strings, unsigned count)
 {
     VM* vm = &exec->vm();
-    JSRopeString::RopeBuilder ropeBuilder(*vm);
+    JSRopeString::RopeBuilder<RecordOverflow> ropeBuilder(*vm);
 
     for (unsigned i = 0; i < count; ++i) {
         JSValue v = strings[-static_cast<int>(i)].jsValue();
@@ -91,7 +91,7 @@ ALWAYS_INLINE JSValue jsStringFromRegisterArray(ExecState* exec, Register* strin
 ALWAYS_INLINE JSValue jsStringFromArguments(ExecState* exec, JSValue thisValue)
 {
     VM* vm = &exec->vm();
-    JSRopeString::RopeBuilder ropeBuilder(*vm);
+    JSRopeString::RopeBuilder<RecordOverflow> ropeBuilder(*vm);
     ropeBuilder.append(thisValue.toString(exec));
 
     for (unsigned i = 0; i < exec->argumentCount(); ++i) {

@@ -72,8 +72,15 @@ void FEBlend::platformApplySoftware()
 
     ImageBuffer* imageBuffer = in->asImageBuffer();
     ImageBuffer* imageBuffer2 = in2->asImageBuffer();
+#if PLATFORM(WKC)
+    if (!imageBuffer)
+        return;
+    if (!imageBuffer2)
+        return;
+#else
     ASSERT(imageBuffer);
     ASSERT(imageBuffer2);
+#endif
 
     filterContext->drawImageBuffer(imageBuffer2, ColorSpaceDeviceRGB, drawingRegionOfInputImage(in2->absolutePaintRect()));
     filterContext->drawImageBuffer(imageBuffer, ColorSpaceDeviceRGB, drawingRegionOfInputImage(in->absolutePaintRect()), IntRect(IntPoint(), imageBuffer->logicalSize()), ImagePaintingOptions(CompositeSourceOver, m_mode));

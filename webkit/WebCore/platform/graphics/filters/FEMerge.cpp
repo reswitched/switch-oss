@@ -50,7 +50,13 @@ void FEMerge::platformApplySoftware()
     GraphicsContext* filterContext = resultImage->context();
     for (unsigned i = 0; i < size; ++i) {
         FilterEffect* in = inputEffect(i);
+#if PLATFORM(WKC)
+        ImageBuffer* sourceImage = in->asImageBuffer();
+        if (sourceImage)
+            filterContext->drawImageBuffer(sourceImage, ColorSpaceDeviceRGB, drawingRegionOfInputImage(in->absolutePaintRect()));
+#else
         filterContext->drawImageBuffer(in->asImageBuffer(), ColorSpaceDeviceRGB, drawingRegionOfInputImage(in->absolutePaintRect()));
+#endif
     }
 }
 

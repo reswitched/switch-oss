@@ -641,6 +641,10 @@ public:
 
     const RenderBox* findEnclosingScrollableContainer() const;
 
+#if PLATFORM(WKC)
+    WeakPtr<RenderBox> createWeakPtr() { return m_weakFactory.createWeakPtr(); }
+#endif
+
 protected:
     RenderBox(Element&, Ref<RenderStyle>&&, unsigned baseTypeFlags);
     RenderBox(Document&, Ref<RenderStyle>&&, unsigned baseTypeFlags);
@@ -763,6 +767,7 @@ private:
     static bool s_hadOverflowClip;
 #else
     WKC_DEFINE_GLOBAL_CLASS_OBJ_ENTRY(bool, s_hadOverflowClip);
+    WeakPtrFactory<RenderBox> m_weakFactory;
 #endif
 };
 

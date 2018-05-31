@@ -1,3 +1,3 @@
 OSS Copyright of NetFront Browser NX
-Copyright (c) 2015-2017 ACCESS CO., LTD. All rights reserved.
+Copyright (c) 2015-2018 ACCESS CO., LTD. All rights reserved.
 Some files in this package were modified by ACCESS CO., LTD.

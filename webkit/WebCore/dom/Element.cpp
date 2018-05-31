@@ -1047,9 +1047,6 @@ LayoutRect Element::absoluteEventHandlerBounds(bool& includesFixedPositionElemen
     if (!frameView)
         return LayoutRect();
 
-    if (frameView->needsLayout())
-        frameView->layout();
-
     return absoluteEventBoundsOfElementAndDescendants(includesFixedPositionElements);
 }
 

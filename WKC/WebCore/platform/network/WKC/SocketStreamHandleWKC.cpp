@@ -64,7 +64,6 @@ namespace WebCore {
 
 SocketStreamHandle::SocketStreamHandle(const URL& url, SocketStreamHandleClient* client, NetworkingContext& networkingContext)
     : SocketStreamHandleBase(url, client)
-    , m_constructed(false)
     , m_clientCallingFromTimer(false)
     , m_needClosing(false)
     , m_socketState(None)
@@ -283,10 +282,8 @@ void SocketStreamHandle::construct(void)
 
     m_socketState = Initialized;
 
-    m_constructed = true;
-
 construct_end:
-    if (m_constructed && m_socketState == Initialized) {
+    if (m_socketState==Initialized) {
         if (m_client)
             m_client->willOpenSocketStream(this);
     }
@@ -328,7 +325,7 @@ SocketStreamHandle::progressTimerFired()
 
     _LOG(Network, "SocketStreamHandle %p progressTimerFired", this);
 
-    if (!m_constructed || m_socketState == None) {
+    if (m_socketState==None) {
         if (m_client) {
             m_client->didFailSocketStream(this, SocketStreamError(-1));
             m_client->didCloseSocketStream(this);
@@ -470,7 +467,7 @@ int SocketStreamHandle::platformSend(const char* data, int len)
 {
     _LOG(Network, "SocketStreamHandle %p platformSend(%p, %d), state=%d", this, data, len, m_state);
 
-    if (!m_constructed || Open != m_state || !m_handle || !m_multiHandle || m_socket < 0) {
+    if (Open != m_state || !m_handle || !m_multiHandle || m_socket < 0) {
         if (m_client)
             m_client->didFailSocketStream(this, SocketStreamError(-1));
         return -1;
@@ -537,7 +534,7 @@ void SocketStreamHandle::platformClose()
 {
     _LOG(Network, "SocketStreamHandle %p platformClose()", this);
 
-    if (!m_constructed || !m_handle || !m_multiHandle) {
+    if (!m_handle || !m_multiHandle) {
         return;
     }
 

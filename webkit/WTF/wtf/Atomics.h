@@ -279,8 +279,16 @@ inline void storeLoadFence() { armV7_dmb(); }
 inline void storeStoreFence() { armV7_dmb_st(); }
 inline void memoryBarrierAfterLock() { armV7_dmb(); }
 inline void memoryBarrierBeforeUnlock() { armV7_dmb(); }
+inline void speculationFence() { armV7_dmb(); }
 
 #elif CPU(X86) || CPU(X86_64)
+
+inline void x86_lfence()
+{
+#if !OS(WINDOWS) && !OS(WINDOWS_WKC)
+    asm volatile("lfence" ::: "memory");
+#endif
+}
 
 inline void x86_mfence()
 {
@@ -301,6 +309,7 @@ inline void storeLoadFence() { x86_mfence(); }
 inline void storeStoreFence() { compilerFence(); }
 inline void memoryBarrierAfterLock() { compilerFence(); }
 inline void memoryBarrierBeforeUnlock() { compilerFence(); }
+inline void speculationFence() { x86_lfence(); }
 
 #else
 
@@ -310,6 +319,7 @@ inline void storeLoadFence() { compilerFence(); }
 inline void storeStoreFence() { compilerFence(); }
 inline void memoryBarrierAfterLock() { compilerFence(); }
 inline void memoryBarrierBeforeUnlock() { compilerFence(); }
+inline void speculationFence() { } // Probably not strong enough.
 
 #endif
 

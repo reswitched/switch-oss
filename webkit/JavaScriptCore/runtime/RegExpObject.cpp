@@ -173,6 +173,8 @@ MatchResult RegExpObject::match(ExecState* exec, JSString* string)
     RegExpConstructor* regExpConstructor = exec->lexicalGlobalObject()->regExpConstructor();
     String input = string->value(exec);
     VM& vm = exec->vm();
+    if (UNLIKELY(vm.exception()))
+        return MatchResult();
     if (!regExp->global())
         return regExpConstructor->performMatch(vm, regExp, string, input, 0);
 

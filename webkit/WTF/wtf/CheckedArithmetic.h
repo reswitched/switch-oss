@@ -789,7 +789,6 @@ template<typename T, typename... Args> bool sumOverflows(Args... args)
 
 using WTF::Checked;
 using WTF::CheckedState;
-using WTF::RecordOverflow;
 using WTF::CheckedInt8;
 using WTF::CheckedUint8;
 using WTF::CheckedInt16;
@@ -799,6 +798,8 @@ using WTF::CheckedUint32;
 using WTF::CheckedInt64;
 using WTF::CheckedUint64;
 using WTF::CheckedSize;
+using WTF::CrashOnOverflow;
+using WTF::RecordOverflow;
 using WTF::checkedSum;
 using WTF::sumOverflows;
 

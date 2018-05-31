@@ -189,6 +189,8 @@ static bool canCacheFrame(Frame& frame, DiagnosticLoggingClient& diagnosticLoggi
 
 static bool canCachePage(Page& page)
 {
+    RELEASE_ASSERT(!page.isRestoringCachedPage());
+
     unsigned indentLevel = 0;
     PCLOG("--------\n Determining if page can be cached:");
     

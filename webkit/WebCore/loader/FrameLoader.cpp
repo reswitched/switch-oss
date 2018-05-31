@@ -1300,6 +1300,8 @@ void FrameLoader::loadURL(const FrameLoadRequest& frameLoadRequest, const String
         m_quickRedirectComing = false;
         if (m_provisionalDocumentLoader)
             m_provisionalDocumentLoader->setIsClientRedirect(true);
+        else if (m_policyDocumentLoader)
+            m_policyDocumentLoader->setIsClientRedirect(true);
     } else if (sameURL && newLoadType != FrameLoadType::Reload && newLoadType != FrameLoadType::ReloadFromOrigin) {
         // Example of this case are sites that reload the same URL with a different cookie
         // driving the generated content, or a master frame with links that drive a target
@@ -2781,6 +2783,8 @@ void FrameLoader::loadPostRequest(const FrameLoadRequest& request, const String&
         m_quickRedirectComing = false;
         if (m_provisionalDocumentLoader)
             m_provisionalDocumentLoader->setIsClientRedirect(true);
+        else if (m_policyDocumentLoader)
+            m_policyDocumentLoader->setIsClientRedirect(true);
     }
 }
 
@@ -3660,6 +3664,10 @@ RefPtr<Frame> createWindow(Frame& openerFrame, Frame& lookupFrame, const FrameLo
 
     created = false;
 
+    // FIXME: Provide line number information with respect to the opener's document.
+    if (protocolIsJavaScript(request.resourceRequest().url()) && !openerFrame.document()->contentSecurityPolicy()->allowJavaScriptURLs(openerFrame.document()->url(), { }))
+        return nullptr;
+
     if (!request.frameName().isEmpty() && request.frameName() != "_blank") {
         if (RefPtr<Frame> frame = lookupFrame.loader().findFrameForNavigation(request.frameName(), openerFrame.document())) {
             if (request.frameName() != "_self") {
@@ -3677,10 +3685,6 @@ RefPtr<Frame> createWindow(Frame& openerFrame, Frame& lookupFrame, const FrameLo
         return nullptr;
     }
 
-    // FIXME: Provide line number information with respect to the opener's document.
-    if (protocolIsJavaScript(request.resourceRequest().url()) && !openerFrame.document()->contentSecurityPolicy()->allowJavaScriptURLs(openerFrame.document()->url(), { }))
-        return nullptr;
- 
     // FIXME: Setting the referrer should be the caller's responsibility.
     FrameLoadRequest requestWithReferrer = request;
     String referrer = SecurityPolicy::generateReferrerHeader(openerFrame.document()->referrerPolicy(), request.resourceRequest().url(), openerFrame.loader().outgoingReferrer());
