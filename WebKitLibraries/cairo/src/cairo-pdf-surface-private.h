@@ -110,7 +110,7 @@ typedef struct _cairo_pdf_pattern {
 
     /* PDF pattern space is the pattern matrix concatenated with the
      * initial space of the parent object. If the parent object is the
-     * page, the intial space does not include the Y-axis flipping
+     * page, the initial space does not include the Y-axis flipping
      * matrix emitted at the start of the page content stream.  If the
      * parent object is not the page content stream, the initial space
      * will have a flipped Y-axis. The inverted_y_axis flag is true

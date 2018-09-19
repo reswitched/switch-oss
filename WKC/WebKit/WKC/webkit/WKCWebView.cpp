@@ -88,6 +88,7 @@
 #include "VibrationClient.h"
 #include "VibrationClientWKC.h"
 #endif
+#include "RenderTreeAsText.h"
 
 
 #include <wkc/wkcpeer.h>
@@ -102,10 +103,12 @@
 
 #include "WKCOverlayPrivate.h"
 
+#include "helpers/WKCFrame.h"
 #include "helpers/WKCHistoryItem.h"
 #include "helpers/WKCNode.h"
 #include "helpers/WKCSettings.h"
 #include "helpers/privates/WKCElementPrivate.h"
+#include "helpers/privates/WKCFramePrivate.h"
 #include "helpers/privates/WKCHelpersEnumsPrivate.h"
 #include "helpers/privates/WKCHistoryItemPrivate.h"
 #include "helpers/privates/WKCResourceHandlePrivate.h"
@@ -644,6 +647,7 @@ WKCWebViewPrivate::construct()
     settings->setAcceleratedCompositingEnabled(false);
     settings->setAcceleratedCompositingForFixedPositionEnabled(false);
     settings->setAcceleratedCompositingForOverflowScrollEnabled(false);
+    settings->setFixedPositionCreatesStackingContext(true);
 
     settings->setExperimentalNotificationsEnabled(false);
 
@@ -3704,7 +3708,7 @@ shouldInterruptJavaScript(JSC::ExecState*, void*, void*)
 }
 
 bool
-WKCWebKitInitialize(void* memory, unsigned int memory_size, void* font_memory, unsigned int font_memory_size, WKCMemoryEventHandler& memory_event_handler, WKCTimerEventHandler& timer_event_handler)
+WKCWebKitInitialize(void* memory, size_t physical_memory_size, size_t virtual_memory_size, void* font_memory, size_t font_memory_size, WKCMemoryEventHandler& memory_event_handler, WKCTimerEventHandler& timer_event_handler)
 {
     NX_DP(("WKCWebKitInitialize Enter\n"));
 
@@ -3762,7 +3766,7 @@ WKCWebKitInitialize(void* memory, unsigned int memory_size, void* font_memory, u
 
     wkcFontSetNotifyNoMemoryProcPeer(WKCWebKitNotifyFontNoMemory);
 
-    wkcHeapInitializePeer(memory, memory_size);
+    wkcHeapInitializePeer(memory, physical_memory_size, virtual_memory_size);
 
     wkcDrawContextInitializePeer();
 
@@ -3771,6 +3775,7 @@ WKCWebKitInitialize(void* memory, unsigned int memory_size, void* font_memory, u
 #if !LOG_DISABLED
     WebCore::initializeLoggingChannelsIfNecessary();
 #endif
+    JSC::Options::forceRAMSize() = wkcHeapGetPhysicalHeapTotalSizePeer();
 
     if (!wkcFileInitializePeer())
         return false;
@@ -4332,8 +4337,6 @@ WKCWebKitForceTerminate()
 
     wkcMediaPlayerForceTerminatePeer();
 
-    WKC::WKCWebView::EPUB::forceTerminate();
-
     WKC::WKCPrefs::forceTerminate();
     WKC::WKCWebViewPrefs::forceTerminate();
 
@@ -4354,8 +4357,11 @@ WKCWebKitForceTerminate()
     wkcDrawContextForceTerminatePeer();
     wkcSSLForceTerminatePeer();
     wkcNetForceTerminatePeer();
-    wkcFileForceTerminatePeer();
+
     wkcThreadForceTerminatePeer();
+
+    WKC::WKCWebView::EPUB::forceTerminate();
+    wkcFileForceTerminatePeer();
     wkcTimerForceTerminatePeer();
     wkcHeapForceTerminatePeer();
     wkcMemoryForceTerminatePeer();
@@ -5173,8 +5179,10 @@ WKCWebKitSetPerformanceMode(int in_mode)
 void
 WKCWebViewPrivate::recalcStyleSheet()
 {
-    WebCore::Page* page = core();
-    page->mainFrame().document()->styleResolverChanged(WebCore::StyleResolverUpdateFlag::RecalcStyleImmediately);
+    WebCore::Frame* mainFrame = &core()->mainFrame();
+    for (WebCore::Frame* frame = mainFrame; frame; frame = frame->tree().traverseNext()) {
+        frame->document()->styleResolverChanged(WebCore::StyleResolverUpdateFlag::RecalcStyleImmediately);
+    }
 }
 
 void
@@ -5183,12 +5191,45 @@ WKCWebView::recalcStyleSheet()
     m_private->recalcStyleSheet();
 }
 
+void
+WKCWebView::dumpExternalRepresentation(Frame* frame)
+{
+    if (!frame) {
+        return;
+    }
+    WTF::String output = WebCore::externalRepresentation(frame->priv().webcore(), WebCore::RenderAsTextShowAllLayers
+                                                                                | WebCore::RenderAsTextShowLayerNesting
+                                                                                | WebCore::RenderAsTextShowCompositedLayers
+                                                                                | WebCore::RenderAsTextShowAddresses
+                                                                                | WebCore::RenderAsTextShowIDAndClass
+                                                                                | WebCore::RenderAsTextDontUpdateLayout
+                                                                                | WebCore::RenderAsTextShowLayoutState
+                                                                                | WebCore::RenderAsTextShowOverflow);
+    fprintf(stderr, "%s\n", output.utf8().data());
+}
+
+void
+WKCWebView::getCurrentFocusPoint(int& x, int& y)
+{
+    WebCore::LayoutPoint p = m_private->core()->focusController().getLastEntryPoint();
+    x = p.x();
+    y = p.y();
+}
+
 // cancel range input dragging mode.
 
 void
 WKCWebKitCancelRangeInputDragging()
 {
     WebCore::SliderThumbElement::cancelDragging();
+}
+
+void
+WKCWebKitSetCanCacheToDiskCallback(CanCacheToDiskProc in_proc)
+{
+#if ENABLE(WKC_HTTPCACHE)
+    WebCore::ResourceHandleManager::sharedInstance()->setCanCacheToDiskCallback(in_proc);
+#endif
 }
 
 // dump HTTPCache list (for Debug)

@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2007 Eric Seidel <eric@webkit.org>
+ * Copyright (C) 2018 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -33,17 +34,44 @@ class SVGElement;
 
 class SVGPathSegList : public Vector<RefPtr<SVGPathSeg>> {
 public:
-    SVGPathSegList(SVGPathSegRole role)
+    using Base = Vector<RefPtr<SVGPathSeg>>;
+
+    explicit SVGPathSegList(SVGPathSegRole role)
         : m_role(role)
     {
+    }
+
+
+    SVGPathSegList(const SVGPathSegList&) = default;
+    SVGPathSegList(SVGPathSegList&&) = default;
+
+    SVGPathSegList& operator=(const SVGPathSegList& other)
+    {
+        clearContextAndRoles();
+        return static_cast<SVGPathSegList&>(Base::operator=(other));
+    }
+
+    SVGPathSegList& operator=(SVGPathSegList&& other)
+    {
+        clearContextAndRoles();
+        return static_cast<SVGPathSegList&>(Base::operator=(WTF::move(other)));
+    }
+
+    void clear()
+    {
+        clearContextAndRoles();
+        Base::clear();
     }
 
     String valueAsString() const;
 
     // Only used by SVGPathSegListPropertyTearOff.
     void commitChange(SVGElement* contextElement, ListModification);
+    void clearItemContextAndRole(unsigned index);
 
 private:
+    void clearContextAndRoles();
+
     SVGPathSegRole m_role;
 };
 

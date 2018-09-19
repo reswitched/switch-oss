@@ -129,6 +129,10 @@ ComplexTextController::ComplexTextController(const FontCascade& font, const Text
     , m_maxGlyphBoundingBoxY(std::numeric_limits<float>::min())
     , m_lastRoundingGlyph(0)
 {
+#if PLATFORM(WIN)
+    ASSERT_NOT_REACHED();
+#endif
+
     if (!m_expansion)
         m_expansionPerOpportunity = 0;
     else {

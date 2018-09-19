@@ -145,19 +145,18 @@ CONFIG_CLEAN_FILES = cairo-uninstalled.pc cairo-xlib-uninstalled.pc \
 	cairo-qt-uninstalled.pc cairo-quartz-uninstalled.pc \
 	cairo-quartz-font-uninstalled.pc \
 	cairo-quartz-image-uninstalled.pc cairo-win32-uninstalled.pc \
-	cairo-win32-font-uninstalled.pc cairo-skia-uninstalled.pc \
-	cairo-os2-uninstalled.pc cairo-beos-uninstalled.pc \
-	cairo-drm-uninstalled.pc cairo-gallium-uninstalled.pc \
-	cairo-png-uninstalled.pc cairo-gl-uninstalled.pc \
-	cairo-glesv2-uninstalled.pc cairo-glesv3-uninstalled.pc \
-	cairo-cogl-uninstalled.pc cairo-directfb-uninstalled.pc \
-	cairo-vg-uninstalled.pc cairo-egl-uninstalled.pc \
-	cairo-glx-uninstalled.pc cairo-wgl-uninstalled.pc \
-	cairo-script-uninstalled.pc cairo-ft-uninstalled.pc \
-	cairo-fc-uninstalled.pc cairo-ps-uninstalled.pc \
-	cairo-pdf-uninstalled.pc cairo-svg-uninstalled.pc \
-	cairo-tee-uninstalled.pc cairo-xml-uninstalled.pc \
-	cairo-gobject-uninstalled.pc
+	cairo-win32-font-uninstalled.pc cairo-os2-uninstalled.pc \
+	cairo-beos-uninstalled.pc cairo-drm-uninstalled.pc \
+	cairo-gallium-uninstalled.pc cairo-png-uninstalled.pc \
+	cairo-gl-uninstalled.pc cairo-glesv2-uninstalled.pc \
+	cairo-glesv3-uninstalled.pc cairo-cogl-uninstalled.pc \
+	cairo-directfb-uninstalled.pc cairo-vg-uninstalled.pc \
+	cairo-egl-uninstalled.pc cairo-glx-uninstalled.pc \
+	cairo-wgl-uninstalled.pc cairo-script-uninstalled.pc \
+	cairo-ft-uninstalled.pc cairo-fc-uninstalled.pc \
+	cairo-ps-uninstalled.pc cairo-pdf-uninstalled.pc \
+	cairo-svg-uninstalled.pc cairo-tee-uninstalled.pc \
+	cairo-xml-uninstalled.pc cairo-gobject-uninstalled.pc
 CONFIG_CLEAN_VPATH_FILES =
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -676,7 +675,6 @@ runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 shm_LIBS = @shm_LIBS@
-skia_DIR = @skia_DIR@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
@@ -836,8 +834,6 @@ cairo-quartz-image-uninstalled.pc: $(top_builddir)/config.status $(top_srcdir)/s
 cairo-win32-uninstalled.pc: $(top_builddir)/config.status $(top_srcdir)/src/cairo-features-uninstalled.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 cairo-win32-font-uninstalled.pc: $(top_builddir)/config.status $(top_srcdir)/src/cairo-features-uninstalled.pc.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-cairo-skia-uninstalled.pc: $(top_builddir)/config.status $(top_srcdir)/src/cairo-features-uninstalled.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 cairo-os2-uninstalled.pc: $(top_builddir)/config.status $(top_srcdir)/src/cairo-features-uninstalled.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@

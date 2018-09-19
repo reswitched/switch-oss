@@ -59,9 +59,6 @@ public:
 
     iterator findSampleWithPresentationTime(const MediaTime&);
     iterator findSampleContainingPresentationTime(const MediaTime&);
-#if PLATFORM(WKC)
-    iterator findSampleAfterPresentationTime(const MediaTime&);
-#endif
     iterator findSampleOnOrAfterPresentationTime(const MediaTime&);
     reverse_iterator reverseFindSampleContainingPresentationTime(const MediaTime&);
     reverse_iterator reverseFindSampleBeforePresentationTime(const MediaTime&);

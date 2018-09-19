@@ -155,7 +155,7 @@ void ImplicitAnimation::pauseAnimation(double timeOffset)
         setNeedsStyleRecalc(m_object->element());
 }
 
-void ImplicitAnimation::endAnimation()
+void ImplicitAnimation::endAnimation(bool)
 {
     if (m_object && m_object->isComposited())
         downcast<RenderBoxModelObject>(*m_object).transitionFinished(m_animatingProperty);

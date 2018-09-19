@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -93,9 +93,15 @@ public:
     void getNodeCompositeRect(WKCRect* rect, int tx = 0, int ty = 0);
 
     NodeList* getElementsByTagName(const String&);
-    NodeList* querySelectorAll(const String&);
+    Element* querySelector(const String& selectors);
+    NodeList* querySelectorAll(const String& selectors);
 
     Element* parentOrShadowHostElement();
+
+    void showNode(const char* prefix) const;
+    void showTreeForThis() const;
+    void showNodePathForThis() const;
+    void showTreeForThisAcrossFrame() const;
 
 private:
     friend class ElementPrivate;
@@ -117,12 +123,9 @@ private:
     NodePrivate* m_traverseNextNode;
     NodePrivate* m_traverseNextSibling;
     ElementPrivate* m_shadowHost;
-
     HTMLElementPrivate* m_HTMLElement;
-    NodeListPrivate* m_nodeList;
-    NodeListPrivate* m_querySelectorNodeList;
-
     ElementPrivate* m_parentOrShadowHostElement;
+    ElementPrivate* m_querySelectorElement;
 };
 } // namespace
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004, 2006, 2007, 2008, 2013, 2014 Apple Inc. All rights reserved.
+ * Copyright (C) 2004-2018 Apple Inc. All rights reserved.
  * Copyright (C) 2009 Holger Hans Peter Freyther
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@
 #include "Widget.h"
 
 #include <wtf/HashSet.h>
+#include <wtf/WeakPtr.h>
 
 #if PLATFORM(IOS)
 #ifdef __OBJC__
@@ -381,6 +382,12 @@ public:
 
     WEBCORE_EXPORT void scrollPositionChangedViaPlatformWidget(const IntPoint& oldPosition, const IntPoint& newPosition);
 
+    auto& weakPtrFactory() const { return m_weakPtrFactory; }
+
+#if PLATFORM(WKC)
+    WeakPtr<ScrollView> createWeakPtr() { return m_weakPtrFactory.createWeakPtr(); }
+#endif
+
 protected:
     ScrollView();
 
@@ -434,6 +441,8 @@ private:
     RefPtr<Scrollbar> m_verticalScrollbar;
     ScrollbarMode m_horizontalScrollbarMode;
     ScrollbarMode m_verticalScrollbarMode;
+
+    WeakPtrFactory<ScrollView> m_weakPtrFactory;
 
     bool m_horizontalScrollbarLock;
     bool m_verticalScrollbarLock;

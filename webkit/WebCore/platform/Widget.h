@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004, 2005, 2006 Apple Inc.  All rights reserved.
+ * Copyright (C) 2004-2018 Apple Inc.  All rights reserved.
  * Copyright (C) 2008 Collabora Ltd.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,9 @@
 #include <wtf/Forward.h>
 #include <wtf/RefCounted.h>
 #include <wtf/TypeCasts.h>
+#if PLATFORM(WKC)
+#include <wtf/WeakPtr.h>
+#endif
 
 #if PLATFORM(COCOA)
 #include <wtf/RetainPtr.h>
@@ -150,7 +153,7 @@ public:
 
     WEBCORE_EXPORT void removeFromParent();
     WEBCORE_EXPORT virtual void setParent(ScrollView* view);
-    ScrollView* parent() const { return m_parent; }
+    ScrollView* parent() const { return m_parent.get(); }
     FrameView* root() const;
 
     virtual void handleEvent(Event*) { }
@@ -212,7 +215,7 @@ private:
     static IntPoint convertFromContainingWindowToRoot(const Widget* rootWidget, const IntPoint&);
 
 private:
-    ScrollView* m_parent;
+    WeakPtr<ScrollView> m_parent;
 #if !PLATFORM(COCOA)
     PlatformWidget m_widget;
 #else

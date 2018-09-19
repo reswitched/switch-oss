@@ -52,7 +52,7 @@ public:
     virtual void onAnimationEnd(double elapsedTime) override;
     virtual bool startAnimation(double timeOffset) override;
     virtual void pauseAnimation(double timeOffset) override;
-    virtual void endAnimation() override;
+    virtual void endAnimation(bool fillingForwards = false) override;
 
     virtual bool animate(CompositeAnimation*, RenderElement*, const RenderStyle* currentStyle, RenderStyle* targetStyle, RefPtr<RenderStyle>& animatedStyle) override;
     virtual void getAnimatedStyle(RefPtr<RenderStyle>& animatedStyle) override;

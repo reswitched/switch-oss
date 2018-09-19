@@ -36,7 +36,7 @@
 
 /* This surface is intended to produce a verbose, hierarchical, DAG XML file
  * representing a single surface. It is intended to be used by debuggers,
- * such as cairo-sphinx, or by application test-suites that what a log of
+ * such as cairo-sphinx, or by application test-suites that want a log of
  * operations.
  */
 

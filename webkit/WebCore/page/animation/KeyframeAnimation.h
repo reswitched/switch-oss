@@ -69,7 +69,7 @@ protected:
     virtual void onAnimationEnd(double elapsedTime) override;
     virtual bool startAnimation(double timeOffset) override;
     virtual void pauseAnimation(double timeOffset) override;
-    virtual void endAnimation() override;
+    virtual void endAnimation(bool fillingForwards = false) override;
 
     virtual void overrideAnimations() override;
     virtual void resumeOverriddenAnimations() override;

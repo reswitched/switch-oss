@@ -1507,7 +1507,8 @@ void entryAndExitPointsForDirection(FocusDirection direction, const LayoutRect& 
             entryPoint.setY(potentialRect.y());
         } else {
 #if PLATFORM(WKC)
-            exitPoint.setY((std::max(startingRect.y(), potentialRect.y()) + std::min(startingRect.maxY(), potentialRect.maxY())) / 2);
+            LayoutUnit y = (std::max(startingRect.y(), potentialRect.y()) + std::min(startingRect.maxY(), potentialRect.maxY())) / 2;
+            exitPoint.setY(y.floor());
 #else
             exitPoint.setY(std::max(startingRect.y(), potentialRect.y()));
 #endif
@@ -1524,7 +1525,8 @@ void entryAndExitPointsForDirection(FocusDirection direction, const LayoutRect& 
             entryPoint.setX(potentialRect.x());
         } else {
 #if PLATFORM(WKC)
-            exitPoint.setX((std::max(startingRect.x(), potentialRect.x()) + std::min(startingRect.maxX(), potentialRect.maxX())) / 2);
+            LayoutUnit x = (std::max(startingRect.x(), potentialRect.x()) + std::min(startingRect.maxX(), potentialRect.maxX())) / 2;
+            exitPoint.setX(x.floor());
 #else
             exitPoint.setX(std::max(startingRect.x(), potentialRect.x()));
 #endif

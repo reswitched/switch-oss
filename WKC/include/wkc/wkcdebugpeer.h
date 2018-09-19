@@ -34,6 +34,9 @@ WKC_PEER_API void wkcSetReportArrowFunctionCallbackPeer(void(*callback)());
 WKC_PEER_API void wkcReportArrowFunctionThisPeer();
 WKC_PEER_API void wkcSetReportArrowFunctionThisCallbackPeer(void(*callback)());
 
+WKC_PEER_API void wkcReportAllocFailurePeer(unsigned int size, unsigned int count, unsigned int metaDataUsageSize);
+WKC_PEER_API void wkcSetReportAllocFailureCallbackPeer(void(*callback)(unsigned int, unsigned int, unsigned int));
+
 #ifdef __cplusplus
 }
 #endif

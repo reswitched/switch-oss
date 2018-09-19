@@ -1830,6 +1830,9 @@ composite_traps (void			*abstract_dst,
 
     //X_DEBUG ((display->display, "composite_trapezoids (dst=%x)", (unsigned int) dst->drawable));
 
+    if (traps->num_traps == 0)
+	return CAIRO_STATUS_SUCCESS;
+
     if (dst->base.is_clear &&
 	(op == CAIRO_OPERATOR_OVER || op == CAIRO_OPERATOR_ADD))
     {

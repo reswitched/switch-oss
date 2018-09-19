@@ -886,6 +886,8 @@ bool GraphicsLayerCA::animationCanBeAccelerated(const KeyframeValueList& valueLi
 
 bool GraphicsLayerCA::addAnimation(const KeyframeValueList& valueList, const FloatSize& boxSize, const Animation* anim, const String& animationName, double timeOffset)
 {
+    LOG(Animations, "GraphicsLayerCA %p %llu addAnimation %s (can be accelerated %d)", this, primaryLayerID(), animationName.utf8().data(), animationCanBeAccelerated(valueList, anim));
+
     ASSERT(!animationName.isEmpty());
 
     if (!animationCanBeAccelerated(valueList, anim))
@@ -2027,6 +2029,21 @@ void GraphicsLayerCA::updateCoverage()
         backing->setVisibleRect(m_visibleRect);
         backing->setCoverageRect(m_coverageRect);
     }
+
+#if !LOG_DISABLED
+    if (requiresBacking) {
+        auto reasonForBacking = [&]() -> const char* {
+            if (m_intersectsCoverageRect)
+                return "intersectsCoverageRect";
+
+            if (commitState.ancestorWithTransformAnimationIntersectsCoverageRect)
+                return "ancestor with transform";
+
+            return "has transform animation with unknown extent";
+        };
+        LOG_WITH_STREAM(Compositing, stream << "GraphicsLayerCA " << this << " id " << primaryLayerID() << " setBackingStoreAttached: " << requiresBacking << " (" << reasonForBacking() << ")");
+    }
+#endif
 
     m_layer->setBackingStoreAttached(m_intersectsCoverageRect);
     if (m_layerClones) {

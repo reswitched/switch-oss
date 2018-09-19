@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2013-2016 ACCESS CO., LTD. All rights reserved.
+ *  Copyright (c) 2013-2018 ACCESS CO., LTD. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -55,12 +55,12 @@ public:
     virtual void evictCodedFrames();
     virtual bool isFull();
 
-    static void didReceiveInitializationSegmentProc(void* self, const char* in_codec, int in_kind, double in_duration);
+    static void didReceiveInitializationSegmentProc(void* self, const WKCMediaTrack* in_tracks, int in_tracks_len, double in_duration);
     static void didReceiveSamplesProc(void* self, const WKCMediaSample* in_samples, int in_samples_len);
     static void appendCompleteProc(void* self, int in_appendresult);
     static void removeCodedFramesProc(void* self, double in_start, double in_end);
 
-    void didReceiveInitializationSegment(const char* in_codec, int in_kind, double in_duration);
+    void didReceiveInitializationSegment(const WKCMediaTrack* in_tracks, int in_tracks_len, double in_duration);
     void didReceiveSamples(const WKCMediaSample* in_samples, int in_samples_len);
     void appendComplete(int in_appendresult);
     void removeCodedFrames(double in_start, double in_end);

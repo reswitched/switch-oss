@@ -214,10 +214,10 @@ _create_dc_and_bitmap (cairo_win32_display_surface_t *surface,
 	goto FAIL;
 
     surface->bitmap = CreateDIBSection (surface->win32.dc,
-			                bitmap_info,
-			                DIB_RGB_COLORS,
-			                &bits,
-			                NULL, 0);
+					bitmap_info,
+					DIB_RGB_COLORS,
+					&bits,
+					NULL, 0);
     if (!surface->bitmap)
 	goto FAIL;
 
@@ -289,8 +289,8 @@ _create_dc_and_bitmap (cairo_win32_display_surface_t *surface,
 static cairo_surface_t *
 _cairo_win32_display_surface_create_for_dc (HDC             original_dc,
 					    cairo_format_t  format,
-					    int	            width,
-					    int	            height)
+					    int		    width,
+					    int		    height)
 {
     cairo_status_t status;
     cairo_device_t *device;
@@ -325,6 +325,8 @@ _cairo_win32_display_surface_create_for_dc (HDC             original_dc,
     surface->win32.extents.y = 0;
     surface->win32.extents.width = width;
     surface->win32.extents.height = height;
+    surface->win32.x_ofs = 0;
+    surface->win32.y_ofs = 0;
 
     surface->initial_clip_rgn = NULL;
     surface->had_simple_clip = FALSE;
@@ -466,7 +468,8 @@ _cairo_win32_display_surface_map_to_image (void                    *abstract_sur
 		     surface->win32.extents.width,
 		     surface->win32.extents.height,
 		     surface->win32.dc,
-		     surface->win32.extents.x, surface->win32.extents.y,
+		     surface->win32.extents.x + surface->win32.x_ofs, /* Handling multi-monitor... */
+		     surface->win32.extents.y + surface->win32.y_ofs, /* ... setup on Win32 */
 		     SRCCOPY)) {
 	    status = _cairo_error (CAIRO_STATUS_DEVICE_ERROR);
 	    goto err;
@@ -544,11 +547,12 @@ _cairo_win32_display_surface_flush (void *abstract_surface, unsigned flags)
 
 	if (damage->status) {
 	    if (!BitBlt (surface->win32.dc,
-			 0, 0,
+			 surface->win32.extents.x + surface->win32.x_ofs, /* Handling multi-monitor... */
+			 surface->win32.extents.y + surface->win32.y_ofs, /* ... setup on Win32 */
 			 surface->win32.extents.width,
 			 surface->win32.extents.height,
 			 fallback->win32.dc,
-			 0, 0,
+			 surface->win32.extents.x, surface->win32.extents.y,
 			 SRCCOPY))
 		status = _cairo_win32_print_gdi_error (__FUNCTION__);
 	} else if (damage->region) {
@@ -561,7 +565,8 @@ _cairo_win32_display_surface_flush (void *abstract_surface, unsigned flags)
 			rect.x, rect.y,
 			rect.width, rect.height));
 		if (!BitBlt (surface->win32.dc,
-			     rect.x, rect.y,
+			     rect.x + surface->win32.x_ofs, /* Handling multi-monitor... */
+			     rect.y + surface->win32.y_ofs, /* ... setup on Win32 */
 			     rect.width, rect.height,
 			     fallback->win32.dc,
 			     rect.x, rect.y,
@@ -627,6 +632,35 @@ _cairo_win32_save_initial_clip (HDC hdc, cairo_win32_display_surface_t *surface)
     surface->win32.extents.y = rect.top;
     surface->win32.extents.width = rect.right - rect.left;
     surface->win32.extents.height = rect.bottom - rect.top;
+
+    /* On multi-monitor setup, under Windows, the primary monitor always
+     * have origin (0,0).  Any monitors that extends to the left or above
+     * will have coordinates in the negative range.  Take this into
+     * account, by forcing our Win32 surface to start at extent (0,0) and
+     * using a device offset.  Cairo does not handle extents with negative
+     * offsets.
+     */
+    surface->win32.x_ofs = 0;
+    surface->win32.y_ofs = 0;
+    if ((surface->win32.extents.x < 0) ||
+	(surface->win32.extents.y < 0)) {
+	/* Negative offsets occurs for (and ONLY for) the desktop DC (virtual
+	 * desktop), when a monitor extend to the left or above the primary
+	 * monitor.
+	 *
+	 * More info @ https://www.microsoft.com/msj/0697/monitor/monitor.aspx
+	 *
+	 * Note that any other DC, including memory DC created with
+	 * CreateCompatibleDC(<virtual desktop DC>) will have extents in the
+	 * positive range.  This will be taken into account later when we perform
+	 * raster operations between the DC (may have to perform offset
+	 * translation).
+	 */
+	surface->win32.x_ofs = surface->win32.extents.x;
+	surface->win32.y_ofs = surface->win32.extents.y;
+	surface->win32.extents.x = 0;
+	surface->win32.extents.y = 0;
+    }
 
     surface->initial_clip_rgn = NULL;
     surface->had_simple_clip = FALSE;

@@ -2,7 +2,7 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2013, 2014 Apple Inc. All rights reserved.
+ * Copyright (C) 2004-2018 Apple Inc. All rights reserved.
  *           (C) 2006 Alexey Proskuryakov (ap@nypop.com)
  * Copyright (C) 2007 Samuel Weinig (sam@webkit.org)
  * Copyright (C) 2009, 2010, 2011, 2012 Google Inc. All rights reserved.
@@ -85,13 +85,13 @@ using namespace HTMLNames;
 
 typedef bool (RuntimeEnabledFeatures::*InputTypeConditionalFunction)() const;
 typedef const AtomicString& (*InputTypeNameFunction)();
-typedef std::unique_ptr<InputType> (*InputTypeFactoryFunction)(HTMLInputElement&);
+typedef Ref<InputType>(*InputTypeFactoryFunction)(HTMLInputElement&);
 typedef HashMap<AtomicString, InputTypeFactoryFunction, CaseFoldingHash> InputTypeFactoryMap;
 
 template<class T>
-static std::unique_ptr<InputType> createInputType(HTMLInputElement& element)
+static Ref<InputType> createInputType(HTMLInputElement& element)
 {
-    return std::make_unique<T>(element);
+    return adoptRef(*new T(element));
 }
 
 static void populateInputTypeFactoryMap(InputTypeFactoryMap& map)
@@ -147,7 +147,7 @@ static void populateInputTypeFactoryMap(InputTypeFactoryMap& map)
     }
 }
 
-std::unique_ptr<InputType> InputType::create(HTMLInputElement& element, const AtomicString& typeName)
+Ref<InputType> InputType::create(HTMLInputElement& element, const AtomicString& typeName)
 {
 #if !PLATFORM(WKC)
     static NeverDestroyed<InputTypeFactoryMap> factoryMap;
@@ -158,7 +158,7 @@ std::unique_ptr<InputType> InputType::create(HTMLInputElement& element, const At
         if (auto factory = factoryMap.get().get(typeName))
             return factory(element);
     }
-    return std::make_unique<TextInputType>(element);
+    return adoptRef(*new TextInputType(element));
 #else
     WKC_DEFINE_STATIC_PTR(InputTypeFactoryMap*, factoryMap, 0);
     if (!factoryMap)
@@ -170,13 +170,13 @@ std::unique_ptr<InputType> InputType::create(HTMLInputElement& element, const At
         if (auto factory = factoryMap->get(typeName))
             return factory(element);
     }
-    return std::make_unique<TextInputType>(element);
+    return adoptRef(*new TextInputType(element));
 #endif
 }
 
-std::unique_ptr<InputType> InputType::createText(HTMLInputElement& element)
+Ref<InputType> InputType::createText(HTMLInputElement& element)
 {
-    return std::make_unique<TextInputType>(element);
+    return adoptRef(*new TextInputType(element));
 }
 
 InputType::~InputType()

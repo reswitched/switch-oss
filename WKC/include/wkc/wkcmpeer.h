@@ -1,7 +1,7 @@
 /*
  *  wkcmpeer.h
  *
- *  Copyright(c) 2011-2016 ACCESS CO., LTD. All rights reserved.
+ *  Copyright(c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  */
 
 #ifndef _WKC_MEMORY_PEER_H_
@@ -74,7 +74,11 @@ WKC_PEER_API void wkcMemoryRegisterGlobalObjPeer(volatile void* in_ptr, int in_s
 
 /* for peer_fastmalloc */
 
+WKC_PEER_API void wkcMemoryInitializeVirtualMemoryPeer(void* in_memory, size_t in_physical_memory_size, size_t in_virtual_memory_size);
+WKC_PEER_API bool wkcMemoryCommitPeer(void* ptr, size_t size, bool writable, bool executable);
+WKC_PEER_API void wkcMemoryDecommitPeer(void* ptr, size_t size);
 WKC_PEER_API size_t wkcMemoryGetPageSizePeer(void);
+WKC_PEER_API size_t wkcMemoryGetCurrentPhysicalMemoryUsagePeer(void);
 WKC_PEER_API void wkcMemorySetExecutablePeer(void* in_ptr, size_t in_size, bool in_executable);
 WKC_PEER_API void wkcMemoryCacheFlushPeer(void* in_ptr, size_t in_size);
 

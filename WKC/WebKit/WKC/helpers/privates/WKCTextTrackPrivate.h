@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2013-2018 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -42,7 +42,7 @@ public:
     String kind() const;
     String label() const;
     String language() const;
-    bool showingByDefault() const;
+    bool isDefault() const;
     TextTrackCueList* cues();
 
 private:

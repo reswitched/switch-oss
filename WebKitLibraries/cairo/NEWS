@@ -1,3 +1,52 @@
+Release 1.15.12    (2018-04-04 Bryce Harrington <bryce@osg.samsung.com>)
+========================================================================
+The main focus for this release is the addition of Variable Font
+support.  Variable fonts are single font files with various typography
+characteristics, such as weight or slant, that users of the font can
+adjust between two points.  Effectively this enables a single font to
+behave as multiple fonts.
+
+The Skia backend is disabled in this release, due to severe bitrot, and
+will be removed in future releases.  Contact the cairo team if you have
+a need of this backend.
+
+For a complete log of changes, please see
+
+    http://cairographics.org/releases/ChangeLog.1.15.12
+
+Features and Enhancements
+-------------------------
+* Variable font support
+* Skia backend is disabled
+
+API Changes
+-----------
+* cairo_font_options_get_variations() and
+  cairo_font_options_set_variations() are added.
+
+Dependency Changes
+------------------
+None
+
+Performance Optimizations
+-------------------------
+None
+
+Bug Fixes
+---------
+* Fix errors in csi-trace --help and --version options
+* Fix a 'memory leak' in the image compositor, with
+  pixman_glyph_cache_t.
+* Fix access of uninitialized memory found by valgrind
+  (Bug #91271)
+* Fix improper initialization of memory in
+  _cairo_ft_font_face_create_for_pattern()
+  (Bug #105084)
+* Fix multi-monitor virtual desktop with negative coords on Win32
+  (Bug #100793)
+* Fix issues occuring with older FreeType versions.
+
+
 Release 1.15.10    (2017-12-07 Bryce Harrington <bryce@osg.samsung.com>)
 ========================================================================
 This release adds GLESv3 support to the cairo_gl backend, adds

@@ -32,6 +32,9 @@
 #include "AudioUtilities.h"
 #include "VectorMath.h"
 #include <algorithm>
+#if PLATFORM(WKC)
+#include <climits>
+#endif
 #include <complex>
 #include <runtime/Float32Array.h>
 #include <runtime/Uint8Array.h>

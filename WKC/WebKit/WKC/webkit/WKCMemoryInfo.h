@@ -1,7 +1,7 @@
 /*
  *  WKCMemoryInfo.h
  *
- *  Copyright (c) 2011-2015 ACCESS CO., LTD. All rights reserved.
+ *  Copyright (c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -265,8 +265,13 @@ struct Statistics_ {
     size_t* largeFreeSizeInHeap;
     /** @brief Current heap usage (See note) */
     size_t currentHeapUsage;
+    /** @brief Current physical memory usage */
+    size_t currentPhysicalMemoryUsage;
     /** @brief Maximum heap usage (See note) */
     size_t maxHeapUsage;
+    size_t allocFailureCount;
+    size_t allocFailureMinSize;
+    size_t allocFailureTotalSize;
       /* - note -
        * It does not include the amount of heap allocated to the cache in this calculation.
        * The reason is as follows:
@@ -293,6 +298,7 @@ WKC_API void GetStatistics(Statistics& stat, size_t requestSize = 0);
 
 WKC_API size_t GetStatisticsFreeSizeInHeap();
 WKC_API size_t GetStatisticsMaxFreeBlockSizeInHeap(size_t requestSize = 0);
+WKC_API size_t GetStatisticsCurrentPhysicalMemoryUsage();
 
 /**
 @brief Enables / disables memory map function of engine heap

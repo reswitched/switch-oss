@@ -4,7 +4,7 @@
  * Copyright (C) 2006-2009, 2013-2015 Apple Inc. All rights reserved.
  * Copyright (C) 2007-2009 Torch Mobile, Inc.
  * Copyright (C) 2010, 2011 Research In Motion Limited. All rights reserved.
- * Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2018 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -220,6 +220,9 @@
 #define HAVE_SYS_TIME_H 0
 
 #define USE_WKC_CUSTOM_BACKFORWARD_LIST 1
+
+// We enable this even in release build for ease of debugging.
+#define ENABLE_TREE_DEBUGGING 1
 
 /* ==== PLATFORM handles OS, operating environment, graphics API, and
    CPU. This macro will be phased out in favor of platform adaptation

@@ -1349,6 +1349,19 @@ void FocusController::findFocusableNodeInDirection(Node* container, Node* starti
         m_lastEntryRect = closest.entryRect;
         m_lastEntryPoint = closest.entryPoint;
         m_lastDirection = direction;
+        // Adjust so that the entry point is at the the center of the rectangle in the direction.
+        switch (direction) {
+        case FocusDirectionUp:
+        case FocusDirectionDown:
+            m_lastEntryPoint.setY(m_lastEntryRect.center().y());
+            break;
+        case FocusDirectionLeft:
+        case FocusDirectionRight:
+            m_lastEntryPoint.setX(m_lastEntryRect.center().x());
+            break;
+        default:
+            break;
+        }
     }
 }
 
@@ -1642,9 +1655,8 @@ FocusController::findNearestFocusableElementFromPoint(Element* start, const Layo
             e = child;
         } else if (isScrollableContainerNode(e) && !e->renderer()->isTextArea()) {
             Element* child = ElementTraversal::firstChild(*e);
-            if (!child)
-                continue;
-            e = child;
+            if (child)
+                e = child;
         }
 
         FocusCandidate candidate = FocusCandidate(e, FocusDirectionDown);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2015 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -51,22 +51,6 @@ HTMLInputElementPrivate::value() const
     if (!webcore())
         return String("");
     return webcore()->value();
-}
-
-bool
-HTMLInputElementPrivate::readOnly() const
-{
-    if (!webcore())
-        return false;
-    return webcore()->isReadOnly();
-}
-
-bool
-HTMLInputElementPrivate::disabled() const
-{
-    if (!webcore())
-        return false;
-    return webcore()->isDisabledOrReadOnly();
 }
 
 int
@@ -260,18 +244,6 @@ const String
 HTMLInputElement::value() const
 {
     return static_cast<HTMLInputElementPrivate&>(priv()).value();
-}
-
-bool
-HTMLInputElement::readOnly() const
-{
-    return static_cast<HTMLInputElementPrivate&>(priv()).readOnly();
-}
-
-bool
-HTMLInputElement::disabled() const
-{
-    return static_cast<HTMLInputElementPrivate&>(priv()).disabled();
 }
 
 int

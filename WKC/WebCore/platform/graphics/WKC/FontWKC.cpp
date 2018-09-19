@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007 Kevin Ollivier.  All rights reserved.
  * Copyright (C) 2014 Igalia S.L.
- * Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2018 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -341,11 +341,38 @@ fixedGlyphs(int sch, bool isemoji, const UChar* str, int& len, bool& needfree)
         }
         for (int i=0; i<len; i++) {
             const UChar c = str[i];
+            UChar c_next = 0;
+            if (i<(len-1))
+                c_next = str[i+1];
+            UChar c_prev = 0;
+            if (i>0)
+                c_prev = str[i-1];
+            UChar c_after_next = 0;
+            if (i<(len - 2))
+                c_after_next = str[i+2];
+
             if (FontCascade::treatAsSpace(c)) {
                 buf[j++] = 0x20;
             } else if (c==0x200d) {
                 buf[j++] = c;
             } else if ((c==0x200b || FontCascade::treatAsZeroWidthSpace(c) || c==0xfeff)) {
+                buf[j++] = 0x200b;
+            // Instead of implementing Emoji variation sequences, temporarily convert Variation Selector-15 (U+fe0e) and Variation Selector-16 (U+feof) to zero width space (U+200b).
+            // If Variation Selector is followed by Zero Width Joiner (U+200d), don't convert to zero width space.
+            } else if ((c==0xfe0e || c==0xfe0f) && c_next!=0x200d) {
+                buf[j++] = 0x200b;
+            // Instead of implementing Emoji variation sequences, temporarily convert Variation Selector-15 (U+fe0e) and Variation Selector-16 (U+feof) to zero width space (U+200b).
+            // If Variation Selector is followed by Zero Width Joiner (U+200d) and Zero Width Joiner is followed by Gender Symbol (U+2640 or U+2642), convert to zero width space.
+            } else if ((c==0xfe0e || c==0xfe0f) && c_next==0x200d && (c_after_next==0x2640 || c_after_next==0x2642)) {
+                buf[j++] = 0x200b;
+                i++;
+            // Instead of implementing Emoji variation sequences, temporarily convert VS1 - VS14 (U+fe00 - U+fe0d) to zero width space (U+200b).
+            } else if (c>=0xfe00 && c<=0xfe0d) {
+                buf[j++] = 0x200b;
+            // Instead of implementing Emoji variation sequences, temporarily convert VS17 - VS256 (U+db40 U+dd00 - U+db40 U+ddef) to zero width spaces (U+200b U+200b).
+            } else if (c == 0xdb40 && c_next>=0xdd00 && c_next<=0xddef) {
+                buf[j++] = 0x200b;
+            } else if (c_prev == 0xdb40 && c>=0xdd00 && c<=0xddef) {
                 buf[j++] = 0x200b;
             } else {
                 buf[j++] = c;

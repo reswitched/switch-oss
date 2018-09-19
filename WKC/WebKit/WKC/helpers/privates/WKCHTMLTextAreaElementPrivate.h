@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2015 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -46,8 +46,6 @@ public:
     HTMLTextAreaElement& wkc() { return m_wkc; }
 
     String value() const;
-    bool readOnly() const;
-    bool disabled() const;
     int maxLength() const;
     void setValue(const String&);
 

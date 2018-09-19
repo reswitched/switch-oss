@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2013 Google Inc. All rights reserved.
  * Copyright (C) 2013-2014 Apple Inc. All rights reserved.
- * Copyright (c) 2014-2015 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2014-2018 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -156,9 +156,6 @@ SourceBuffer::SourceBuffer(Ref<SourceBufferPrivate>&& sourceBufferPrivate, Media
     , m_groupStartTimestamp(MediaTime::invalidTime())
     , m_groupEndTimestamp(MediaTime::zeroTime())
     , m_buffered(TimeRanges::create())
-#if PLATFORM(WKC)
-    , m_gapRanges(TimeRanges::create())
-#endif
     , m_appendState(WaitingForSegment)
     , m_timeOfBufferingMonitor(monotonicallyIncreasingTime())
     , m_bufferedSinceLastMonitor(0)
@@ -855,87 +852,6 @@ void SourceBuffer::removeCodedFrames(const MediaTime& start, const MediaTime& en
     for (auto& iter : m_trackBufferMap) {
         TrackBuffer& trackBuffer = iter.value;
 
-#define REPLACED_REMOVE_CODED_FRAMES
-
-#ifdef REPLACED_REMOVE_CODED_FRAMES
-
-        MediaTime minSampleStartTime = MediaTime::invalidTime();
-        MediaTime maxSampleEndTime = MediaTime::invalidTime();
-
-        PresentationOrderSampleMap::MapType erasedSamples;
-        PresentationOrderSampleMap::iterator_range iter_pair = trackBuffer.samples.presentationOrder().findSamplesBetweenPresentationTimes(start, end);
-        if (iter_pair.first != trackBuffer.samples.presentationOrder().end())
-            erasedSamples.insert(iter_pair.first, iter_pair.second);
-
-        for (PresentationOrderSampleMap::MapType::iterator erasedIt = erasedSamples.begin(), erasedItEnd = erasedSamples.end(); erasedIt != erasedItEnd; ++erasedIt) {
-            RefPtr<MediaSample>& sample = erasedIt->second;
-            MediaTime sampleStartTime = sample->presentationTime();
-            MediaTime sampleEndTime = sample->presentationTime() + sample->duration();
-
-            if (sampleEndTime < start || end < sampleStartTime) { // MediaSample is not overlapped to [start, end]
-                continue;
-            }
-
-            // Remove sample from trackBuffer.samples
-            trackBuffer.samples.removeSample(sample.get());
-
-            if (minSampleStartTime.isInvalid() || sampleStartTime < minSampleStartTime) {
-                minSampleStartTime = sampleStartTime;
-            }
-
-            if (maxSampleEndTime.isInvalid() || sampleEndTime > maxSampleEndTime) {
-                maxSampleEndTime = sampleEndTime;
-            }
-        }
-
-        if (minSampleStartTime.isInvalid() || maxSampleEndTime.isInvalid()) {
-            continue;
-        }
-
-        RefPtr<TimeRanges> erasedRanges = TimeRanges::create();
-        MediaTime microsecond(1, 1000000);
-
-        // Remove gap filling ranges from m_buffered
-        ExceptionCode ignoreException;
-        RefPtr<TimeRanges> erasedGapRanges = TimeRanges::create();
-        for (unsigned i = 0, len = m_gapRanges->length(); i < len; i++) {
-            double gapStartTime = m_gapRanges->start(i, ignoreException);
-            double gapEndTime = m_gapRanges->end(i, ignoreException);
-
-            if (gapEndTime < start.toDouble() || end.toDouble() < gapStartTime) {
-                continue;
-            }
-
-            erasedRanges->add(gapStartTime, gapEndTime + microsecond.toDouble());
-            erasedGapRanges->add(gapStartTime, gapEndTime + microsecond.toDouble());
-        }
-
-        erasedGapRanges->invert();
-        m_gapRanges->intersectWith(*erasedGapRanges);
-
-        erasedRanges->add(minSampleStartTime.toDouble(), (maxSampleEndTime + microsecond).toDouble());
-        erasedRanges->invert();
-        m_buffered->intersectWith(*erasedRanges);
-
-        // Dirty workaround for precistion problem
-        // Remove small range less than 1 microsecond
-        // Rereference: https://github.com/WebKit/webkit/commit/18e2f5d6e6f00295b7859d75013e7f456bcfac52
-        {
-            RefPtr<TimeRanges> _erasedRanges = TimeRanges::create();
-            ExceptionCode ignoreException;
-            for (unsigned i = 0, len = m_buffered->length(); i < len; i++) {
-                double startTime = m_buffered->start(i, ignoreException);
-                double endTime = m_buffered->end(i, ignoreException);
-                if (endTime - startTime < (1.E-6)) { // Remove range which is less than 1 micro second
-                    _erasedRanges->add(startTime, endTime); // 1.E-6 is fudge factor
-                }
-            }
-            _erasedRanges->invert();
-            m_buffered->intersectWith(*_erasedRanges);
-        }
-
-#else // !REPLACED_REMOVE_CODED_FRAMES
-
         // 3.1. Let remove end timestamp be the current value of duration
         // 3.2 If this track buffer has a random access point timestamp that is greater than or equal to end, then update
         // remove end timestamp to that random access point timestamp.
@@ -978,61 +894,8 @@ void SourceBuffer::removeCodedFrames(const MediaTime& start, const MediaTime& en
                 trackBuffer.needsReenqueueing = true;
         }
 
-#if PLATFORM(WKC)
-        // Remove gap filling ranges from m_buffered
-        RefPtr<TimeRanges> erasedGapRanges = TimeRanges::create();
-        ExceptionCode ignoreException;
-
-        double startTime = erasedRanges->start(0, ignoreException);
-        double endTime = erasedRanges->end(erasedRanges->length() - 1, ignoreException);
-        for (unsigned i = 0, len = m_gapRanges->length(); i < len; i++) {
-            double gapStartTime = m_gapRanges->start(i, ignoreException);
-            double gapEndTime = m_gapRanges->end(i, ignoreException);
-
-            if (startTime <= gapStartTime && gapEndTime < endTime) {
-                // gap range is inside (startTime, endTime)
-                erasedRanges->add(gapStartTime, gapEndTime);
-                erasedGapRanges->add(gapStartTime, gapEndTime);
-            } else if (gapStartTime <= startTime && endTime < gapEndTime) {
-                // gap range includes (startTime, endTime)
-                erasedRanges->add(startTime, endTime);
-                erasedGapRanges->add(startTime, endTime);
-            } else if (gapStartTime <= startTime && startTime < gapEndTime) {
-                // startTime is on gap range.
-                erasedRanges->add(startTime, gapEndTime);
-                erasedGapRanges->add(startTime, gapEndTime);
-            } else if (gapStartTime <= endTime && endTime < gapEndTime) {
-                // endTime is on gap range.
-                erasedRanges->add(gapStartTime, endTime);
-                erasedGapRanges->add(gapStartTime, endTime);
-            }
-        }
-        erasedGapRanges->invert();
-        m_gapRanges->intersectWith(*erasedGapRanges);
-#endif
-
         erasedRanges->invert();
         m_buffered->intersectWith(*erasedRanges);
-
-#if PLATFORM(WKC)
-        // Dirty workaround for precistion problem
-        // Remove small range less than 1 microsecond
-        // Rereference: https://github.com/WebKit/webkit/commit/18e2f5d6e6f00295b7859d75013e7f456bcfac52
-        {
-            RefPtr<TimeRanges> erasedRanges = TimeRanges::create();
-            for (unsigned i = 0, len = m_buffered->length(); i < len; i++) {
-                double startTime = m_buffered->start(i, ignoreException);
-                double endTime = m_buffered->end(i, ignoreException);
-                if (endTime - startTime < (1.E-6)) { // Remove range is less than 1 micro second
-                    erasedRanges->add(startTime, endTime); // 1.E-6 is fudge factor
-                }
-            }
-            erasedRanges->invert();
-            m_buffered->intersectWith(*erasedRanges);
-        }
-#endif
-
-#endif  // REPLACED_REMOVE_CODED_FRAMES
 
         // 3.4 If this object is in activeSourceBuffers, the current playback position is greater than or equal to start
         // and less than the remove end timestamp, and HTMLMediaElement.readyState is greater than HAVE_METADATA, then set
@@ -1873,7 +1736,6 @@ void SourceBuffer::sourceBufferPrivateDidReceiveSample(SourceBufferPrivate*, Pas
             trackBuffer.highestPresentationTimestamp < presentationTimestamp &&
             presentationTimestamp <= (trackBuffer.highestPresentationTimestamp + trackBuffer.lastFrameDuration)) {
             m_buffered->add(trackBuffer.highestPresentationTimestamp.toDouble(), (presentationTimestamp + microsecond).toDouble());
-            m_gapRanges->add(trackBuffer.highestPresentationTimestamp.toDouble(), (presentationTimestamp + microsecond).toDouble()); // Keep track inserted gap fill
         }
 #endif
 
@@ -1890,7 +1752,11 @@ void SourceBuffer::sourceBufferPrivateDidReceiveSample(SourceBufferPrivate*, Pas
         // to the decoded duration. When comparing deltas between decode timestamps, the decode duration, not the presentation.
         if (trackBuffer.lastDecodeTimestamp.isValid()) {
             MediaTime lastDecodeDuration = decodeTimestamp - trackBuffer.lastDecodeTimestamp;
+#if PLATFORM(WKC)
+            if (lastDecodeDuration > trackBuffer.greatestDecodeDuration || trackBuffer.greatestDecodeDuration.isInvalid())
+#else
             if (lastDecodeDuration > trackBuffer.greatestDecodeDuration)
+#endif
                 trackBuffer.greatestDecodeDuration = lastDecodeDuration;
         }
 
@@ -1917,20 +1783,6 @@ void SourceBuffer::sourceBufferPrivateDidReceiveSample(SourceBufferPrivate*, Pas
 
         m_buffered->add(presentationTimestamp.toDouble(), (presentationTimestamp + frameDuration + microsecond).toDouble());
         m_bufferedSinceLastMonitor += frameDuration.toDouble();
-
-#if PLATFORM(WKC)
-        // Force GAP filling: find all gap smaller than frame and then fill it
-        for (unsigned i = 0, len = m_buffered->length() - 1; i < len; i++) {
-            ExceptionCode ignoreException;
-            double rangeEndTime = m_buffered->end(i, ignoreException);
-            double nextRangeStartTime = m_buffered->start(i + 1, ignoreException);
-            if (nextRangeStartTime - rangeEndTime <= frameDuration.toDouble()) { // Assume that frame size in Source Buffer is fixed size
-                m_buffered->add(rangeEndTime, nextRangeStartTime + microsecond.toDouble());
-                m_gapRanges->add(rangeEndTime, nextRangeStartTime + microsecond.toDouble()); // Keep track inserted gap fill
-            }
-        }
-#endif
-
         break;
     } while (1);
 

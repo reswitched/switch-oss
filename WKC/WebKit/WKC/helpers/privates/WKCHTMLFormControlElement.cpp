@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -87,6 +87,24 @@ HTMLFormControlElementPrivate::type()
     return m_atomicstring_priv->wkc();
 }
 
+bool
+HTMLFormControlElementPrivate::isDisabledFormControl()
+{
+    return webcore()->isDisabledFormControl();
+}
+
+bool
+HTMLFormControlElementPrivate::isReadOnly()
+{
+    return webcore()->isReadOnly();
+}
+
+bool
+HTMLFormControlElementPrivate::isDisabledOrReadOnly()
+{
+    return webcore()->isDisabledOrReadOnly();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 HTMLFormControlElement::HTMLFormControlElement(HTMLFormControlElementPrivate& parent)
@@ -110,6 +128,24 @@ const AtomicString&
 HTMLFormControlElement::type() const
 {
     return static_cast<HTMLFormControlElementPrivate&>(priv()).type();
+}
+
+bool
+HTMLFormControlElement::isDisabledFormControl() const
+{
+    return static_cast<HTMLFormControlElementPrivate&>(priv()).isDisabledFormControl();
+}
+
+bool
+HTMLFormControlElement::isReadOnly() const
+{
+    return static_cast<HTMLFormControlElementPrivate&>(priv()).isReadOnly();
+}
+
+bool
+HTMLFormControlElement::isDisabledOrReadOnly() const
+{
+    return static_cast<HTMLFormControlElementPrivate&>(priv()).isDisabledOrReadOnly();
 }
 
 HTMLFormElement*

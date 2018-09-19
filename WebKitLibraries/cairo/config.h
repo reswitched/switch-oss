@@ -54,6 +54,9 @@
    significant word first */
 #undef FLOAT_WORDS_BIGENDIAN
 
+/* Define to (0) if freetype2 does not support color fonts */
+#undef FT_HAS_COLOR
+
 /* Enable pixman glyph cache */
 #undef HAS_PIXMAN_GLYPHS
 
@@ -111,6 +114,12 @@
 
 /* Define to 1 if you have the `fork' function. */
 #undef HAVE_FORK
+
+/* Define to 1 if you have the `FT_Done_MM_Var' function. */
+#undef HAVE_FT_DONE_MM_VAR
+
+/* Define to 1 if you have the `FT_Get_Var_Design_Coordinates' function. */
+#undef HAVE_FT_GET_VAR_DESIGN_COORDINATES
 
 /* Define to 1 if you have the `FT_Get_X11_Font_Format' function. */
 #undef HAVE_FT_GET_X11_FONT_FORMAT
@@ -183,6 +192,9 @@
 /* Define to 1 if you have the `mmap' function. */
 #undef HAVE_MMAP
 
+/* Define to 1 if you have the `newlocale' function. */
+#undef HAVE_NEWLOCALE
+
 /* Enable if you have MacOS X atomic operations */
 #undef HAVE_OS_ATOMIC_OPS
 
@@ -221,6 +233,9 @@
 
 /* Define to 1 if you have the `strndup' function. */
 #undef HAVE_STRNDUP
+
+/* Define to 1 if you have the `strtod_l' function. */
+#undef HAVE_STRTOD_L
 
 /* Define to 1 if you have the <sys/int_types.h> header file. */
 #undef HAVE_SYS_INT_TYPES_H
@@ -285,6 +300,9 @@
 /* Define to 1 if you have the <X11/extensions/XShm.h> header file. */
 #undef HAVE_X11_EXTENSIONS_XSHM_H
 
+/* Define to 1 if you have the <xlocale.h> header file. */
+#undef HAVE_XLOCALE_H
+
 /* Define to 1 if you have the `XRenderCreateConicalGradient' function. */
 #undef HAVE_XRENDERCREATECONICALGRADIENT
 
@@ -328,7 +346,7 @@
 #define PACKAGE_URL
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.15.10"
+#define PACKAGE_VERSION "1.15.12"
 
 /* Shared library file extension */
 #define SHARED_LIB_EXT ".so"

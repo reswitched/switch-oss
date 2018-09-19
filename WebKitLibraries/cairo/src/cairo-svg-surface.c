@@ -124,16 +124,16 @@ static const char * _cairo_svg_internal_version_strings[CAIRO_SVG_VERSION_LAST] 
 
 static const char * _cairo_svg_unit_strings[] =
 {
-    [CAIRO_SVG_UNIT_USER] = "",
-    [CAIRO_SVG_UNIT_EM] = "em",
-    [CAIRO_SVG_UNIT_EX] = "ex",
-    [CAIRO_SVG_UNIT_PX] = "px",
-    [CAIRO_SVG_UNIT_IN] = "in",
-    [CAIRO_SVG_UNIT_CM] = "cm",
-    [CAIRO_SVG_UNIT_MM] = "mm",
-    [CAIRO_SVG_UNIT_PT] = "pt",
-    [CAIRO_SVG_UNIT_PC] = "pc",
-    [CAIRO_SVG_UNIT_PERCENT] = "%"
+    "",
+    "em",
+    "ex",
+    "px",
+    "in",
+    "cm",
+    "mm",
+    "pt",
+    "pc",
+    "%"
 };
 
 struct cairo_svg_page {

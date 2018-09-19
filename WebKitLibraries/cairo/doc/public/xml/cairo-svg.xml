@@ -254,38 +254,11 @@ for a way to get the list of valid version ids.</para>
 <para>Defined if the SVG surface backend is available.
 This macro can be used to conditionally compile backend-specific code.</para>
 <para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
-<refsect2 id="cairo-svg-version-t" role="enum" condition="since:1.16">
+<refsect2 id="cairo-svg-version-t" role="enum" condition="since:1.2">
 <title>enum cairo_svg_version_t</title>
-<indexterm zone="cairo-svg-version-t" role="1.16"><primary sortas="svg_version_t">cairo_svg_version_t</primary></indexterm>
-<para><parameter>CAIRO_SVG_UNIT_USER</parameter>
-: User unit, a value in the current coordinate system.
-  If used in the root element for the initial coordinate systems it
-  corresponds to pixels. (Since 1.16)
-<parameter>CAIRO_SVG_UNIT_EM</parameter>
-: The size of the element's font. (Since 1.16)
-<parameter>CAIRO_SVG_UNIT_EX</parameter>
-: The x-height of the element’s font. (Since 1.16)
-<parameter>CAIRO_SVG_UNIT_PX</parameter>
-: Pixels (1px = 1/96th of 1in). (Since 1.16)
-<parameter>CAIRO_SVG_UNIT_IN</parameter>
-: Inches (1in = 2.54cm = 96px). (Since 1.16)
-<parameter>CAIRO_SVG_UNIT_CM</parameter>
-: Centimeters (1cm = 96px/2.54). (Since 1.16)
-<parameter>CAIRO_SVG_UNIT_MM</parameter>
-: Millimeters (1mm = 1/10th of 1cm). (Since 1.16)
-<parameter>CAIRO_SVG_UNIT_PT</parameter>
-: Points (1pt = 1/72th of 1in). (Since 1.16)
-<parameter>CAIRO_SVG_UNIT_PC</parameter>
-: Picas (1pc = 1/6th of 1in). (Since 1.16)
-<parameter>CAIRO_SVG_UNIT_PERCENT</parameter>
-: Percent, a value that is some fraction of another
-  reference value. (Since 1.16)</para>
-<para><link linkend="cairo-svg-unit-t"><type>cairo_svg_unit_t</type></link> is used to describe the units valid for coordinates and
-lengths in the SVG specification.</para>
-<para>See also:
-https://www.w3.org/TR/SVG/coords.html<link linkend="Units"><type>Units</type></link>
-https://www.w3.org/TR/SVG/types.html<link linkend="DataTypeLength"><type>DataTypeLength</type></link>
-https://www.w3.org/TR/css-values-3/<link linkend="lengths"><type>lengths</type></link></para>
+<indexterm zone="cairo-svg-version-t" role="1.2"><primary sortas="svg_version_t">cairo_svg_version_t</primary></indexterm>
+<para><link linkend="cairo-svg-version-t"><type>cairo_svg_version_t</type></link> is used to describe the version number of the SVG
+specification that a generated SVG file will conform to.</para>
 <refsect3 id="cairo-svg-version-t.members" role="enum_members">
 <title>Members</title>
 <informaltable role="enum_members_table" pgwide="1" frame="none">
@@ -295,15 +268,17 @@ https://www.w3.org/TR/css-values-3/<link linkend="lengths"><type>lengths</type><
 <colspec colname="enum_members_annotations" colwidth="200px"/>
 <tbody>
 <row role="constant"><entry role="enum_member_name"><para id="CAIRO-SVG-VERSION-1-1:CAPS">CAIRO_SVG_VERSION_1_1</para></entry>
-<entry role="enum_member_description"></entry>
+<entry role="enum_member_description"><para>The version 1.1 of the SVG specification. (Since 1.2)</para>
+</entry>
 <entry role="enum_member_annotations"></entry>
 </row>
 <row role="constant"><entry role="enum_member_name"><para id="CAIRO-SVG-VERSION-1-2:CAPS">CAIRO_SVG_VERSION_1_2</para></entry>
-<entry role="enum_member_description"></entry>
+<entry role="enum_member_description"><para>The version 1.2 of the SVG specification. (Since 1.2)</para>
+</entry>
 <entry role="enum_member_annotations"></entry>
 </row>
 </tbody></tgroup></informaltable>
-</refsect3><para role="since">Since: <link linkend="api-index-1.16">1.16</link></para></refsect2>
+</refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-SVG-Surfaces.see-also">

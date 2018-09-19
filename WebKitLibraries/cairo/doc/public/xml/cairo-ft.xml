@@ -212,7 +212,8 @@ before calling <link linkend="FcDefaultSubstitute"><function>FcDefaultSubstitute
 <programlisting language="C"><link linkend="FT-Face"><returnvalue>FT_Face</returnvalue></link>
 cairo_ft_scaled_font_lock_face (<parameter><link linkend="cairo-scaled-font-t"><type>cairo_scaled_font_t</type></link> *scaled_font</parameter>);</programlisting>
 <para>cairo_ft_scaled_font_lock_face() gets the <link linkend="FT-Face"><type>FT_Face</type></link> object from a FreeType
-backend font and scales it appropriately for the font. You must
+backend font and scales it appropriately for the font and applies OpenType
+font variations if applicable. You must
 release the face with <link linkend="cairo-ft-scaled-font-unlock-face"><function>cairo_ft_scaled_font_unlock_face()</function></link>
 when you are done using it.  Since the <link linkend="FT-Face"><type>FT_Face</type></link> object can be
 shared between multiple <link linkend="cairo-scaled-font-t"><type>cairo_scaled_font_t</type></link> objects, you must not

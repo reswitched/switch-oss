@@ -34,13 +34,17 @@ SVGAnimatedType::~SVGAnimatedType()
 {
     switch (m_type) {
     case AnimatedAngle:
+#if !PLATFORM(WKC)
         delete m_data.angleAndEnumeration;
+#else
+        fastFree(m_data.angleAndEnumeration);
+#endif
         break;
     case AnimatedBoolean:
 #if !PLATFORM(WKC)
         delete m_data.boolean;
 #else
-        fastFree(m_data.number);
+        fastFree(m_data.boolean);
 #endif
         break;
     case AnimatedColor:
@@ -50,14 +54,14 @@ SVGAnimatedType::~SVGAnimatedType()
 #if !PLATFORM(WKC)
         delete m_data.enumeration;
 #else
-        fastFree(m_data.number);
+        fastFree(m_data.enumeration);
 #endif
         break;
     case AnimatedInteger:
 #if !PLATFORM(WKC)
         delete m_data.integer;
 #else
-        fastFree(m_data.number);
+        fastFree(m_data.integer);
 #endif
         break;
     case AnimatedIntegerOptionalInteger:

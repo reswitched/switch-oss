@@ -56,6 +56,9 @@ ScrollView::ScrollView()
     , m_paintsEntireContents(false)
     , m_clipsRepaints(true)
     , m_delegatesScrolling(false)
+#if PLATFORM(WKC)
+    , m_weakPtrFactory(this)
+#endif
 {
 }
 

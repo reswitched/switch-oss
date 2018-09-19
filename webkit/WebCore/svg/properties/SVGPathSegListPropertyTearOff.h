@@ -1,5 +1,6 @@
 /*
  * Copyright (C) Research In Motion Limited 2010. All rights reserved.
+ * Copyright (C) 2018 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -75,7 +76,6 @@ public:
             return nullptr;
         }
 
-        clearContextAndRoles();
         return Base::initializeValues(newItem, ec);
     }
 
@@ -116,8 +116,6 @@ private:
     }
 
     SVGPathElement* contextElement() const;
-
-    void clearContextAndRoles();
 
     using Base::m_role;
 

@@ -229,7 +229,7 @@ protected:
     virtual bool startAnimation(double /*timeOffset*/) { return false; }
     // timeOffset is the time at which the animation is being paused.
     virtual void pauseAnimation(double /*timeOffset*/) { }
-    virtual void endAnimation() { }
+    virtual void endAnimation(bool /*fillingForwards*/ = false) { }
 
     void goIntoEndingOrLoopingState();
 

@@ -140,7 +140,7 @@ _cairo_pdf_operators_flush (cairo_pdf_operators_t	 *pdf_operators)
  * assumptions will be made about the state. The next time a
  * particular graphics state is required (eg line width) the state
  * operator is always emitted and then remembered for subsequent
- * operatations.
+ * operations.
  *
  * This should be called when starting a new stream or after emitting
  * the 'Q' operator (where pdf-operators functions were called inside

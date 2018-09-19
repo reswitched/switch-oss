@@ -5594,6 +5594,9 @@ void HTMLMediaElement::enterFullscreen(VideoFullscreenMode mode)
 
     if (m_videoFullscreenMode == mode)
         return;
+    if (!document().page() || !document().page()->chrome().client().isViewVisible()) {
+        return;
+    }
 
 #if ENABLE(FULLSCREEN_API)
     if (document().settings() && document().settings()->fullScreenEnabled()) {
@@ -5605,7 +5608,7 @@ void HTMLMediaElement::enterFullscreen(VideoFullscreenMode mode)
     fullscreenModeChanged(mode);
     if (hasMediaControls())
         mediaControls()->enteredFullscreen();
-    if (document().page() && is<HTMLVideoElement>(*this)) {
+    if (is<HTMLVideoElement>(*this)) {
         HTMLVideoElement& asVideo = downcast<HTMLVideoElement>(*this);
         if (document().page()->chrome().client().supportsVideoFullscreen()) {
             document().page()->chrome().client().enterVideoFullscreenForVideoElement(asVideo, m_videoFullscreenMode);
@@ -5627,7 +5630,9 @@ void HTMLMediaElement::exitFullscreen()
     if (document().settings() && document().settings()->fullScreenEnabled()) {
         if (document().webkitIsFullScreen() && document().webkitCurrentFullScreenElement() == this)
             document().webkitCancelFullScreen();
-        return;
+
+        if (m_videoFullscreenMode == VideoFullscreenModeStandard)
+            return;
     }
 #endif
     ASSERT(m_videoFullscreenMode != VideoFullscreenModeNone);

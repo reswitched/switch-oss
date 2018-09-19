@@ -438,7 +438,7 @@ private:
     String m_valueIfDirty;
     int m_size;
     int m_maxLength;
-    short m_maxResults;
+    short m_maxResults { -1 };
     bool m_isChecked : 1;
     bool m_reflectsCheckedAttribute : 1;
     bool m_isIndeterminate : 1;
@@ -458,7 +458,7 @@ private:
 #if ENABLE(TOUCH_EVENTS)
     bool m_hasTouchEventHandler : 1;
 #endif
-    std::unique_ptr<InputType> m_inputType;
+    RefPtr<InputType> m_inputType;
     // The ImageLoader must be owned by this element because the loader code assumes
     // that it lives as long as its owning element lives. If we move the loader into
     // the ImageInput object we may delete the loader while this element lives on.

@@ -19,9 +19,6 @@
 <indexentry><primaryie linkends="cairo-pdf-surface-set-page-label"><link linkend="cairo-pdf-surface-set-page-label">cairo_pdf_surface_set_page_label</link>, function in <link linkend="cairo-PDF-Surfaces">PDF Surfaces</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-pdf-surface-set-thumbnail-size"><link linkend="cairo-pdf-surface-set-thumbnail-size">cairo_pdf_surface_set_thumbnail_size</link>, function in <link linkend="cairo-PDF-Surfaces">PDF Surfaces</link></primaryie></indexentry>
 </indexdiv>
-<indexdiv><title>S</title>
-<indexentry><primaryie linkends="cairo-svg-version-t"><link linkend="cairo-svg-version-t">cairo_svg_version_t</link>, enum in <link linkend="cairo-SVG-Surfaces">SVG Surfaces</link></primaryie></indexentry>
-</indexdiv>
 <indexdiv><title>T</title>
 <indexentry><primaryie linkends="cairo-tag-begin"><link linkend="cairo-tag-begin">cairo_tag_begin</link>, function in <link linkend="cairo-Tags-and-Links">Tags and Links</link></primaryie></indexentry>
 <indexentry><primaryie linkends="CAIRO-TAG-DEST:CAPS"><link linkend="CAIRO-TAG-DEST:CAPS">CAIRO_TAG_DEST</link>, macro in <link linkend="cairo-Tags-and-Links">Tags and Links</link></primaryie></indexentry>

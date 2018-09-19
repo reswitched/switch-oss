@@ -1,5 +1,6 @@
 /*
  * Copyright (C) Research In Motion Limited 2010. All rights reserved.
+ * Copyright (C) 2018 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -27,21 +28,12 @@
 
 namespace WebCore {
 
-void SVGPathSegListPropertyTearOff::clearContextAndRoles()
-{
-    ASSERT(m_values);
-    for (auto& item : *m_values) {
-        static_cast<SVGPathSegWithContext*>(item.get())->setContextAndRole(0, PathSegUndefinedRole);
-    }
-}
-
 void SVGPathSegListPropertyTearOff::clear(ExceptionCode& ec)
 {
     ASSERT(m_values);
     if (m_values->isEmpty())
         return;
 
-    clearContextAndRoles();
     SVGPathSegListPropertyTearOff::Base::clearValues(ec);
 }
 
@@ -63,20 +55,17 @@ SVGPathSegListPropertyTearOff::PtrListItemType SVGPathSegListPropertyTearOff::re
         return 0;
     }
 
-    if (index < m_values->size()) {
-        ListItemType replacedItem = m_values->at(index);
-        ASSERT(replacedItem);
-        static_cast<SVGPathSegWithContext*>(replacedItem.get())->setContextAndRole(0, PathSegUndefinedRole);
-    }
-
+    if (index < m_values->size())
+        m_values->clearItemContextAndRole(index);
     return Base::replaceItemValues(newItem, index, ec);
 }
 
 SVGPathSegListPropertyTearOff::PtrListItemType SVGPathSegListPropertyTearOff::removeItem(unsigned index, ExceptionCode& ec)
 {
+    if (index < m_values->size())
+        m_values->clearItemContextAndRole(index);
+
     SVGPathSegListPropertyTearOff::ListItemType removedItem = SVGPathSegListPropertyTearOff::Base::removeItemValues(index, ec);
-    if (removedItem)
-        static_cast<SVGPathSegWithContext*>(removedItem.get())->setContextAndRole(0, PathSegUndefinedRole);
     return removedItem;
 }
 

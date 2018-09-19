@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -53,6 +53,9 @@ public:
     void dispatchFormControlInputEvent();
     void dispatchFormControlChangeEvent();
     const AtomicString& type();
+    bool isDisabledFormControl();
+    bool isReadOnly();
+    bool isDisabledOrReadOnly();
 
 private:
     HTMLFormControlElementWrap m_wkc;

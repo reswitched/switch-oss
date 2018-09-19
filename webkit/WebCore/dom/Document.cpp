@@ -2205,6 +2205,9 @@ void Document::destroyRenderTree()
 {
     ASSERT(hasLivingRenderTree());
 
+    // Prevent Widget tree changes from committing until the RenderView is dead and gone.
+    WidgetHierarchyUpdatesSuspensionScope suspendWidgetHierarchyUpdates;
+
     TemporaryChange<bool> change(m_renderTreeBeingDestroyed, true);
 
     if (this == &topDocument())
@@ -2219,10 +2222,6 @@ void Document::destroyRenderTree()
     if (m_fullScreenRenderer)
         setFullScreenRenderer(nullptr);
 #endif
-
-    m_hoveredElement = nullptr;
-    m_focusedElement = nullptr;
-    m_activeElement = nullptr;
 
     if (m_documentElement)
         Style::detachRenderTree(*m_documentElement);
@@ -5562,6 +5561,10 @@ void Document::requestFullScreenForElement(Element* element, unsigned short flag
         // 1. If any of the following conditions are true, terminate these steps and queue a task to fire
         // an event named fullscreenerror with its bubbles attribute set to true on the context object's 
         // node document:
+
+        // Don't allow fullscreen if document is hidden.
+        if (!page() || !page()->chrome().client().isViewVisible())
+            break;
 
         // The context object is not in a document.
         if (!element->inDocument())

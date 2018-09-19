@@ -1235,12 +1235,13 @@ inline bool JSObject::putDirectInternal(VM& vm, PropertyName propertyName, JSVal
 
             putDirect(vm, offset, value);
             structure->didReplaceProperty(offset);
-            slot.setExistingProperty(this, offset);
 
             if ((attributes & Accessor) != (currentAttributes & Accessor)) {
                 ASSERT(!(attributes & ReadOnly));
                 setStructure(vm, Structure::attributeChangeTransition(vm, structure, propertyName, attributes));
-            }
+            } else
+                slot.setExistingProperty(this, offset);
+
             return true;
         }
 
@@ -1288,13 +1289,14 @@ inline bool JSObject::putDirectInternal(VM& vm, PropertyName propertyName, JSVal
             return false;
 
         structure->didReplaceProperty(offset);
-        slot.setExistingProperty(this, offset);
         putDirect(vm, offset, value);
 
         if ((attributes & Accessor) != (currentAttributes & Accessor)) {
             ASSERT(!(attributes & ReadOnly));
             setStructure(vm, Structure::attributeChangeTransition(vm, structure, propertyName, attributes));
-        }
+        } else
+            slot.setExistingProperty(this, offset);
+
         return true;
     }
 

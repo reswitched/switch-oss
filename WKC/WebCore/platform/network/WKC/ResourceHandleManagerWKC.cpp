@@ -1228,6 +1228,9 @@ size_t ResourceHandleManager::downloadTimerHeaderCallback(ResourceHandle* job, R
             String location = d->m_response.httpHeaderField(String("location"));
             if (!location.isEmpty()) {
                 URL newURL = URL(job->firstRequest().url(), location);
+                if (!newURL.hasFragmentIdentifier() && job->firstRequest().url().hasFragmentIdentifier()) {
+                    newURL.setFragmentIdentifier(job->firstRequest().url().fragmentIdentifier());
+                }
 
                 // delete previous CURLOPT_CUSTOMREQUEST setting (when previous request is POST with nothing have a body)
                 curl_easy_setopt(d->m_handle, CURLOPT_CUSTOMREQUEST, NULL);
@@ -2381,11 +2384,13 @@ void ResourceHandleManager::add(ResourceHandle* job)
     nxLog_i("Async load add [%p] %s", job, kurl.string().latin1().data());
 
 #if ENABLE(WKC_HTTPCACHE)
+    if (!m_httpCache.disabled()
+        && job->firstRequest().cachePolicy() != ReloadIgnoringCacheData
+        && !job->firstRequest().httpHeaderFields().contains(HTTPHeaderName::Range)
 #if ENABLE(WKC_HTTPCACHE_EXCLUDE_ROOT_CONTENT)
-    if (!m_httpCache.disabled() && job->firstRequest().cachePolicy() != ReloadIgnoringCacheData && !( kurl.protocolIs("https") && contentComposition(job) == WKC::ERootFrameRootContentComposition) ) {
-#else
-    if (!m_httpCache.disabled() && job->firstRequest().cachePolicy() != ReloadIgnoringCacheData) {
+        && !( kurl.protocolIs("https") && contentComposition(job) == WKC::ERootFrameRootContentComposition)
 #endif
+        ) {
         HTTPCachedResource *resource = m_httpCache.resourceForURL(kurl);
         if (resource) {
             // this resource has been used
@@ -4635,7 +4640,7 @@ bool ResourceHandleManager::addHTTPCache(ResourceHandle *handle, URL &url, Share
     // reset used flag
     resource->setUsed(false);
 
-    m_writeCacheList.append(resource);
+    HTTPCache::appendResourceInSizeOrder(m_writeCacheList, resource);
 
     if (!m_writeCacheTimer.isActive()) {
         m_writeCacheTimer.startOneShot(pollTimeSeconds);
@@ -4890,6 +4895,12 @@ void
 ResourceHandleManager::dumpHTTPCacheResourceList()
 {
     httpCache()->dumpResourceList();
+}
+
+void
+ResourceHandleManager::setCanCacheToDiskCallback(WKC::CanCacheToDiskProc proc)
+{
+    m_httpCache.setCanCacheToDiskCallback(proc);
 }
 
 #endif // ENABLE(WKC_HTTPCACHE)

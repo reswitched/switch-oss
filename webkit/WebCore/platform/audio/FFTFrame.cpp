@@ -42,6 +42,9 @@ private:
     unsigned long __state_;
 };
 #endif
+#if PLATFORM(WKC)
+#include <climits>
+#endif
 #include <complex>
 #include <wtf/MathExtras.h>
 

@@ -3283,7 +3283,7 @@ _cairo_ps_surface_emit_eps (cairo_ps_surface_t          *surface,
 	params->approx_size = eps_data_len;
 	surface->contains_eps = TRUE;
 
-	/* Find number of occurences of SUBFILE_FILTER_EOD in the EPS data.
+	/* Find number of occurrences of SUBFILE_FILTER_EOD in the EPS data.
 	 * We will need it before emitting the data if a ReusableStream is used.
          */
 	params->eod_count = count_eod_strings (eps_data, eps_data_len);
@@ -3570,7 +3570,7 @@ _cairo_ps_surface_emit_form (cairo_ps_surface_t          *surface,
 			     cairo_emit_surface_params_t *params,
 			     cairo_bool_t                 test)
 {
-    cairo_ps_form_t *ps_form;
+    cairo_ps_form_t *ps_form = NULL;
     cairo_status_t status;
 
     status = _cairo_ps_surface_use_form (surface,
@@ -3619,7 +3619,7 @@ _cairo_ps_surface_emit_surface (cairo_ps_surface_t          *surface,
 				cairo_emit_surface_params_t *params)
 {
     cairo_int_status_t status;
-    cairo_output_stream_t *old_stream;
+    cairo_output_stream_t *old_stream = NULL;
     cairo_bool_t use_form;
 
     /* Try emitting as a form. Returns unsupported if the surface is

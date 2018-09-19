@@ -373,18 +373,16 @@ RenderLayer::~RenderLayer()
     }
 #endif
 
-    if (inResizeMode() && !renderer().documentBeingDestroyed())
+    if (inResizeMode())
         renderer().frame().eventHandler().resizeLayerDestroyed();
 
     renderer().view().frameView().removeScrollableArea(this);
 
-    if (!renderer().documentBeingDestroyed()) {
 #if ENABLE(IOS_TOUCH_EVENTS)
-        unregisterAsTouchEventListenerForScrolling();
+    unregisterAsTouchEventListenerForScrolling();
 #endif
-        if (Element* element = renderer().element())
-            element->setSavedLayerScrollOffset(m_scrollOffset);
-    }
+    if (Element* element = renderer().element())
+        element->setSavedLayerScrollOffset(m_scrollOffset);
 
     destroyScrollbar(HorizontalScrollbar);
     destroyScrollbar(VerticalScrollbar);
@@ -1892,6 +1890,15 @@ void RenderLayer::willBeDestroyed()
         layerBacking->layerWillBeDestroyed();
 }
 #endif
+
+bool RenderLayer::isDescendantOf(const RenderLayer& layer) const
+{
+    for (auto* ancestor = this; ancestor; ancestor = ancestor->parent()) {
+        if (&layer == ancestor)
+            return true;
+    }
+    return false;
+}
 
 void RenderLayer::addChild(RenderLayer* child, RenderLayer* beforeChild)
 {

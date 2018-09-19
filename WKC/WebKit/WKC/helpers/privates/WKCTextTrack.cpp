@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, 2014 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2013-2018 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -61,10 +61,9 @@ TextTrackPrivate::language() const
 }
 
 bool
-TextTrackPrivate::showingByDefault() const
+TextTrackPrivate::isDefault() const
 {
-    notImplemented();
-    return false;
+    return m_webcore->isDefault();
 }
 
 TextTrackCueList*
@@ -137,9 +136,9 @@ TextTrack::language() const
 }
 
 bool
-TextTrack::showingByDefault() const
+TextTrack::isDefault() const
 {
-    return m_private.showingByDefault();
+    return m_private.isDefault();
 }
 
 TextTrackCueList*

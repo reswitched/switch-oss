@@ -7,7 +7,7 @@
  * Copyright (C) 2010, 2011 Igalia S.L.
  * Copyright (C) Research In Motion Limited 2010. All rights reserved.
  * Copyright (C) 2012, Intel Corporation
- * Copyright (c) 2011-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -467,7 +467,7 @@ static void drawLineOnCairoContext(GraphicsContext* graphicsContext, cairo_t* co
     else if (style == DashedStroke)
         patternWidth = 3 * strokeThickness;
 
-    bool isVerticalLine = (point1.x() + strokeThickness == point2.x());
+    bool isVerticalLine = (point1.x() + strokeThickness == point2.x()) && (point1.y() != point2.y());
     FloatPoint point1OnPixelBoundaries = point1;
     FloatPoint point2OnPixelBoundaries = point2;
     if (strokeThickness==1) {
@@ -1265,9 +1265,9 @@ void GraphicsContext::clip(const Path& path, WindRule windRule)
     m_data->clip(path);
 }
 
-void GraphicsContext::canvasClip(const Path& path, WindRule)
+void GraphicsContext::canvasClip(const Path& path, WindRule windRule)
 {
-    clip(path);
+    clip(path, windRule);
 }
 
 void GraphicsContext::clipOut(const Path& path)

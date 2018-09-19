@@ -877,7 +877,7 @@ EncodedJSValue JSC_HOST_CALL arrayProtoFuncSplice(ExecState* exec)
         if (exec->hadException())
             return JSValue::encode(jsUndefined());
     }
-
+    
     setLength(exec, thisObj, length - deleteCount + additionalArgs);
     return JSValue::encode(result);
 }
@@ -1032,6 +1032,7 @@ static EncodedJSValue concatAppendOne(ExecState* exec, VM& vm, JSArray* first, J
 
     unsigned resultSize = checkedResultSize.unsafeGet();
     IndexingType type = first->mergeIndexingTypeForCopying(indexingTypeForValue(second) | IsArray);
+    
     JSArray* result;
     if (type == NonArray) {
         result = constructEmptyArray(exec, nullptr, firstArraySize + 1);
@@ -1060,6 +1061,29 @@ static EncodedJSValue concatAppendOne(ExecState* exec, VM& vm, JSArray* first, J
 
 }
 
+template<typename T>
+void clearElement(T& element)
+{
+    element.clear();
+}
+
+template<>
+void clearElement(double& element)
+{
+    element = PNaN;
+}
+
+template<typename T>
+ALWAYS_INLINE void copyElements(T* buffer, unsigned offset, void* source, unsigned sourceSize, IndexingType sourceType)
+{
+    if (sourceType != ArrayWithUndecided) {
+        memcpy(buffer + offset, source, sizeof(JSValue) * sourceSize);
+        return;
+    }
+
+    for (unsigned i = sourceSize; i--;)
+        clearElement<T>(buffer[i + offset]);
+};
 
 EncodedJSValue JSC_HOST_CALL arrayProtoPrivateFuncConcatMemcpy(ExecState* exec)
 {
@@ -1067,7 +1091,7 @@ EncodedJSValue JSC_HOST_CALL arrayProtoPrivateFuncConcatMemcpy(ExecState* exec)
     VM& vm = exec->vm();
 
     JSArray* firstArray = jsCast<JSArray*>(exec->uncheckedArgument(0));
-
+    
     // This code assumes that neither array has set Symbol.isConcatSpreadable. If the first array
     // has indexed accessors then one of those accessors might change the value of Symbol.isConcatSpreadable
     // on the second argument.
@@ -1083,7 +1107,7 @@ EncodedJSValue JSC_HOST_CALL arrayProtoPrivateFuncConcatMemcpy(ExecState* exec)
         return concatAppendOne(exec, vm, firstArray, second);
 
     JSArray* secondArray = jsCast<JSArray*>(second);
-
+    
     Butterfly* firstButterfly = firstArray->butterfly();
     Butterfly* secondButterfly = secondArray->butterfly();
 
@@ -1099,7 +1123,9 @@ EncodedJSValue JSC_HOST_CALL arrayProtoPrivateFuncConcatMemcpy(ExecState* exec)
     }
 
     unsigned resultSize = checkedResultSize.unsafeGet();
-    IndexingType type = firstArray->mergeIndexingTypeForCopying(secondArray->indexingType());
+    IndexingType firstType = firstArray->indexingType();
+    IndexingType secondType = secondArray->indexingType();
+    IndexingType type = firstArray->mergeIndexingTypeForCopying(secondType);
     if (type == NonArray || !firstArray->canFastCopy(vm, secondArray) || resultSize >= MIN_SPARSE_ARRAY_INDEX) {
         JSArray* result = constructEmptyArray(exec, nullptr, resultSize);
         if (vm.exception())
@@ -1128,12 +1154,13 @@ EncodedJSValue JSC_HOST_CALL arrayProtoPrivateFuncConcatMemcpy(ExecState* exec)
 
     if (type == ArrayWithDouble) {
         double* buffer = result->butterfly()->contiguousDouble().data();
-        memcpy(buffer, firstButterfly->contiguousDouble().data(), sizeof(JSValue) * firstArraySize);
-        memcpy(buffer + firstArraySize, secondButterfly->contiguousDouble().data(), sizeof(JSValue) * secondArraySize);
+        copyElements(buffer, 0, firstButterfly->contiguousDouble().data(), firstArraySize, firstType);
+        copyElements(buffer, firstArraySize, secondButterfly->contiguousDouble().data(), secondArraySize, secondType);
+
     } else if (type != ArrayWithUndecided) {
         WriteBarrier<Unknown>* buffer = result->butterfly()->contiguous().data();
-        memcpy(buffer, firstButterfly->contiguous().data(), sizeof(JSValue) * firstArraySize);
-        memcpy(buffer + firstArraySize, secondButterfly->contiguous().data(), sizeof(JSValue) * secondArraySize);
+        copyElements(buffer, 0, firstButterfly->contiguous().data(), firstArraySize, firstType);
+        copyElements(buffer, firstArraySize, secondButterfly->contiguous().data(), secondArraySize, secondType);
     }
 
     result->butterfly()->setPublicLength(resultSize);

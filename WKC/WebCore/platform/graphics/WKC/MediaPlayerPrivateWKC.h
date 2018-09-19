@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
+ *  Copyright (c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -75,6 +75,7 @@ public:
     virtual double durationDouble() const;
 
     virtual float currentTime() const;
+    virtual double currentTimeDouble() const;
     virtual void seek(float time);
     virtual bool seeking() const;
 

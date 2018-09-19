@@ -517,7 +517,7 @@ _cairo_cogl_surface_allocate_buffer_space (cairo_cogl_surface_t *surface,
 					   void **pointer)
 {
     /* XXX: In the Cogl journal we found it more efficient to have a pool of
-     * buffers that we re-cycle but for now we simply thow away our stack
+     * buffers that we re-cycle but for now we simply throw away our stack
      * buffer each time we flush. */
     if (unlikely (surface->buffer_stack &&
 		  (surface->buffer_stack_size - surface->buffer_stack_offset) < size)) {

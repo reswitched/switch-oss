@@ -4194,7 +4194,7 @@ cairo_pdf_surface_emit_transparency_group (cairo_pdf_surface_t  *surface,
 
 	/* When emitting a shading operator we are in cairo pattern
 	 * coordinates. _cairo_pdf_surface_paint_gradient has set the
-	 * ctm to the pattern matrix (including the convertion from
+	 * ctm to the pattern matrix (including the conversion from
 	 * pdf to cairo coordinates) */
 	_cairo_box_from_rectangle (&box, &pdf_pattern->extents);
 	_cairo_box_to_doubles (&box, &x1, &y1, &x2, &y2);

@@ -192,6 +192,14 @@ void PlatformContextCairo::drawSurfaceToContext(cairo_surface_t* surface, const 
         // Cairo subsurfaces don't support floating point boundaries well, so we expand the rectangle.
         IntRect expandedSrcRect(enclosingIntRect(srcRect));
 
+#if PLATFORM(WKC)
+        IntSize surfaceSize = cairoSurfaceSize(surface);
+        if (expandedSrcRect.maxX() > surfaceSize.width())
+            expandedSrcRect.setWidth(surfaceSize.width() - expandedSrcRect.x());
+        if (expandedSrcRect.maxY() > surfaceSize.height())
+            expandedSrcRect.setHeight(surfaceSize.height() - expandedSrcRect.y());
+#endif
+
         // We use a subsurface here so that we don't end up sampling outside the originalSrcRect rectangle.
         // See https://bugs.webkit.org/show_bug.cgi?id=58309
         patternSurface = adoptRef(cairo_surface_create_for_rectangle(surface, expandedSrcRect.x(),

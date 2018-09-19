@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
+ *  Copyright (c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -57,6 +57,7 @@ HTTPCachedResource::HTTPCachedResource(const String& filename)
     m_used = false;
     m_httpequivflags = 0;
     m_resourceData = nullptr;
+    m_lastUsedTime = 0;
 
     m_expectedContentLength = 0;
     m_httpStatusCode = 0;
@@ -85,6 +86,7 @@ HTTPCachedResource::HTTPCachedResource(const String& filename, const URL &url, c
     m_used = false;
     m_serverpushed = serverpush;
     m_httpequivflags = 0;
+    m_lastUsedTime = currentTime();
 
     m_contentLength = 0;
     m_resourceSize = 0;
@@ -126,7 +128,7 @@ double HTTPCachedResource::freshnessLifetime()
         // Heuristic Freshness:
         // http://tools.ietf.org/html/rfc7234#section-4.2.2
         if (isfinite(m_lastModified))
-            return (m_date - m_lastModified) * 0.1;
+            return (dateValue - m_lastModified) * 0.1;
     }
 
     // If no cache headers are present, the specification leaves the decision to the UA. Other browsers seem to opt for 0.
@@ -296,7 +298,7 @@ void HTTPCachedResource::calcResourceSize()
 {
     size_t size = sizeof(long long) * 2
         + sizeof(int) * 7
-        + sizeof(double) * 6
+        + sizeof(double) * 7
         + sizeof(int) + ROUNDUP(m_url.utf8().length(), ROUNDUP_UNIT)
         + sizeof(int) + ROUNDUP(m_mimeType.utf8().length(), ROUNDUP_UNIT)
         + sizeof(int) + ROUNDUP(m_textEncodingName.utf8().length(), ROUNDUP_UNIT)
@@ -341,6 +343,7 @@ int HTTPCachedResource::serialize(char *buffer)
     (*(double*)buffer) = m_lastModified; buffer += sizeof(double);
     (*(double*)buffer) = m_responseTime; buffer += sizeof(double);
     (*(double*)buffer) = m_age; buffer += sizeof(double);
+    (*(double*)buffer) = m_lastUsedTime; buffer += sizeof(double);
     // string field
     buffer += writeString(buffer, m_url);
     buffer += writeString(buffer, m_mimeType);
@@ -384,6 +387,7 @@ int HTTPCachedResource::deserialize(char *buffer)
     m_lastModified = (*(double*)buffer); buffer += sizeof(double);
     m_responseTime = (*(double*)buffer); buffer += sizeof(double);
     m_age = (*(double*)buffer); buffer += sizeof(double);
+    m_lastUsedTime = (*(double*)buffer); buffer += sizeof(double);
     // string field
     buffer += readString(buffer, m_url);
     buffer += readString(buffer, m_mimeType);
@@ -418,6 +422,14 @@ void HTTPCachedResource::setResourceData(SharedBuffer* resourceData)
 #define DEFAULT_CONTENTENTRYINFOSIZE_LIMIT  (4 * 1024)
 #define DEFAULT_CONTENTSIZE_LIMIT           (10 * 1024 * 1024)
 #define DEFAULT_TOTALCONTENTSSIZE_LIMIT     (10 * 1024 * 1024)
+
+static WKC::CanCacheToDiskProc gCanCacheToDiskCallback;
+
+void
+HTTPCache::setCanCacheToDiskCallback(WKC::CanCacheToDiskProc proc)
+{
+    gCanCacheToDiskCallback = proc;
+}
 
 HTTPCache::HTTPCache()
     : m_fatFileName(DEFAULT_FAT_FILENAME)
@@ -456,6 +468,32 @@ void HTTPCache::reset()
 
     m_totalResourceSize = 0;
     m_totalContentsSize = 0;
+}
+
+void
+HTTPCache::appendResourceInSizeOrder(Vector<HTTPCachedResource*>& resourceList, HTTPCachedResource* resource)
+{
+    size_t len = resourceList.size();
+    for (size_t i = 0; i < len; i++) {
+        if (resource->contentLength() >= resourceList[i]->contentLength()) {
+            resourceList.insert(i, resource);
+            return;
+        }
+    }
+    resourceList.append(resource);
+}
+
+void
+HTTPCache::appendResourceInLastUsedTimeOrder(Vector<HTTPCachedResource*>& resourceList, HTTPCachedResource* resource)
+{
+    size_t len = resourceList.size();
+    for (int i = len - 1; i >= 0; i--) {
+        if (resource->lastUsedTime() >= resourceList[i]->lastUsedTime()) {
+            resourceList.insert(i + 1, resource);
+            return;
+        }
+    }
+    resourceList.insert(0, resource);
 }
 
 HTTPCachedResource* HTTPCache::createHTTPCachedResource(URL &url, SharedBuffer* resourceData, ResourceResponse &response, bool noCache, bool mustRevalidate, double expires, double maxAge, bool serverpush)
@@ -508,11 +546,29 @@ bool HTTPCache::addCachedResource(HTTPCachedResource *resource)
     return true;
 }
 
+void HTTPCache::updateResourceLastUsedTime(HTTPCachedResource *resource)
+{
+    resource->setLastUsedTime(currentTime());
+
+    if (!m_resources.get(resource->url())) {
+        return;
+    }
+
+    for (size_t i = 0; i < m_resourceList.size(); i++) {
+        if (m_resourceList[i] == resource) {
+            m_resourceList.remove(i);
+            appendResourceInLastUsedTimeOrder(m_resourceList, resource);
+            return;
+        }
+    }
+}
+
 void HTTPCache::updateCachedResource(HTTPCachedResource *resource, SharedBuffer* resourceData, ResourceResponse &response, bool noCache, bool mustRevalidate, double expires, double maxAge, bool serverpush)
 {
-    resource->setResourceResponse(response, false);
+    resource->setResourceResponse(response, true);
     resource->setResourceData(resourceData);
     resource->update(noCache, mustRevalidate, expires, maxAge, serverpush);
+    updateResourceLastUsedTime(resource);
 }
 
 void HTTPCache::removeResource(HTTPCachedResource *resource)
@@ -793,11 +849,14 @@ bool HTTPCache::write(HTTPCachedResource *resource)
     if (m_totalContentsSize + contentLength > m_maxTotalContentsSize)
         purgeBySize(contentLength);
 
+    if (gCanCacheToDiskCallback && !gCanCacheToDiskCallback(resource->url().utf8().data(), resource->computeCurrentAge(), resource->freshnessLifetime(), resource->contentLength()))
+        return false;
+
     if (!resource->writeFile(m_filePath))
         return false;
     
     m_resources.add(resource->url(), resource);
-    m_resourceList.append(resource);
+    appendResourceInLastUsedTimeOrder(m_resourceList, resource);
     m_totalResourceSize += resource->resourceSize();
     m_totalContentsSize += resource->contentLength();
 
@@ -806,7 +865,11 @@ bool HTTPCache::write(HTTPCachedResource *resource)
 
 bool HTTPCache::read(HTTPCachedResource *resource, char *buf)
 {
-    return resource->readFile(buf, m_filePath);
+    bool ret = resource->readFile(buf, m_filePath);
+    if (ret) {
+        updateResourceLastUsedTime(resource);
+    }
+    return ret;
 }
 
 void HTTPCache::serializeFATData(char *buffer)
@@ -836,7 +899,7 @@ bool HTTPCache::deserializeFATData(char *buffer, int length)
 }
 
 #define DEFAULT_CACHEFAT_FILENAME   "cache.fat"
-#define CACHEFAT_FORMAT_VERSION     6  // Number of int. Increment this if you changed the content format in the fat file.
+#define CACHEFAT_FORMAT_VERSION     7  // Number of int. Increment this if you changed the content format in the fat file.
 
 #define MD5_DIGESTSIZE 16
 
@@ -1013,6 +1076,7 @@ HTTPCache::dumpResourceList()
         nxLog_e("----------");
         nxLog_e("Cache %d: %s", i, resource->fileName().utf8().data());
         nxLog_e(" URL: %s", resource->url().utf8().data());
+        nxLog_e(" last used time: %lf", resource->lastUsedTime());
         nxLog_e(" mime type: %s content length: %ld HTTP Status code: %d", resource->mimeType().utf8().data(), resource->contentLength(), resource->httpStatusCode());
         nxLog_e(" expires: %lf max-age: %lf", resource->expires(), resource->maxAge());
         nxLog_e(" Last-Modified: %s", resource->lastModifiedHeader().utf8().data());

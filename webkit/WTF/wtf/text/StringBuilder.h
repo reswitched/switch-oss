@@ -159,7 +159,7 @@ public:
         append(U16_TRAIL(c));
     }
 
-    WTF_EXPORT_PRIVATE void appendQuotedJSONString(const String&);
+    WTF_EXPORT_PRIVATE bool appendQuotedJSONString(const String&);
 
     template<unsigned charactersCount>
     ALWAYS_INLINE void appendLiteral(const char (&characters)[charactersCount]) { append(characters, charactersCount - 1); }
@@ -276,6 +276,7 @@ public:
         m_buffer.swap(stringBuilder.m_buffer);
         std::swap(m_is8Bit, stringBuilder.m_is8Bit);
         std::swap(m_bufferCharacters8, stringBuilder.m_bufferCharacters8);
+        ASSERT(!m_buffer || m_buffer->length() >= m_length);
     }
 
 private:

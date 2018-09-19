@@ -43,6 +43,10 @@
 
 #include <stdio.h>
 #include <errno.h>
+#include <locale.h>
+#ifdef HAVE_XLOCALE_H
+#include <xlocale.h>
+#endif
 
 COMPILE_TIME_ASSERT ((int)CAIRO_STATUS_LAST_STATUS < (int)CAIRO_INT_STATUS_UNSUPPORTED);
 COMPILE_TIME_ASSERT (CAIRO_INT_STATUS_LAST_STATUS <= 127);
@@ -789,6 +793,38 @@ _cairo_get_locale_decimal_point (void)
 }
 #endif
 
+#if defined (HAVE_NEWLOCALE) && defined (HAVE_STRTOD_L)
+
+static locale_t C_locale;
+
+static locale_t
+get_C_locale (void)
+{
+    locale_t C;
+
+retry:
+    C = (locale_t) _cairo_atomic_ptr_get ((void **) &C_locale);
+
+    if (unlikely (!C)) {
+        C = newlocale (LC_ALL_MASK, "C", NULL);
+
+        if (!_cairo_atomic_ptr_cmpxchg ((void **) &C_locale, NULL, C)) {
+            freelocale (C_locale);
+            goto retry;
+        }
+    }
+
+    return C;
+}
+
+double
+_cairo_strtod (const char *nptr, char **endptr)
+{
+    return strtod_l (nptr, endptr, get_C_locale ());
+}
+
+#else
+
 /* strtod replacement that ignores locale and only accepts decimal points */
 double
 _cairo_strtod (const char *nptr, char **endptr)
@@ -844,6 +880,7 @@ _cairo_strtod (const char *nptr, char **endptr)
 
     return value;
 }
+#endif
 
 /**
  * _cairo_fopen:
@@ -984,13 +1021,13 @@ typedef struct _cairo_intern_string {
 
 static cairo_hash_table_t *_cairo_intern_string_ht;
 
-static unsigned long
-_intern_string_hash (const char *str, int len)
+unsigned long
+_cairo_string_hash (const char *str, int len)
 {
     const signed char *p = (const signed char *) str;
     unsigned int h = *p;
 
-    for (p += 1; --len; p++)
+    for (p += 1; len > 0; len--, p++)
 	h = (h << 5) - h + *p;
 
     return h;
@@ -1020,7 +1057,7 @@ _cairo_intern_string (const char **str_inout, int len)
 
     if (len < 0)
 	len = strlen (str);
-    tmpl.hash_entry.hash = _intern_string_hash (str, len);
+    tmpl.hash_entry.hash = _cairo_string_hash (str, len);
     tmpl.len = len;
     tmpl.string = (char *) str;
 

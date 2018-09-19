@@ -822,6 +822,18 @@ get_glyph_cache (void)
 }
 
 void
+_cairo_image_compositor_reset_static_data (void)
+{
+    CAIRO_MUTEX_LOCK (_cairo_glyph_cache_mutex);
+
+    if (global_glyph_cache)
+	pixman_glyph_cache_destroy (global_glyph_cache);
+    global_glyph_cache = NULL;
+
+    CAIRO_MUTEX_UNLOCK (_cairo_glyph_cache_mutex);
+}
+
+void
 _cairo_image_scaled_glyph_fini (cairo_scaled_font_t *scaled_font,
 				cairo_scaled_glyph_t *scaled_glyph)
 {
@@ -946,6 +958,11 @@ out_unlock:
     return status;
 }
 #else
+void
+_cairo_image_compositor_reset_static_data (void)
+{
+}
+
 void
 _cairo_image_scaled_glyph_fini (cairo_scaled_font_t *scaled_font,
 				cairo_scaled_glyph_t *scaled_glyph)

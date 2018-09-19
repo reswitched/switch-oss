@@ -116,8 +116,8 @@ macro <link linkend="CAIRO-VERSION-ENCODE:CAPS"><function>CAIRO_VERSION_ENCODE()
 <informalexample><screen>
 Compile-time
 ------------
-CAIRO_VERSION_STRING    Human-readable
-CAIRO_VERSION           Encoded, suitable for comparison
+<link linkend="CAIRO-VERSION-STRING:CAPS"><type>CAIRO_VERSION_STRING</type></link>   Human-readable
+<link linkend="CAIRO-VERSION:CAPS"><type>CAIRO_VERSION</type></link>          Encoded, suitable for comparison
 &nbsp;
 Run-time
 --------

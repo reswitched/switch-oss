@@ -1256,6 +1256,9 @@ bool RenderLayerBacking::updateDescendantClippingLayer(bool needsDescendantClip)
             layersChanged = true;
         }
     } else if (hasClippingLayer()) {
+#if PLATFORM(WKC)
+        m_childContainmentLayer->setMaskLayer(nullptr);
+#endif
         willDestroyLayer(m_childContainmentLayer.get());
         m_childContainmentLayer->removeFromParent();
         m_childContainmentLayer = nullptr;

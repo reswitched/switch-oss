@@ -108,6 +108,7 @@ NodePrivate::NodePrivate(WebCore::Node* parent)
     , m_shadowHost(0)
     , m_HTMLElement(0)
     , m_parentOrShadowHostElement(0)
+    , m_querySelectorElement(0)
 {
 }
 
@@ -138,6 +139,8 @@ NodePrivate::~NodePrivate()
         delete m_HTMLElement;
     if (m_parentOrShadowHostElement)
         delete m_parentOrShadowHostElement;
+    if (m_querySelectorElement)
+        delete m_querySelectorElement;
 }
 
 WebCore::Node*
@@ -368,6 +371,23 @@ NodePrivate::getElementsByTagName(const String& localName)
     return &nodeList->wkc();
 }
 
+Element*
+NodePrivate::querySelector(const String& selectors)
+{
+    if (!m_webcore)
+        return 0;
+
+    WebCore::ExceptionCode ec;
+    WebCore::Element* elem = ((WebCore::ContainerNode *)m_webcore)->querySelector(selectors, ec);
+    if (!elem)
+        return 0;
+    if (!m_querySelectorElement || m_querySelectorElement->webcore() != elem) {
+        delete m_querySelectorElement;
+        m_querySelectorElement = ElementPrivate::create(elem);
+    }
+    return &m_querySelectorElement->wkc();
+}
+
 NodeList*
 NodePrivate::querySelectorAll(const String& selectors)
 {
@@ -504,7 +524,39 @@ NodePrivate::parentOrShadowHostElement()
     }
     return &m_parentOrShadowHostElement->wkc();
 }
- 
+
+void
+NodePrivate::showNode(const char* prefix) const
+{
+#if ENABLE(TREE_DEBUGGING)
+    webcore()->showNode(prefix);
+#endif
+}
+
+void
+NodePrivate::showTreeForThis() const
+{
+#if ENABLE(TREE_DEBUGGING)
+    webcore()->showTreeForThis();
+#endif
+}
+
+void
+NodePrivate::showNodePathForThis() const
+{
+#if ENABLE(TREE_DEBUGGING)
+    webcore()->showNodePathForThis();
+#endif
+}
+
+void
+NodePrivate::showTreeForThisAcrossFrame() const
+{
+#if ENABLE(TREE_DEBUGGING)
+    webcore()->showTreeForThisAcrossFrame();
+#endif
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 Node*
@@ -712,6 +764,12 @@ Node::getElementsByTagName(const String& localName)
     return m_private.getElementsByTagName(localName);
 }
 
+Element*
+Node::querySelector(const String& selectors)
+{
+    return m_private.querySelector(selectors);
+}
+
 NodeList*
 Node::querySelectorAll(const String& selectors)
 {
@@ -722,6 +780,30 @@ Element*
 Node::parentOrShadowHostElement()
 {
     return priv().parentOrShadowHostElement();
+}
+
+void
+Node::showNode(const char* prefix) const
+{
+    priv().showNode(prefix);
+}
+
+void
+Node::showTreeForThis() const
+{
+    priv().showTreeForThis();
+}
+
+void
+Node::showNodePathForThis() const
+{
+    priv().showNodePathForThis();
+}
+
+void
+Node::showTreeForThisAcrossFrame() const
+{
+    priv().showTreeForThisAcrossFrame();
 }
 
 } // namespace

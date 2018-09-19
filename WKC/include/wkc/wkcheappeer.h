@@ -43,7 +43,11 @@ typedef struct WKCHeapStatistics_ {
     size_t maxHeapSize;
     size_t* largeFreeSizeInHeap;              // Large List for Large Memories (Translated into array)
     size_t currentHeapUsage;
+    size_t currentPhysicalMemoryUsage;
     size_t maxHeapUsage;
+    size_t allocFailureCount;
+    size_t allocFailureMinSize;
+    size_t allocFailureTotalSize;
 } WKCHeapStatistics;
 
 WKC_PEER_API void* wkcHeapCallocPeer(size_t p,size_t n);
@@ -55,11 +59,12 @@ WKC_PEER_API char* wkcHeapStrDupPeer(const char* src);
 WKC_PEER_API void* wkcHeapZeroedMallocPeer(size_t n);
 WKC_PEER_API void wkcHeapForbidPeer();
 WKC_PEER_API void wkcHeapAllowPeer();
-WKC_PEER_API void wkcHeapInitializePeer(void* in_memory, size_t in_memory_size);
+WKC_PEER_API void wkcHeapInitializePeer(void* in_memory, size_t in_physical_memory_size, size_t in_virtual_memory_size);
 WKC_PEER_API void wkcHeapFinalizePeer();
 WKC_PEER_API void wkcHeapForceTerminatePeer();
 WKC_PEER_API void wkcHeapResetMaxHeapUsagePeer();
 WKC_PEER_API size_t wkcHeapGetHeapTotalSizePeer();
+WKC_PEER_API size_t wkcHeapGetPhysicalHeapTotalSizePeer();
 WKC_PEER_API size_t wkcHeapGetHeapAvailableSizePeer();
 WKC_PEER_API size_t wkcHeapGetHeapMaxAvailableBlockSizePeer();
 WKC_PEER_API size_t wkcHeapGetHeapTotalSizeForExecutableRegionPeer();
@@ -74,7 +79,7 @@ WKC_PEER_API void wkcHeapFreeAlignedPeer(void* p, size_t size);
 WKC_PEER_API void* wkcHeapReserveUncommittedPeer(size_t size, bool writable, bool executable);
 WKC_PEER_API void* wkcHeapReserveAndCommitPeer(size_t size, bool writable, bool executable);
 WKC_PEER_API void wkcHeapReleaseDecommittedPeer(void* ptr, size_t size);
-WKC_PEER_API void wkcHeapCommitPeer(void* ptr, size_t size, bool writable, bool executable);
+WKC_PEER_API bool wkcHeapCommitPeer(void* ptr, size_t size, bool writable, bool executable);
 WKC_PEER_API void wkcHeapDecommitPeer(void* ptr, size_t size);
 
 WKC_PEER_API size_t wkcHeapGetPageSizePeer(void);

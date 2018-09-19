@@ -275,7 +275,6 @@ void SocketStreamHandle::construct(void)
 
     // add handle
     curl_multi_add_handle(multiHandle, handle);
-    curl_easy_setopt(handle, CURLOPT_MULTI_EASY, multiHandle);
 
     m_multiHandle = (void*)multiHandle;
     m_handle      = (void*)handle;

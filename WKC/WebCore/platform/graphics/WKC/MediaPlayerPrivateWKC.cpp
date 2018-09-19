@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
+ *  Copyright (c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -420,6 +420,13 @@ MediaPlayerPrivate::currentTime() const
 {
     return wkcMediaPlayerCurrentTimePeer(m_peer);
 }
+
+double
+MediaPlayerPrivate::currentTimeDouble() const
+{
+    return wkcMediaPlayerCurrentTimeDoublePeer(m_peer);
+}
+
 void
 MediaPlayerPrivate::seek(float in_time)
 {

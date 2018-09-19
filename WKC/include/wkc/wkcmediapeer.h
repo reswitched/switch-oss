@@ -1,7 +1,7 @@
 /*
  *  wkcmediapeer.h
  *
- *  Copyright(c) 2011-2017 ACCESS CO., LTD. All rights reserved.
+ *  Copyright(c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  */
 
 #ifndef _WKC_MEDIA_PEER_H_
@@ -853,8 +853,18 @@ WKC_PEER_API float wkcMediaPlayerStartTimePeer(void* in_self);
 @return Current position of content (elapsed seconds from beginning)
 @details
 The time of the current content playback position from the beginning must be returned as a return value.
+@attention
+This function is obsolete. wkcMediaPlayerCurrentTimeDoublePeer() would be used.
 */
 WKC_PEER_API float wkcMediaPlayerCurrentTimePeer(void* in_self);
+/**
+@brief Gets current content position
+@param in_self Media player instance
+@return Current position of content (elapsed seconds from beginning)
+@details
+The time of the current content playback position from the beginning must be returned as a return value.
+*/
+WKC_PEER_API double wkcMediaPlayerCurrentTimeDoublePeer(void* in_self);
 /**
 @brief Gets the maximum seekable position of content
 @param in_self Media player instance
@@ -1407,31 +1417,45 @@ Do inverse FFT conversion.
 */
 WKC_PEER_API void wkcAudioFFTDoInverseFFTPeer(void* in_self, float* out_data, const float* in_real, const float* in_imag);
 
+/** @brief Structure that stores information about media segment */
+struct WKCMediaTrack_ {
+    /** @brief track ID*/
+    int fID;
+    /** @brief codec */
+    const char* fCodec;
+    /** @brief kind@n
+        WKC_MEDIA_SB_TRACKKIND_AUDIO kind of media is audio@n
+        WKC_MEDIA_SB_TRACKKIND_VIDEO kind of media is video */
+    int fKind;
+};
+/** @brief Type definition of WKCMediaTrack */
+typedef struct WKCMediaTrack_ WKCMediaTrack;
+
 /**
-@typedef void (*WKCSBDidReceiveInitializationSegmentProc)(void* in_opaque, const char* in_codec, int in_kind, double in_duration)
+@typedef void (*WKCSBDidReceiveInitializationSegmentProc)(void* in_opaque, const WKCMediaTrack* in_tracks, int in_tracks_len, double in_duration)
 @brief Notify new initialization segment was append (Media Source Extensions Draft relevant)
 @param in_opaque Callback argument passed to wkcMediaPlayerAddSBPeer()
-@param in_codec codec type of initialization segment
-@param in_kind kind of media@n
-WKC_MEDIA_SB_TRACKKIND_AUDIO kind of media is audio@n
-WKC_MEDIA_SB_TRACKKIND_VIDEO kind of media is video
+@param in_tracks pointer to array of WKCMediaTrack
+@param in_tracks_len length of array of WKCMediaTrack
 @param in_duration duration information contained in initialization segment
 @details
 Notify new initialization segment was append in wkcMediaPlayerAppendToSBPeer().
 */
-typedef void (*WKCSBDidReceiveInitializationSegmentProc)(void* in_opaque, const char* in_codec, int in_kind, double in_duration);
+typedef void (*WKCSBDidReceiveInitializationSegmentProc)(void* in_opaque, const WKCMediaTrack* in_tracks, int in_tracks_len, double in_duration);
 
 /** @brief Structure that stores information about media segment */
 struct WKCMediaSample_ {
+    /** @brief track ID*/
+    int fID;
     /** @brief presentation timestamp of media segment@n
-        Refer to http://www.w3.org/TR/media-source/#presentation-timestamp*/
-    double fPresentationTime;
+        Refer to http://www.w3.org/TR/media-source/#presentation-timestamp */
+    long long fPresentationTime;
     /** @brief decode timestamp of media segment@n
         Refer to http://www.w3.org/TR/media-source/#decode-timestamp */
-    double fDecodeTime;
+    long long fDecodeTime;
     /** @brief coded frame duration@n
         Refer to http://www.w3.org/TR/media-source/#coded-frame-duration */
-    double fDuration;
+    long long fDuration;
 };
 /** @brief Type definition of WKCMediaSample */
 typedef struct WKCMediaSample_ WKCMediaSample;

@@ -463,6 +463,8 @@ public:
     virtual void dispatchMetaFocusRingVisibilityDidChange(const String&) const { };
 #endif
 
+    virtual bool isViewVisible() { return true; }
+
 protected:
     virtual ~ChromeClient() { }
 };

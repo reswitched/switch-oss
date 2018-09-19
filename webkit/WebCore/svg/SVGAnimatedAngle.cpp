@@ -32,7 +32,12 @@ SVGAnimatedAngleAnimator::SVGAnimatedAngleAnimator(SVGAnimationElement* animatio
 
 std::unique_ptr<SVGAnimatedType> SVGAnimatedAngleAnimator::constructFromString(const String& string)
 {
+#if !PLATFORM(WKC)
     auto animatedType = SVGAnimatedType::createAngleAndEnumeration(std::make_unique<std::pair<SVGAngle, unsigned>>());
+#else
+    void* p = fastMalloc(sizeof(std::pair<SVGAngle, unsigned>));
+    auto animatedType = SVGAnimatedType::createAngleAndEnumeration(std::unique_ptr<std::pair<SVGAngle, unsigned>>(new (p) std::pair<SVGAngle, unsigned>()));
+#endif
     std::pair<SVGAngle, unsigned>& animatedPair = animatedType->angleAndEnumeration();
 
     SVGAngle angle;

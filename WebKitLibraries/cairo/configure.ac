@@ -76,6 +76,9 @@ if test "x$have_dlsym" = "xyes"; then
 fi
 AM_CONDITIONAL(CAIRO_HAS_DLSYM, test "x$have_dlsym" = "xyes")
 
+AC_CHECK_HEADERS(xlocale.h)
+AC_CHECK_FUNCS(newlocale strtod_l)
+
 dnl ===========================================================================
 
 CAIRO_ENABLE_SURFACE_BACKEND(xlib, Xlib, auto, [
@@ -246,24 +249,28 @@ AM_CONDITIONAL(CAIRO_CAN_TEST_WIN32_PRINTING_SURFACE, test "x$test_win32_printin
 
 dnl ===========================================================================
 
-CAIRO_ENABLE_SURFACE_BACKEND(skia, Skia, no, [
-  AC_ARG_WITH([skia],
-	      [AS_HELP_STRING([--with-skia=/path/to/skia],
-			      [directory to find compiled skia sources])],
-	      [skia_DIR="$withval"],
-	      [skia_DIR="`pwd`/../skia"])
-  AC_ARG_WITH([skia-build-type],
-	      [AS_HELP_STRING([--with-skia-build-type=(Release|Debug)]
-			      [build of skia to link with, default is Release])],
-	      [skia_BUILD_TYPE="$withval"],
-	      [skia_BUILD_TYPE="Release"])
-  skia_NONPKGCONFIG_CFLAGS="-I$skia_DIR/include/config -I$skia_DIR/include/core -I$skia_DIR/include/effects"
-  if test "x$skia_BUILD_TYPE" = "xRelease"; then
-  	skia_NONPKGCONFIG_CFLAGS="-DSK_RELEASE -DSK_CAN_USE_FLOAT $skia_NONPKGCONFIG_CFLAGS"
-  fi
-  skia_NONPKGCONFIG_LIBS="-L$skia_DIR/out/$skia_BUILD_TYPE/lib.target/ -lskia -lstdc++"
-  AC_SUBST(skia_DIR)
-])
+dnl NOTE: We're temporarily disabiling this backend to see if anyone
+dnl       is actually using it.  If you are, please mention on the cairo
+dnl       mailing list.
+
+dnl CAIRO_ENABLE_SURFACE_BACKEND(skia, Skia, no, [
+dnl   AC_ARG_WITH([skia],
+dnl 	      [AS_HELP_STRING([--with-skia=/path/to/skia],
+dnl 			      [directory to find compiled skia sources])],
+dnl 	      [skia_DIR="$withval"],
+dnl 	      [skia_DIR="`pwd`/../skia"])
+dnl   AC_ARG_WITH([skia-build-type],
+dnl 	      [AS_HELP_STRING([--with-skia-build-type=(Release|Debug)]
+dnl 			      [build of skia to link with, default is Release])],
+dnl 	      [skia_BUILD_TYPE="$withval"],
+dnl 	      [skia_BUILD_TYPE="Release"])
+dnl   skia_NONPKGCONFIG_CFLAGS="-I$skia_DIR/include/config -I$skia_DIR/include/core -I$skia_DIR/include/effects"
+dnl   if test "x$skia_BUILD_TYPE" = "xRelease"; then
+dnl   	skia_NONPKGCONFIG_CFLAGS="-DSK_RELEASE -DSK_CAN_USE_FLOAT $skia_NONPKGCONFIG_CFLAGS"
+dnl   fi
+dnl   skia_NONPKGCONFIG_LIBS="-L$skia_DIR/out/$skia_BUILD_TYPE/lib.target/ -lskia -lstdc++"
+dnl   AC_SUBST(skia_DIR)
+dnl ])
 
 dnl ===========================================================================
 
@@ -571,7 +578,18 @@ if test "x$use_ft" = "xyes"; then
   LIBS="$LIBS $ft_LIBS"
   CFLAGS="$CFLAGS $ft_CFLAGS"
 
-  AC_CHECK_FUNCS(FT_Get_X11_Font_Format FT_GlyphSlot_Embolden FT_GlyphSlot_Oblique FT_Load_Sfnt_Table FT_Library_SetLcdFilter)
+  AC_CHECK_FUNCS(FT_Get_X11_Font_Format FT_GlyphSlot_Embolden FT_GlyphSlot_Oblique FT_Load_Sfnt_Table FT_Library_SetLcdFilter FT_Get_Var_Design_Coordinates FT_Done_MM_Var)
+
+  AC_MSG_CHECKING(for FT_HAS_COLOR)
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([
+#include <ft2build.h>
+#include FT_FREETYPE_H
+],[
+FT_Long has_color = FT_HAS_COLOR( ((FT_Face)NULL) );
+])],[AC_MSG_RESULT([yes])],[
+  AC_DEFINE([FT_HAS_COLOR(x)], [(0)], [Define to (0) if freetype2 does not support color fonts])
+  AC_MSG_RESULT([no, disable color font (freetype2 >= 2.5.1 is required)])
+])
 
   LIBS="$_save_libs"
   CFLAGS="$_save_cflags"
@@ -866,7 +884,7 @@ dnl ===========================================================================
 
 dnl Extra stuff we need to do when building C++ code
 need_cxx="no"
-AS_IF([test "x$use_skia" = "xyes"], [need_cxx="yes"])
+dnl AS_IF([test "x$use_skia" = "xyes"], [need_cxx="yes"])
 AS_IF([test "x$use_qt" = "xyes"], [need_cxx="yes"])
 AS_IF([test "x$use_beos" = "xyes"], [need_cxx="yes"])
 

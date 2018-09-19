@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
+ *  Copyright (c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -28,6 +28,7 @@
 #include <wtf/ListHashSet.h>
 #include <wtf/Vector.h>
 #include <wtf/text/StringHash.h>
+#include "WKCWebView.h"
 
 
 namespace WebCore {
@@ -69,6 +70,8 @@ public:
     inline const String& lastModifiedHeader() const { return m_lastModifiedHeader; }
     inline const String& eTagHeader() const { return m_eTagHeader; }
     inline const String& accessControlAllowOriginHeader() const { return m_accessControlAllowOriginHeader; }
+    inline double lastUsedTime() const { return m_lastUsedTime; }
+    inline void setLastUsedTime(double time) { m_lastUsedTime = time; }
 
     inline bool isSSL() const { return m_isSSL; }
     inline bool isEVSSL() const { return m_isEVSSL; }
@@ -108,6 +111,7 @@ private:
     double m_lastModified;
     double m_responseTime;
     double m_age;
+    double m_lastUsedTime;
     String m_lastModifiedHeader;
     String m_eTagHeader;
     String m_fileName;
@@ -137,9 +141,14 @@ public:
     ~HTTPCache();
     void reset();
 
+    static void setCanCacheToDiskCallback(WKC::CanCacheToDiskProc proc);
+    static void appendResourceInSizeOrder(Vector<HTTPCachedResource*>& resourceList, HTTPCachedResource* resource);
+    static void appendResourceInLastUsedTimeOrder(Vector<HTTPCachedResource*>& resourceList, HTTPCachedResource* resource);
+
     HTTPCachedResource* createHTTPCachedResource(URL &url, SharedBuffer* resourceData, ResourceResponse &response, bool noCache, bool mustRevalidate, double expires, double maxAge, bool serverpush);
     bool addCachedResource(HTTPCachedResource *resource);
     void updateCachedResource(HTTPCachedResource *resource, SharedBuffer* resourceData, ResourceResponse &response, bool noCache, bool mustRevalidate, double expires, double maxAge, bool serverpush);
+    void updateResourceLastUsedTime(HTTPCachedResource *resource);
     void removeResource(HTTPCachedResource *resource);
     void removeResourceByNumber(int listNumber);
     void remove(HTTPCachedResource *resource);

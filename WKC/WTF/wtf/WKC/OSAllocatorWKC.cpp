@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2011-2014 ACCESS CO., LTD. All rights reserved.
+ *  Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -60,13 +60,13 @@ OSAllocator::releaseDecommitted(void* ptr, size_t size)
 void
 OSAllocator::commit(void* ptr, size_t size, bool writable, bool executable)
 {
-    wkcHeapCommitPeer(ptr, size, writable, executable);
+    // wkcHeapReserveUncommittedPeer returns commited memory, so we do nothing here.
 }
 
 void
 OSAllocator::decommit(void* ptr, size_t size)
 {
-    wkcHeapDecommitPeer(ptr, size);
+    // wkcHeapReleaseDecommittedPeer will decommit and release memory, so we do nothing here.
 }
 
 } // namespace

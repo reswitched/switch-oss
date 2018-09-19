@@ -421,6 +421,10 @@ ResourceHandleManagerSSL::~ResourceHandleManagerSSL()
         curl_easy_cleanup(m_ocspHandle);
 
     clearRootCACache();
+
+    for (auto& elem : m_serverCertChain) {
+        delete elem.value;
+    }
     m_serverCertChain.clear();
     m_clientCertCache.clear();
     SSLClientCertDeleteAll();
@@ -1568,6 +1572,11 @@ void  ResourceHandleManagerSSL::addServerCertChain(const char* url, STACK_OF(X50
     URL kurl = URL(ParsedURLString, url);
     String hostPort = SSLhostAndPort(kurl);
 
+    auto oldCert = m_serverCertChain.find(hostPort);
+    if (oldCert != m_serverCertChain.end()) {
+        delete oldCert->value;
+    }
+
     m_serverCertChain.set(hostPort, chain);
 
     int num = m_serverCertChain.size();
@@ -1585,6 +1594,7 @@ void  ResourceHandleManagerSSL::addServerCertChain(const char* url, STACK_OF(X50
                 keep = it;
             }
         }
+        delete keep->value;
         m_serverCertChain.remove(keep);
     }
     return;

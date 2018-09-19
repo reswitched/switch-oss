@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -104,10 +104,17 @@ public:
     bool isScrollableOverFlowBlockNode() const;
     void getNodeCompositeRect(WKCRect* rect, int tx = 0, int ty = 0);
 
+    // NOTE: NodeList needs to be freed by calling release() on the application side.
     NodeList* getElementsByTagName(const String&);
-    NodeList* querySelectorAll(const String&);
+    Element* querySelector(const String& selectors);
+    NodeList* querySelectorAll(const String& selectors);
 
     Element* parentOrShadowHostElement();
+
+    void showNode(const char* prefix = "") const;
+    void showTreeForThis() const;
+    void showNodePathForThis() const;
+    void showTreeForThisAcrossFrame() const;
 
 protected:
     // Applications must not create/destroy WKC helper instances by new/delete.

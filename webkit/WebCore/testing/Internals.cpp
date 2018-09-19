@@ -2986,4 +2986,9 @@ PassRefPtr<DOMPath> Internals::pathWithShrinkWrappedRects(Vector<double> rectCom
     return DOMPath::create(path);
 }
 
+void Internals::notifyResourceLoadObserver()
+{
+    ResourceLoadObserver::shared().notifyObserver();
+}
+
 }

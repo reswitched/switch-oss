@@ -173,18 +173,25 @@ Here are the steps to follow to create a new cairo release:
 	previous versions, remove manual-${THIS_RELEASE} and
 	release/cairo-${THIS_RELEASE}.
 
-8) Update master (or the stable branch) version number.
+8) Push the new tag out to the central tree with a command like:
 
-	For Micro releases (X.Y.Z), increment cairo_version_micro to the
-	next larger (odd) number in cairo-version.h, commit, and push.
+	git push origin master ${THIS_RELEASE}
+
+9) Update master (or the stable branch) version number.
+
+	For Micro releases (X.Y.Z+2), increment cairo_version_micro to
+	the next larger (odd) number in cairo-version.h, commit, and
+	push.
+
+		DEVEL_VERSION="X.Y.Z+1"  # e.g. 1.15.10 -> 1.15.11
 
 	For Minor releases (X.Y.0), increment cairo_version_minor to the
 	next larger (odd) number, and set cairo_version_micro to 1.  Then
 	commit and push.
 
-9) Push the new tag out to the central tree with a command like:
+	       DEVEL_VERSION="X.Y.Z+1"  # e.g. 1.16.0 -> 1.17.1
 
-	git push origin master ${THIS_RELEASE}
+	git commit cairo-version.h -m "Bump version for ${DEVEL_VERSION}"
 
 10) Edit the cairo bugzilla product and add the new version numbers.
 

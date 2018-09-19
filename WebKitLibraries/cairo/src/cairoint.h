@@ -881,6 +881,9 @@ _cairo_font_options_init_copy (cairo_font_options_t		*options,
 			       const cairo_font_options_t	*other);
 
 cairo_private void
+_cairo_font_options_fini (cairo_font_options_t *options);
+
+cairo_private void
 _cairo_font_options_set_lcd_filter (cairo_font_options_t   *options,
 				   cairo_lcd_filter_t  lcd_filter);
 
@@ -911,6 +914,9 @@ _cairo_validate_text_clusters (const char		   *utf8,
 			       const cairo_text_cluster_t  *clusters,
 			       int			    num_clusters,
 			       cairo_text_cluster_flags_t   cluster_flags);
+
+cairo_private unsigned long
+_cairo_string_hash (const char *str, int len);
 
 cairo_private cairo_status_t
 _cairo_intern_string (const char **str_inout, int len);
@@ -1512,7 +1518,7 @@ _cairo_surface_release_device_reference (cairo_surface_t *surface);
  * for that, even without being considered "valid" for the sake of
  * things like cairo_image_surface_create().
  *
- * Since 1.2.0 we ran into the same situtation with X servers with BGR
+ * Since 1.2.0 we ran into the same situation with X servers with BGR
  * visuals. This time we invented #cairo_internal_format_t instead,
  * (see it for more discussion).
  *
@@ -1579,6 +1585,9 @@ _cairo_image_scaled_glyph_fini (cairo_scaled_font_t *scaled_font,
 
 cairo_private void
 _cairo_image_reset_static_data (void);
+
+cairo_private void
+_cairo_image_compositor_reset_static_data (void);
 
 cairo_private cairo_surface_t *
 _cairo_image_surface_create_with_pixman_format (unsigned char		*data,

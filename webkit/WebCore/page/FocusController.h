@@ -102,6 +102,7 @@ public:
     Element* findNearestFocusableElementFromPoint(const IntPoint& point, const IntRect* scope = 0);
     // get child element preferentially
     Element* findNearestClickableElementFromPoint(const IntPoint& point, const IntRect* scope = 0);
+    LayoutPoint getLastEntryPoint() const { return m_lastEntryPoint; }
 #endif
 
 private:

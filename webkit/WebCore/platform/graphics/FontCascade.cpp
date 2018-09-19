@@ -36,6 +36,10 @@
 #include <wtf/text/AtomicStringHash.h>
 #include <wtf/text/StringBuilder.h>
 
+#if PLATFORM(WIN)
+#include "UniscribeController.h"
+#endif
+
 using namespace WTF;
 using namespace Unicode;
 
@@ -1385,7 +1389,7 @@ void FontCascade::drawGlyphBuffer(GraphicsContext* context, const TextRun& run, 
 
     // Draw each contiguous run of glyphs that use the same font data.
     const Font* fontData = glyphBuffer.fontAt(0);
-    FloatSize offset = glyphBuffer.offsetAt(0);
+    // FIXME: Why do we subtract the initial advance's height but not its width???
     FloatPoint startPoint(point.x(), point.y() - glyphBuffer.initialAdvance().height());
     float nextX = startPoint.x() + glyphBuffer.advanceAt(0).width();
     float nextY = startPoint.y() + glyphBuffer.advanceAt(0).height();
@@ -1396,9 +1400,8 @@ void FontCascade::drawGlyphBuffer(GraphicsContext* context, const TextRun& run, 
 #endif
     while (nextGlyph < glyphBuffer.size()) {
         const Font* nextFontData = glyphBuffer.fontAt(nextGlyph);
-        FloatSize nextOffset = glyphBuffer.offsetAt(nextGlyph);
 
-        if (nextFontData != fontData || nextOffset != offset) {
+        if (nextFontData != fontData) {
 #if ENABLE(SVG_FONTS)
             if (renderingContext && fontData->isSVGFont())
                 renderingContext->drawSVGGlyphs(context, fontData, glyphBuffer, lastFrom, nextGlyph - lastFrom, startPoint);
@@ -1408,7 +1411,6 @@ void FontCascade::drawGlyphBuffer(GraphicsContext* context, const TextRun& run, 
 
             lastFrom = nextGlyph;
             fontData = nextFontData;
-            offset = nextOffset;
             startPoint.setX(nextX);
             startPoint.setY(nextY);
         }

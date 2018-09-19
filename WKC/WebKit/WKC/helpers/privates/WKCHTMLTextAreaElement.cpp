@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2015 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -50,18 +50,6 @@ HTMLTextAreaElementPrivate::value() const
     return webcore()->value();
 }
 
-bool
-HTMLTextAreaElementPrivate::readOnly() const
-{
-    return webcore()->isReadOnly();
-}
-
-bool
-HTMLTextAreaElementPrivate::disabled() const
-{
-    return webcore()->isDisabledOrReadOnly();
-}
-
 int
 HTMLTextAreaElementPrivate::maxLength() const
 {
@@ -85,18 +73,6 @@ const String
 HTMLTextAreaElement::value() const
 {
     return static_cast<HTMLTextAreaElementPrivate&>(priv()).value();
-}
-
-bool
-HTMLTextAreaElement::readOnly() const
-{
-    return static_cast<HTMLTextAreaElementPrivate&>(priv()).readOnly();
-}
-
-bool
-HTMLTextAreaElement::disabled() const
-{
-    return static_cast<HTMLTextAreaElementPrivate&>(priv()).disabled();
 }
 
 int

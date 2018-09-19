@@ -257,7 +257,7 @@
  *                 no operations are enclosed, the y coordidate is 0.
  *
  * @internal: A boolean that if true, the destination name may be
- *            ommitted from PDF where possible. In this case, links
+ *            omitted from PDF where possible. In this case, links
  *            refer directly to the page and position instead of via
  *            the named destination table. Note that if this
  *            destination is referenced by another PDF (see [File Links][file-link]),
@@ -280,10 +280,10 @@
  * # Document Structure (PDF) # {#doc-struct}
  *
  * The document structure tags provide a means of specifying structural information
- * such as headers, paragraphs, tables, and figures. The inclusion of structural information faciliates:
+ * such as headers, paragraphs, tables, and figures. The inclusion of structural information facilitates:
  * * Extraction of text and graphics for copy and paste
  * * Reflow of text and graphics in the viewer
- * * Proccessing text eg searching and indexing
+ * * Processing text eg searching and indexing
  * * Conversion to other formats
  * * Accessability support
  *

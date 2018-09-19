@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2013-2016 ACCESS CO., LTD. All rights reserved.
+ *  Copyright (c) 2013-2018 ACCESS CO., LTD. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -41,25 +41,41 @@ namespace WebCore {
 // AudioTrackPrivate
 class AudioTrackPrivateWKC : public AudioTrackPrivate {
 public:
-    static PassRefPtr<AudioTrackPrivate> create()
+    static PassRefPtr<AudioTrackPrivate> create(int id)
     {
-        return adoptRef(new AudioTrackPrivateWKC());
+        return adoptRef(new AudioTrackPrivateWKC(id));
     }
 
-    virtual AtomicString id() const { return String::format("%d", 1); }
+    virtual AtomicString id() const { return m_id; }
     virtual ~AudioTrackPrivateWKC() { }
+protected:
+    AudioTrackPrivateWKC(int id)
+        : m_id(String::format("%d", id))
+    {
+    }
+
+private:
+    AtomicString m_id;
 };
 
 // VideoTrackPrivate
 class VideoTrackPrivateWKC : public VideoTrackPrivate {
 public:
-    static PassRefPtr<VideoTrackPrivate> create()
+    static PassRefPtr<VideoTrackPrivate> create(int id)
     {
-        return adoptRef(new VideoTrackPrivateWKC());
+        return adoptRef(new VideoTrackPrivateWKC(id));
     }
 
-    virtual AtomicString id() const { return String::format("%d", 1); }
+    virtual AtomicString id() const { return m_id; }
     virtual ~VideoTrackPrivateWKC() { }
+protected:
+    VideoTrackPrivateWKC(int id)
+        : m_id(String::format("%d", id))
+    {
+    }
+
+private:
+    AtomicString m_id;
 };
 
 // MediaDescription
@@ -88,7 +104,7 @@ private:
 
 class MediaSampleWKC : public MediaSample {
 public:
-    static RefPtr<MediaSampleWKC> create(double presentationTime, double decodeTime, double duration) { return adoptRef(new MediaSampleWKC(presentationTime, decodeTime, duration)); }
+    static RefPtr<MediaSampleWKC> create(int id, int64_t presentationTime, int64_t decodeTime, int64_t duration) { return adoptRef(new MediaSampleWKC(id, presentationTime, decodeTime, duration)); }
     virtual ~MediaSampleWKC() { }
 
     virtual MediaTime presentationTime() const override { return m_presentationTime; }
@@ -105,11 +121,11 @@ public:
     virtual void dump(PrintStream&) const { }
 
 protected:
-    MediaSampleWKC(double presentationTime, double decodeTime, double duration)
-        : m_presentationTime(MediaTime::createWithDouble(presentationTime))
-        , m_decodeTime(MediaTime::createWithDouble(decodeTime))
-        , m_duration(MediaTime::createWithDouble(duration))
-        , m_trackID(String::format("%d", 1))
+    MediaSampleWKC(int id, int64_t presentationTime, int64_t decodeTime, int64_t duration)
+        : m_presentationTime(presentationTime, 1000000)
+        , m_decodeTime(decodeTime, 1000000)
+        , m_duration(duration, 1000000)
+        , m_trackID(String::format("%d", id))
     {
     }
 
@@ -220,9 +236,9 @@ SourceBufferPrivateWKC::isFull()
 }
 
 void
-SourceBufferPrivateWKC::didReceiveInitializationSegmentProc(void* self, const char* in_codec, int in_kind, double in_duration)
+SourceBufferPrivateWKC::didReceiveInitializationSegmentProc(void* self, const WKCMediaTrack* in_tracks, int in_tracks_len, double in_duration)
 {
-    static_cast<SourceBufferPrivateWKC*>(self)->didReceiveInitializationSegment(in_codec, in_kind, in_duration);
+    static_cast<SourceBufferPrivateWKC*>(self)->didReceiveInitializationSegment(in_tracks, in_tracks_len, in_duration);
 }
 
 void
@@ -244,32 +260,35 @@ SourceBufferPrivateWKC::removeCodedFramesProc(void* self, double in_start, doubl
 }
 
 void
-SourceBufferPrivateWKC::didReceiveInitializationSegment(const char* in_codec, int in_kind, double in_duration)
+SourceBufferPrivateWKC::didReceiveInitializationSegment(const WKCMediaTrack* in_tracks, int in_tracks_len, double in_duration)
 {
     SourceBufferPrivateClient::InitializationSegment init_segment;
 
     init_segment.duration = MediaTime::createWithDouble(in_duration);
 
-    switch (in_kind) {
-    case WKC_MEDIA_SB_TRACKKIND_AUDIO:
-        {
-            SourceBufferPrivateClient::InitializationSegment::AudioTrackInformation info;
-            info.description = MediaDescriptionWKC::create(in_codec, in_kind);
-            info.track = AudioTrackPrivateWKC::create();
-            init_segment.audioTracks.append(info);
+    for (int i = 0; i < in_tracks_len; i++) {
+        switch (in_tracks[i].fKind) {
+        case WKC_MEDIA_SB_TRACKKIND_AUDIO:
+            {
+                SourceBufferPrivateClient::InitializationSegment::AudioTrackInformation info;
+                info.description = MediaDescriptionWKC::create(in_tracks[i].fCodec, in_tracks[i].fKind);
+                info.track = AudioTrackPrivateWKC::create(in_tracks[i].fID);
+                init_segment.audioTracks.append(info);
+            }
+            break;
+        case WKC_MEDIA_SB_TRACKKIND_VIDEO:
+            {
+                SourceBufferPrivateClient::InitializationSegment::VideoTrackInformation info;
+                info.description = MediaDescriptionWKC::create(in_tracks[i].fCodec, in_tracks[i].fKind);
+                info.track = VideoTrackPrivateWKC::create(in_tracks[i].fID);
+                init_segment.videoTracks.append(info);
+            }
+            break;
+        default:
+            break;
         }
-        break;
-    case WKC_MEDIA_SB_TRACKKIND_VIDEO:
-        {
-            SourceBufferPrivateClient::InitializationSegment::VideoTrackInformation info;
-            info.description = MediaDescriptionWKC::create(in_codec, in_kind);
-            info.track = VideoTrackPrivateWKC::create();
-            init_segment.videoTracks.append(info);
-        }
-        break;
-    default:
-        break;
     }
+
     if (m_client) {
         m_client->sourceBufferPrivateDidReceiveInitializationSegment(this, init_segment);
     }
@@ -282,7 +301,7 @@ SourceBufferPrivateWKC::didReceiveSamples(const WKCMediaSample* in_samples, int 
         return;
     }
     for (int i = 0; i < in_samples_len; i++) {
-        m_client->sourceBufferPrivateDidReceiveSample(this, MediaSampleWKC::create(in_samples[i].fPresentationTime, in_samples[i].fDecodeTime, in_samples[i].fDuration));
+        m_client->sourceBufferPrivateDidReceiveSample(this, MediaSampleWKC::create(in_samples[i].fID, in_samples[i].fPresentationTime, in_samples[i].fDecodeTime, in_samples[i].fDuration));
     }
 }
 

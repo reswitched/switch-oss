@@ -147,37 +147,11 @@ PresentationOrderSampleMap::iterator PresentationOrderSampleMap::findSampleWithP
 
 PresentationOrderSampleMap::iterator PresentationOrderSampleMap::findSampleContainingPresentationTime(const MediaTime& time)
 {
-#if !PLATFORM(WKC)
     auto range = std::equal_range(begin(), end(), time, SampleIsLessThanMediaTimeComparator<MapType>());
-#else
-    std::pair<PresentationOrderSampleMap::iterator, PresentationOrderSampleMap::iterator> range;
-    range.first = range.second = end();
-    bool firstfound = false;
-    for (auto it = begin(); it!=end(); ++it) {
-        if (SampleIsLessThanMediaTimeComparator<MapType>()(*it, time)) {
-            if (!firstfound) {
-                firstfound = true;
-                range.first = it;
-            }
-        } else if (firstfound) {
-            range.second = it;
-            break;
-        }
-    }
-#endif
     if (range.first == range.second)
         return end();
     return range.first;
 }
-
-#if PLATFORM(WKC)
-
-PresentationOrderSampleMap::iterator PresentationOrderSampleMap::findSampleAfterPresentationTime(const MediaTime& time)
-{
-    return std::lower_bound(begin(), end(), time, SampleIsLessThanMediaTimeComparator<MapType>());
-}
-
-#endif
 
 PresentationOrderSampleMap::iterator PresentationOrderSampleMap::findSampleOnOrAfterPresentationTime(const MediaTime& time)
 {
@@ -236,13 +210,9 @@ DecodeOrderSampleMap::reverse_iterator DecodeOrderSampleMap::findSyncSamplePrior
 
 DecodeOrderSampleMap::iterator DecodeOrderSampleMap::findSyncSampleAfterPresentationTime(const MediaTime& time, const MediaTime& threshold)
 {
-#if PLATFORM(WKC)
-    PresentationOrderSampleMap::iterator currentSamplePTS = m_presentationOrder.findSampleAfterPresentationTime(time);
-#else
     // If PTS of foundSample below is less than or equal to time argument,
     // it returns decodeEnd() as unexpected
     PresentationOrderSampleMap::iterator currentSamplePTS = m_presentationOrder.findSampleOnOrAfterPresentationTime(time);
-#endif
     if (currentSamplePTS == m_presentationOrder.end())
         return end();
 
@@ -282,60 +252,13 @@ PresentationOrderSampleMap::iterator_range PresentationOrderSampleMap::findSampl
 #else
     std::pair<MediaTime, MediaTime> range(beginTime, endTime);
 #endif
-#if !PLATFORM(WKC)
     return std::equal_range(begin(), end(), range, SamplePresentationTimeIsInsideRangeComparator());
-#else
-    PresentationOrderSampleMap::iterator_range ret;
-    bool findfirst = false;
-    bool findsecond = false;
-    for (auto it=begin(); it!=end(); ++it) {
-        if (!findfirst) {
-            if (!SamplePresentationTimeIsInsideRangeComparator()(*it, range)) {
-                findfirst = true;
-                ret.first = it;
-            }
-        }
-        if (!findsecond) {
-            if (SamplePresentationTimeIsInsideRangeComparator()(range, *it)) {
-                findsecond = true;
-                ret.second = it;
-            }
-        }
-        if (findfirst && findsecond) {
-            break;
-        }
-    }
-    if (!findfirst) {
-        ret.first = end();
-    }
-    if (!findsecond) {
-        ret.second = end();
-    }
-    return ret;
-#endif
 }
 
 PresentationOrderSampleMap::iterator_range PresentationOrderSampleMap::findSamplesWithinPresentationRange(const MediaTime& beginTime, const MediaTime& endTime)
 {
     std::pair<MediaTime, MediaTime> range(beginTime, endTime);
-#if !PLATFORM(WKC)
     return std::equal_range(begin(), end(), range, SamplePresentationTimeIsWithinRangeComparator());
-#else
-    PresentationOrderSampleMap::iterator_range ret;
-    bool findfirst = false;
-    for (auto it=begin(); it!=end(); ++it) {
-        if (SamplePresentationTimeIsWithinRangeComparator()(*it, range)) {
-            if (!findfirst) {
-                findfirst = true;
-                ret.first = it;
-            }
-        } else if (findfirst) {
-            ret.second = it;
-            break;
-        }
-    }
-    return ret;
-#endif
 }
 
 PresentationOrderSampleMap::iterator_range PresentationOrderSampleMap::findSamplesWithinPresentationRangeFromEnd(const MediaTime& beginTime, const MediaTime& endTime)

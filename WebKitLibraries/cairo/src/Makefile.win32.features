@@ -197,22 +197,6 @@ ifeq ($(CAIRO_HAS_WIN32_FONT),1)
 enabled_cairo_pkgconf += cairo-win32-font.pc
 endif
 
-unsupported_cairo_headers += $(cairo_skia_headers)
-all_cairo_headers += $(cairo_skia_headers)
-all_cairo_private += $(cairo_skia_private)
-all_cairo_cxx_sources += $(cairo_skia_cxx_sources)
-all_cairo_sources += $(cairo_skia_sources)
-ifeq ($(CAIRO_HAS_SKIA_SURFACE),1)
-enabled_cairo_headers += $(cairo_skia_headers)
-enabled_cairo_private += $(cairo_skia_private)
-enabled_cairo_cxx_sources += $(cairo_skia_cxx_sources)
-enabled_cairo_sources += $(cairo_skia_sources)
-endif
-all_cairo_pkgconf += cairo-skia.pc
-ifeq ($(CAIRO_HAS_SKIA_SURFACE),1)
-enabled_cairo_pkgconf += cairo-skia.pc
-endif
-
 unsupported_cairo_headers += $(cairo_os2_headers)
 all_cairo_headers += $(cairo_os2_headers)
 all_cairo_private += $(cairo_os2_private)

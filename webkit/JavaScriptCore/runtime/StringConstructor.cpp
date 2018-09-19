@@ -78,21 +78,28 @@ bool StringConstructor::getOwnPropertySlot(JSObject* object, ExecState* exec, Pr
 
 // ------------------------------ Functions --------------------------------
 
-static NEVER_INLINE JSValue stringFromCharCodeSlowCase(ExecState* exec)
-{
-    unsigned length = exec->argumentCount();
-    UChar* buf;
-    PassRefPtr<StringImpl> impl = StringImpl::createUninitialized(length, buf);
-    for (unsigned i = 0; i < length; ++i)
-        buf[i] = static_cast<UChar>(exec->uncheckedArgument(i).toUInt32(exec));
-    return jsString(exec, impl);
-}
-
 static EncodedJSValue JSC_HOST_CALL stringFromCharCode(ExecState* exec)
 {
-    if (LIKELY(exec->argumentCount() == 1))
-        return JSValue::encode(jsSingleCharacterString(exec, exec->uncheckedArgument(0).toUInt32(exec)));
-    return JSValue::encode(stringFromCharCodeSlowCase(exec));
+    VM& vm = exec->vm();
+
+    unsigned length = exec->argumentCount();
+    if (LIKELY(length == 1)) {
+        unsigned code = exec->uncheckedArgument(0).toUInt32(exec);
+        if (vm.exception()) {
+            return JSValue::encode(JSValue());
+        }
+        return JSValue::encode(jsSingleCharacterString(exec, code));
+    }
+
+    UChar* buf;
+    auto impl = StringImpl::createUninitialized(length, buf);
+    for (unsigned i = 0; i < length; ++i) {
+        buf[i] = static_cast<UChar>(exec->uncheckedArgument(i).toUInt32(exec));
+        if (vm.exception()) {
+            return JSValue::encode(JSValue());
+        }
+    }
+    return JSValue::encode(jsString(exec, WTF::move(impl)));
 }
 
 JSCell* JSC_HOST_CALL stringFromCharCode(ExecState* exec, int32_t arg)

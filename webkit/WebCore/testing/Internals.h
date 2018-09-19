@@ -341,6 +341,8 @@ public:
     void enableMockSpeechSynthesizer();
 #endif
 
+    void notifyResourceLoadObserver();
+
 #if ENABLE(MEDIA_STREAM)
     void enableMockRTCPeerConnectionHandler();
 #endif

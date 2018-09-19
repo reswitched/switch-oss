@@ -608,7 +608,6 @@ runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 shm_LIBS = @shm_LIBS@
-skia_DIR = @skia_DIR@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@

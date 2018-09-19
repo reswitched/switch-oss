@@ -371,6 +371,7 @@ public:
     using HTMLElement::scriptExecutionContext;
 
     bool hasSingleSecurityOrigin() const { return !m_player || m_player->hasSingleSecurityOrigin(); }
+    bool didPassCORSAccessCheck() const { return m_player && m_player->didPassCORSAccessCheck(); }
     
     WEBCORE_EXPORT virtual bool isFullscreen() const override;
     void toggleFullscreenState();

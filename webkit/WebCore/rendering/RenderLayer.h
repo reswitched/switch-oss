@@ -131,6 +131,7 @@ public:
     RenderLayer* nextSibling() const { return m_next; }
     RenderLayer* firstChild() const { return m_first; }
     RenderLayer* lastChild() const { return m_last; }
+    bool isDescendantOf(const RenderLayer&) const;
 
     void addChild(RenderLayer* newChild, RenderLayer* beforeChild = nullptr);
     RenderLayer* removeChild(RenderLayer*);
@@ -328,12 +329,7 @@ public:
     void repaintBlockSelectionGaps();
 
     // A stacking context is a layer that has a non-auto z-index.
-#if PLATFORM(WKC)
-    bool isFixed() const { return renderer().isPositioned() && renderer().style().position() == FixedPosition; }
-    bool isStackingContext() const { return isStackingContext(&renderer().style()) || isFixed(); }
-#else
     bool isStackingContext() const { return isStackingContext(&renderer().style()); }
-#endif
 
     // A stacking container can have z-order lists. All stacking contexts are
     // stacking containers, but the converse is not true. Layers that use

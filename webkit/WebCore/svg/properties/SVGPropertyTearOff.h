@@ -63,7 +63,11 @@ public:
     {
         if (m_valueIsCopy) {
             detachChildren();
+#if !PLATFORM(WKC)
             delete m_value;
+#else
+            WTF::fastFree(m_value);
+#endif
         }
         m_valueIsCopy = false;
         m_value = &value;
@@ -103,7 +107,12 @@ public:
         // item.value still has to report '50' and it has to be possible to modify 'item'
         // w/o changing the "new item" (with x=100) in the text element.
         // Whenever the XML DOM modifies the "x" attribute, all existing wrappers are detached, using this function.
+#if !PLATFORM(WKC)
         m_value = new PropertyType(*m_value);
+#else
+        void* p = WTF::fastMalloc(sizeof(PropertyType));
+        m_value = new (p) PropertyType(*m_value);
+#endif
         m_valueIsCopy = true;
         m_animatedProperty = nullptr;
     }
@@ -146,16 +155,30 @@ protected:
     SVGPropertyTearOff(const PropertyType* initialValue)
         : m_animatedProperty(nullptr)
         , m_role(UndefinedRole)
+#if !PLATFORM(WKC)
         , m_value(initialValue ? new PropertyType(*initialValue) : nullptr)
+#else
+        , m_value(nullptr)
+#endif
         , m_valueIsCopy(true)
     {
+#if PLATFORM(WKC)
+        if (initialValue) {
+            void* p = WTF::fastMalloc(sizeof(PropertyType));
+            m_value = new (p) PropertyType(*initialValue);
+        }
+#endif
     }
 
     virtual ~SVGPropertyTearOff()
     {
         if (m_valueIsCopy) {
             detachChildren();
+#if !PLATFORM(WKC)
             delete m_value;
+#else
+            fastFree(m_value);
+#endif
         }
     }
 

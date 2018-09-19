@@ -180,7 +180,7 @@ operations with the <link linkend="CAIRO-TAG-DEST:CAPS"><literal>CAIRO_TAG_DEST<
                 no operations are enclosed, the y coordidate is 0.</para>
 <para><parameter>internal</parameter>
 : A boolean that if true, the destination name may be
-           ommitted from PDF where possible. In this case, links
+           omitted from PDF where possible. In this case, links
            refer directly to the page and position instead of via
            the named destination table. Note that if this
            destination is referenced by another PDF (see <link linkend="file-link">File Links</link>),
@@ -200,11 +200,11 @@ cairo_tag_end (cr, CAIRO_TAG_DEST);
 </programlisting></informalexample>
 </refsect2>
 <refsect2 id="doc-struct"><title>Document Structure (PDF)</title><para>The document structure tags provide a means of specifying structural information
-such as headers, paragraphs, tables, and figures. The inclusion of structural information faciliates:</para>
+such as headers, paragraphs, tables, and figures. The inclusion of structural information facilitates:</para>
 <itemizedlist>
 <listitem><para>Extraction of text and graphics for copy and paste</para></listitem>
 <listitem><para>Reflow of text and graphics in the viewer</para></listitem>
-<listitem><para>Proccessing text eg searching and indexing</para></listitem>
+<listitem><para>Processing text eg searching and indexing</para></listitem>
 <listitem><para>Conversion to other formats</para></listitem>
 <listitem>
 <para>Accessability support</para>
