@@ -876,12 +876,7 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
     // no progressive loading of the background image
     if (!baseBgColorOnly && shouldPaintBackgroundImage) {
         BackgroundImageGeometry geometry = calculateBackgroundImageGeometry(paintInfo.paintContainer, *bgLayer, rect.location(), scrolledPaintRect, backgroundObject);
-#if PLATFORM(WKC)
-        FloatRect cliprect = snapRectToDevicePixels(paintInfo.rect, deviceScaleFactor);
-        geometry.clip(LayoutRect(cliprect));
-#else
         geometry.clip(LayoutRect(pixelSnappedRect));
-#endif
         if (!geometry.destRect().isEmpty()) {
             CompositeOperator compositeOp = op == CompositeSourceOver ? bgLayer->composite() : op;
             auto clientForBackgroundImage = backgroundObject ? backgroundObject : this;

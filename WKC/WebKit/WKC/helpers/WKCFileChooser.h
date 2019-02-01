@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2006, 2007, 2008 Apple Inc. All rights reserved.
- * Copyright (c) 2010-2015 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2018 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,6 +30,8 @@
 
 #ifndef _WKC_HELPER_WKC_FILECHOOSER_H_
 #define _WKC_HELPER_WKC_FILECHOOSER_H_
+
+#include <WKC/wkcconfig.h>
 
 namespace WKC {
 class String;

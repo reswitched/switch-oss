@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2015 Apple Inc. All rights reserved.
+ * Copyright (C) 2011-2018 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -604,6 +604,8 @@ LLINT_SLOW_PATH_DECL(slow_path_get_by_id)
         ArrayProfile* arrayProfile = codeBlock->getOrAddArrayProfile(pc - codeBlock->instructions().begin());
         arrayProfile->observeStructure(baseValue.asCell()->structure());
         pc[4].u.arrayProfile = arrayProfile;
+        ASSERT(vm.interpreter->getOpcodeID(pc[0].u.opcode) == op_get_array_length);
+        ASSERT(!pc[4].u.arrayProfile || pc[4].u.arrayProfile->isValid());
     }
 
     pc[OPCODE_LENGTH(op_get_by_id) - 1].u.profile->m_buckets[0] = JSValue::encode(result);

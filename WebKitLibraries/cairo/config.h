@@ -346,7 +346,7 @@
 #define PACKAGE_URL
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.15.12"
+#define PACKAGE_VERSION "1.16.0"
 
 /* Shared library file extension */
 #define SHARED_LIB_EXT ".so"

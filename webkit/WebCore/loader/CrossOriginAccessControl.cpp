@@ -115,14 +115,14 @@ bool isOnAccessControlResponseHeaderWhitelist(const String& name)
 #endif
 }
 
-void updateRequestForAccessControl(ResourceRequest& request, SecurityOrigin* securityOrigin, StoredCredentials allowCredentials)
+void updateRequestForAccessControl(ResourceRequest& request, SecurityOrigin& securityOrigin, StoredCredentials allowCredentials)
 {
     request.removeCredentials();
     request.setAllowCookies(allowCredentials == AllowStoredCredentials);
-    request.setHTTPOrigin(securityOrigin->toString());
+    request.setHTTPOrigin(securityOrigin.toString());
 }
 
-ResourceRequest createAccessControlPreflightRequest(const ResourceRequest& request, SecurityOrigin* securityOrigin)
+ResourceRequest createAccessControlPreflightRequest(const ResourceRequest& request, SecurityOrigin& securityOrigin)
 {
     ResourceRequest preflightRequest(request.url());
     static const double platformDefaultTimeout = 0;

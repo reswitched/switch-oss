@@ -13,4 +13,7 @@
 <indexentry><primaryie linkends="cairo-surface-get-device-scale"><link linkend="cairo-surface-get-device-scale">cairo_surface_get_device_scale</link>, function in <link linkend="cairo-cairo-surface-t">cairo_surface_t</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-surface-set-device-scale"><link linkend="cairo-surface-set-device-scale">cairo_surface_set_device_scale</link>, function in <link linkend="cairo-cairo-surface-t">cairo_surface_t</link></primaryie></indexentry>
 </indexdiv>
+<indexdiv><title>W</title>
+<indexentry><primaryie linkends="cairo-win32-surface-create-with-format"><link linkend="cairo-win32-surface-create-with-format">cairo_win32_surface_create_with_format</link>, function in <link linkend="cairo-Win32-Surfaces">Win32 Surfaces</link></primaryie></indexentry>
+</indexdiv>
 </indexdiv>

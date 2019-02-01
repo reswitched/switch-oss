@@ -1,7 +1,7 @@
 /*
  * WKCPrefs.h
  *
- * Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -599,6 +599,9 @@ namespace WKCPrefs {
     */
     WKC_API void activateWebGL();
 
+    WKC_API void setProhibitsScrollingEnabled(bool enabled);
+
+    WKC_API void setUseDollarVM(bool enabled);
 /*@}*/
 
 } // namespace

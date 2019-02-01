@@ -144,7 +144,7 @@ public:
     // The indicated security origin has run active content (such as a
     // script) from an insecure source.  Note that the insecure content can
     // spread to other frames in the same origin.
-    virtual void didRunInsecureContent(WebCore::SecurityOrigin*, const WebCore::URL&) override;
+    virtual void didRunInsecureContent(WebCore::SecurityOrigin&, const WebCore::URL&) override;
     virtual void didDetectXSS(const WebCore::URL&, bool didBlockEntirePage) override;
 
     virtual WebCore::ResourceError cancelledError(const WebCore::ResourceRequest&) override;

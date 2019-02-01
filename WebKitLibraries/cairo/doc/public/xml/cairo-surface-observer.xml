@@ -66,8 +66,6 @@
 
 <refsect1 id="cairo-cairo-surface-observer.description" role="desc">
 <title role="desc.title">Description</title>
-<para>
-</para>
 
 </refsect1>
 <refsect1 id="cairo-cairo-surface-observer.functions_details" role="details">
@@ -118,8 +116,6 @@ cairo_surface_observer_add_fill_callback
                                (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *abstract_surface</parameter>,
                                 <parameter><link linkend="cairo-surface-observer-callback-t"><type>cairo_surface_observer_callback_t</type></link> func</parameter>,
                                 <parameter><link linkend="void"><type>void</type></link> *data</parameter>);</programlisting>
-<para>
-</para>
 </refsect2>
 <refsect2 id="cairo-surface-observer-add-finish-callback" role="function">
 <title>cairo_surface_observer_add_finish_callback&#160;()</title>
@@ -129,8 +125,6 @@ cairo_surface_observer_add_finish_callback
                                (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *abstract_surface</parameter>,
                                 <parameter><link linkend="cairo-surface-observer-callback-t"><type>cairo_surface_observer_callback_t</type></link> func</parameter>,
                                 <parameter><link linkend="void"><type>void</type></link> *data</parameter>);</programlisting>
-<para>
-</para>
 </refsect2>
 <refsect2 id="cairo-surface-observer-add-flush-callback" role="function">
 <title>cairo_surface_observer_add_flush_callback&#160;()</title>
@@ -140,8 +134,6 @@ cairo_surface_observer_add_flush_callback
                                (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *abstract_surface</parameter>,
                                 <parameter><link linkend="cairo-surface-observer-callback-t"><type>cairo_surface_observer_callback_t</type></link> func</parameter>,
                                 <parameter><link linkend="void"><type>void</type></link> *data</parameter>);</programlisting>
-<para>
-</para>
 </refsect2>
 <refsect2 id="cairo-surface-observer-add-glyphs-callback" role="function">
 <title>cairo_surface_observer_add_glyphs_callback&#160;()</title>
@@ -151,8 +143,6 @@ cairo_surface_observer_add_glyphs_callback
                                (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *abstract_surface</parameter>,
                                 <parameter><link linkend="cairo-surface-observer-callback-t"><type>cairo_surface_observer_callback_t</type></link> func</parameter>,
                                 <parameter><link linkend="void"><type>void</type></link> *data</parameter>);</programlisting>
-<para>
-</para>
 </refsect2>
 <refsect2 id="cairo-surface-observer-add-mask-callback" role="function">
 <title>cairo_surface_observer_add_mask_callback&#160;()</title>
@@ -162,8 +152,6 @@ cairo_surface_observer_add_mask_callback
                                (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *abstract_surface</parameter>,
                                 <parameter><link linkend="cairo-surface-observer-callback-t"><type>cairo_surface_observer_callback_t</type></link> func</parameter>,
                                 <parameter><link linkend="void"><type>void</type></link> *data</parameter>);</programlisting>
-<para>
-</para>
 </refsect2>
 <refsect2 id="cairo-surface-observer-add-paint-callback" role="function">
 <title>cairo_surface_observer_add_paint_callback&#160;()</title>
@@ -173,8 +161,6 @@ cairo_surface_observer_add_paint_callback
                                (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *abstract_surface</parameter>,
                                 <parameter><link linkend="cairo-surface-observer-callback-t"><type>cairo_surface_observer_callback_t</type></link> func</parameter>,
                                 <parameter><link linkend="void"><type>void</type></link> *data</parameter>);</programlisting>
-<para>
-</para>
 </refsect2>
 <refsect2 id="cairo-surface-observer-add-stroke-callback" role="function">
 <title>cairo_surface_observer_add_stroke_callback&#160;()</title>
@@ -184,8 +170,6 @@ cairo_surface_observer_add_stroke_callback
                                (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *abstract_surface</parameter>,
                                 <parameter><link linkend="cairo-surface-observer-callback-t"><type>cairo_surface_observer_callback_t</type></link> func</parameter>,
                                 <parameter><link linkend="void"><type>void</type></link> *data</parameter>);</programlisting>
-<para>
-</para>
 </refsect2>
 <refsect2 id="cairo-surface-observer-callback-t" role="function">
 <title>cairo_surface_observer_callback_t&#160;()</title>
@@ -194,16 +178,12 @@ cairo_surface_observer_add_stroke_callback
 <phrase role="c_punctuation">(</phrase>*cairo_surface_observer_callback_t<phrase role="c_punctuation">)</phrase> (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *observer</parameter>,
                                       <parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *target</parameter>,
                                       <parameter><link linkend="void"><type>void</type></link> *data</parameter>);</programlisting>
-<para>
-</para>
 </refsect2>
 <refsect2 id="cairo-surface-observer-elapsed" role="function">
 <title>cairo_surface_observer_elapsed&#160;()</title>
 <indexterm zone="cairo-surface-observer-elapsed"><primary sortas="surface_observer_elapsed">cairo_surface_observer_elapsed</primary></indexterm>
 <programlisting language="C"><link linkend="double"><returnvalue>double</returnvalue></link>
 cairo_surface_observer_elapsed (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *surface</parameter>);</programlisting>
-<para>
-</para>
 </refsect2>
 <refsect2 id="cairo-surface-observer-print" role="function">
 <title>cairo_surface_observer_print&#160;()</title>
@@ -212,8 +192,6 @@ cairo_surface_observer_elapsed (<parameter><link linkend="cairo-surface-t"><type
 cairo_surface_observer_print (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *surface</parameter>,
                               <parameter><link linkend="cairo-write-func-t"><type>cairo_write_func_t</type></link> write_func</parameter>,
                               <parameter><link linkend="void"><type>void</type></link> *closure</parameter>);</programlisting>
-<para>
-</para>
 </refsect2>
 
 </refsect1>
@@ -224,8 +202,6 @@ cairo_surface_observer_print (<parameter><link linkend="cairo-surface-t"><type>c
 <indexterm zone="CAIRO-HAS-OBSERVER-SURFACE:CAPS"><primary sortas="HAS_OBSERVER_SURFACE">CAIRO_HAS_OBSERVER_SURFACE</primary></indexterm>
 <programlisting language="C">#define CAIRO_HAS_OBSERVER_SURFACE 1
 </programlisting>
-<para>
-</para>
 </refsect2>
 <refsect2 id="cairo-surface-observer-mode-t" role="enum" condition="since:1.12">
 <title>enum cairo_surface_observer_mode_t</title>

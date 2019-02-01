@@ -45,7 +45,7 @@ RefPtr<Database> DOMWindowWebDatabase::openDatabase(DOMWindow* window, const Str
     RefPtr<Database> database = nullptr;
     DatabaseManager& dbManager = DatabaseManager::singleton();
     DatabaseError error = DatabaseError::None;
-    if (dbManager.isAvailable() && window->document()->securityOrigin()->canAccessDatabase(window->document()->topOrigin())) {
+    if (dbManager.isAvailable() && window->document()->securityOrigin().canAccessDatabase(window->document()->topOrigin())) {
         database = dbManager.openDatabase(window->document(), name, version, displayName, estimatedSize, creationCallback, error);
         ASSERT(database || error != DatabaseError::None);
         ec = DatabaseManager::exceptionCodeForDatabaseError(error);

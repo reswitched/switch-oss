@@ -462,7 +462,7 @@ void EvalExecutable::visitChildren(JSCell* cell, SlotVisitor& visitor)
 {
     EvalExecutable* thisObject = jsCast<EvalExecutable*>(cell);
     ASSERT_GC_OBJECT_INHERITS(thisObject, info());
-    ScriptExecutable::visitChildren(thisObject, visitor);
+    Base::visitChildren(thisObject, visitor);
     if (thisObject->m_evalCodeBlock)
         thisObject->m_evalCodeBlock->visitAggregate(visitor);
     visitor.append(&thisObject->m_unlinkedEvalCodeBlock);
@@ -551,7 +551,7 @@ void ProgramExecutable::visitChildren(JSCell* cell, SlotVisitor& visitor)
 {
     ProgramExecutable* thisObject = jsCast<ProgramExecutable*>(cell);
     ASSERT_GC_OBJECT_INHERITS(thisObject, info());
-    ScriptExecutable::visitChildren(thisObject, visitor);
+    Base::visitChildren(thisObject, visitor);
     visitor.append(&thisObject->m_unlinkedProgramCodeBlock);
     if (thisObject->m_programCodeBlock)
         thisObject->m_programCodeBlock->visitAggregate(visitor);
@@ -582,7 +582,7 @@ void FunctionExecutable::visitChildren(JSCell* cell, SlotVisitor& visitor)
 {
     FunctionExecutable* thisObject = jsCast<FunctionExecutable*>(cell);
     ASSERT_GC_OBJECT_INHERITS(thisObject, info());
-    ScriptExecutable::visitChildren(thisObject, visitor);
+    Base::visitChildren(thisObject, visitor);
     if (thisObject->m_codeBlockForCall)
         thisObject->m_codeBlockForCall->visitAggregate(visitor);
     if (thisObject->m_codeBlockForConstruct)

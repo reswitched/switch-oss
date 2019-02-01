@@ -53,6 +53,9 @@ RenderRegion::RenderRegion(Element& element, Ref<RenderStyle>&& style, RenderFlo
     , m_flowThread(flowThread)
     , m_parentNamedFlowThread(nullptr)
     , m_isValid(false)
+#if PLATFORM(WKC)
+    , m_weakFactory(this)
+#endif
 {
 }
 
@@ -61,6 +64,9 @@ RenderRegion::RenderRegion(Document& document, Ref<RenderStyle>&& style, RenderF
     , m_flowThread(flowThread)
     , m_parentNamedFlowThread(nullptr)
     , m_isValid(false)
+#if PLATFORM(WKC)
+    , m_weakFactory(this)
+#endif
 {
 }
 

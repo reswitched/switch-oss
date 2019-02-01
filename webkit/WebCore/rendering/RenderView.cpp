@@ -421,7 +421,7 @@ void RenderView::layout()
 
 LayoutUnit RenderView::pageOrViewLogicalHeight() const
 {
-    if (document().printing())
+    if (shouldUsePrintingLayout())
         return pageLogicalHeight();
     
     if (multiColumnFlowThread() && !style().hasInlineColumnAxis()) {

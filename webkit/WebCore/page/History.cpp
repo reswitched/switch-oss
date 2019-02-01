@@ -161,7 +161,7 @@ void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data, const Str
         ec = SECURITY_ERR;
         return;
     }
-    if (!m_frame->document()->securityOrigin()->canRequest(fullURL) && (fullURL.path() != documentURL.path() || fullURL.query() != documentURL.query())) {
+    if (!m_frame->document()->securityOrigin().canRequest(fullURL) && (fullURL.path() != documentURL.path() || fullURL.query() != documentURL.query())) {
         ec = SECURITY_ERR;
         return;
     }

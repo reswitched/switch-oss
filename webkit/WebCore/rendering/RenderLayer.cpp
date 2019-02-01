@@ -883,7 +883,9 @@ void RenderLayer::updateLayerPositionsAfterScroll(RenderGeometryMap* geometryMap
         || (flags & IsOverflowScroll && flags & HasSeenAncestorWithOverflowClip)) {
         // FIXME: We could track the repaint container as we walk down the tree.
         computeRepaintRects(renderer().containerForRepaint(), geometryMap);
-    } else {
+    } else if (!renderer().view().frameView().platformWidget()) {
+        // When ScrollView's m_paintsEntireContents flag flips due to layer backing changes, the repaint area transitions from
+        // visual to layout overflow. When this happens the cached repaint rects become invalid and they need to be recomputed (see webkit.org/b/188121).
         // Check that our cached rects are correct.
 #if !PLATFORM(WKC)
         ASSERT(m_repaintRect == renderer().clippedOverflowRectForRepaint(renderer().containerForRepaint()));
@@ -2549,7 +2551,7 @@ bool RenderLayer::allowsCurrentScroll() const
     return box->hasHorizontalOverflow() || box->hasVerticalOverflow();
 }
 
-void RenderLayer::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
+void RenderLayer::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY, ShouldAllowCrossOriginScrolling shouldAllowCrossOriginScrolling)
 {
     // LOG_WITH_STREAM(Scrolling, stream << "Layer " << this << " scrollRectToVisible " << rect);
 
@@ -2598,7 +2600,7 @@ void RenderLayer::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignm
                 scrollOffset = scrollOffset.constrainedBetween(IntPoint(), IntPoint(frameView.contentsSize()));
                 frameView.setScrollPosition(scrollOffset);
 
-                if (frameView.safeToPropagateScrollToParent()) {
+                if (shouldAllowCrossOriginScrolling == ShouldAllowCrossOriginScrolling::Yes || frameView.safeToPropagateScrollToParent()) {
                     parentLayer = ownerElement->renderer()->enclosingLayer();
                     // Convert the rect into the coordinate space of the parent frame's document.
                     newRect = frameView.contentsToContainingViewContents(enclosingIntRect(newRect));
@@ -2631,7 +2633,7 @@ void RenderLayer::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignm
     }
     
     if (parentLayer)
-        parentLayer->scrollRectToVisible(newRect, alignX, alignY);
+        parentLayer->scrollRectToVisible(newRect, alignX, alignY, shouldAllowCrossOriginScrolling);
 }
 
 void RenderLayer::updateCompositingLayersAfterScroll()
@@ -2724,7 +2726,7 @@ LayoutRect RenderLayer::getRectToExpose(const LayoutRect &visibleRect, const Lay
 void RenderLayer::autoscroll(const IntPoint& position)
 {
     IntPoint currentDocumentPosition = renderer().view().frameView().windowToContents(position);
-    scrollRectToVisible(LayoutRect(currentDocumentPosition, LayoutSize(1, 1)), ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
+    scrollRectToVisible(LayoutRect(currentDocumentPosition, LayoutSize(1, 1)), ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded, ShouldAllowCrossOriginScrolling::Yes);
 }
 
 bool RenderLayer::canResize() const

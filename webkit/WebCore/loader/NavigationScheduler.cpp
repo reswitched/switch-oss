@@ -169,7 +169,7 @@ public:
         UserGestureIndicator gestureIndicator(wasUserGesture() ? DefinitelyProcessingUserGesture : DefinitelyNotProcessingUserGesture);
         bool refresh = equalIgnoringFragmentIdentifier(frame.document()->url(), url());
         ResourceRequest resourceRequest(url(), referrer(), refresh ? ReloadIgnoringCacheData : UseProtocolCachePolicy);
-        FrameLoadRequest frameRequest(securityOrigin(), resourceRequest, "_self", lockHistory(), lockBackForwardList(), MaybeSendReferrer, AllowNavigationToInvalidURL::No, NewFrameOpenerPolicy::Allow, m_shouldOpenExternalURLsPolicy);
+        FrameLoadRequest frameRequest(*securityOrigin(), resourceRequest, "_self", lockHistory(), lockBackForwardList(), MaybeSendReferrer, AllowNavigationToInvalidURL::No, NewFrameOpenerPolicy::Allow, m_shouldOpenExternalURLsPolicy);
 
         frame.loader().performClientRedirect(WTF::move(frameRequest));
     }
@@ -185,7 +185,7 @@ public:
         UserGestureIndicator gestureIndicator(wasUserGesture() ? DefinitelyProcessingUserGesture : DefinitelyNotProcessingUserGesture);
 
         ResourceRequest resourceRequest(url(), referrer(), UseProtocolCachePolicy);
-        FrameLoadRequest frameRequest(securityOrigin(), resourceRequest, "_self", lockHistory(), lockBackForwardList(), MaybeSendReferrer, AllowNavigationToInvalidURL::No, NewFrameOpenerPolicy::Allow, m_shouldOpenExternalURLsPolicy);
+        FrameLoadRequest frameRequest(*securityOrigin(), resourceRequest, "_self", lockHistory(), lockBackForwardList(), MaybeSendReferrer, AllowNavigationToInvalidURL::No, NewFrameOpenerPolicy::Allow, m_shouldOpenExternalURLsPolicy);
         frame.loader().performClientRedirect(WTF::move(frameRequest));
     }
 };
@@ -202,7 +202,7 @@ public:
         UserGestureIndicator gestureIndicator(wasUserGesture() ? DefinitelyProcessingUserGesture : DefinitelyNotProcessingUserGesture);
 
         ResourceRequest resourceRequest(url(), referrer(), ReloadIgnoringCacheData);
-        FrameLoadRequest frameRequest(securityOrigin(), resourceRequest, "_self", lockHistory(), lockBackForwardList(), MaybeSendReferrer, AllowNavigationToInvalidURL::Yes, NewFrameOpenerPolicy::Allow, m_shouldOpenExternalURLsPolicy);
+        FrameLoadRequest frameRequest(*securityOrigin(), resourceRequest, "_self", lockHistory(), lockBackForwardList(), MaybeSendReferrer, AllowNavigationToInvalidURL::Yes, NewFrameOpenerPolicy::Allow, m_shouldOpenExternalURLsPolicy);
         frame.loader().changeLocation(frameRequest);
     }
 };
@@ -392,7 +392,7 @@ void NavigationScheduler::scheduleRedirect(Document* initiatingDocument, double 
     // We want a new back/forward list item if the refresh timeout is > 1 second.
     if (!m_redirect || delay <= m_redirect->delay()) {
         LockBackForwardList lockBackForwardList = delay <= 1 ? LockBackForwardList::Yes : LockBackForwardList::No;
-        schedule(std::make_unique<ScheduledRedirect>(initiatingDocument, delay, m_frame.document()->securityOrigin(), url, LockHistory::Yes, lockBackForwardList));
+        schedule(std::make_unique<ScheduledRedirect>(initiatingDocument, delay, &m_frame.document()->securityOrigin(), url, LockHistory::Yes, lockBackForwardList));
     }
 }
 
@@ -414,7 +414,7 @@ LockBackForwardList NavigationScheduler::mustLockBackForwardList(Frame& targetFr
     return LockBackForwardList::No;
 }
 
-void NavigationScheduler::scheduleLocationChange(Document* initiatingDocument, SecurityOrigin* securityOrigin, const URL& url, const String& referrer, LockHistory lockHistory, LockBackForwardList lockBackForwardList)
+void NavigationScheduler::scheduleLocationChange(Document* initiatingDocument, SecurityOrigin& securityOrigin, const URL& url, const String& referrer, LockHistory lockHistory, LockBackForwardList lockBackForwardList)
 {
     if (!shouldScheduleNavigation(url))
         return;
@@ -440,7 +440,7 @@ void NavigationScheduler::scheduleLocationChange(Document* initiatingDocument, S
     // This may happen when a frame changes the location of another frame.
     bool duringLoad = !loader.stateMachine().committedFirstRealDocumentLoad();
 
-    schedule(std::make_unique<ScheduledLocationChange>(initiatingDocument, securityOrigin, url, referrer, lockHistory, lockBackForwardList, duringLoad));
+    schedule(std::make_unique<ScheduledLocationChange>(initiatingDocument, &securityOrigin, url, referrer, lockHistory, lockBackForwardList, duringLoad));
 }
 
 void NavigationScheduler::scheduleFormSubmission(PassRefPtr<FormSubmission> submission)
@@ -474,7 +474,7 @@ void NavigationScheduler::scheduleRefresh(Document* initiatingDocument)
     if (url.isEmpty())
         return;
 
-    schedule(std::make_unique<ScheduledRefresh>(initiatingDocument, m_frame.document()->securityOrigin(), url, m_frame.loader().outgoingReferrer()));
+    schedule(std::make_unique<ScheduledRefresh>(initiatingDocument, &m_frame.document()->securityOrigin(), url, m_frame.loader().outgoingReferrer()));
 }
 
 void NavigationScheduler::scheduleHistoryNavigation(int steps)

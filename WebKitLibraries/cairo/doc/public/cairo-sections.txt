@@ -125,6 +125,8 @@ cairo_recording_surface_get_extents
 cairo_skia_context_t
 cairo_skia_surface_t
 format_to_sk_config
+cairo_skia_surface_create
+cairo_skia_surface_create_for_data
 <SUBSECTION Private>
 cairo_skia_context
 cairo_skia_surface
@@ -136,6 +138,7 @@ CAIRO_HAS_WIN32_SURFACE
 cairo_win32_surface_create
 cairo_win32_surface_create_with_dib
 cairo_win32_surface_create_with_ddb
+cairo_win32_surface_create_with_format
 cairo_win32_printing_surface_create
 cairo_win32_surface_get_dc
 cairo_win32_surface_get_image
@@ -209,10 +212,13 @@ cairo_xcb_device_debug_set_precision
 CAIRO_HAS_SVG_SURFACE
 cairo_svg_surface_create
 cairo_svg_surface_create_for_stream
+cairo_svg_surface_get_document_unit
+cairo_svg_surface_set_document_unit
 cairo_svg_surface_restrict_to_version
 cairo_svg_version_t
 cairo_svg_get_versions
 cairo_svg_version_to_string
+cairo_svg_unit_t
 </SECTION>
 
 <SECTION>
@@ -508,6 +514,8 @@ cairo_font_options_get_hint_style
 cairo_hint_metrics_t
 cairo_font_options_set_hint_metrics
 cairo_font_options_get_hint_metrics
+cairo_font_options_get_variations
+cairo_font_options_set_variations
 </SECTION>
 
 <SECTION>

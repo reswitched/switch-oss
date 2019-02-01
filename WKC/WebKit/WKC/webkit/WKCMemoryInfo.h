@@ -25,6 +25,7 @@
 // Note: This file must be synchronized with FastMallocWKC.h
 
 #include <time.h>
+#include <WKC/wkcconfig.h>
 
 #ifdef MAX_PATH
 #undef MAX_PATH

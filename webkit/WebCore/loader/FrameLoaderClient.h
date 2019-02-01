@@ -225,7 +225,7 @@ namespace WebCore {
         // The indicated security origin has run active content (such as a
         // script) from an insecure source.  Note that the insecure content can
         // spread to other frames in the same origin.
-        virtual void didRunInsecureContent(SecurityOrigin*, const URL&) = 0;
+        virtual void didRunInsecureContent(SecurityOrigin&, const URL&) = 0;
         virtual void didDetectXSS(const URL&, bool didBlockEntirePage) = 0;
 
         virtual ResourceError cancelledError(const ResourceRequest&) = 0;

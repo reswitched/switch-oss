@@ -60,9 +60,9 @@ void StorageNamespaceProvider::removePage(Page& page)
 
 RefPtr<StorageArea> StorageNamespaceProvider::localStorageArea(Document& document)
 {
-    auto& storageNamespace = document.securityOrigin()->canAccessLocalStorage(document.topOrigin()) ? localStorageNamespace() : transientLocalStorageNamespace(*document.topOrigin());
+    auto& storageNamespace = document.securityOrigin().canAccessLocalStorage(document.topOrigin()) ? localStorageNamespace() : transientLocalStorageNamespace(*document.topOrigin());
 
-    return storageNamespace.storageArea(document.securityOrigin());
+    return storageNamespace.storageArea(&document.securityOrigin());
 }
 
 StorageNamespace& StorageNamespaceProvider::localStorageNamespace()

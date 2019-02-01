@@ -2272,7 +2272,7 @@ transparent or fully opaque.  The actual implementation works for
 translucent layers too.
 For a more detailed explanation of the effects of each operator, including
 the mathematical definitions, see</para>
-<ulink url="http://cairographics.org/operators/">http://cairographics.org/operators/</ulink>.
+<ulink url="https://cairographics.org/operators/">https://cairographics.org/operators/</ulink>.
 <refsect3 id="cairo-operator-t.members" role="enum_members">
 <title>Members</title>
 <informaltable role="enum_members_table" pgwide="1" frame="none">

@@ -140,7 +140,7 @@ void ApplicationCacheGroup::selectCache(Frame* frame, const URL& passedManifestU
     }
 
     // Don't access anything on disk if private browsing is enabled.
-    if (frame->page()->usesEphemeralSession() || !frame->document()->securityOrigin()->canAccessApplicationCache(frame->tree().top().document()->securityOrigin())) {
+    if (frame->page()->usesEphemeralSession() || !frame->document()->securityOrigin().canAccessApplicationCache(&frame->tree().top().document()->securityOrigin())) {
         postListenerTask(ApplicationCacheHost::CHECKING_EVENT, documentLoader);
         postListenerTask(ApplicationCacheHost::ERROR_EVENT, documentLoader);
         return;
@@ -208,7 +208,7 @@ void ApplicationCacheGroup::selectCacheWithoutManifestURL(Frame* frame)
     ASSERT(!documentLoader->applicationCacheHost()->applicationCache());
 
     // Don't access anything on disk if private browsing is enabled.
-    if (frame->page()->usesEphemeralSession() || !frame->document()->securityOrigin()->canAccessApplicationCache(frame->tree().top().document()->securityOrigin())) {
+    if (frame->page()->usesEphemeralSession() || !frame->document()->securityOrigin().canAccessApplicationCache(&frame->tree().top().document()->securityOrigin())) {
         postListenerTask(ApplicationCacheHost::CHECKING_EVENT, documentLoader);
         postListenerTask(ApplicationCacheHost::ERROR_EVENT, documentLoader);
         return;
@@ -419,7 +419,7 @@ void ApplicationCacheGroup::update(Frame* frame, ApplicationCacheUpdateOption up
     }
 
     // Don't access anything on disk if private browsing is enabled.
-    if (frame->page()->usesEphemeralSession() || !frame->document()->securityOrigin()->canAccessApplicationCache(frame->tree().top().document()->securityOrigin())) {
+    if (frame->page()->usesEphemeralSession() || !frame->document()->securityOrigin().canAccessApplicationCache(&frame->tree().top().document()->securityOrigin())) {
         ASSERT(m_pendingMasterResourceLoaders.isEmpty());
         ASSERT(m_pendingEntries.isEmpty());
         ASSERT(!m_cacheBeingUpdated);

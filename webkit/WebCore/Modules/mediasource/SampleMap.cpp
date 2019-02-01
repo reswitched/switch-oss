@@ -245,13 +245,7 @@ PresentationOrderSampleMap::iterator_range PresentationOrderSampleMap::findSampl
     };
 #endif
 
-#if PLATFORM(WKC)
-    // Dirty workaround for precistion problem
-    // extend range slightly
-    std::pair<MediaTime, MediaTime> range(beginTime, endTime + MediaTime::createWithDouble(1.E-6)); // 1.E-6 is fudge factor
-#else
     std::pair<MediaTime, MediaTime> range(beginTime, endTime);
-#endif
     return std::equal_range(begin(), end(), range, SamplePresentationTimeIsInsideRangeComparator());
 }
 

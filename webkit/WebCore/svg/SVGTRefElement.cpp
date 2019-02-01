@@ -116,7 +116,8 @@ bool SVGTRefTargetEventListener::operator==(const EventListener& listener)
 
 void SVGTRefTargetEventListener::handleEvent(ScriptExecutionContext*, Event* event)
 {
-    ASSERT(isAttached());
+    if (!isAttached())
+        return;
 
     if (event->type() == eventNames().DOMSubtreeModifiedEvent && &m_trefElement != event->target())
         m_trefElement.updateReferencedText(m_target.get());

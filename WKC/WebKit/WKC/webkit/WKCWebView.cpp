@@ -2374,15 +2374,15 @@ WKCWebView::reloadBypassCache()
 {
     m_private->core()->mainFrame().loader().reload(true);
 }
-void
+bool
 WKCWebView::loadURI(const char* uri, const char* referer)
 {
-    if (!uri) return;
-    if (!uri[0]) return;
-    if (!m_private) return;
+    if (!uri) return false;
+    if (!uri[0]) return false;
+    if (!m_private) return false;
 
     WKCWebFrame* frame = m_private->m_mainFrame;
-    frame->loadURI(uri, referer);
+    return frame->loadURI(uri, referer);
 }
 void
 WKCWebView::loadString(const char* content, const unsigned short* mimetype, const unsigned short* encoding, const char* base_uri)
@@ -2472,24 +2472,33 @@ WKCWebView::executeScript(const char* script)
     m_private->core()->mainFrame().script().executeScript(WTF::String::fromUTF8(script), true);
 }
 
-void
-WKCWebView::getSelectionPosition(int& startOffset, int& endOffset) const
+bool
+WKCWebView::isCaretAtBeginningOfTextField() const
 {
-    startOffset = -1;
-    endOffset = -1;
-
     WebCore::Frame* frame = (WebCore::Frame *)&m_private->core()->focusController().focusedOrMainFrame();
-    if (!frame)
-        return;
-    WebCore::FrameSelection& selection = frame->selection();
-    if (!selection.isCaretOrRange())
-        return;
-    WTF::RefPtr<WebCore::Range> range = selection.toNormalizedRange();
-    if (!range)
-        return;
+    if (!frame || !frame->document())
+        return false;
 
-    startOffset = range->startOffset();
-    endOffset = range->endOffset();
+    WebCore::Element* element = frame->document()->focusedElement();
+    if (!element)
+        return false;
+
+    WebCore::FrameSelection& frameSelection = frame->selection();
+    if (!frameSelection.isCaret())
+        return false;
+
+    const WebCore::VisiblePosition& startPosition = frameSelection.selection().visibleStart();
+
+    // cf. WebCore::isFirstVisiblePositionInNode
+
+    if (startPosition.isNull())
+        return false;
+
+    if (!startPosition.deepEquivalent().containerNode()->isDescendantOrShadowDescendantOf(element))
+        return false;
+
+    WebCore::VisiblePosition previous = startPosition.previous();
+    return previous.isNull() || !previous.deepEquivalent().deprecatedNode()->isDescendantOrShadowDescendantOf(element);
 }
 
 bool
@@ -5230,6 +5239,12 @@ WKCWebKitSetCanCacheToDiskCallback(CanCacheToDiskProc in_proc)
 #if ENABLE(WKC_HTTPCACHE)
     WebCore::ResourceHandleManager::sharedInstance()->setCanCacheToDiskCallback(in_proc);
 #endif
+}
+
+void
+WKCWebKitSetConnectionFilteringCallback(ConnectionFilteringProc in_proc)
+{
+    WebCore::ResourceHandleManager::sharedInstance()->setConnectionFilteringCallback(in_proc);
 }
 
 // dump HTTPCache list (for Debug)

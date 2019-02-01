@@ -1,3 +1,157 @@
+2017-02-24  Jer Noble  <jer.noble@apple.com>
+
+        Add public method to MediaTime for doing timeScale conversion.
+        https://bugs.webkit.org/show_bug.cgi?id=168860
+
+        Reviewed by Eric Carlson.
+
+        The newly public method, modeled on CMTimeConvertScale, allows callers to specify what rounding technique
+        will be used when converting to a new time scale.
+
+        * wtf/MediaTime.cpp:
+        (WTF::MediaTime::toTimeScale):
+        (WTF::MediaTime::setTimeScale):
+        * wtf/MediaTime.h:
+
+2016-06-15  Sam Weinig  <sam@webkit.org>
+
+        Improve HashMap and HashSet support for Ref
+        https://bugs.webkit.org/show_bug.cgi?id=158789
+
+        Reviewed by Chris Dumez.
+
+        Tests: Add more cases to WTF_HashMap.Ref_Key, WTF_HashMap.Ref_Value and WTF_HashSet.Ref
+
+        * wtf/HashMap.h:
+        * wtf/HashSet.h:
+        Add a MappedTakeType typedef and rework the take functions to use it and HashTraits::take(...).
+
+        * wtf/HashTraits.h:
+        (WTF::GenericHashTraits::assignToEmpty):
+        Move to GenericHashTraits rather than GenericHashTraitsBase, since it is not different
+        between integral and non-integral HashTraits.
+
+        (WTF::GenericHashTraits::take):
+        Add a trait function for take that defaults as a forward. This allows us to override take
+        just like we do with get/peek.
+
+        (WTF::HashTraits<Ref<P>>::emptyValue):
+        Remove unnecessary explicit construction.
+
+        (WTF::HashTraits<Ref<P>>::peek):
+        Fix assertion that could happen if you did a HashMap.get() on an empty Ref value.
+
+        (WTF::HashTraits<Ref<P>>::take):
+        Make the TakeType of a Ref<P> be Optional<Ref<P>>, to avoid having empty
+        Refs returned from HashMap and HashSet. Implement an explicit take() function to
+        construct one.
+
+        (WTF::HashTraits<Ref<P>>::customDeleteBucket): Deleted.
+        Remove unnecessary customDeleteBucket implementation. Ref does not assign nullptr to
+        it's m_ptr in destruction, so there is no dead store to avoid here.
+
+        * wtf/Ref.h:
+        (WTF::Ref::ptrAllowingHashTableEmptyValue):
+        Add HashTrait helper to allow getting the value of m_ptr even when it is null. This
+        allows us to avoid a branch in HashTraits<Ref<P>>::peek().
+
+2016-06-13  Sam Weinig  <sam@webkit.org>
+
+        Make HashMap and HashSet work with Refs
+        https://bugs.webkit.org/show_bug.cgi?id=158638
+
+        Reviewed by Darin Adler.
+
+        * wtf/GetPtr.h:
+        Move HashTableDeletedValueType and HashTableEmptyValueType here, as they are now shared
+        by more than one smart pointer. This file should probably be renamed to something else
+        at some point to indicate that it contains helpers for pointer and ref related functionality.
+
+        * wtf/HashFunctions.h:
+        Add a DefaultHash for Refs. Customize the PtrHash to indicate that it is not safe to compare
+        to empty or deleted Refs.
+
+        * wtf/HashMap.h:
+        (WTF::HashMapTranslator::equal):
+        (WTF::HashMapTranslator::translate):
+        (WTF::HashMapEnsureTranslator::equal):
+        (WTF::HashMapEnsureTranslator::translate):
+        * wtf/HashSet.h:
+        (WTF::IdentityExtractor::extract):
+        (WTF::HashSetTranslator::hash):
+        (WTF::HashSetTranslator::equal):
+        (WTF::HashSetTranslator::translate):
+        * wtf/HashTable.h:
+        (WTF::IdentityHashTranslator::hash):
+        (WTF::IdentityHashTranslator::equal):
+        (WTF::IdentityHashTranslator::translate):
+        Use the new assignToEmpty trait function to allow uninitialized Ref's to be safely assigned to.
+
+        * wtf/HashTraits.h:
+        (WTF::HashTraits<Ref<P>>::emptyValue):
+        (WTF::HashTraits<Ref<P>>::isEmptyValue):
+        (WTF::HashTraits<Ref<P>>::assignToEmpty):
+        (WTF::HashTraits<Ref<P>>::peek):
+        (WTF::HashTraits<Ref<P>>::customDeleteBucket):
+        Add custom HashTraits for Ref. Also, introduce a new trait function, assignToEmpty, for use
+        in translation assignments. This is necessary since the default assignment operator for Ref
+        will not allow assignment to the empty Ref, which we need to do here.
+
+        * wtf/Ref.h:
+        (WTF::Ref::operator=):
+        (WTF::Ref::Ref):
+        (WTF::Ref::isHashTableDeletedValue):
+        (WTF::Ref::hashTableDeletedValue):
+        (WTF::Ref::isHashTableEmptyValue):
+        (WTF::Ref::hashTableEmptyValue):
+        Add explicit constructors/predicates for making deleted/empty Refs.
+
+        (WTF::Ref::assignToHashTableEmptyValue):
+        Add a special function that allows assignment to an empty Ref, which the
+        assignment operator does not.
+        
+        (WTF::IsSmartPtr):
+        Add an IsSmartPtr override to indicate that Ref is a smart pointer.
+
+        * wtf/RefPtr.h:
+        Move HashTableDeletedValueType to GetPtr.h.
+
+2018-10-09  Mark Lam  <mark.lam@apple.com>
+
+        StringTypeAdapter constructor is not properly enforcing String::MaxLength.
+        https://bugs.webkit.org/show_bug.cgi?id=190392
+        <rdar://problem/45116210>
+
+        Reviewed by Saam Barati.
+
+        Previously, the StringTypeAdapter constructor for a UChar* string was summing the
+        unsigned length of the source string without an overflow check.  We now make that
+        length a size_t which removes this issue, and assert that it's within
+        String::MaxLength thereafter.
+
+        Also made the StringTypeAdapter constructor for a LChar* string behave in an
+        equivalent manner for consistency.  In both cases, we'll crash in a RELEASE_ASSERT
+        if the source string length exceeds String::MaxLength.
+
+        * wtf/text/StringConcatenate.h:
+
+2018-09-05  Brent Fulgham  <bfulgham@apple.com>
+
+        The width of an empty or nullptr TextRun should be zero
+        https://bugs.webkit.org/show_bug.cgi?id=189154
+        <rdar://problem/43685926>
+
+        Reviewed by Zalan Bujtas.
+
+        Most accessors in WTFString.cpp, such as isAllASCII(), hash(), etc., perform a nullptr check
+        before using m_impl, but is8Bit() does not.
+
+        This patch adds a check in the is8Bit() implementation to be consistent with other methods,
+        and to address a small number of crashes observed in testing.
+
+        * wtf/text/WTFString.h:
+        (WTF::String::is8Bit const):
+
 2018-04-20  JF Bastien  <jfbastien@apple.com>
 
         Handle more JSON stringify OOM

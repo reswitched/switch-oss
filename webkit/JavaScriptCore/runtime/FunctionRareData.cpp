@@ -53,6 +53,7 @@ Structure* FunctionRareData::createStructure(VM& vm, JSGlobalObject* globalObjec
 void FunctionRareData::visitChildren(JSCell* cell, SlotVisitor& visitor)
 {
     FunctionRareData* rareData = jsCast<FunctionRareData*>(cell);
+    Base::visitChildren(cell, visitor);
 
     rareData->m_allocationProfile.visitAggregate(visitor);
 }

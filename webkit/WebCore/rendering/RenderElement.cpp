@@ -51,6 +51,7 @@
 #include "RenderListItem.h"
 #include "RenderNamedFlowThread.h"
 #include "RenderRegion.h"
+#include "RenderSVGInline.h"
 #include "RenderTableCaption.h"
 #include "RenderTableCell.h"
 #include "RenderTableCol.h"
@@ -926,7 +927,9 @@ void RenderElement::handleDynamicFloatPositionChange()
     // We have gone from not affecting the inline status of the parent flow to suddenly
     // having an impact.  See if there is a mismatch between the parent flow's
     // childrenInline() state and our state.
-    setInline(style().isDisplayInlineType());
+    // FIXME(186894): startsAffectingParent has clearly nothing to do with resetting the inline state.
+    if (!is<RenderSVGInline>(*this))
+        setInline(style().isDisplayInlineType());
     if (isInline() != parent()->childrenInline()) {
         if (!isInline())
             downcast<RenderBoxModelObject>(*parent()).childBecameNonInline(*this);

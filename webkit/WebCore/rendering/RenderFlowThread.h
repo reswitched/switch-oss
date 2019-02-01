@@ -311,14 +311,13 @@ protected:
         bool m_rangeInvalidated;
     };
 
-    typedef PODInterval<LayoutUnit, RenderRegion*> RegionInterval;
-    typedef PODIntervalTree<LayoutUnit, RenderRegion*> RegionIntervalTree;
+    typedef PODInterval<LayoutUnit, WeakPtr<RenderRegion>> RegionInterval;
+    typedef PODIntervalTree<LayoutUnit, WeakPtr<RenderRegion>> RegionIntervalTree;
 
     class RegionSearchAdapter {
     public:
         RegionSearchAdapter(LayoutUnit offset)
             : m_offset(offset)
-            , m_result(nullptr)
         {
         }
         
@@ -326,11 +325,11 @@ protected:
         const LayoutUnit& highValue() const { return m_offset; }
         void collectIfNeeded(const RegionInterval&);
 
-        RenderRegion* result() const { return m_result; }
+        RenderRegion* result() const { return m_result.get(); }
 
     private:
         LayoutUnit m_offset;
-        RenderRegion* m_result;
+        WeakPtr<RenderRegion> m_result;
     };
 
     // Map a layer to the region in which the layer is painted.
@@ -376,6 +375,10 @@ protected:
 #ifndef NDEBUG
 template <> struct ValueToString<RenderRegion*> {
     static String string(const RenderRegion* value) { return String::format("%p", value); }
+};
+
+template <> struct ValueToString<WeakPtr<RenderRegion>> {
+    static String string(const WeakPtr<RenderRegion> value) { return value.get() ? ValueToString<RenderRegion*>::string(value.get()) : String(); }
 };
 #endif
 

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2009 Brent Fulgham.  All rights reserved.
  * Copyright (C) 2009 Google Inc.  All rights reserved.
- * Copyright (c) 2012-2017 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2012-2018 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -272,6 +272,9 @@ void SocketStreamHandle::construct(void)
     // functions
     curl_easy_setopt(handle, CURLOPT_OPENSOCKETFUNCTION, opensocketcallback);
     curl_easy_setopt(handle, CURLOPT_OPENSOCKETDATA , (void*)this);
+
+    // filtering
+    curl_easy_setopt(handle, CURLOPT_CONNECT_FILTERING_FUNCTION, ResourceHandleManager::filter_callback);
 
     // add handle
     curl_multi_add_handle(multiHandle, handle);

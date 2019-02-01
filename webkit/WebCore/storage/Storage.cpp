@@ -166,7 +166,7 @@ bool Storage::isDisabledByPrivateBrowsing() const
         return false;
 
     if (m_storageArea->storageType() == LocalStorage) {
-        if (SchemeRegistry::allowsLocalStorageAccessInPrivateBrowsing(m_frame->document()->securityOrigin()->protocol()))
+        if (SchemeRegistry::allowsLocalStorageAccessInPrivateBrowsing(m_frame->document()->securityOrigin().protocol()))
             return false;
     }
 

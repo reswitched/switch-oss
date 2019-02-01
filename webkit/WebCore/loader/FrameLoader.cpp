@@ -946,7 +946,7 @@ String FrameLoader::outgoingReferrer() const
 
 String FrameLoader::outgoingOrigin() const
 {
-    return m_frame.document()->securityOrigin()->toString();
+    return m_frame.document()->securityOrigin().toString();
 }
 
 bool FrameLoader::checkIfFormActionAllowedByCSP(const URL& url) const
@@ -1216,7 +1216,7 @@ void FrameLoader::loadURL(const FrameLoadRequest& frameLoadRequest, const String
     }
 #if ENABLE(CACHE_PARTITIONING)
     if (&m_frame.tree().top() != &m_frame)
-        request.setDomainForCachePartition(m_frame.tree().top().document()->securityOrigin()->domainForCachePartition());
+        request.setDomainForCachePartition(m_frame.tree().top().document()->securityOrigin().domainForCachePartition());
 #endif
     addExtraFieldsToRequest(request, newLoadType, true);
     if (newLoadType == FrameLoadType::Reload || newLoadType == FrameLoadType::ReloadFromOrigin)
@@ -2924,16 +2924,7 @@ void FrameLoader::scrollToFragmentWithParentBoundary(const URL& url)
     if (!view)
         return;
 
-    // Leaking scroll position to a cross-origin ancestor would permit the so-called "framesniffing" attack.
-    RefPtr<Frame> boundaryFrame(url.hasFragmentIdentifier() ? m_frame.document()->findUnsafeParentScrollPropagationBoundary() : 0);
-
-    if (boundaryFrame)
-        boundaryFrame->view()->setSafeToPropagateScrollToParent(false);
-
     view->scrollToFragment(url);
-
-    if (boundaryFrame)
-        boundaryFrame->view()->setSafeToPropagateScrollToParent(true);
 }
 
 bool FrameLoader::shouldClose()
@@ -3072,7 +3063,7 @@ bool FrameLoader::handleBeforeUnloadEvent(Chrome& chrome, FrameLoader* frameLoad
             Document* parentDocument = parentFrame->document();
             if (!parentDocument)
                 return true;
-            if (!m_frame.document() || !m_frame.document()->securityOrigin()->canAccess(parentDocument->securityOrigin())) {
+            if (!m_frame.document() || !m_frame.document()->securityOrigin().canAccess(parentDocument->securityOrigin())) {
                 document->addConsoleMessage(MessageSource::JS, MessageLevel::Error, ASCIILiteral("Blocked attempt to show beforeunload confirmation dialog on behalf of a frame with different security origin. Protocols, domains, and ports must match."));
                 return true;
             }

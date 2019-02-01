@@ -612,9 +612,9 @@ void Element::scrollIntoView(bool alignToTop)
     LayoutRect bounds = renderer()->anchorRect();
     // Align to the top / bottom and to the closest edge.
     if (alignToTop)
-        renderer()->scrollRectToVisible(bounds, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignTopAlways);
+        renderer()->scrollRectToVisible(bounds, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignTopAlways, ShouldAllowCrossOriginScrolling::No);
     else
-        renderer()->scrollRectToVisible(bounds, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignBottomAlways);
+        renderer()->scrollRectToVisible(bounds, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignBottomAlways, ShouldAllowCrossOriginScrolling::No);
 }
 
 void Element::scrollIntoViewIfNeeded(bool centerIfNeeded)
@@ -626,9 +626,9 @@ void Element::scrollIntoViewIfNeeded(bool centerIfNeeded)
 
     LayoutRect bounds = renderer()->anchorRect();
     if (centerIfNeeded)
-        renderer()->scrollRectToVisible(bounds, ScrollAlignment::alignCenterIfNeeded, ScrollAlignment::alignCenterIfNeeded);
+        renderer()->scrollRectToVisible(bounds, ScrollAlignment::alignCenterIfNeeded, ScrollAlignment::alignCenterIfNeeded, ShouldAllowCrossOriginScrolling::No);
     else
-        renderer()->scrollRectToVisible(bounds, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
+        renderer()->scrollRectToVisible(bounds, ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded, ShouldAllowCrossOriginScrolling::No);
 }
 
 void Element::scrollIntoViewIfNotVisible(bool centerIfNotVisible)
@@ -640,9 +640,9 @@ void Element::scrollIntoViewIfNotVisible(bool centerIfNotVisible)
     
     LayoutRect bounds = renderer()->anchorRect();
     if (centerIfNotVisible)
-        renderer()->scrollRectToVisible(bounds, ScrollAlignment::alignCenterIfNotVisible, ScrollAlignment::alignCenterIfNotVisible);
+        renderer()->scrollRectToVisible(bounds, ScrollAlignment::alignCenterIfNotVisible, ScrollAlignment::alignCenterIfNotVisible, ShouldAllowCrossOriginScrolling::No);
     else
-        renderer()->scrollRectToVisible(bounds, ScrollAlignment::alignToEdgeIfNotVisible, ScrollAlignment::alignToEdgeIfNotVisible);
+        renderer()->scrollRectToVisible(bounds, ScrollAlignment::alignToEdgeIfNotVisible, ScrollAlignment::alignToEdgeIfNotVisible, ShouldAllowCrossOriginScrolling::No);
 }
     
 void Element::scrollByUnits(int units, ScrollGranularity granularity)
@@ -2142,6 +2142,15 @@ CSSStyleDeclaration *Element::style()
     return 0;
 }
 
+#if PLATFORM(WKC)
+WKC_DEFINE_GLOBAL_BOOL(gProhibitsScrollingEnabled, false);
+void
+Element::setProhibitsScrollingEnabled(bool enabled)
+{
+    gProhibitsScrollingEnabled = enabled;
+}
+#endif
+
 void Element::focus(bool restorePreviousSelection, FocusDirection direction)
 {
     if (!inDocument())
@@ -2190,7 +2199,16 @@ void Element::focus(bool restorePreviousSelection, FocusDirection direction)
     if (isFormControl)
         view->setProhibitsScrolling(true);
 #endif
+#if PLATFORM(WKC)
+    FrameView* view = document().view();
+    if (view && gProhibitsScrollingEnabled)
+        view->setProhibitsScrolling(true);
+#endif
     updateFocusAppearance(restorePreviousSelection);
+#if PLATFORM(WKC)
+    if (view && gProhibitsScrollingEnabled)
+        view->setProhibitsScrolling(false);
+#endif
 #if PLATFORM(IOS)
     if (isFormControl)
         view->setProhibitsScrolling(false);

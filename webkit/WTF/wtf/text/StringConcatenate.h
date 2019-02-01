@@ -103,8 +103,11 @@ class StringTypeAdapter<const LChar*> {
 public:
     StringTypeAdapter(const LChar* characters)
         : m_characters(characters)
-        , m_length(strlen(reinterpret_cast<const char*>(characters)))
     {
+        size_t length = strlen(reinterpret_cast<const char*>(characters));
+        if (static_cast<unsigned>(length) > std::numeric_limits<unsigned>::max())
+            CRASH();
+        m_length = static_cast<unsigned>(length);
     }
 
     unsigned length() const { return m_length; }
@@ -131,14 +134,13 @@ public:
     StringTypeAdapter(const UChar* characters)
         : m_characters(characters)
     {
-        unsigned length = 0;
+        size_t length = 0;
         while (m_characters[length])
             ++length;
-
-        if (length > std::numeric_limits<unsigned>::max())
+        if (static_cast<unsigned>(length) > std::numeric_limits<unsigned>::max())
             CRASH();
 
-        m_length = length;
+        m_length = static_cast<unsigned>(length);
     }
 
     unsigned length() const { return m_length; }

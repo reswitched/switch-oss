@@ -54,7 +54,7 @@ struct SecurityOriginHash {
     {
         if (!a || !b)
             return a == b;
-        return a->isSameSchemeHostPort(b);
+        return a->isSameSchemeHostPort(*b);
     }
     static bool equal(SecurityOrigin* a, const RefPtr<SecurityOrigin>& b)
     {

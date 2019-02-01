@@ -2,9 +2,9 @@ AC_PREREQ([2.63])
 CAIRO_PARSE_VERSION
 AC_INIT([cairo],
 	[cairo_version_major.cairo_version_minor.cairo_version_micro],
-	[http://bugs.freedesktop.org/enter_bug.cgi?product=cairo],
+	[https://bugs.freedesktop.org/enter_bug.cgi?product=cairo],
 	[cairo],
-	[http://cairographics.org/])
+	[https://cairographics.org/])
 AC_CONFIG_AUX_DIR(build)
 AC_CONFIG_MACRO_DIR(build)
 AC_USE_SYSTEM_EXTENSIONS
@@ -143,7 +143,7 @@ CAIRO_ENABLE_SURFACE_BACKEND(xlib_xrender, Xlib Xrender, auto, [
 		       CPPFLAGS="$CPPFLAGS $xlib_CFLAGS $xlib_NONPKGCONFIG_CFLAGS"
 		       AC_CHECK_HEADER(X11/extensions/Xrender.h,
 				       [xlib_xrender_NONPKGCONFIG_LIBS="-lXrender"],
-				       [use_xlib_xrender="no (requires $xlib_xrender_REQUIRES http://freedesktop.org/Software/xlibs)"],
+				       [use_xlib_xrender="no (requires $xlib_xrender_REQUIRES https://freedesktop.org/Software/xlibs)"],
 				       [#include <X11/X.h>])
 		       CPPFLAGS=$old_CPPFLAGS
 		      ])
@@ -164,14 +164,14 @@ dnl ===========================================================================
 CAIRO_ENABLE_SURFACE_BACKEND(xcb, XCB, auto, [
   xcb_REQUIRES="xcb >= 1.6 xcb-render >= 1.6"
   PKG_CHECK_MODULES(xcb, $xcb_REQUIRES, ,
-		    [use_xcb="no (requires $xcb_REQUIRES http://xcb.freedesktop.org)"])
+		    [use_xcb="no (requires $xcb_REQUIRES https://xcb.freedesktop.org)"])
 ])
 
 CAIRO_ENABLE_FUNCTIONS(xlib_xcb, Xlib/XCB, no, [
   if test "x$use_xcb" = "xyes" -a "x$use_xlib" = "xyes"; then
     xlib_xcb_REQUIRES="x11-xcb"
     PKG_CHECK_MODULES(xlib_xcb, $xlib_xcb_REQUIRES, ,
-		      [use_xlib_xcb="no (requires $xlib_xcb_REQUIRES http://xcb.freedesktop.org)"])
+		      [use_xlib_xcb="no (requires $xlib_xcb_REQUIRES https://xcb.freedesktop.org)"])
   else
     use_xlib_xcb="no (requires both --enable-xlib and --enable-xcb)"
   fi
@@ -181,7 +181,7 @@ CAIRO_ENABLE_FUNCTIONS(xcb_shm, XCB/SHM, auto, [
   if test "x$use_xcb" = "xyes"; then
       xcb_shm_REQUIRES="xcb-shm"
       PKG_CHECK_MODULES(xcb_shm, $xcb_shm_REQUIRES, ,
-			[use_xcb_shm="no (requires $xcb_shm http://xcb.freedesktop.org)"])
+			[use_xcb_shm="no (requires $xcb_shm https://xcb.freedesktop.org)"])
   else
     use_xcb_shm="no (requires --enable-xcb)"
   fi
@@ -246,31 +246,6 @@ if test "x$use_win32" = "xyes"; then
 fi
 
 AM_CONDITIONAL(CAIRO_CAN_TEST_WIN32_PRINTING_SURFACE, test "x$test_win32_printing" = "xyes")
-
-dnl ===========================================================================
-
-dnl NOTE: We're temporarily disabiling this backend to see if anyone
-dnl       is actually using it.  If you are, please mention on the cairo
-dnl       mailing list.
-
-dnl CAIRO_ENABLE_SURFACE_BACKEND(skia, Skia, no, [
-dnl   AC_ARG_WITH([skia],
-dnl 	      [AS_HELP_STRING([--with-skia=/path/to/skia],
-dnl 			      [directory to find compiled skia sources])],
-dnl 	      [skia_DIR="$withval"],
-dnl 	      [skia_DIR="`pwd`/../skia"])
-dnl   AC_ARG_WITH([skia-build-type],
-dnl 	      [AS_HELP_STRING([--with-skia-build-type=(Release|Debug)]
-dnl 			      [build of skia to link with, default is Release])],
-dnl 	      [skia_BUILD_TYPE="$withval"],
-dnl 	      [skia_BUILD_TYPE="Release"])
-dnl   skia_NONPKGCONFIG_CFLAGS="-I$skia_DIR/include/config -I$skia_DIR/include/core -I$skia_DIR/include/effects"
-dnl   if test "x$skia_BUILD_TYPE" = "xRelease"; then
-dnl   	skia_NONPKGCONFIG_CFLAGS="-DSK_RELEASE -DSK_CAN_USE_FLOAT $skia_NONPKGCONFIG_CFLAGS"
-dnl   fi
-dnl   skia_NONPKGCONFIG_LIBS="-L$skia_DIR/out/$skia_BUILD_TYPE/lib.target/ -lskia -lstdc++"
-dnl   AC_SUBST(skia_DIR)
-dnl ])
 
 dnl ===========================================================================
 
@@ -395,15 +370,18 @@ CAIRO_ENABLE_SURFACE_BACKEND(glesv2, OpenGLESv2, no, [
 
 dnl ===========================================================================
 CAIRO_ENABLE_SURFACE_BACKEND(glesv3, OpenGLESv3, no, [
-  glesv3_REQUIRES="glesv3"
+  dnl glesv3 is provided via libGLESv2.so, so require glesv2.pc (there is no libGLESv3, nor glesv3.pc)
+  glesv3_REQUIRES="glesv2"
   PKG_CHECK_MODULES(glesv3, $glesv3_REQUIRES,, [
-	 dnl Fallback to searching for headers
-	 AC_CHECK_HEADER(GLES3/gl3.h,, [use_glesv3="no (glesv3.pc nor OpenGL ES 3.0 headers not found)"])
-	 if test "x$use_glesv3" = "xyes"; then
-	     glesv3_NONPKGCONFIG_CFLAGS=
-	     dnl glesv3 is provided by the libGLESv2 library (there is no separate libGLESv3)
-	     glesv3_NONPKGCONFIG_LIBS="-lGLESv2"
-	 fi])
+    use_glesv3="no (glesv2.pc not found, required for glesv3)"
+  ])
+
+  dnl Since there is no glesv3.pc, need to search for header files
+  AC_CHECK_HEADER(GLES3/gl3.h,, [use_glesv3="no (OpenGL ES 3.0 headers not found)"])
+  if test "x$use_glesv3" = "xyes"; then
+    glesv3_NONPKGCONFIG_CFLAGS=
+    glesv3_NONPKGCONFIG_LIBS="-lGLESv2"
+  fi
 
   if test "x$have_dl" = "xyes" -a "x$have_dlsym" = "xyes"; then
     glesv3_LIBS="$glesv3_LIBS -ldl"
@@ -709,7 +687,7 @@ dnl ===========================================================================
 CAIRO_ENABLE_SURFACE_BACKEND(image, image, always, [
   pixman_REQUIRES="pixman-1 >= 0.30.0"
   PKG_CHECK_MODULES(pixman, $pixman_REQUIRES, ,
-    [use_image="no (requires $pixman_REQUIRES http://cairographics.org/releases/)"])
+    [use_image="no (requires $pixman_REQUIRES https://cairographics.org/releases/)"])
   image_REQUIRES=$pixman_REQUIRES
   image_CFLAGS=$pixman_CFLAGS
   image_LIBS=$pixman_LIBS
@@ -757,7 +735,7 @@ dnl Build gobject integration library
 CAIRO_ENABLE_FUNCTIONS(gobject, gobject, auto, [
   gobject_REQUIRES="gobject-2.0 glib-2.0 >= 2.14"
   PKG_CHECK_MODULES(GOBJECT, $gobject_REQUIRES, ,
-    [use_gobject="no (requires $gobject_REQUIRES http://download.gnome.org/pub/GNOME/sources/glib/)"])
+    [use_gobject="no (requires $gobject_REQUIRES https://download.gnome.org/pub/GNOME/sources/glib/)"])
   gobject_NONPKGCONFIG_EXTRA_LIBS="-L\${libdir} -lcairo-gobject"
 ])
 dnl I'm too lazy to fix the caching properly
@@ -884,7 +862,6 @@ dnl ===========================================================================
 
 dnl Extra stuff we need to do when building C++ code
 need_cxx="no"
-dnl AS_IF([test "x$use_skia" = "xyes"], [need_cxx="yes"])
 AS_IF([test "x$use_qt" = "xyes"], [need_cxx="yes"])
 AS_IF([test "x$use_beos" = "xyes"], [need_cxx="yes"])
 

@@ -53,6 +53,7 @@ Structure* InferredValue::createStructure(VM& vm, JSGlobalObject* globalObject, 
 void InferredValue::visitChildren(JSCell* cell, SlotVisitor& visitor)
 {
     InferredValue* inferredValue = jsCast<InferredValue*>(cell);
+    Base::visitChildren(cell, visitor);
     
     if (inferredValue->m_set.hasBeenInvalidated()) {
         inferredValue->m_cleanup = nullptr;

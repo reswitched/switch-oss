@@ -99,7 +99,7 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceReques
     ASSERT(m_options.crossOriginRequestPolicy == UseAccessControl);
 
     auto crossOriginRequest = std::make_unique<ResourceRequest>(request);
-    updateRequestForAccessControl(*crossOriginRequest, securityOrigin(), m_options.allowCredentials());
+    updateRequestForAccessControl(*crossOriginRequest, *securityOrigin(), m_options.allowCredentials());
 
     if ((m_options.preflightPolicy == ConsiderPreflight && isSimpleCrossOriginAccessRequest(crossOriginRequest->httpMethod(), crossOriginRequest->httpHeaderFields())) || m_options.preflightPolicy == PreventPreflight)
         makeSimpleCrossOriginAccessRequest(*crossOriginRequest);
@@ -130,7 +130,7 @@ void DocumentThreadableLoader::makeSimpleCrossOriginAccessRequest(const Resource
 
 void DocumentThreadableLoader::makeCrossOriginAccessRequestWithPreflight(const ResourceRequest& request)
 {
-    ResourceRequest preflightRequest = createAccessControlPreflightRequest(request, securityOrigin());
+    ResourceRequest preflightRequest = createAccessControlPreflightRequest(request, *securityOrigin());
     loadRequest(preflightRequest, DoSecurityCheck);
 }
 
@@ -202,7 +202,7 @@ void DocumentThreadableLoader::redirectReceived(CachedResource* resource, Resour
             RefPtr<SecurityOrigin> originalOrigin = SecurityOrigin::createFromString(redirectResponse.url());
             RefPtr<SecurityOrigin> requestOrigin = SecurityOrigin::createFromString(request.url());
             // If the request URL origin is not same origin with the original URL origin, set source origin to a globally unique identifier.
-            if (!originalOrigin->isSameSchemeHostPort(requestOrigin.get()))
+            if (!originalOrigin->isSameSchemeHostPort(*requestOrigin.get()))
                 m_options.securityOrigin = SecurityOrigin::createUnique();
             // Force any subsequent requests to use these checks.
             m_sameOriginRequest = false;
@@ -437,7 +437,7 @@ bool DocumentThreadableLoader::isXMLHttpRequest() const
 
 SecurityOrigin* DocumentThreadableLoader::securityOrigin() const
 {
-    return m_options.securityOrigin ? m_options.securityOrigin.get() : m_document.securityOrigin();
+    return m_options.securityOrigin ? m_options.securityOrigin.get() : &m_document.securityOrigin();
 }
 
 } // namespace WebCore

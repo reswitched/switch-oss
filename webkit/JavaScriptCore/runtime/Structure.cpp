@@ -991,7 +991,7 @@ void Structure::visitChildren(JSCell* cell, SlotVisitor& visitor)
     Structure* thisObject = jsCast<Structure*>(cell);
     ASSERT_GC_OBJECT_INHERITS(thisObject, info());
 
-    JSCell::visitChildren(thisObject, visitor);
+    Base::visitChildren(thisObject, visitor);
     visitor.append(&thisObject->m_globalObject);
     if (!thisObject->isObject())
         thisObject->m_cachedPrototypeChain.clear();

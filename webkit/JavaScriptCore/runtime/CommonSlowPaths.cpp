@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2015 Apple Inc. All rights reserved.
+ * Copyright (C) 2011-2018 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -543,6 +543,8 @@ SLOW_PATH_DECL(slow_path_has_indexed_property)
     BEGIN();
     JSObject* base = OP(2).jsValue().toObject(exec);
     JSValue property = OP(3).jsValue();
+    ASSERT(vm.interpreter->getOpcodeID(pc[0].u.opcode) == op_has_indexed_property);
+    ASSERT(!pc[4].u.arrayProfile || pc[4].u.arrayProfile->isValid());
     pc[4].u.arrayProfile->observeStructure(base->structure(vm));
     ASSERT(property.isUInt32());
     RETURN(jsBoolean(base->hasProperty(exec, property.asUInt32())));

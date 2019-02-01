@@ -60,7 +60,7 @@ document logical structure on supported backends. The following tags are support
 <refsect2 id="link"><title>Link Tags</title><para>A hyperlink is specified by enclosing the hyperlink text with the <link linkend="CAIRO-TAG-LINK:CAPS"><literal>CAIRO_TAG_LINK</literal></link> tag.</para>
 <para>For example:</para>
 <informalexample><programlisting>
-cairo_tag_begin (cr, CAIRO_TAG_LINK, "uri='http://cairographics.org'");
+cairo_tag_begin (cr, CAIRO_TAG_LINK, "uri='https://cairographics.org'");
 cairo_move_to (cr, 50, 50);
 cairo_show_text (cr, "This is a link to the cairo website.");
 cairo_tag_end (cr, CAIRO_TAG_LINK);
@@ -91,7 +91,7 @@ cairo_text_extents (cr, text1, &amp;text1_extents);
 cairo_move_to (cr, 50, 70);
 cairo_text_extents (cr, text2, &amp;text2_extents);
 sprintf (attribs,
-         "rect=[%f %f %f %f %f %f %f %f] uri='http://cairographics.org'",
+         "rect=[%f %f %f %f %f %f %f %f] uri='https://cairographics.org'",
          text1_extents.x_bearing,
          text1_extents.y_bearing,
          text1_extents.width,
@@ -139,7 +139,7 @@ on the page.</para>
 : An ASCII string specifying the URI.</para>
 <para>An example of the link attributes to the cairo website:</para>
 <programlisting>
-"uri='http://cairographics.org'"
+"uri='https://cairographics.org'"
 </programlisting>
 </refsect3>
 <refsect3 id="file-link"><title>File Links</title><para>A file link is a link a location in another PDF file.</para>

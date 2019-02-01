@@ -125,7 +125,7 @@ void TextTrackLoader::notifyFinished(CachedResource* resource)
     ASSERT(m_resource == resource);
 
     Document* document = downcast<Document>(m_scriptExecutionContext);
-    if (!m_crossOriginMode.isNull() && !resource->passesSameOriginPolicyCheck(*document->securityOrigin()))
+    if (!m_crossOriginMode.isNull() && !resource->passesSameOriginPolicyCheck(document->securityOrigin()))
         corsPolicyPreventedLoad();
 
     if (m_state != Failed) {
@@ -163,7 +163,7 @@ bool TextTrackLoader::load(const URL& url, const String& crossOriginMode, bool i
         updateRequestForAccessControl(cueRequest.mutableResourceRequest(), document->securityOrigin(), allowCredentials);
     } else {
         // Cross-origin resources that are not suitably CORS-enabled may not load.
-        if (!document->securityOrigin()->canRequest(url)) {
+        if (!document->securityOrigin().canRequest(url)) {
             corsPolicyPreventedLoad();
             return false;
         }

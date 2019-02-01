@@ -90,6 +90,7 @@ namespace WebCore {
     typedef int ExceptionCode;
 
     enum SetLocationLocking { LockHistoryBasedOnGestureState, LockHistoryAndBackForwardList };
+    enum class IncludeTargetOrigin { No, Yes };
 
     // FIXME: DOMWindow shouldn't subclass FrameDestructionObserver and instead should get to Frame via its Document.
     class DOMWindow final
@@ -238,7 +239,8 @@ namespace WebCore {
         PageConsoleClient* console() const;
 
         void printErrorMessage(const String&);
-        String crossDomainAccessErrorMessage(const DOMWindow& activeWindow);
+
+        String crossDomainAccessErrorMessage(const DOMWindow& activeWindow, IncludeTargetOrigin);
 
         void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, const String& targetOrigin, DOMWindow& source, ExceptionCode&);
         // Needed for Objective-C bindings (see bug 28774).

@@ -31,6 +31,7 @@
 #define WKCFrameLoaderClient_h
 
 #include <wkc/wkcbase.h>
+#include "WKCEnums.h"
 #include "WKCHelpersEnums.h"
 
 #ifdef WKC_ENABLE_CUSTOMJS

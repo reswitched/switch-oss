@@ -2978,7 +2978,7 @@ inplace_renderer_init (cairo_image_span_renderer_t	*r,
 	/* Create an effectively unbounded mask by repeating the single line */
 	buf = r->_buf;
 	if (width > SZ_BUF) {
-	    buf = malloc (width);
+	    buf = _cairo_malloc (width);
 	    if (unlikely (buf == NULL)) {
 		pixman_image_unref (r->src);
 #ifdef WKC_CAIRO_CUSTOMIZE

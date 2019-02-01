@@ -69,6 +69,7 @@ public:
         , m_applyWordRounding((roundingHacks & WordRounding) && s_allowsRoundingHacks)
         , m_disableSpacing(false)
     {
+        ASSERT(!m_text.isNull());
     }
 
     TextRun subRun(unsigned startOffset, unsigned length) const
@@ -99,7 +100,7 @@ public:
 
     void setText(const LChar* c, unsigned len) { m_text = StringView(c, len); }
     void setText(const UChar* c, unsigned len) { m_text = StringView(c, len); }
-    void setText(StringView stringView) { m_text = stringView; }
+    void setText(StringView stringView) { ASSERT(!stringView.isNull()); m_text = stringView; }
     void setCharactersLength(unsigned charactersLength) { m_charactersLength = charactersLength; }
 
     float horizontalGlyphStretch() const { return m_horizontalGlyphStretch; }

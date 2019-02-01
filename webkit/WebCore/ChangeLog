@@ -1,3 +1,685 @@
+2018-10-18  Jer Noble  <jer.noble@apple.com>
+
+        [MSE] timestampOffset can introduce floating-point rounding errors to incoming samples
+        https://bugs.webkit.org/show_bug.cgi?id=190590
+        <rdar://problem/45275626>
+
+        Reviewed by Eric Carlson.
+
+        Test: media/media-source/media-source-timestampoffset-rounding-error.html
+
+        SourceBuffer.timestampOffset is a double property, which, when added to a MediaTime will
+        result in a double-backed MediaTime as PTS & DTS. This can introduce rounding errors when
+        these samples are appended as overlapping existing samples. Rather than converting a MediaTime
+        to double-backed when adding the timestampOffset, convert the offset to a multiple of the
+        sample's timeBase.
+
+        * Modules/mediasource/SourceBuffer.cpp:
+        (WebCore::SourceBuffer::setTimestampOffset):
+        (WebCore::SourceBuffer::sourceBufferPrivateDidReceiveSample):
+
+2018-10-27  Charlie Turner  <cturner@igalia.com>
+
+        Fix release build with -DLOG_DISABLED=0
+        https://bugs.webkit.org/show_bug.cgi?id=190866
+
+        Reviewed by Xabier Rodriguez-Calvar.
+
+        No new tests since no functionality changed.
+
+        * platform/graphics/Font.cpp:
+        * platform/graphics/Font.h:
+        * platform/graphics/FontPlatformData.h:
+        * platform/graphics/cocoa/FontPlatformDataCocoa.mm:
+        * platform/graphics/freetype/FontPlatformDataFreeType.cpp:
+        * platform/graphics/win/FontPlatformDataWin.cpp:
+
+2018-10-15  Yoshiaki Jitsukawa  <yoshiaki.jitsukawa@sony.com>
+
+        [Cairo] Incorrect rendering for 135-deg skews
+        https://bugs.webkit.org/show_bug.cgi?id=190513
+
+        Compensation value to zero the the translation components
+        of the transformation matrix is incorrect if the matrix
+        has a shear factor.
+
+        Reviewed by ?an Dober?ek.
+
+        Tests: fast/transforms/skew-x-135deg-with-gradient.html
+               fast/transforms/skew-y-135deg-with-gradient.html
+
+        * platform/graphics/cairo/CairoUtilities.cpp:
+        (WebCore::drawPatternToCairoContext):
+
+2018-09-20  Zalan Bujtas  <zalan@apple.com>
+
+        Release assert under RenderView::pageOrViewLogicalHeight
+        https://bugs.webkit.org/show_bug.cgi?id=189798
+        <rdar://problem/43659749>
+
+        Reviewed by Simon Fraser.
+
+        Only the mainframe's render view is sized to the page while printing.
+        Use the matching check (see RenderView::layout) when accessing m_pageLogicalSize.
+
+        Test: printing/crash-while-formatting-subframe-for-printing.html
+
+        * rendering/RenderView.cpp:
+        (WebCore::RenderView::pageOrViewLogicalHeight const):
+
+2018-10-31  Alicia Boya Garc?a  <aboya@igalia.com>
+
+        [MSE] Use tolerance when growing the coded frame group
+        https://bugs.webkit.org/show_bug.cgi?id=190085
+
+        Reviewed by Jer Noble.
+
+        Test: media/media-source/media-source-append-acb-tolerance.html
+
+        This patch introduces a millisecond tolerance in the range of
+        potential frames that should be erased frame from the track buffer
+        when the coded frame group is growing.
+
+        This is necessary because some files have imprecise overlapping
+        timestamps (especially WebM files).
+
+        This fixes a stall when seeking back and forth in YouTube with WebM
+        video.
+
+        A test case simulating the problem with video/mock using timestamps
+        similar to those of a typical 30 fps WebM video is also added.
+
+        * Modules/mediasource/SourceBuffer.cpp:
+        (WebCore::SourceBuffer::sourceBufferPrivateDidReceiveSample):
+
+2018-09-27  Alicia Boya Garc?a  <aboya@igalia.com>
+
+        [MSE] Fix unwanted sample erase from the decode queue
+        https://bugs.webkit.org/show_bug.cgi?id=180643
+
+        Reviewed by Jer Noble.
+
+        Test: media/media-source/media-source-append-acb-no-frame-lost.html
+
+        This bug reproduced when unordered appends were made. For instance, if
+        the application appended [0, 10) and then [20, 30), the frame at 20
+        would be wrongly discarded from the decode queue.
+
+        Later the application could append [10, 20) and the gap at [20, 21)
+        would persist in the decode queue, even if the frame remained in the
+        track buffer table.
+
+        Thanks to Daniel Zhang for reporting the issue.
+
+        * Modules/mediasource/SourceBuffer.cpp:
+        (WebCore::SourceBuffer::provideMediaData):
+
+2018-09-21  Alicia Boya Garcia  <aboya@igalia.com>
+
+        [MSE] Fix comparsion with uninitialized greatestDecodeDuration
+        https://bugs.webkit.org/show_bug.cgi?id=189805
+
+        Reviewed by Michael Catanzaro.
+
+        This bug was causing greatestDecodeDuration to never be initialized,
+        which in turned caused unintended frame erase as distant appends where
+        not being recognized as distinct coded frame groups.
+
+        A test reproducing the sequence of appends that caused unintended
+        frame deletion has also been added (media-source-append-out-of-order.html).
+
+        * Modules/mediasource/SourceBuffer.cpp:
+        (WebCore::SourceBuffer::sourceBufferPrivateDidReceiveSample):
+
+2018-09-20  Alicia Boya Garcia  <aboya@igalia.com>
+
+        [MSE] Use some tolerance when deciding whether a frame should be appended to the decode queue
+        https://bugs.webkit.org/show_bug.cgi?id=189782
+
+        Reviewed by Xabier Rodriguez-Calvar.
+
+        Ideally, container formats should use exact timestamps and frames
+        should not overlap. Unfortunately, there are lots of files out there
+        where this is not always the case.
+
+        This is particularly a problem in WebM, where timestamps are expressed
+        in a power of 10 timescale, which forces some rounding.
+
+        This patch makes SourceBuffer allow frames with a small overlaps
+        (<=1ms) as those usually found in WebM. 1 ms is chosen because it's
+        the default time scale of WebM files.
+
+        * Modules/mediasource/SourceBuffer.cpp:
+        (WebCore::SourceBuffer::sourceBufferPrivateDidReceiveSample):
+
+2018-07-29  Babak Shafiei  <bshafiei@apple.com>
+
+        Cherry-pick r234329. rdar://problem/42721126
+
+    [WK1] ASSERTION FAILED: renderer().repaintLayoutRects().m_repaintRect == renderer().clippedOverflowRectForRepaint(renderer().containerForRepaint()) in WebCore::RenderLayer::updateLayerPositionsAfterScroll
+    https://bugs.webkit.org/show_bug.cgi?id=188122
+    <rdar://problem/42584790>
+    
+    Reviewed by Simon Fraser.
+    
+    Source/WebCore:
+    
+    When ScrollView's m_paintsEntireContents flag flips due to layer backing changes, the repaint area transitions from
+    visual to layout overflow. When this happens the cached repaint rects become invalid and they need to be recomputed.
+    Currently there's no mechanism to trigger repaint cache invalidation from ScrollView.
+    Skip assertion for now on WK1 (see webkit.org/b/188121)
+    
+    * rendering/RenderLayer.cpp:
+    (WebCore::RenderLayer::updateLayerPositionsAfterScroll):
+    
+    LayoutTests:
+    
+    * platform/mac-wk1/TestExpectations:
+    
+    git-svn-id: https://svn.webkit.org/repository/webkit/trunk@234329 268f45cc-cd09-0410-ab3c-d52691b4dbfc
+
+    2018-07-27  Zalan Bujtas  <zalan@apple.com>
+
+            [WK1] ASSERTION FAILED: renderer().repaintLayoutRects().m_repaintRect == renderer().clippedOverflowRectForRepaint(renderer().containerForRepaint()) in WebCore::RenderLayer::updateLayerPositionsAfterScroll
+            https://bugs.webkit.org/show_bug.cgi?id=188122
+            <rdar://problem/42584790>
+
+            Reviewed by Simon Fraser.
+
+            When ScrollView's m_paintsEntireContents flag flips due to layer backing changes, the repaint area transitions from
+            visual to layout overflow. When this happens the cached repaint rects become invalid and they need to be recomputed.
+            Currently there's no mechanism to trigger repaint cache invalidation from ScrollView.
+            Skip assertion for now on WK1 (see webkit.org/b/188121)
+
+            * rendering/RenderLayer.cpp:
+            (WebCore::RenderLayer::updateLayerPositionsAfterScroll):
+
+2018-07-12  Zalan Bujtas  <zalan@apple.com>
+
+        Newly added float should trigger full layout on the block.
+        https://bugs.webkit.org/show_bug.cgi?id=187251
+        <rdar://problem/41726137>
+
+        Reviewed by David Kilzer.
+
+        RenderBlockFlow::determineStartPosition() is one of the places where we decide the extent of the line layout for the current block.
+        In here we try to figure out the first line in the block that requires layout. In certain cases when floats are present,
+        (due to their intrusive behavior) we just trigger a full layout on the entire block.
+        One of the special cases is when a new float is added to the block. determineStartPosition() checks for such floats (floats inserted
+        after the "last known float") and marks the block for full layout. However it missed the case when other, unrelated mutations happened
+        in addition to this newly inserted float. This patch fixes this case by checking if the floats after the "last know float" actually need layout.
+
+        Test: fast/inline/new-float-needs-layout-when-line-is-dirty.html
+
+        * rendering/RenderBlockLineLayout.cpp:
+        (WebCore::RenderBlockFlow::determineStartPosition):
+
+2016-10-12  Zalan Bujtas  <zalan@apple.com>
+
+        Refactor LineLayoutState's float box handling.
+        https://bugs.webkit.org/show_bug.cgi?id=163286
+
+        Reviewed by David Hyatt.
+        
+        We keep track of float boxes both per line (RootInlineBox::m_floats) and
+        per flow block (LineLayoutState::m_floats) during layout.
+        As we lay out the lines and iterate through RootInlineBox::m_floats, we
+        increment LineLayoutState::m_floatIndex. This LineLayoutState::m_floatIndex is
+        later used to find the matching float box in the per-block-flow float list.
+        This logic works fine as long as the lists and the index manipulation are tightly coded.
+        However due to the complexity of the line/float layout code, this is no longer the case.
+
+        This patch makes float box handling more secure by changing this index based setup
+        to a list iterator. It helps to eliminate potential vector overflow issues.
+
+        LineLayoutState::FloatList (new class) keeps track of all the floats for the block flow.
+        It groups the float box related functions/members and provides an iterator interface to ensure safer
+        syncing between this and the line based floats.
+
+        No change in functionality.
+
+        * rendering/RenderBlockFlow.h:
+        * rendering/RenderBlockLineLayout.cpp:
+        (WebCore::RenderBlockFlow::appendFloatingObjectToLastLine):
+        (WebCore::repaintDirtyFloats):
+        (WebCore::RenderBlockFlow::layoutRunsAndFloats):
+        (WebCore::RenderBlockFlow::layoutRunsAndFloatsInRange):
+        (WebCore::RenderBlockFlow::linkToEndLineIfNeeded):
+        (WebCore::RenderBlockFlow::layoutLineBoxes):
+        (WebCore::RenderBlockFlow::checkFloatInCleanLine):
+        (WebCore::RenderBlockFlow::determineStartPosition):
+        (WebCore::RenderBlockFlow::determineEndPosition):
+        (WebCore::RenderBlockFlow::repaintDirtyFloats): Deleted.
+        (WebCore::RenderBlockFlow::checkFloatsInCleanLine): Deleted.
+        * rendering/line/LineLayoutState.h:
+        (WebCore::FloatWithRect::create):
+        (WebCore::FloatWithRect::renderer):
+        (WebCore::FloatWithRect::rect):
+        (WebCore::FloatWithRect::everHadLayout):
+        (WebCore::FloatWithRect::adjustRect):
+        (WebCore::FloatWithRect::FloatWithRect):
+        (WebCore::LineLayoutState::FloatList::append):
+        (WebCore::LineLayoutState::FloatList::setLastFloat):
+        (WebCore::LineLayoutState::FloatList::lastFloat):
+        (WebCore::LineLayoutState::FloatList::setLastCleanFloat):
+        (WebCore::LineLayoutState::FloatList::lastCleanFloat):
+        (WebCore::LineLayoutState::FloatList::floatWithRect):
+        (WebCore::LineLayoutState::FloatList::begin):
+        (WebCore::LineLayoutState::FloatList::end):
+        (WebCore::LineLayoutState::FloatList::find):
+        (WebCore::LineLayoutState::FloatList::isEmpty):
+        (WebCore::LineLayoutState::LineLayoutState):
+        (WebCore::LineLayoutState::floatList):
+        (WebCore::LineLayoutState::lastFloat): Deleted.
+        (WebCore::LineLayoutState::setLastFloat): Deleted.
+        (WebCore::LineLayoutState::floats): Deleted.
+        (WebCore::LineLayoutState::floatIndex): Deleted.
+        (WebCore::LineLayoutState::setFloatIndex): Deleted.
+
+2018-05-23  Chris Dumez  <cdumez@apple.com>
+
+        RenderLayer::scrollRectToVisible() should not propagate a subframe's scroll to its cross-origin parent
+        https://bugs.webkit.org/show_bug.cgi?id=185664
+        <rdar://problem/36185260>
+
+        Reviewed by Simon Fraser.
+
+        RenderLayer::scrollRectToVisible() should not propagate a subframe's scroll to its
+        cross-origin parent. There was logic in FrameLoader::scrollToFragmentWithParentBoundary()
+        to temporarily set the 'safeToPropagateScrollToParent' flag to false on the cross-origin
+        ancestor frame during the call to FrameView::scrollToFragment(). This would correctly
+        prevent RenderLayer::scrollRectToVisible() to propagate the scroll to the cross-origin
+        ancestor frame when scrollRectToVisible() is called synchronously. However,
+        scrollRectToVisible() can get called asynchronously in case of a dirty layout, as part
+        of the post layout tasks.
+
+        To address the issue, we get rid of the safeToPropagateScrollToParent flag on FrameView
+        and instead update FrameView::safeToPropagateScrollToParent() to do the cross-origin
+        check. FrameView::safeToPropagateScrollToParent() is called by RenderLayer::scrollRectToVisible()
+        and this is a lot more robust than relying on a flag which gets temporarily set.
+
+        Test: http/tests/navigation/fragment-navigation-cross-origin-subframe-no-scrolling-parent.html
+
+        * dom/Document.cpp:
+        * dom/Document.h:
+        * loader/FrameLoader.cpp:
+        (WebCore::FrameLoader::scrollToFragmentWithParentBoundary):
+        * page/FrameView.cpp:
+        (WebCore::FrameView::FrameView):
+        (WebCore::FrameView::reset):
+        (WebCore::FrameView::safeToPropagateScrollToParent const):
+        * page/FrameView.h:
+
+2017-01-18  Andreas Kling  <akling@apple.com>
+
+        Document::securityOrigin() should return a reference.
+        <https://webkit.org/b/167124>
+
+        Reviewed by Sam Weinig.
+
+        The security origin is always initialized by the Document constructor
+        through Document::initSecurityContext(), so it's effectively always present.
+        Make it return a reference and remove unnecessary null checks exposed by this.
+
+        * Modules/applepay/ApplePaySession.cpp:
+        (WebCore::canCallApplePaySessionAPIs):
+        * Modules/encryptedmedia/CDM.cpp:
+        (WebCore::CDM::getSupportedConfiguration):
+        (WebCore::CDM::getConsentStatus):
+        * Modules/encryptedmedia/legacy/WebKitMediaKeySession.cpp:
+        (WebCore::WebKitMediaKeySession::mediaKeysStorageDirectory):
+        * Modules/mediastream/UserMediaRequest.cpp:
+        (WebCore::canCallGetUserMedia):
+        * Modules/webdatabase/DOMWindowWebDatabase.cpp:
+        (WebCore::DOMWindowWebDatabase::openDatabase):
+        * Modules/webdatabase/DatabaseContext.cpp:
+        (WebCore::DatabaseContext::allowDatabaseAccess):
+        * Modules/websockets/WebSocketHandshake.cpp:
+        (WebCore::WebSocketHandshake::clientOrigin):
+        * bindings/js/JSDOMBinding.cpp:
+        (WebCore::canAccessDocument):
+        * bindings/js/ScriptController.cpp:
+        (WebCore::ScriptController::collectIsolatedContexts):
+        * css/CSSStyleSheet.cpp:
+        (WebCore::CSSStyleSheet::canAccessRules):
+        * css/RuleSet.cpp:
+        (WebCore::RuleSet::addRulesFromSheet):
+        * css/StyleRuleImport.cpp:
+        (WebCore::StyleRuleImport::setCSSStyleSheet):
+        * dom/Document.cpp:
+        (WebCore::canAccessAncestor):
+        (WebCore::Document::findUnsafeParentScrollPropagationBoundary):
+        (WebCore::Document::cookie):
+        (WebCore::Document::setCookie):
+        (WebCore::Document::origin):
+        (WebCore::Document::domain):
+        (WebCore::Document::setDomain):
+        (WebCore::Document::storageBlockingStateDidChange):
+        (WebCore::Document::initSecurityContext):
+        (WebCore::Document::initDNSPrefetch):
+        (WebCore::Document::topOrigin):
+        * dom/Document.h:
+        (WebCore::Document::securityOrigin):
+        * dom/SecurityContext.cpp:
+        (WebCore::SecurityContext::isSecureTransitionTo):
+        * html/HTMLAnchorElement.cpp:
+        (WebCore::HTMLAnchorElement::handleClick):
+        * html/HTMLAppletElement.cpp:
+        (WebCore::HTMLAppletElement::canEmbedJava):
+        * html/HTMLCanvasElement.cpp:
+        (WebCore::HTMLCanvasElement::securityOrigin):
+        * html/HTMLLinkElement.cpp:
+        (WebCore::HTMLLinkElement::setCSSStyleSheet):
+        * html/HTMLMediaElement.cpp:
+        (WebCore::HTMLMediaElement::isSafeToLoadURL):
+        (WebCore::HTMLMediaElement::mediaPlayerMediaKeysStorageDirectory):
+        * html/HTMLPlugInImageElement.cpp:
+        (WebCore::HTMLPlugInImageElement::allowedToLoadFrameURL):
+        * inspector/InspectorDOMStorageAgent.cpp:
+        (WebCore::InspectorDOMStorageAgent::storageId):
+        (WebCore::InspectorDOMStorageAgent::findStorageArea):
+        * inspector/InspectorIndexedDBAgent.cpp:
+        (WebCore::InspectorIndexedDBAgent::requestDatabaseNames):
+        (WebCore::InspectorIndexedDBAgent::requestDatabase):
+        (WebCore::InspectorIndexedDBAgent::requestData):
+        (WebCore::InspectorIndexedDBAgent::clearObjectStore):
+        * inspector/InspectorPageAgent.cpp:
+        (WebCore::InspectorPageAgent::findFrameWithSecurityOrigin):
+        (WebCore::InspectorPageAgent::buildObjectForFrame):
+        * loader/DocumentLoader.cpp:
+        (WebCore::DocumentLoader::commitData):
+        * loader/DocumentThreadableLoader.cpp:
+        (WebCore::DocumentThreadableLoader::loadRequest):
+        (WebCore::DocumentThreadableLoader::securityOrigin):
+        * loader/DocumentWriter.cpp:
+        (WebCore::canReferToParentFrameEncoding):
+        * loader/EmptyClients.cpp:
+        * loader/FrameLoadRequest.cpp:
+        (WebCore::FrameLoadRequest::FrameLoadRequest):
+        * loader/FrameLoadRequest.h:
+        (WebCore::FrameLoadRequest::FrameLoadRequest):
+        * loader/FrameLoader.cpp:
+        (WebCore::shouldClearWindowName):
+        (WebCore::FrameLoader::outgoingOrigin):
+        (WebCore::FrameLoader::loadURL):
+        (WebCore::FrameLoader::dispatchBeforeUnloadEvent):
+        * loader/FrameLoaderClient.h:
+        * loader/MixedContentChecker.cpp:
+        (WebCore::MixedContentChecker::isMixedContent):
+        (WebCore::MixedContentChecker::canDisplayInsecureContent):
+        (WebCore::MixedContentChecker::canRunInsecureContent):
+        (WebCore::MixedContentChecker::checkFormForMixedContent):
+        * loader/MixedContentChecker.h:
+        * loader/NavigationScheduler.cpp:
+        (WebCore::NavigationScheduler::scheduleRedirect):
+        (WebCore::NavigationScheduler::scheduleLocationChange):
+        (WebCore::NavigationScheduler::scheduleRefresh):
+        * loader/NavigationScheduler.h:
+        * loader/PingLoader.cpp:
+        (WebCore::PingLoader::loadImage):
+        (WebCore::PingLoader::sendPing):
+        (WebCore::PingLoader::sendViolationReport):
+        * loader/ResourceLoadInfo.cpp:
+        (WebCore::ResourceLoadInfo::isThirdParty):
+        * loader/ResourceLoader.cpp:
+        (WebCore::ResourceLoader::init):
+        (WebCore::ResourceLoader::isAllowedToAskUserForCredentials):
+        * loader/SubframeLoader.cpp:
+        (WebCore::SubframeLoader::pluginIsLoadable):
+        (WebCore::SubframeLoader::createJavaAppletWidget):
+        (WebCore::SubframeLoader::loadSubframe):
+        * loader/appcache/ApplicationCacheGroup.cpp:
+        (WebCore::ApplicationCacheGroup::selectCache):
+        (WebCore::ApplicationCacheGroup::selectCacheWithoutManifestURL):
+        (WebCore::ApplicationCacheGroup::update):
+        * loader/cache/CachedResourceLoader.cpp:
+        (WebCore::CachedResourceLoader::canRequest):
+        (WebCore::CachedResourceLoader::canRequestAfterRedirection):
+        (WebCore::CachedResourceLoader::canRequestInContentDispositionAttachmentSandbox):
+        * loader/cache/CachedResourceRequest.cpp:
+        (WebCore::CachedResourceRequest::setAsPotentiallyCrossOrigin):
+        (WebCore::CachedResourceRequest::updateForAccessControl):
+        * loader/cache/CachedResourceRequest.h:
+        (WebCore::CachedResourceRequest::setOrigin):
+        * page/DOMWindow.cpp:
+        (WebCore::DOMWindow::sessionStorage):
+        (WebCore::DOMWindow::localStorage):
+        (WebCore::DOMWindow::postMessage):
+        (WebCore::DOMWindow::dispatchMessageEventWithOriginCheck):
+        (WebCore::DOMWindow::isSameSecurityOriginAsMainFrame):
+        (WebCore::DOMWindow::crossDomainAccessErrorMessage):
+        (WebCore::DOMWindow::isInsecureScriptAccess):
+        * page/DragController.cpp:
+        (WebCore::DragController::dragExited):
+        (WebCore::DragController::tryDocumentDrag):
+        (WebCore::DragController::tryDHTMLDrag):
+        (WebCore::DragController::startDrag):
+        * page/History.cpp:
+        (WebCore::History::stateObjectAdded):
+        * page/Location.cpp:
+        (WebCore::Location::ancestorOrigins):
+        (WebCore::Location::reload):
+        * page/Navigator.cpp:
+        (WebCore::Navigator::javaEnabled):
+        * page/Page.cpp:
+        (WebCore::Page::showAllPlugins):
+        * page/PerformanceResourceTiming.cpp:
+        (WebCore::passesTimingAllowCheck):
+        * page/SecurityOrigin.cpp:
+        (WebCore::SecurityOrigin::canAccess):
+        (WebCore::SecurityOrigin::canRequest):
+        (WebCore::SecurityOrigin::canReceiveDragData):
+        (WebCore::SecurityOrigin::canAccessStorage):
+        (WebCore::SecurityOrigin::isSameOriginAs):
+        (WebCore::SecurityOrigin::equal):
+        (WebCore::SecurityOrigin::isSameSchemeHostPort):
+        * page/SecurityOrigin.h:
+        * page/SecurityOriginData.cpp:
+        (WebCore::SecurityOriginData::fromFrame):
+        * page/SecurityOriginHash.h:
+        (WebCore::SecurityOriginHash::equal):
+        * page/csp/ContentSecurityPolicy.cpp:
+        (WebCore::stripURLForUseInReport):
+        * platform/graphics/avfoundation/cf/MediaPlayerPrivateAVFoundationCF.cpp:
+        (WebCore::MediaPlayerPrivateAVFoundationCF::hasSingleSecurityOrigin):
+        * platform/graphics/avfoundation/objc/MediaPlayerPrivateAVFoundationObjC.mm:
+        (WebCore::MediaPlayerPrivateAVFoundationObjC::hasSingleSecurityOrigin):
+        * platform/graphics/mac/MediaPlayerPrivateQTKit.mm:
+        (WebCore::MediaPlayerPrivateQTKit::hasSingleSecurityOrigin):
+        * rendering/shapes/ShapeOutsideInfo.cpp:
+        (WebCore::checkShapeImageOrigin):
+        * replay/ReplayInputCreationMethods.cpp:
+        (WebCore::InitialNavigation::createFromPage):
+        * replay/ReplayInputDispatchMethods.cpp:
+        (WebCore::InitialNavigation::dispatch):
+        * storage/Storage.cpp:
+        (WebCore::Storage::isDisabledByPrivateBrowsing):
+        * storage/StorageEventDispatcher.cpp:
+        (WebCore::StorageEventDispatcher::dispatchSessionStorageEvents):
+        (WebCore::StorageEventDispatcher::dispatchLocalStorageEvents):
+        * storage/StorageNamespaceProvider.cpp:
+        (WebCore::StorageNamespaceProvider::localStorageArea):
+        * testing/Internals.cpp:
+        (WebCore::Internals::setApplicationCacheOriginQuota):
+        * xml/XSLTProcessorLibxslt.cpp:
+        (WebCore::docLoaderFunc):
+        * xml/parser/XMLDocumentParserLibxml2.cpp:
+        (WebCore::shouldAllowExternalLoad):
+
+2018-09-05  Brent Fulgham  <bfulgham@apple.com>
+
+        The width of an empty or nullptr TextRun should be zero
+        https://bugs.webkit.org/show_bug.cgi?id=189154
+        <rdar://problem/43685926>
+
+        Reviewed by Zalan Bujtas.
+
+        If a page has an empty TextRun and attempts to paint it we can crash with a nullptr.
+
+        This patch recognizes that an empty TextRun should always produce a zero width, rather than
+        attempt to compute this value from font data. It also prevents ListBox from attempting to
+        paint a null string.
+
+        Test: fast/text/null-string-textrun.html
+
+        * platform/graphics/FontCascade.cpp:
+        (WebCore::FontCascade::widthOfTextRange const): An empty TextRun has zero width.
+        (WebCore::FontCascade::width const): Ditto.
+        * platform/graphics/TextRun.h:
+        (WebCore::TextRun::TextRun): ASSERT that the supplied String is non-null.
+        (WebCore::TextRun::setText): Ditto.
+        * rendering/RenderListBox.cpp:
+        (WebCore::RenderListBox::paintItemForeground): Don't attempt to paint a null string.
+
+2018-04-20  Chris Dumez  <cdumez@apple.com>
+
+        Update cross-origin SecurityError messages to not include the target origin
+        https://bugs.webkit.org/show_bug.cgi?id=184803
+        <rdar://problem/39547724>
+
+        Reviewed by Sam Weinig.
+
+        No new tests, rebaselined existing tests.
+
+        * bindings/js/JSDOMBindingSecurity.cpp:
+        (WebCore::canAccessDocument):
+        (WebCore::BindingSecurity::shouldAllowAccessToFrame):
+        (WebCore::BindingSecurity::shouldAllowAccessToDOMWindow):
+        * page/DOMWindow.cpp:
+        (WebCore::DOMWindow::crossDomainAccessErrorMessage):
+        (WebCore::DOMWindow::isInsecureScriptAccess):
+        * page/DOMWindow.h:
+        * page/Location.cpp:
+        (WebCore::Location::reload):
+
+2018-06-20  Said Abou-Hallawa  <sabouhallawa@apple.com>
+
+        RenderSVGInline has to be inline always regardless of its css display value
+        https://bugs.webkit.org/show_bug.cgi?id=186656
+
+        Reviewed by Zalan Bujtas.
+
+        According to https://www.w3.org/TR/SVG2/text.html#TextLayout, the <text>
+        element has to be laid out as if it were a block element and any <tspan>,
+        <textPath>, <a> and <tref> descendants were inline elements.
+
+        If a css rule, which contains the property "display: block;", is applied
+        to any of children of a <text> element, this property has to be ignored.
+
+        We currently ignore this property in RenderSVGInline::updateFromStyle()
+        by forcing setInline(true). But we do not do the same thing in 
+        RenderTreeBuilder::normalizeTreeAfterStyleChange(). In fact we allow
+        making the children of the <text> element to be non-inline. This puts
+        the render tree in weired state and causes many assertions to fire while
+        laying out RenderSVGText. 
+
+        Test: svg/dom/svg-inline-text-display-block-crash.html
+
+        * rendering/updating/RenderTreeBuilder.cpp:
+        (WebCore::RenderTreeBuilder::normalizeTreeAfterStyleChange):
+
+2018-07-10  Zalan Bujtas  <zalan@apple.com>
+
+        FragmentInterval, FragmentIntervalTree and FragmentSearchAdapter should hold not hold raw pointers to renderers.
+        https://bugs.webkit.org/show_bug.cgi?id=187249
+        <rdar://problem/41725869>
+
+        Reviewed by Simon Fraser.
+
+        Test: fast/multicol/crash-in-vertical-writing-mode.html
+
+        * rendering/RenderFragmentedFlow.cpp:
+        (WebCore::RenderFragmentedFlow::updateFragmentsFragmentedFlowPortionRect):
+        * rendering/RenderFragmentedFlow.h:
+        (WTF::ValueToString<WeakPtr<WebCore::RenderFragmentContainer>>::string):
+
+2018-06-25  Said Abou-Hallawa  <sabouhallawa@apple.com>
+
+        Infinite loop if a <use> element references its ancestor and the DOMNodeInserted event handler of one its ancestor's descents updates the document style
+        https://bugs.webkit.org/show_bug.cgi?id=186925
+
+        Reviewed by Antti Koivisto.
+
+        This patches fixes two issues:
+        -- SVGTRefTargetEventListener should not assume it has to be attached to
+        target when its handleEvent() is called.
+        Because SVGTRefTargetEventListener::handleEvent() references the target
+        element, we just return if the listener is detached.
+
+        -- The <use> element should not clone its shadow tree if it references one
+        of its ancestors. The DOMNodeInserted of any node in the target element
+        tree may issue a document command. This document command will cause the 
+        shadow tree to be re-cloned so this will cause infinite loop to happen.
+
+        Test: svg/dom/svg-use-infinite-loop-cloning.html
+
+        * svg/SVGTRefElement.cpp:
+        (WebCore::SVGTRefTargetEventListener::handleEvent):
+        * svg/SVGUseElement.cpp:
+        (WebCore::SVGUseElement::updateShadowTree):
+
+2018-06-18  Said Abou-Hallawa  <sabouhallawa@apple.com>
+
+        Document should not be mutated under SMILTimeContainer::updateAnimations()
+        https://bugs.webkit.org/show_bug.cgi?id=186658
+
+        Reviewed by Simon Fraser.
+
+        To update the animation of an SVG <animate> element, we call
+        SVGAnimateElementBase::resetAnimatedType(). It ensures the pointer m_animator
+        is valid. If it animates a css property, it calls computeCSSPropertyValue()
+        which calls resolveStyle() via other calls. resolveStyle() may call delayed
+        callbacks through the destructor of PostResolutionCallbackDisabler. These
+        callbacks may fire events. These events may execute JS event handlers.
+        If one of these event handlers deletes the same SVG <animate> we animate,
+        we will end up calling SVGAnimateElementBase::resetAnimatedPropertyType()
+        of the same <animate> element. This function  will delete the same m_animator
+        which resetAnimatedType() still holds and will use later. This code
+        re-entrance is unexpected and unwanted.
+
+        The fix is to disable mutating the DOM while updating the SVG animations.
+
+        Test: svg/dom/css-animate-input-foucs-crash.html
+
+        * svg/animation/SMILTimeContainer.cpp:
+        (WebCore::SMILTimeContainer::updateAnimations):
+
+2018-07-12  Daniel Bates  <dabates@apple.com>
+
+        JavaScript URL gives incorrect result when frame is navigated
+        https://bugs.webkit.org/show_bug.cgi?id=187203
+        <rdar://problem/41438443>
+
+        Reviewed by David Kilzer.
+
+        * loader/SubframeLoader.cpp:
+        (WebCore::SubframeLoader::requestFrame):
+
+2017-02-16  Miguel Gomez  <magomez@igalia.com>
+
+        [GTK] scroll with transparent background not repainted after scrollY >= 32768
+        https://bugs.webkit.org/show_bug.cgi?id=154283
+
+        Reviewed by Carlos Garcia Campos.
+
+        Due to a limitation of the pixman backend, which uses 16 bits to hold signed integers, cairo is
+        not able to draw anything when using transformation matrices with values bigger than 32768. When
+        drawing patterns into large pages, the matrices values can overflow those 16 bits, so cairo doesn't
+        draw anything in, which causes the reported transparent backgrounds.
+
+        The patch modifies the transformation matrices both from the current context and the pattern we
+        are painting, to avoid them to hold values that cannot stored in 16 bits.
+
+        There's still the possibility that this happens, but it would require using a pattern with a size
+        bigger than 32768.
+
+        Based on a previous patch by Gwang Yoon Hwang  <yoon@igalia.com>.
+
+        Test: fast/backgrounds/background-repeat-long-scroll.html
+
+        * platform/graphics/cairo/CairoUtilities.cpp:
+        (WebCore::drawPatternToCairoContext):
+        
 2018-07-26  Babak Shafiei  <bshafiei@apple.com>
 
         Cherry-pick r234291. rdar://problem/42650439

@@ -96,7 +96,7 @@ void MediaResourceLoader::responseReceived(CachedResource* resource, const Resou
     ASSERT_UNUSED(resource, resource == m_resource);
 
     RefPtr<MediaResourceLoader> protect(this);
-    if (!m_crossOriginMode.isNull() && !resource->passesSameOriginPolicyCheck(*m_document.securityOrigin())) {
+    if (!m_crossOriginMode.isNull() && !resource->passesSameOriginPolicyCheck(m_document.securityOrigin())) {
 #if !PLATFORM(WKC)
         static NeverDestroyed<const String> consoleMessage("Cross-origin media resource load denied by Cross-Origin Resource Sharing policy.");
         m_document.addConsoleMessage(MessageSource::Security, MessageLevel::Error, consoleMessage.get());

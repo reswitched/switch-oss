@@ -189,7 +189,7 @@ public:
     bool isCustomFont() const { return m_isCustomFont; }
     bool isLoading() const { return m_isLoading; }
 
-#ifndef NDEBUG
+#if !LOG_DISABLED
     String description() const;
 #endif
 
