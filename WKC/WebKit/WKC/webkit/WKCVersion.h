@@ -29,7 +29,7 @@
 #define WKC_VERSION_CHECK(major, minor, micro) \
     (((major)*10000) + ((minor)*100) + (micro)) >= ((WKC_VERSION_MAJOR*10000) + (WKC_VERSION_MINOR*100) + (WKC_VERSION_MICRO))
 
-#define WKC_CUSTOMER_RELEASE_VERSION "0.10.13"
+#define WKC_CUSTOMER_RELEASE_VERSION "0.10.14"
 
 #define WKC_WEBKIT_VERSION "601.6"
 
