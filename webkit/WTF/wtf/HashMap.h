@@ -54,6 +54,7 @@ public:
 
 private:
     typedef typename MappedTraits::PeekType MappedPeekType;
+    typedef typename MappedTraits::TakeType MappedTakeType;
 
     typedef HashArg HashFunctions;
 
@@ -124,7 +125,7 @@ public:
     void removeIf(const Functor& functor);
     void clear();
 
-    MappedType take(const KeyType&); // efficient combination of get with remove
+    MappedTakeType  take(const KeyType&); // efficient combination of get with remove
 
     // An alternate version of find() that finds the object by hashing and comparing
     // with some other type, to avoid the cost of type conversion. HashTranslator
@@ -150,7 +151,7 @@ public:
     template<typename K = KeyType> typename std::enable_if<IsSmartPtr<K>::value, MappedPeekType>::type inlineGet(typename GetPtrHelper<K>::PtrType) const;
     template<typename K = KeyType> typename std::enable_if<IsSmartPtr<K>::value, MappedPeekType>::type get(typename GetPtrHelper<K>::PtrType) const;
     template<typename K = KeyType> typename std::enable_if<IsSmartPtr<K>::value, bool>::type remove(typename GetPtrHelper<K>::PtrType);
-    template<typename K = KeyType> typename std::enable_if<IsSmartPtr<K>::value, MappedType>::type take(typename GetPtrHelper<K>::PtrType);
+    template<typename K = KeyType> typename std::enable_if<IsSmartPtr<K>::value, MappedTakeType>::type take(typename GetPtrHelper<K>::PtrType);
 
     void checkConsistency() const;
 
@@ -172,8 +173,8 @@ struct HashMapTranslator {
     template<typename T, typename U> static bool equal(const T& a, const U& b) { return HashFunctions::equal(a, b); }
     template<typename T, typename U, typename V> static void translate(T& location, U&& key, V&& mapped)
     {
-        location.key = std::forward<U>(key);
-        location.value = std::forward<V>(mapped);
+        ValueTraits::KeyTraits::assignToEmpty(location.key, std::forward<U>(key));
+        ValueTraits::ValueTraits::assignToEmpty(location.value, std::forward<V>(mapped));
     }
 };
 
@@ -384,12 +385,12 @@ inline void HashMap<T, U, V, W, X>::clear()
 }
 
 template<typename T, typename U, typename V, typename W, typename MappedTraits>
-auto HashMap<T, U, V, W, MappedTraits>::take(const KeyType& key) -> MappedType
+auto HashMap<T, U, V, W, MappedTraits>::take(const KeyType& key) -> MappedTakeType
 {
     iterator it = find(key);
     if (it == end())
-        return MappedTraits::emptyValue();
-    MappedType value = WTF::move(it->value);
+        return MappedTraits::take(MappedTraits::emptyValue());
+    auto value = MappedTraits::take(WTF::move(it->value));
     remove(it);
     return value;
 }
@@ -441,12 +442,12 @@ inline auto HashMap<T, U, V, W, X>::remove(typename GetPtrHelper<K>::PtrType key
 
 template<typename T, typename U, typename V, typename W, typename X>
 template<typename K>
-inline auto HashMap<T, U, V, W, X>::take(typename GetPtrHelper<K>::PtrType key) -> typename std::enable_if<IsSmartPtr<K>::value, MappedType>::type
+inline auto HashMap<T, U, V, W, X>::take(typename GetPtrHelper<K>::PtrType key) -> typename std::enable_if<IsSmartPtr<K>::value, MappedTakeType>::type
 {
     iterator it = find(key);
     if (it == end())
-        return MappedTraits::emptyValue();
-    MappedType value = WTF::move(it->value);
+        return MappedTraits::take(MappedTraits::emptyValue());
+    auto value = MappedTraits::take(WTF::move(it->value));
     remove(it);
     return value;
 }

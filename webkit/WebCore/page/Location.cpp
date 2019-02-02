@@ -130,7 +130,7 @@ PassRefPtr<DOMStringList> Location::ancestorOrigins() const
     if (!m_frame)
         return origins.release();
     for (Frame* frame = m_frame->tree().parent(); frame; frame = frame->tree().parent())
-        origins->append(frame->document()->securityOrigin()->toString());
+        origins->append(frame->document()->securityOrigin().toString());
     return origins.release();
 }
 
@@ -252,8 +252,8 @@ void Location::reload(DOMWindow& activeWindow)
     // We allow one page to change the location of another. Why block attempts to reload?
     // Other location operations simply block use of JavaScript URLs cross origin.
     DOMWindow* targetWindow = m_frame->document()->domWindow();
-    if (!activeWindow.document()->securityOrigin()->canAccess(m_frame->document()->securityOrigin())) {
-        targetWindow->printErrorMessage(targetWindow->crossDomainAccessErrorMessage(activeWindow));
+    if (!activeWindow.document()->securityOrigin().canAccess(m_frame->document()->securityOrigin())) {
+        targetWindow->printErrorMessage(targetWindow->crossDomainAccessErrorMessage(activeWindow, IncludeTargetOrigin::Yes));
         return;
     }
     if (protocolIsJavaScript(m_frame->document()->url()))

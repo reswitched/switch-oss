@@ -360,7 +360,7 @@ bool CachedResourceLoader::checkInsecureContent(CachedResource::Type type, const
 
 bool CachedResourceLoader::canRequest(CachedResource::Type type, const URL& url, const ResourceLoaderOptions& options, bool forPreload)
 {
-    if (document() && !document()->securityOrigin()->canDisplay(url)) {
+    if (document() && !document()->securityOrigin().canDisplay(url)) {
         if (!forPreload)
             FrameLoader::reportLocalLoadFailed(frame(), url.stringCenterEllipsizedToLength());
         LOG(ResourceLoading, "CachedResourceLoader::requestResource URL was not allowed by SecurityOrigin::canDisplay");
@@ -375,7 +375,7 @@ bool CachedResourceLoader::canRequest(CachedResource::Type type, const URL& url,
     switch (type) {
     case CachedResource::MainResource:
         if (HTMLFrameOwnerElement* ownerElement = frame() ? frame()->ownerElement() : nullptr) {
-            if (ownerElement->document().shouldEnforceContentDispositionAttachmentSandbox() && !ownerElement->document().securityOrigin()->canRequest(url)) {
+            if (ownerElement->document().shouldEnforceContentDispositionAttachmentSandbox() && !ownerElement->document().securityOrigin().canRequest(url)) {
                 printAccessDeniedMessage(url);
                 return false;
             }
@@ -396,7 +396,7 @@ bool CachedResourceLoader::canRequest(CachedResource::Type type, const URL& url,
 #if ENABLE(VIDEO_TRACK)
     case CachedResource::TextTrackResource:
 #endif
-        if (options.requestOriginPolicy() == RestrictToSameOrigin && !m_document->securityOrigin()->canRequest(url)) {
+        if (options.requestOriginPolicy() == RestrictToSameOrigin && !m_document->securityOrigin().canRequest(url)) {
             printAccessDeniedMessage(url);
             return false;
         }
@@ -404,7 +404,7 @@ bool CachedResourceLoader::canRequest(CachedResource::Type type, const URL& url,
     case CachedResource::SVGDocumentResource:
 #if ENABLE(XSLT)
     case CachedResource::XSLStyleSheet:
-        if (!m_document->securityOrigin()->canRequest(url)) {
+        if (!m_document->securityOrigin().canRequest(url)) {
             printAccessDeniedMessage(url);
             return false;
         }

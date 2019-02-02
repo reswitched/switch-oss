@@ -268,7 +268,7 @@ bool CSSStyleSheet::canAccessRules() const
     Document* document = ownerDocument();
     if (!document)
         return true;
-    if (document->securityOrigin()->canRequest(baseURL))
+    if (document->securityOrigin().canRequest(baseURL))
         return true;
     return false;
 }

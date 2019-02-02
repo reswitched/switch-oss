@@ -456,14 +456,14 @@ same <parameter>scaled_font</parameter>
 <colspec colname="parameters_description"/>
 <colspec colname="parameters_annotations" colwidth="200px"/>
 <tbody>
-<row><entry role="parameter_name"><para>scaled_font</para></entry>
-<entry role="parameter_description"><para>a <link linkend="cairo-scaled-font-t"><type>cairo_scaled_font_t</type></link></para></entry>
-<entry role="parameter_annotations"></entry></row>
 <row><entry role="parameter_name"><para>x</para></entry>
 <entry role="parameter_description"><para>X position to place first glyph</para></entry>
 <entry role="parameter_annotations"></entry></row>
 <row><entry role="parameter_name"><para>y</para></entry>
 <entry role="parameter_description"><para>Y position to place first glyph</para></entry>
+<entry role="parameter_annotations"></entry></row>
+<row><entry role="parameter_name"><para>scaled_font</para></entry>
+<entry role="parameter_description"><para>a <link linkend="cairo-scaled-font-t"><type>cairo_scaled_font_t</type></link></para></entry>
 <entry role="parameter_annotations"></entry></row>
 <row><entry role="parameter_name"><para>utf8</para></entry>
 <entry role="parameter_description"><para>a string of text encoded in UTF-8</para></entry>

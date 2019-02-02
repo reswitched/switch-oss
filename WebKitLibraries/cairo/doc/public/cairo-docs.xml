@@ -80,5 +80,8 @@
   <index id="index-1.14" role="1.14">
     <title>Index of new symbols in 1.14</title>
   </index>
+  <index id="index-1.16" role="1.16">
+    <title>Index of new symbols in 1.16</title>
+  </index>
   <xi:include href="language-bindings.xml"/>
 </book>

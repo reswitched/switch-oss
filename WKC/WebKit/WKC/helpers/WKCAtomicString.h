@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -19,6 +19,8 @@
 
 #ifndef _WKC_HELPERS_WKC_ATOMICSTRING_H_
 #define _WKC_HELPERS_WKC_ATOMICSTRING_H_
+
+#include <WKC/wkcconfig.h>
 
 namespace WKC {
 class String;

@@ -1212,8 +1212,6 @@ results in undefined behavior.</para>
 <indexterm zone="CAIRO-HAS-MIME-SURFACE:CAPS"><primary sortas="HAS_MIME_SURFACE">CAIRO_HAS_MIME_SURFACE</primary></indexterm>
 <programlisting language="C">#define CAIRO_HAS_MIME_SURFACE 1
 </programlisting>
-<para>
-</para>
 </refsect2>
 <refsect2 id="CAIRO-MIME-TYPE-CCITT-FAX:CAPS" role="macro" condition="since:1.16">
 <title>CAIRO_MIME_TYPE_CCITT_FAX</title>
@@ -1501,9 +1499,7 @@ the wrong type is undefined.</para>
 <entry role="enum_member_annotations"></entry>
 </row>
 <row role="constant"><entry role="enum_member_name"><para id="CAIRO-SURFACE-TYPE-SKIA:CAPS">CAIRO_SURFACE_TYPE_SKIA</para></entry>
-<entry role="enum_member_description"><para>The surface is of type Skia, since 1.10</para>
-</entry>
-<entry role="enum_member_annotations"></entry>
+<entry /><entry />
 </row>
 <row role="constant"><entry role="enum_member_name"><para id="CAIRO-SURFACE-TYPE-SUBSURFACE:CAPS">CAIRO_SURFACE_TYPE_SUBSURFACE</para></entry>
 <entry role="enum_member_description"><para>The surface is a subsurface created with

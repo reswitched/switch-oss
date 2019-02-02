@@ -293,7 +293,7 @@ bool FontPlatformData::operator==(const FontPlatformData& other) const
         && m_syntheticBold == other.m_syntheticBold; 
 }
 
-#ifndef NDEBUG
+#if !LOG_DISABLED
 String FontPlatformData::description() const
 {
     return String();

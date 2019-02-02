@@ -41,6 +41,7 @@ class ScopedArguments : public GenericArguments<ScopedArguments> {
 private:
     ScopedArguments(VM&, Structure*, unsigned totalLength);
     void finishCreation(VM&, JSFunction* callee, ScopedArgumentsTable*, JSLexicalEnvironment*);
+    using Base = GenericArguments<ScopedArguments>;
 
 public:
     // Creates an arguments object but leaves it uninitialized. This is dangerous if we GC right

@@ -1,7 +1,7 @@
 /*
  *  WKCWebFrame.cpp
  *
- *  Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
+ *  Copyright (c) 2010-2018 ACCESS CO., LTD. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -513,30 +513,39 @@ WKCWebFrame::parent()
     return kit(coreFrame->tree().parent());
 }
 
-void
+bool
 WKCWebFrame::loadURI(const char* uri, const char* referrer)
 {
     WebCore::Frame* coreFrame = m_private->core();
     if (!coreFrame) {
-        return;
+        return false;
+    }
+
+    auto utf8Uri(WTF::String::fromUTF8(uri));
+    if (!utf8Uri) {
+        return false;
     }
 
     if (referrer) {
         WTF::String refStr = WTF::String::fromUTF8(referrer);
+        if (!refStr) {
+            return false;
+        }
         WebCore::URL refUrl = WebCore::URL(WebCore::URL(), refStr);
         if (refUrl.isValid()) {
             // Use normalized referrer URL if it is valid
             refStr = refUrl.string();
         }
-        WebCore::FrameLoadRequest req(coreFrame, WebCore::ResourceRequest(WebCore::URL(WebCore::URL(), WTF::String::fromUTF8(uri)), refStr), WebCore::ShouldOpenExternalURLsPolicy::ShouldNotAllow);
+        WebCore::FrameLoadRequest req(coreFrame, WebCore::ResourceRequest(WebCore::URL(WebCore::URL(), utf8Uri), refStr), WebCore::ShouldOpenExternalURLsPolicy::ShouldNotAllow);
         coreFrame->loader().load(req);
     } else {
-        WebCore::ResourceRequest rr(WebCore::URL(WebCore::URL(), WTF::String::fromUTF8(uri)));
+        WebCore::ResourceRequest rr(WebCore::URL(WebCore::URL(), utf8Uri));
         rr.setMainResource();
         rr.setTargetType(WebCore::ResourceRequest::TargetIsMainFrame);
         const WebCore::FrameLoadRequest req(coreFrame, rr, WebCore::ShouldOpenExternalURLsPolicy::ShouldNotAllow);
         coreFrame->loader().load(req);
     }
+    return true;
 }
 
 #ifdef __MINGW32__

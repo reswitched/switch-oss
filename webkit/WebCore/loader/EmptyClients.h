@@ -373,7 +373,7 @@ public:
     virtual void saveViewStateToItem(HistoryItem*) override { }
     virtual bool canCachePage() const override { return false; }
     virtual void didDisplayInsecureContent() override { }
-    virtual void didRunInsecureContent(SecurityOrigin*, const URL&) override { }
+    virtual void didRunInsecureContent(SecurityOrigin&, const URL&) override { }
     virtual void didDetectXSS(const URL&, bool) override { }
     virtual PassRefPtr<Frame> createFrame(const URL&, const String&, HTMLFrameOwnerElement*, const String&, bool, int, int) override;
 #if ENABLE(NETSCAPE_PLUGIN_API)

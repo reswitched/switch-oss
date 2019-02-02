@@ -25,6 +25,10 @@
 </entry><entry role="function_name"><link linkend="cairo-svg-surface-create">cairo_svg_surface_create</link>&#160;<phrase role="c_punctuation">()</phrase></entry></row>
 <row><entry role="function_type"><link linkend="cairo-surface-t"><returnvalue>cairo_surface_t</returnvalue></link>&#160;*
 </entry><entry role="function_name"><link linkend="cairo-svg-surface-create-for-stream">cairo_svg_surface_create_for_stream</link>&#160;<phrase role="c_punctuation">()</phrase></entry></row>
+<row><entry role="function_type"><link linkend="cairo-svg-unit-t"><returnvalue>cairo_svg_unit_t</returnvalue></link>
+</entry><entry role="function_name"><link linkend="cairo-svg-surface-get-document-unit">cairo_svg_surface_get_document_unit</link>&#160;<phrase role="c_punctuation">()</phrase></entry></row>
+<row><entry role="function_type"><link linkend="void"><returnvalue>void</returnvalue></link>
+</entry><entry role="function_name"><link linkend="cairo-svg-surface-set-document-unit">cairo_svg_surface_set_document_unit</link>&#160;<phrase role="c_punctuation">()</phrase></entry></row>
 <row><entry role="function_type"><link linkend="void"><returnvalue>void</returnvalue></link>
 </entry><entry role="function_name"><link linkend="cairo-svg-surface-restrict-to-version">cairo_svg_surface_restrict_to_version</link>&#160;<phrase role="c_punctuation">()</phrase></entry></row>
 <row><entry role="function_type"><link linkend="void"><returnvalue>void</returnvalue></link>
@@ -45,6 +49,7 @@
 <tbody>
 <row><entry role="define_keyword">#define</entry><entry role="function_name"><link linkend="CAIRO-HAS-SVG-SURFACE:CAPS">CAIRO_HAS_SVG_SURFACE</link></entry></row>
 <row><entry role="datatype_keyword">enum</entry><entry role="function_name"><link linkend="cairo-svg-version-t">cairo_svg_version_t</link></entry></row>
+<row><entry role="datatype_keyword">enum</entry><entry role="function_name"><link linkend="cairo-svg-unit-t">cairo_svg_unit_t</link></entry></row>
 
 </tbody>
 </tgroup>
@@ -163,6 +168,64 @@ with it.</para>
 pointer to a "nil" surface if an error such as out of memory
 occurs. You can use <link linkend="cairo-surface-status"><function>cairo_surface_status()</function></link> to check for this.</para>
 </refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
+<refsect2 id="cairo-svg-surface-get-document-unit" role="function" condition="since:1.16">
+<title>cairo_svg_surface_get_document_unit&#160;()</title>
+<indexterm zone="cairo-svg-surface-get-document-unit" role="1.16"><primary sortas="svg_surface_get_document_unit">cairo_svg_surface_get_document_unit</primary></indexterm>
+<programlisting language="C"><link linkend="cairo-svg-unit-t"><returnvalue>cairo_svg_unit_t</returnvalue></link>
+cairo_svg_surface_get_document_unit (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *surface</parameter>);</programlisting>
+<para>Get the unit of the SVG surface.</para>
+<para>If the surface passed as an argument is not a SVG surface, the function
+sets the error status to CAIRO_STATUS_SURFACE_TYPE_MISMATCH and returns
+CAIRO_SVG_UNIT_USER.</para>
+<refsect3 id="cairo-svg-surface-get-document-unit.parameters" role="parameters">
+<title>Parameters</title>
+<informaltable role="parameters_table" pgwide="1" frame="none">
+<tgroup cols="3">
+<colspec colname="parameters_name" colwidth="150px"/>
+<colspec colname="parameters_description"/>
+<colspec colname="parameters_annotations" colwidth="200px"/>
+<tbody>
+<row><entry role="parameter_name"><para>surface</para></entry>
+<entry role="parameter_description"><para>a SVG <link linkend="cairo-surface-t"><type>cairo_surface_t</type></link></para></entry>
+<entry role="parameter_annotations"></entry></row>
+</tbody></tgroup></informaltable>
+</refsect3><refsect3 id="cairo-svg-surface-get-document-unit.returns" role="returns">
+<title>Returns</title>
+<para> the SVG unit of the SVG surface.</para>
+</refsect3><para role="since">Since: <link linkend="api-index-1.16">1.16</link></para></refsect2>
+<refsect2 id="cairo-svg-surface-set-document-unit" role="function" condition="since:1.16">
+<title>cairo_svg_surface_set_document_unit&#160;()</title>
+<indexterm zone="cairo-svg-surface-set-document-unit" role="1.16"><primary sortas="svg_surface_set_document_unit">cairo_svg_surface_set_document_unit</primary></indexterm>
+<programlisting language="C"><link linkend="void"><returnvalue>void</returnvalue></link>
+cairo_svg_surface_set_document_unit (<parameter><link linkend="cairo-surface-t"><type>cairo_surface_t</type></link> *surface</parameter>,
+                                     <parameter><link linkend="cairo-svg-unit-t"><type>cairo_svg_unit_t</type></link> unit</parameter>);</programlisting>
+<para>Use the specified unit for the width and height of the generated SVG file.
+See <link linkend="cairo-svg-unit-t"><type>cairo_svg_unit_t</type></link> for a list of available unit values that can be used
+here.</para>
+<para>This function can be called at any time before generating the SVG file.</para>
+<para>However to minimize the risk of ambiguities it's recommended to call it
+before any drawing operations have been performed on the given surface, to
+make it clearer what the unit used in the drawing operations is.</para>
+<para>The simplest way to do this is to call this function immediately after
+creating the SVG surface.</para>
+<para>Note if this function is never called, the default unit for SVG documents
+generated by cairo will be "pt". This is for historical reasons.</para>
+<refsect3 id="cairo-svg-surface-set-document-unit.parameters" role="parameters">
+<title>Parameters</title>
+<informaltable role="parameters_table" pgwide="1" frame="none">
+<tgroup cols="3">
+<colspec colname="parameters_name" colwidth="150px"/>
+<colspec colname="parameters_description"/>
+<colspec colname="parameters_annotations" colwidth="200px"/>
+<tbody>
+<row><entry role="parameter_name"><para>surface</para></entry>
+<entry role="parameter_description"><para>a SVG <link linkend="cairo-surface-t"><type>cairo_surface_t</type></link></para></entry>
+<entry role="parameter_annotations"></entry></row>
+<row><entry role="parameter_name"><para>unit</para></entry>
+<entry role="parameter_description"><para>SVG unit</para></entry>
+<entry role="parameter_annotations"></entry></row>
+</tbody></tgroup></informaltable>
+</refsect3><para role="since">Since: <link linkend="api-index-1.16">1.16</link></para></refsect2>
 <refsect2 id="cairo-svg-surface-restrict-to-version" role="function" condition="since:1.2">
 <title>cairo_svg_surface_restrict_to_version&#160;()</title>
 <indexterm zone="cairo-svg-surface-restrict-to-version" role="1.2"><primary sortas="svg_surface_restrict_to_version">cairo_svg_surface_restrict_to_version</primary></indexterm>
@@ -279,6 +342,78 @@ specification that a generated SVG file will conform to.</para>
 </row>
 </tbody></tgroup></informaltable>
 </refsect3><para role="since">Since: <link linkend="api-index-1.2">1.2</link></para></refsect2>
+<refsect2 id="cairo-svg-unit-t" role="enum" condition="since:1.16">
+<title>enum cairo_svg_unit_t</title>
+<indexterm zone="cairo-svg-unit-t" role="1.16"><primary sortas="svg_unit_t">cairo_svg_unit_t</primary></indexterm>
+<para><parameter>CAIRO_SVG_UNIT_USER</parameter>
+: User unit, a value in the current coordinate system.
+  If used in the root element for the initial coordinate systems it
+  corresponds to pixels. (Since 1.16)
+<parameter>CAIRO_SVG_UNIT_EM</parameter>
+: The size of the element's font. (Since 1.16)
+<parameter>CAIRO_SVG_UNIT_EX</parameter>
+: The x-height of the element’s font. (Since 1.16)
+<parameter>CAIRO_SVG_UNIT_PX</parameter>
+: Pixels (1px = 1/96th of 1in). (Since 1.16)
+<parameter>CAIRO_SVG_UNIT_IN</parameter>
+: Inches (1in = 2.54cm = 96px). (Since 1.16)
+<parameter>CAIRO_SVG_UNIT_CM</parameter>
+: Centimeters (1cm = 96px/2.54). (Since 1.16)
+<parameter>CAIRO_SVG_UNIT_MM</parameter>
+: Millimeters (1mm = 1/10th of 1cm). (Since 1.16)
+<parameter>CAIRO_SVG_UNIT_PT</parameter>
+: Points (1pt = 1/72th of 1in). (Since 1.16)
+<parameter>CAIRO_SVG_UNIT_PC</parameter>
+: Picas (1pc = 1/6th of 1in). (Since 1.16)
+<parameter>CAIRO_SVG_UNIT_PERCENT</parameter>
+: Percent, a value that is some fraction of another
+  reference value. (Since 1.16)</para>
+<para><link linkend="cairo-svg-unit-t"><type>cairo_svg_unit_t</type></link> is used to describe the units valid for coordinates and
+lengths in the SVG specification.</para>
+<para>See also:
+https://www.w3.org/TR/SVG/coords.html<link linkend="Units"><type>Units</type></link>
+https://www.w3.org/TR/SVG/types.html<link linkend="DataTypeLength"><type>DataTypeLength</type></link>
+https://www.w3.org/TR/css-values-3/<link linkend="lengths"><type>lengths</type></link></para>
+<refsect3 id="cairo-svg-unit-t.members" role="enum_members">
+<title>Members</title>
+<informaltable role="enum_members_table" pgwide="1" frame="none">
+<tgroup cols="3">
+<colspec colname="enum_members_name" colwidth="300px"/>
+<colspec colname="enum_members_description"/>
+<colspec colname="enum_members_annotations" colwidth="200px"/>
+<tbody>
+<row role="constant"><entry role="enum_member_name"><para id="CAIRO-SVG-UNIT-USER:CAPS">CAIRO_SVG_UNIT_USER</para></entry>
+<entry /><entry />
+</row>
+<row role="constant"><entry role="enum_member_name"><para id="CAIRO-SVG-UNIT-EM:CAPS">CAIRO_SVG_UNIT_EM</para></entry>
+<entry /><entry />
+</row>
+<row role="constant"><entry role="enum_member_name"><para id="CAIRO-SVG-UNIT-EX:CAPS">CAIRO_SVG_UNIT_EX</para></entry>
+<entry /><entry />
+</row>
+<row role="constant"><entry role="enum_member_name"><para id="CAIRO-SVG-UNIT-PX:CAPS">CAIRO_SVG_UNIT_PX</para></entry>
+<entry /><entry />
+</row>
+<row role="constant"><entry role="enum_member_name"><para id="CAIRO-SVG-UNIT-IN:CAPS">CAIRO_SVG_UNIT_IN</para></entry>
+<entry /><entry />
+</row>
+<row role="constant"><entry role="enum_member_name"><para id="CAIRO-SVG-UNIT-CM:CAPS">CAIRO_SVG_UNIT_CM</para></entry>
+<entry /><entry />
+</row>
+<row role="constant"><entry role="enum_member_name"><para id="CAIRO-SVG-UNIT-MM:CAPS">CAIRO_SVG_UNIT_MM</para></entry>
+<entry /><entry />
+</row>
+<row role="constant"><entry role="enum_member_name"><para id="CAIRO-SVG-UNIT-PT:CAPS">CAIRO_SVG_UNIT_PT</para></entry>
+<entry /><entry />
+</row>
+<row role="constant"><entry role="enum_member_name"><para id="CAIRO-SVG-UNIT-PC:CAPS">CAIRO_SVG_UNIT_PC</para></entry>
+<entry /><entry />
+</row>
+<row role="constant"><entry role="enum_member_name"><para id="CAIRO-SVG-UNIT-PERCENT:CAPS">CAIRO_SVG_UNIT_PERCENT</para></entry>
+<entry /><entry />
+</row>
+</tbody></tgroup></informaltable>
+</refsect3><para role="since">Since: <link linkend="api-index-1.16">1.16</link></para></refsect2>
 
 </refsect1>
 <refsect1 id="cairo-SVG-Surfaces.see-also">

@@ -1,7 +1,7 @@
 /*
  * WKCPrefs.cpp
  *
- * Copyright (c) 2011-2017 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2018 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -532,6 +532,18 @@ activateWebGL()
 #if ENABLE(WEBGL)
     bool ret = wkcGLActivatePeer();
 #endif
+}
+
+void
+setProhibitsScrollingEnabled(bool enabled)
+{
+    WebCore::Element::setProhibitsScrollingEnabled(enabled);
+}
+
+void
+setUseDollarVM(bool enabled)
+{
+    JSC::Options::useDollarVM() = enabled;
 }
 
 void

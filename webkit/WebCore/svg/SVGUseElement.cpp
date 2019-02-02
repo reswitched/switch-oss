@@ -252,6 +252,9 @@ void SVGUseElement::updateShadowTree()
         return;
     }
 
+    if (isDescendantOf(target))
+        return;
+    
     cloneTarget(ensureUserAgentShadowRoot(), *target);
     expandUseElementsInShadowTree();
     expandSymbolElementsInShadowTree();

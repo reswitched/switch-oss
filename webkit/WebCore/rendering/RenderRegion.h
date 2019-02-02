@@ -125,6 +125,9 @@ public:
     virtual bool hasAutoLogicalHeight() const { return false; }
 
     virtual void absoluteQuadsForBoxInRegion(Vector<FloatQuad>&, bool*, const RenderBox*, float, float) { }
+#if PLATFORM(WKC)
+    WeakPtr<RenderRegion> createWeakPtr() { return m_weakFactory.createWeakPtr(); }
+#endif
 
 protected:
     RenderRegion(Element&, Ref<RenderStyle>&&, RenderFlowThread*);
@@ -158,6 +161,9 @@ private:
 
 protected:
     RenderFlowThread* m_flowThread;
+#if PLATFORM(WKC)
+    WeakPtrFactory<RenderRegion> m_weakFactory;
+#endif
 
 private:
     // If this RenderRegion is displayed as part of another named flow,

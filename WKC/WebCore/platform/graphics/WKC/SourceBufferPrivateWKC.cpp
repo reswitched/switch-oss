@@ -117,7 +117,11 @@ public:
 
     virtual size_t sizeInBytes() const { return 0; }
     virtual FloatSize presentationSize() const { return { 0, 0 }; }
-    virtual void offsetTimestampsBy(const MediaTime&) { }
+    virtual void offsetTimestampsBy(const MediaTime& timestampOffset)
+    {
+        m_presentationTime += timestampOffset;
+        m_decodeTime += timestampOffset;
+    }
     virtual void dump(PrintStream&) const { }
 
 protected:

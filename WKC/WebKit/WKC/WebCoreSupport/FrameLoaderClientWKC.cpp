@@ -1001,9 +1001,9 @@ FrameLoaderClientWKC::didDisplayInsecureContent()
 }
 
 void
-FrameLoaderClientWKC::didRunInsecureContent(WebCore::SecurityOrigin* origin, const WebCore::URL& uri)
+FrameLoaderClientWKC::didRunInsecureContent(WebCore::SecurityOrigin& origin, const WebCore::URL& uri)
 {
-    SecurityOriginPrivate o(origin);
+    SecurityOriginPrivate o(&origin);
     m_appClient->didRunInsecureContent(&o.wkc(), uri);
 }
 

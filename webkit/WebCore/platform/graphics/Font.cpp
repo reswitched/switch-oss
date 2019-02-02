@@ -360,7 +360,7 @@ PassRefPtr<Font> Font::nonSyntheticItalicFont() const
     return m_derivedFontData->nonSyntheticItalic;
 }
 
-#ifndef NDEBUG
+#if !LOG_DISABLED
 String Font::description() const
 {
     if (isSVGFont())

@@ -434,7 +434,8 @@ template<typename Adaptor>
 void JSGenericTypedArrayView<Adaptor>::visitChildren(JSCell* cell, SlotVisitor& visitor)
 {
     JSGenericTypedArrayView* thisObject = jsCast<JSGenericTypedArrayView*>(cell);
-    
+    Base::visitChildren(thisObject, visitor);
+
     switch (thisObject->m_mode) {
     case FastTypedArray: {
         if (thisObject->m_vector)
@@ -455,8 +456,6 @@ void JSGenericTypedArrayView<Adaptor>::visitChildren(JSCell* cell, SlotVisitor& 
         RELEASE_ASSERT_NOT_REACHED();
         break;
     }
-    
-    Base::visitChildren(thisObject, visitor);
 }
 
 template<typename Adaptor>

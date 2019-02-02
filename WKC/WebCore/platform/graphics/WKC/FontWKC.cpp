@@ -939,7 +939,7 @@ FontCascade::getGlyphsAndAdvancesForComplexText(const TextRun& run, int from, in
     if (!sfont.platformData().font()) return 0.f;
     void* font = sfont.platformData().font()->font();
     if (!font) return 0.f;
-    const float scale = 0.f;
+    const float scale = sfont.platformData().font()->scale();
 
     UChar* str;
     if (run.is8Bit()) {
@@ -1030,7 +1030,7 @@ FontCascade::drawEmphasisMarksForComplexText(GraphicsContext* context, const Tex
 bool
 FontCascade::canExpandAroundIdeographsInComplexText()
 {
-    return false;
+    return true;
 }
 bool FontCascade::canReturnFallbackFontsForComplexText()
 {

@@ -447,40 +447,30 @@ that function for details.</para>
 <indexterm zone="cairo-device-observer-elapsed"><primary sortas="device_observer_elapsed">cairo_device_observer_elapsed</primary></indexterm>
 <programlisting language="C"><link linkend="double"><returnvalue>double</returnvalue></link>
 cairo_device_observer_elapsed (<parameter><link linkend="cairo-device-t"><type>cairo_device_t</type></link> *device</parameter>);</programlisting>
-<para>
-</para>
 </refsect2>
 <refsect2 id="cairo-device-observer-fill-elapsed" role="function">
 <title>cairo_device_observer_fill_elapsed&#160;()</title>
 <indexterm zone="cairo-device-observer-fill-elapsed"><primary sortas="device_observer_fill_elapsed">cairo_device_observer_fill_elapsed</primary></indexterm>
 <programlisting language="C"><link linkend="double"><returnvalue>double</returnvalue></link>
 cairo_device_observer_fill_elapsed (<parameter><link linkend="cairo-device-t"><type>cairo_device_t</type></link> *device</parameter>);</programlisting>
-<para>
-</para>
 </refsect2>
 <refsect2 id="cairo-device-observer-glyphs-elapsed" role="function">
 <title>cairo_device_observer_glyphs_elapsed&#160;()</title>
 <indexterm zone="cairo-device-observer-glyphs-elapsed"><primary sortas="device_observer_glyphs_elapsed">cairo_device_observer_glyphs_elapsed</primary></indexterm>
 <programlisting language="C"><link linkend="double"><returnvalue>double</returnvalue></link>
 cairo_device_observer_glyphs_elapsed (<parameter><link linkend="cairo-device-t"><type>cairo_device_t</type></link> *device</parameter>);</programlisting>
-<para>
-</para>
 </refsect2>
 <refsect2 id="cairo-device-observer-mask-elapsed" role="function">
 <title>cairo_device_observer_mask_elapsed&#160;()</title>
 <indexterm zone="cairo-device-observer-mask-elapsed"><primary sortas="device_observer_mask_elapsed">cairo_device_observer_mask_elapsed</primary></indexterm>
 <programlisting language="C"><link linkend="double"><returnvalue>double</returnvalue></link>
 cairo_device_observer_mask_elapsed (<parameter><link linkend="cairo-device-t"><type>cairo_device_t</type></link> *device</parameter>);</programlisting>
-<para>
-</para>
 </refsect2>
 <refsect2 id="cairo-device-observer-paint-elapsed" role="function">
 <title>cairo_device_observer_paint_elapsed&#160;()</title>
 <indexterm zone="cairo-device-observer-paint-elapsed"><primary sortas="device_observer_paint_elapsed">cairo_device_observer_paint_elapsed</primary></indexterm>
 <programlisting language="C"><link linkend="double"><returnvalue>double</returnvalue></link>
 cairo_device_observer_paint_elapsed (<parameter><link linkend="cairo-device-t"><type>cairo_device_t</type></link> *device</parameter>);</programlisting>
-<para>
-</para>
 </refsect2>
 <refsect2 id="cairo-device-observer-print" role="function">
 <title>cairo_device_observer_print&#160;()</title>
@@ -489,16 +479,12 @@ cairo_device_observer_paint_elapsed (<parameter><link linkend="cairo-device-t"><
 cairo_device_observer_print (<parameter><link linkend="cairo-device-t"><type>cairo_device_t</type></link> *device</parameter>,
                              <parameter><link linkend="cairo-write-func-t"><type>cairo_write_func_t</type></link> write_func</parameter>,
                              <parameter><link linkend="void"><type>void</type></link> *closure</parameter>);</programlisting>
-<para>
-</para>
 </refsect2>
 <refsect2 id="cairo-device-observer-stroke-elapsed" role="function">
 <title>cairo_device_observer_stroke_elapsed&#160;()</title>
 <indexterm zone="cairo-device-observer-stroke-elapsed"><primary sortas="device_observer_stroke_elapsed">cairo_device_observer_stroke_elapsed</primary></indexterm>
 <programlisting language="C"><link linkend="double"><returnvalue>double</returnvalue></link>
 cairo_device_observer_stroke_elapsed (<parameter><link linkend="cairo-device-t"><type>cairo_device_t</type></link> *device</parameter>);</programlisting>
-<para>
-</para>
 </refsect2>
 
 </refsect1>

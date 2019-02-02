@@ -1401,7 +1401,12 @@ void FontCascade::drawGlyphBuffer(GraphicsContext* context, const TextRun& run, 
     while (nextGlyph < glyphBuffer.size()) {
         const Font* nextFontData = glyphBuffer.fontAt(nextGlyph);
 
+#if !PLATFORM(WKC)
         if (nextFontData != fontData) {
+#else
+        if (nextFontData != fontData &&
+            wkcUnicodeCategoryPeer(glyphBuffer.glyphAt(nextGlyph)) != WKC_UNICODE_CATEGORY_MARKNONSPACING) {
+#endif
 #if ENABLE(SVG_FONTS)
             if (renderingContext && fontData->isSVGFont())
                 renderingContext->drawSVGGlyphs(context, fontData, glyphBuffer, lastFrom, nextGlyph - lastFrom, startPoint);

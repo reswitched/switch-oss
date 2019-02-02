@@ -69,8 +69,6 @@
 <indexentry><primaryie linkends="cairo-region-xor-rectangle"><link linkend="cairo-region-xor-rectangle">cairo_region_xor_rectangle</link>, function in <link linkend="cairo-Regions">Regions</link></primaryie></indexentry>
 </indexdiv>
 <indexdiv><title>S</title>
-<indexentry><primaryie linkends="cairo-skia-context-t"><link linkend="cairo-skia-context-t">cairo_skia_context_t</link>, typedef in <link linkend="cairo-cairo-skia">cairo-skia</link></primaryie></indexentry>
-<indexentry><primaryie linkends="cairo-skia-surface-t"><link linkend="cairo-skia-surface-t">cairo_skia_surface_t</link>, typedef in <link linkend="cairo-cairo-skia">cairo-skia</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-surface-create-for-rectangle"><link linkend="cairo-surface-create-for-rectangle">cairo_surface_create_for_rectangle</link>, function in <link linkend="cairo-cairo-surface-t">cairo_surface_t</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-surface-get-device"><link linkend="cairo-surface-get-device">cairo_surface_get_device</link>, function in <link linkend="cairo-cairo-surface-t">cairo_surface_t</link></primaryie></indexentry>
 <indexentry><primaryie linkends="cairo-surface-get-mime-data"><link linkend="cairo-surface-get-mime-data">cairo_surface_get_mime_data</link>, function in <link linkend="cairo-cairo-surface-t">cairo_surface_t</link></primaryie></indexentry>

@@ -51,7 +51,7 @@ void EndSegmentSentinel::dispatch(ReplayController&)
 void InitialNavigation::dispatch(ReplayController& controller)
 {
     Frame& frame = controller.page().mainFrame();
-    frame.navigationScheduler().scheduleLocationChange(frame.document(), m_securityOrigin.get(), m_url, m_referrer);
+    frame.navigationScheduler().scheduleLocationChange(frame.document(), *m_securityOrigin, m_url, m_referrer);
 }
 
 void HandleKeyPress::dispatch(ReplayController& controller)

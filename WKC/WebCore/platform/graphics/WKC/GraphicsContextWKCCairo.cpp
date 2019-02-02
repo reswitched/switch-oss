@@ -916,8 +916,9 @@ FloatRect GraphicsContext::roundToDevicePixels(const FloatRect& frect, RoundingM
     double y = frect.y();
     cairo_t* cr = platformContext()->cr();
     cairo_user_to_device(cr, &x, &y);
-    x = std::round(x);
-    y = std::round(y);
+    // round half up
+    x = floor(x + 0.5);
+    y = floor(y + 0.5);
     cairo_device_to_user(cr, &x, &y);
     result.setX(narrowPrecisionToFloat(x));
     result.setY(narrowPrecisionToFloat(y));

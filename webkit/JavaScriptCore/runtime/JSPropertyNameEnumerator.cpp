@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Apple Inc. All rights reserved.
+ * Copyright (C) 2014-2018 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -89,6 +89,12 @@ void JSPropertyNameEnumerator::visitChildren(JSCell* cell, SlotVisitor& visitor)
     for (unsigned i = 0; i < thisObject->m_propertyNames.size(); ++i)
         visitor.append(&thisObject->m_propertyNames[i]);
     visitor.append(&thisObject->m_prototypeChain);
+
+    if (thisObject->cachedStructureID()) {
+        VM& vm = visitor.vm();
+        Structure* structure = vm.heap.structureIDTable().get(thisObject->cachedStructureID());
+        visitor.appendUnbarrieredPointer(&structure);
+    }
 }
 
 } // namespace JSC

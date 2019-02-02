@@ -29,7 +29,7 @@
  * The source is from commit 734c53237a867a773640bd5b64816249fa1730f8
  * of
  *
- *   http://gitweb.freedesktop.org/?p=users/joonas/glitter-paths
+ *   https://gitweb.freedesktop.org/?p=users/joonas/glitter-paths
  */
 /* Glitter-paths is a stand alone polygon rasteriser derived from
  * David Turner's reimplementation of Tor Anderssons's 15x17
@@ -484,7 +484,7 @@ _pool_chunk_create(struct pool *pool, size_t size)
     struct _pool_chunk *p;
 
 #ifndef WKC_CAIRO_CUSTOMIZE
-    p = malloc(SIZEOF_POOL_CHUNK + size);
+    p = _cairo_malloc(SIZEOF_POOL_CHUNK + size);
 #else
     p = wkc_malloc_crashonfailure(SIZEOF_POOL_CHUNK + size);
 #endif
@@ -1876,7 +1876,7 @@ _cairo_tor_scan_converter_create (int			xmin,
     cairo_tor_scan_converter_t *self;
     cairo_status_t status;
 
-    self = malloc (sizeof(struct _cairo_tor_scan_converter));
+    self = _cairo_malloc (sizeof(struct _cairo_tor_scan_converter));
     if (unlikely (self == NULL)) {
 	status = _cairo_error (CAIRO_STATUS_NO_MEMORY);
 	goto bail_nomem;

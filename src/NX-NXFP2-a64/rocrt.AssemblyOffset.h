@@ -22,4 +22,4 @@
 // NOLINT(build/header_guard)
 
 #define NN_ROCRT_MODULE_HEADER_VERSION 0x30444f4d // NOLINT(readability/define)
-#define NN_ROCRT_ROMODULE_SIZE 0xc8 // NOLINT(readability/define)
+#define NN_ROCRT_ROMODULE_SIZE 0xd0 // NOLINT(readability/define)

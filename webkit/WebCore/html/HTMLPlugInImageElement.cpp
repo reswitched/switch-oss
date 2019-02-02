@@ -168,7 +168,7 @@ bool HTMLPlugInImageElement::allowedToLoadFrameURL(const String& url)
     URL completeURL = document().completeURL(url);
 
     if (contentFrame() && protocolIsJavaScript(completeURL)
-        && !document().securityOrigin()->canAccess(contentDocument()->securityOrigin()))
+        && !document().securityOrigin().canAccess(contentDocument()->securityOrigin()))
         return false;
 
     return document().frame()->isURLAllowed(completeURL);

@@ -81,7 +81,7 @@ public:
     bool locationChangePending();
 
     void scheduleRedirect(Document* initiatingDocument, double delay, const URL&);
-    void scheduleLocationChange(Document* initiatingDocument, SecurityOrigin*, const URL&, const String& referrer, LockHistory = LockHistory::Yes, LockBackForwardList = LockBackForwardList::Yes);
+    void scheduleLocationChange(Document* initiatingDocument, SecurityOrigin&, const URL&, const String& referrer, LockHistory = LockHistory::Yes, LockBackForwardList = LockBackForwardList::Yes);
     void scheduleFormSubmission(PassRefPtr<FormSubmission>);
     void scheduleRefresh(Document* initiatingDocument);
     void scheduleHistoryNavigation(int steps);

@@ -199,6 +199,13 @@ namespace WKC {
     @retval "== false" Cannot be cached to the disk
     */
     typedef bool (*CanCacheToDiskProc)(const char* in_url, double in_current_age, double in_freshness_lifetime, long long in_content_size);
+    /**
+    @brief callback to determine whether to allow connection to an address
+    @param in_address IPv4 address in network byte order
+    @retval "!= false" Connection to in_address is allowed
+    @retval "== false" Connection to in_address is not allowed
+    */
+    typedef bool (*ConnectionFilteringProc)(wkc_uint32 in_address);
 
     typedef struct WebGLTextureCallbacks_ {
         bool (*fTextureMakeProc)(int num, unsigned int* out_textures);
@@ -925,6 +932,14 @@ Sets a callback to determine if it is possible to save a cache data to the disk.
 WKC_API void WKCWebKitSetCanCacheToDiskCallback(CanCacheToDiskProc in_proc);
 
 /**
+@brief Sets a callback to determine whether to allow connection to an address
+@param in_proc callback
+@details
+Sets a callback to determine whether to allow connection to in_address.
+*/
+WKC_API void WKCWebKitSetConnectionFilteringCallback(ConnectionFilteringProc in_proc);
+
+/**
 @brief Dump HTTP Cache info.
 @details
 Dump HTTP Cache info.
@@ -1549,9 +1564,10 @@ public:
        @brief Gets page
        @param uri Pointer to URL string
        @param referrer Referer
-       @return None
+       @retval "!= false" Succeeded
+       @retval "== false" Failed
     */
-    void loadURI(const char* uri, const char* referrer = 0);
+    bool loadURI(const char* uri, const char* referrer = 0);
     /**
        @brief Gets page
        @param content Pointer to content string
@@ -1670,15 +1686,14 @@ public:
     */
     void selectAll();
     /**
-       @brief Gets selection positions
-       @param startOffset Offset of start position
-       @param endOffset Offset of end position
-       @return None
+       @brief Gets whether the caret is at the beginning of the text field
+       @retval "!= false" Caret is at the beginning of the text field
+       @retval "== false" Caret is not at the beginning of the text field
        @details
-       Gets selection positions.
-       Offsets become negative when failed to get.
+       Gets whether the caret is at the beginning of the text field.
+       The text field may be input, textarea, or contenteditable.
     */
-    void getSelectionPosition(int& startOffset, int& endOffset) const;
+    bool isCaretAtBeginningOfTextField() const;
 
     /**
        @brief Checks if mime type can be displayed

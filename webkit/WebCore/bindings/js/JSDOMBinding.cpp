@@ -275,7 +275,7 @@ bool shouldAllowAccessToFrame(ExecState* exec, Frame* frame, String& message)
         return false;
     if (BindingSecurity::shouldAllowAccessToFrame(exec, frame, DoNotReportSecurityError))
         return true;
-    message = frame->document()->domWindow()->crossDomainAccessErrorMessage(activeDOMWindow(exec));
+    message = frame->document()->domWindow()->crossDomainAccessErrorMessage(activeDOMWindow(exec), IncludeTargetOrigin::No);
     return false;
 }
 
@@ -283,7 +283,7 @@ bool shouldAllowAccessToDOMWindow(ExecState* exec, DOMWindow& target, String& me
 {
     if (BindingSecurity::shouldAllowAccessToDOMWindow(exec, target, DoNotReportSecurityError))
         return true;
-    message = target.crossDomainAccessErrorMessage(activeDOMWindow(exec));
+    message = target.crossDomainAccessErrorMessage(activeDOMWindow(exec), IncludeTargetOrigin::No);
     return false;
 }
 
@@ -527,11 +527,11 @@ static inline bool canAccessDocument(JSC::ExecState* state, Document* targetDocu
 
     DOMWindow& active = activeDOMWindow(state);
 
-    if (active.document()->securityOrigin()->canAccess(targetDocument->securityOrigin()))
+    if (active.document()->securityOrigin().canAccess(targetDocument->securityOrigin()))
         return true;
 
     if (reportingOption == ReportSecurityError)
-        printErrorMessageForFrame(targetDocument->frame(), targetDocument->domWindow()->crossDomainAccessErrorMessage(active));
+        printErrorMessageForFrame(targetDocument->frame(), targetDocument->domWindow()->crossDomainAccessErrorMessage(active, IncludeTargetOrigin::Yes));
 
     return false;
 }

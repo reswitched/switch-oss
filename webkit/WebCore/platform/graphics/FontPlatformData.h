@@ -201,7 +201,7 @@ public:
     PassRefPtr<SharedBuffer> openTypeTable(uint32_t table) const;
 #endif
 
-#ifndef NDEBUG
+#if !LOG_DISABLED
     String description() const;
 #endif
 

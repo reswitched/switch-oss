@@ -1031,7 +1031,7 @@ void RenderFlowThread::updateRegionsFlowThreadPortionRect(const RenderRegion* la
 
         region->setFlowThreadPortionRect(isHorizontalWritingMode() ? regionRect : regionRect.transposedRect());
 
-        m_regionIntervalTree.add(RegionIntervalTree::createInterval(logicalHeight, logicalHeight + regionLogicalHeight, region));
+        m_regionIntervalTree.add(RegionIntervalTree::createInterval(logicalHeight, logicalHeight + regionLogicalHeight, region->createWeakPtr()));
 
         logicalHeight += regionLogicalHeight;
 

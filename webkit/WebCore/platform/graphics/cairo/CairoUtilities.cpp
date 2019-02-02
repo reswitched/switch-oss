@@ -233,8 +233,45 @@ void drawPatternToCairoContext(cairo_t* cr, cairo_surface_t* image, const IntSiz
 #endif
     cairo_pattern_set_extend(pattern, CAIRO_EXTEND_REPEAT);
 
+    // Due to a limitation in pixman, cairo cannot handle transformation matrices with values bigger than 32768. If the value is
+    // bigger, cairo is not able to paint anything, and this is the reason for the missing backgrounds reported in
+    // https://bugs.webkit.org/show_bug.cgi?id=154283.
+
+    // When drawing a pattern there are 2 matrices that can overflow this limitation, and they are the current transformation
+    // matrix (which translates user space coordinates to coordinates of the output device) and the pattern matrix (which translates
+    // user space coordinates to pattern coordinates). The overflow happens only in the translation components of the matrices.
+
+    // To avoid the problem in the transformation matrix what we do is remove the translation components of the transformation matrix
+    // and perform the translation by moving the destination rectangle instead. For this, we calculate such a translation amount (dx, dy)
+    // that its opposite translate (-dx, -dy) will zero the translation components of the transformation matrix. We move the current
+    // transformation matrix by (-dx, -dy) and move the destination rectangle by (dx, dy). We also need to apply the same translation to
+    // the pattern matrix, so we get the same pattern coordinates for the new destination rectangle. (dx, dy) is caclucated by transforming
+    // the current translation components by the inverse matrix of the current transformation matrix.
+
+    cairo_matrix_t ctm;
+    cairo_get_matrix(cr, &ctm);
+    double dx = 0, dy = 0;
+    cairo_matrix_transform_point(&ctm, &dx, &dy);
+    cairo_matrix_t inv = ctm;
+    if (cairo_matrix_invert(&inv) == CAIRO_STATUS_SUCCESS)
+        cairo_matrix_transform_distance(&inv, &dx, &dy);
+
+    cairo_translate(cr, -dx, -dy);
+    FloatRect adjustedDestRect(destRect);
+    adjustedDestRect.move(dx, dy);
+
+    // Regarding the pattern matrix, what we do is reduce the translation component of the matrix taking advantage of the fact that we
+    // are drawing a repeated pattern. This means that, assuming that (w, h) is the size of the pattern, samplig it at (x, y) is the same
+    // than sampling it at (x mod w, y mod h), so we transform the translation component of the pattern matrix in that way.
+
     cairo_matrix_t patternMatrix = cairo_matrix_t(patternTransform);
-    cairo_matrix_t phaseMatrix = {1, 0, 0, 1, phase.x() + tileRect.x() * patternTransform.a(), phase.y() + tileRect.y() * patternTransform.d()};
+    // dx and dy are added here as well to compensate the previous translation of the destination rectangle.
+    double phaseOffsetX = phase.x() + tileRect.x() * patternTransform.a() + dx;
+    double phaseOffsetY = phase.y() + tileRect.y() * patternTransform.d() + dy;
+    // this is where we perform the (x mod w, y mod h) metioned above, but with floats instead of integers.
+    phaseOffsetX -= std::trunc(phaseOffsetX / (tileRect.width() * patternTransform.a())) * tileRect.width() * patternTransform.a();
+    phaseOffsetY -= std::trunc(phaseOffsetY / (tileRect.height() * patternTransform.d())) * tileRect.height() * patternTransform.d();
+    cairo_matrix_t phaseMatrix = { 1, 0, 0, 1, phaseOffsetX, phaseOffsetY };
     cairo_matrix_t combined;
     cairo_matrix_multiply(&combined, &patternMatrix, &phaseMatrix);
     cairo_matrix_invert(&combined);
@@ -243,7 +280,7 @@ void drawPatternToCairoContext(cairo_t* cr, cairo_surface_t* image, const IntSiz
     cairo_set_operator(cr, op);
     cairo_set_source(cr, pattern);
     cairo_pattern_destroy(pattern);
-    cairo_rectangle(cr, destRect.x(), destRect.y(), destRect.width(), destRect.height());
+    cairo_rectangle(cr, adjustedDestRect.x(), adjustedDestRect.y(), adjustedDestRect.width(), adjustedDestRect.height());
     cairo_fill(cr);
 
     cairo_restore(cr);

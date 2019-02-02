@@ -54,7 +54,7 @@ namespace WebCore {
 
 void PingLoader::loadImage(Frame& frame, const URL& url)
 {
-    if (!frame.document()->securityOrigin()->canDisplay(url)) {
+    if (!frame.document()->securityOrigin().canDisplay(url)) {
         FrameLoader::reportLocalLoadFailed(&frame, url);
         return;
     }
@@ -79,13 +79,13 @@ void PingLoader::sendPing(Frame& frame, const URL& pingURL, const URL& destinati
     request.setHTTPHeaderField(HTTPHeaderName::CacheControl, "max-age=0");
     frame.loader().addExtraFieldsToSubresourceRequest(request);
 
-    SecurityOrigin* sourceOrigin = frame.document()->securityOrigin();
+    SecurityOrigin* sourceOrigin = &frame.document()->securityOrigin();
     Ref<SecurityOrigin> pingOrigin(SecurityOrigin::create(pingURL));
     FrameLoader::addHTTPOriginIfNeeded(request, sourceOrigin->toString());
     request.setHTTPHeaderField(HTTPHeaderName::PingTo, destinationURL);
     if (!SecurityPolicy::shouldHideReferrer(pingURL, frame.loader().outgoingReferrer())) {
         request.setHTTPHeaderField(HTTPHeaderName::PingFrom, frame.document()->url());
-        if (!sourceOrigin->isSameSchemeHostPort(&pingOrigin.get())) {
+        if (!sourceOrigin->isSameSchemeHostPort(pingOrigin.get())) {
             String referrer = SecurityPolicy::generateReferrerHeader(frame.document()->referrerPolicy(), pingURL, frame.loader().outgoingReferrer());
             if (!referrer.isEmpty())
                 request.setHTTPReferrer(referrer);
@@ -101,7 +101,7 @@ void PingLoader::sendViolationReport(Frame& frame, const URL& reportURL, PassRef
     request.setHTTPMethod("POST");
     request.setHTTPContentType("application/json");
     request.setHTTPBody(report);
-    request.setAllowCookies(frame.document()->securityOrigin()->isSameSchemeHostPort(SecurityOrigin::create(reportURL).ptr()));
+    request.setAllowCookies(frame.document()->securityOrigin().isSameSchemeHostPort(SecurityOrigin::create(reportURL).get()));
     frame.loader().addExtraFieldsToSubresourceRequest(request);
 
     String referrer = SecurityPolicy::generateReferrerHeader(frame.document()->referrerPolicy(), reportURL, frame.loader().outgoingReferrer());

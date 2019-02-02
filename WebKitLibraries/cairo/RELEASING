@@ -104,7 +104,7 @@ Here are the steps to follow to create a new cairo release:
 	Include a link to the incremental ChangeLog for this release,
 	which we'll be uploading in a later step:
 
-		http://cairographics.org/releases/ChangeLog.cairo-${THIS_RELEASE}
+		https://cairographics.org/releases/ChangeLog.cairo-${THIS_RELEASE}
 
 4) Increment cairo_version_{minor|micro} in cairo-version.h:
 
@@ -147,10 +147,10 @@ Here are the steps to follow to create a new cairo release:
 	* Generate the final tar file
 	* Generate an sha1sum file
 	* Sign the sha1sum using your GPG setup (asks for your GPG password)
-	* scp the three files to appear on http://cairographics.org/releases
+	* scp the three files to appear on https://cairographics.org/releases
 	* Generate a versioned manual and upload it to appear as both:
-	  http://cairographics.org/manual-${THIS_RELEASE}
-	  http://cairographics.org/manual
+	  https://cairographics.org/manual-${THIS_RELEASE}
+	  https://cairographics.org/manual
 	* Place local copies of the three files in the releases directory
 	* Create a LATEST-package-version file (after deleting any old one)
 	* Tag the entire source tree with a ${THIS_RELEASE} tag, and sign
@@ -210,5 +210,8 @@ Here are the steps to follow to create a new cairo release:
 
 		git shortlog ${LAST_RELEASE}...
 
-12) Add the announcement to the NEWS page and the front page.
+12) Add the announcement to the website as a new entry in the news/
+    dir.  It will automatically get indexed onto the homepage when the
+    site refreshes.
+
 

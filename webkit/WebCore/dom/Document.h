@@ -645,7 +645,6 @@ public:
     virtual void disableEval(const String& errorMessage) override final;
 
     bool canNavigate(Frame* targetFrame);
-    Frame* findUnsafeParentScrollPropagationBoundary();
 
     CSSStyleSheet& elementSheet();
     bool usesStyleBasedEditability() const;
@@ -1261,6 +1260,8 @@ public:
     void removeDisabledFieldsetElement() { ASSERT(m_disabledFieldsetElementsCount); m_disabledFieldsetElementsCount--; }
 
     WEBCORE_EXPORT virtual void addConsoleMessage(MessageSource, MessageLevel, const String& message, unsigned long requestIdentifier = 0) override final;
+
+    SecurityOrigin& securityOrigin() const { return *SecurityContext::securityOrigin(); }
 
     WEBCORE_EXPORT virtual SecurityOrigin* topOrigin() const override final;
 

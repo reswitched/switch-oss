@@ -187,7 +187,7 @@ public:
     template <typename CharacterType>
     inline const CharacterType* characters() const;
 
-    bool is8Bit() const { return m_impl->is8Bit(); }
+    bool is8Bit() const { return !m_impl || m_impl->is8Bit(); }
 
     unsigned sizeInBytes() const
     {

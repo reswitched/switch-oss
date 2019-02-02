@@ -491,6 +491,10 @@ public:
 
     virtual void isVisibleInViewportChanged() { }
 
+#if PLATFORM(WKC)
+    // for debug
+    static void setProhibitsScrollingEnabled(bool enabled);
+#endif
 protected:
     Element(const QualifiedName&, Document&, ConstructionType);
 

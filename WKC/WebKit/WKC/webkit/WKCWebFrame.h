@@ -1,7 +1,7 @@
 /*
  *  WKCWebFrame.h
  *
- *  Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
+ *  Copyright (c) 2010-2018 ACCESS CO., LTD. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -139,9 +139,10 @@ public:
        @brief Starts loading page
        @param uri Pointer to URI string
        @param referrer Referer
-       @return None
+       @retval "!= false" Succeeded
+       @retval "== false" Failed
     */
-    void loadURI(const char* uri, const char* referrer = 0);
+    bool loadURI(const char* uri, const char* referrer = 0);
     /**
        @brief Displays content string
        @param content Pointer to content string

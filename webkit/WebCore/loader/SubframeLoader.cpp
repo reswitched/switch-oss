@@ -38,6 +38,7 @@
 #include "ContentSecurityPolicy.h"
 #include "DiagnosticLoggingClient.h"
 #include "DiagnosticLoggingKeys.h"
+#include "DocumentLoader.h"
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "FrameLoaderClient.h"
@@ -84,11 +85,16 @@ bool SubframeLoader::requestFrame(HTMLFrameOwnerElement& ownerElement, const Str
     } else
         url = completeURL(urlString);
 
+    bool hasExistingFrame = ownerElement.contentFrame();
     Frame* frame = loadOrRedirectSubframe(ownerElement, url, frameName, lockHistory, lockBackForwardList);
     if (!frame)
         return false;
 
-    if (!scriptURL.isEmpty() && ownerElement.isURLAllowed(scriptURL))
+    // If we create a new subframe then an empty document is loaded into it synchronously and may
+    // cause script execution (say, via a DOM load event handler) that can do anything, including
+    // navigating the subframe. We only want to evaluate scriptURL if the frame has not been navigated.
+    bool canExecuteScript = hasExistingFrame || (frame->loader().documentLoader() && frame->loader().documentLoader()->originalURL() == blankURL());
+    if (!scriptURL.isEmpty() && canExecuteScript && ownerElement.isURLAllowed(scriptURL))
         frame->script().executeIfJavaScriptURL(scriptURL);
 
     return true;
@@ -109,7 +115,7 @@ bool SubframeLoader::pluginIsLoadable(HTMLPlugInImageElement& pluginElement, con
     if (MIMETypeRegistry::isJavaAppletMIMEType(mimeType)) {
         if (!m_frame.settings().isJavaEnabled())
             return false;
-        if (document() && document()->securityOrigin()->isLocal() && !m_frame.settings().isJavaEnabledForLocalFiles())
+        if (document() && document()->securityOrigin().isLocal() && !m_frame.settings().isJavaEnabledForLocalFiles())
             return false;
     }
 
@@ -117,7 +123,7 @@ bool SubframeLoader::pluginIsLoadable(HTMLPlugInImageElement& pluginElement, con
         if (document()->isSandboxed(SandboxPlugins))
             return false;
 
-        if (!document()->securityOrigin()->canDisplay(url)) {
+        if (!document()->securityOrigin().canDisplay(url)) {
             FrameLoader::reportLocalLoadFailed(&m_frame, url.string());
             return false;
         }
@@ -248,7 +254,7 @@ PassRefPtr<Widget> SubframeLoader::createJavaAppletWidget(const IntSize& size, H
 
     if (!codeBaseURLString.isEmpty()) {
         URL codeBaseURL = completeURL(codeBaseURLString);
-        if (!element.document().securityOrigin()->canDisplay(codeBaseURL)) {
+        if (!element.document().securityOrigin().canDisplay(codeBaseURL)) {
             FrameLoader::reportLocalLoadFailed(&m_frame, codeBaseURL.string());
             return nullptr;
         }
@@ -311,7 +317,7 @@ Frame* SubframeLoader::loadSubframe(HTMLFrameOwnerElement& ownerElement, const U
         marginHeight = frameElementBase.marginHeight();
     }
 
-    if (!ownerElement.document().securityOrigin()->canDisplay(url)) {
+    if (!ownerElement.document().securityOrigin().canDisplay(url)) {
         FrameLoader::reportLocalLoadFailed(&m_frame, url.string());
         return nullptr;
     }

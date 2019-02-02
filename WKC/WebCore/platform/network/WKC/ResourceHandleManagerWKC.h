@@ -188,6 +188,7 @@ public:
     void setCanCacheToDiskCallback(WKC::CanCacheToDiskProc proc);
 #endif
 
+    void setConnectionFilteringCallback(WKC::ConnectionFilteringProc proc);
     bool isMatchProxyFilter(const String& host);
 
     // WebSocket's socket reserver
@@ -198,6 +199,9 @@ public:
 
     // HTTP/2 server push
     int serverPushCallback(CURL *parent, CURL *easy, size_t num_headers, struct curl_pushheaders *headers);
+
+    // filtering
+    static bool filter_callback(CURL *easy, const struct sockaddr_in *addr);
 
 private:
     ResourceHandleManager();

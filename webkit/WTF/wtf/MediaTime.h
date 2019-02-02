@@ -119,8 +119,18 @@ public:
     static const int32_t DefaultTimeScale = 10000000;
     static const int32_t MaximumTimeScale;
 
+    enum class RoundingFlags {
+        HalfAwayFromZero = 0,
+        TowardZero,
+        AwayFromZero,
+        TowardPositiveInfinity,
+        TowardNegativeInfinity,
+    };
+
+    MediaTime toTimeScale(int32_t, RoundingFlags = RoundingFlags::HalfAwayFromZero) const;
+
 private:
-    void setTimeScale(int32_t);
+    void setTimeScale(int32_t, RoundingFlags = RoundingFlags::HalfAwayFromZero);
 
     union {
         int64_t m_timeValue;

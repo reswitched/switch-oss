@@ -1981,6 +1981,29 @@ void ResourceHandleManager::doClearCookies()
     nxLog_out("");
 }
 
+static WKC::ConnectionFilteringProc gConnectionFilteringProc;
+
+void
+ResourceHandleManager::setConnectionFilteringCallback(WKC::ConnectionFilteringProc proc)
+{
+    gConnectionFilteringProc = proc;
+}
+
+// DNS resolution has been done before this is called
+bool ResourceHandleManager::filter_callback(CURL *easy, const struct sockaddr_in *resolved_address)
+{
+    if (resolved_address->sin_family != AF_INET) {
+        // only IPv4 is supported
+        return true;
+    }
+
+    if (gConnectionFilteringProc) {
+        return gConnectionFilteringProc(static_cast<wkc_uint32>(resolved_address->sin_addr.s_addr));
+    }
+
+    return true;
+}
+
 static int _serverPushCallback(CURL *parent, CURL *easy, size_t num_headers, struct curl_pushheaders *headers, void *userp)
 {
     nxLog_in("(%d, %p, %p)", num_headers, parent, easy);
@@ -3061,6 +3084,8 @@ void ResourceHandleManager::initializeHandle(ResourceHandle* job)
     // cookie
     curl_easy_setopt(d->m_handle, CURLOPT_COOKIEFUNCTIONDATA, job);
     curl_easy_setopt(d->m_handle, CURLOPT_COOKIEFUNCTION, cookie_callback);
+    // filtering
+    curl_easy_setopt(d->m_handle, CURLOPT_CONNECT_FILTERING_FUNCTION, filter_callback);
     // redirect
     if (!m_redirectInWKC) {
         curl_easy_setopt(d->m_handle, CURLOPT_FOLLOWLOCATION, 1);
@@ -4009,6 +4034,10 @@ int ResourceHandleManager::contentComposition(ResourceHandle* job)
         return WKC::EOtherContentComposition;
     }
 #endif
+
+    if (job->firstRequest().requester() == ResourceRequest::Requester::XHR)
+        return WKC::EInclusionContentComposition;
+
     Page* page = frame->page();
     if (page && frame==&page->mainFrame()) {
         if (documentloader->isLoadingSubresources())
