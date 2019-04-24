@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2019 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -32,10 +32,8 @@ class KURL;
 class WKC_API HistoryItem {
 public:
     static HistoryItem* create(const String& urlString, const String& title);
+    static HistoryItem* create(HistoryItem*, bool needsRef = false);
     static void destroy(HistoryItem* self);
-
-    HistoryItem(HistoryItem*, bool needsRef = false);
-    ~HistoryItem();
 
     bool compare(const HistoryItem*) const;
 
@@ -61,6 +59,8 @@ protected:
     // Applications must not create/destroy WKC helper instances by new/delete.
     // Or, it causes memory leaks or crashes.
     HistoryItem(HistoryItemPrivate&);
+    HistoryItem(HistoryItem*, bool needsRef);
+    ~HistoryItem();
 
 private:
     HistoryItem(const HistoryItem&);

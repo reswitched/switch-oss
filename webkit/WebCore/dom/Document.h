@@ -1307,6 +1307,10 @@ public:
     void addViewportDependentPicture(HTMLPictureElement&);
     void removeViewportDependentPicture(HTMLPictureElement&);
 
+    // Used in webarchive loading tests.
+    void setAlwaysAllowLocalWebarchive() { m_alwaysAllowLocalWebarchive = true; }
+    bool alwaysAllowLocalWebarchive() const { return m_alwaysAllowLocalWebarchive; }
+
 protected:
     enum ConstructionFlags { Synthesized = 1, NonRenderedPlaceholder = 1 << 1 };
     Document(Frame*, const URL&, unsigned = DefaultDocumentClass, unsigned constructionFlags = 0);
@@ -1775,6 +1779,8 @@ private:
 #if ENABLE(MEDIA_SESSION)
     RefPtr<MediaSession> m_defaultMediaSession;
 #endif
+
+    bool m_alwaysAllowLocalWebarchive { false };
 };
 
 inline void Document::notifyRemovePendingSheetIfNeeded()

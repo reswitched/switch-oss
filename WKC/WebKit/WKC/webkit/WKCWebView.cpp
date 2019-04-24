@@ -11,7 +11,7 @@
     Copyright (C) 2009 Igalia S.L.
     Copyright (C) 2009 Movial Creative Technologies Inc.
     Copyright (C) 2009 Bobby Powers
-    Copyright (c) 2010-2018 ACCESS CO., LTD. All rights reserved.
+    Copyright (c) 2010-2019 ACCESS CO., LTD. All rights reserved.
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -85,6 +85,7 @@
 #include "GamepadProviderWKC.h"
 #endif
 #if ENABLE(VIBRATION)
+#include "Vibration.h"
 #include "VibrationClient.h"
 #include "VibrationClientWKC.h"
 #endif
@@ -3757,6 +3758,8 @@ WKCWebKitInitialize(void* memory, size_t physical_memory_size, size_t virtual_me
     wkcLayerInitializePeer();
 #endif
 
+    wkcHeapInitializePeer(memory, physical_memory_size, virtual_memory_size);
+
     if (!wkcHWOffscreenInitializePeer())
         return false;
 
@@ -3774,8 +3777,6 @@ WKCWebKitInitialize(void* memory, size_t physical_memory_size, size_t virtual_me
         return false;
 
     wkcFontSetNotifyNoMemoryProcPeer(WKCWebKitNotifyFontNoMemory);
-
-    wkcHeapInitializePeer(memory, physical_memory_size, virtual_memory_size);
 
     wkcDrawContextInitializePeer();
 
@@ -4203,11 +4204,21 @@ void WKCWebKitSSLClientCertDeleteAll(void)
     }
 }
 
-bool WKCWebKitSSLRegisterBlackCert(const char* issuerCommonName, const char* SerialNumber)
+bool WKCWebKitSSLRegisterBlackCert(const char* issuerName, const char* SerialNumber)
 {
     if (WebCore::ResourceHandleManager::sharedInstance()) {
         WebCore::ResourceHandleManager* mgr = WebCore::ResourceHandleManager::sharedInstance();
-        return mgr->SSLRegisterBlackCert(issuerCommonName, SerialNumber);
+        return mgr->SSLRegisterBlackCert(issuerName, SerialNumber);
+    }
+    return false;
+}
+
+bool WKCWebKitSSLRegisterBlackCertByDER(const char* cert, int cert_len)
+{
+    using WebCore::ResourceHandleManagerSSL;
+    if (WebCore::ResourceHandleManager::sharedInstance()) {
+        WebCore::ResourceHandleManager* mgr = WebCore::ResourceHandleManager::sharedInstance();
+        return mgr->SSLRegisterBlackCertByDER(cert, cert_len);
     }
     return false;
 }
@@ -4748,6 +4759,14 @@ WKCWebView::cancelFullScreen()
     }
     if (childmost)
         childmost->webkitCancelFullScreen();
+}
+
+void
+WKCWebView::requestCancelVibration()
+{
+#if ENABLE(VIBRATION)
+    WebCore::Vibration::from(m_private->core())->cancelVibration();
+#endif
 }
 
 void

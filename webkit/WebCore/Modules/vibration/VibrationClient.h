@@ -33,6 +33,9 @@ public:
 
     virtual void vibrate(const unsigned& time) = 0;
     virtual void cancelVibration() = 0;
+#if PLATFORM(WKC)
+    virtual void vibrationEnd() = 0;
+#endif
 
     virtual void vibrationDestroyed() = 0;
 };

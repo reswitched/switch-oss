@@ -45,9 +45,11 @@ enum Attribute {
     CustomAccessor    = 1 << 6,
     Builtin           = 1 << 7, // property is a builtin function - only used by static hashtables
     ConstantInteger   = 1 << 8, // property is a constant integer - only used by static hashtables
+    CustomValue       = 1 << 9,
     BuiltinOrFunction = Builtin | Function, // helper only used by static hashtables
     BuiltinOrFunctionOrAccessor = Builtin | Function | Accessor, // helper only used by static hashtables
     BuiltinOrFunctionOrAccessorOrConstant = Builtin | Function | Accessor | ConstantInteger, // helper only used by static hashtables
+    CustomAccessorOrValue = CustomAccessor | CustomValue,
 };
 
 class PropertySlot {

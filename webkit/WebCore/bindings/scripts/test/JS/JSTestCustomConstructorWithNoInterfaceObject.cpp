@@ -152,7 +152,7 @@ EncodedJSValue jsTestCustomConstructorWithNoInterfaceObjectConstructor(ExecState
         return throwVMTypeError(exec);
     JSValue constructor = JSTestCustomConstructorWithNoInterfaceObjectConstructor::create(exec->vm(), JSTestCustomConstructorWithNoInterfaceObjectConstructor::createStructure(exec->vm(), domObject->globalObject(), domObject->globalObject()->objectPrototype()), jsCast<JSDOMGlobalObject*>(domObject->globalObject()));
     // Shadowing constructor property to ensure reusing the same constructor object
-    domObject->putDirect(exec->vm(), exec->propertyNames().constructor, constructor, DontEnum | ReadOnly);
+    domObject->putDirect(exec->vm(), exec->propertyNames().constructor, constructor, static_cast<unsigned>(DontEnum));
     return JSValue::encode(constructor);
 }
 

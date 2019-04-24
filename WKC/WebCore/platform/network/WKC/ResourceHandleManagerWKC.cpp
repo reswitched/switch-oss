@@ -8,7 +8,7 @@
  * Copyright (C) 2009 Appcelerator Inc.
  * Copyright (C) 2009 Brent Fulgham <bfulgham@webkit.org>
  * All rights reserved.
- * Copyright (c) 2010-2018 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2019 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -4141,6 +4141,11 @@ void ResourceHandleManager::SSLClientCertDeleteAll(void)
 bool ResourceHandleManager::SSLRegisterBlackCert(const char* in_issuerCommonName, const char* serialNumber)
 {
     return m_rhmssl->SSLRegisterBlackCert(in_issuerCommonName, serialNumber);
+}
+
+bool ResourceHandleManager::SSLRegisterBlackCertByDER(const char* cert, int cert_len)
+{
+    return m_rhmssl->SSLRegisterBlackCertByDER(cert, cert_len);
 }
 
 void ResourceHandleManager::SSLBlackCertDeleteAll(void)

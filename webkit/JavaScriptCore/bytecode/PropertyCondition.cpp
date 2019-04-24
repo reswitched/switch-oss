@@ -134,7 +134,7 @@ bool PropertyCondition::isStillValidAssumingImpurePropertyWatchpoint(
         unsigned currentAttributes;
         PropertyOffset currentOffset = structure->getConcurrently(uid(), currentAttributes);
         if (currentOffset != invalidOffset) {
-            if (currentAttributes & (Accessor | CustomAccessor)) {
+            if (currentAttributes & (Accessor | CustomAccessorOrValue)) {
                 if (verbose) {
                     dataLog(
                         "Invalid because we expected not to have a setter, but we have one at offset ",

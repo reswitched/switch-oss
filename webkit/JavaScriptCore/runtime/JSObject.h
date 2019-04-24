@@ -163,6 +163,7 @@ public:
     // otherwise, it creates a property with the provided attributes. Semantically, this is performing defineOwnProperty.
     bool putDirectIndex(ExecState* exec, unsigned propertyName, JSValue value, unsigned attributes, PutDirectIndexMode mode)
     {
+        ASSERT(!value.isCustomGetterSetter());
         auto canSetIndexQuicklyForPutDirect = [&]() -> bool {
             switch (indexingType()) {
             case ALL_BLANK_INDEXING_TYPES:
@@ -1133,6 +1134,7 @@ ALWAYS_INLINE bool JSObject::inlineGetOwnPropertySlot(VM& vm, Structure& structu
 
 ALWAYS_INLINE void JSObject::fillCustomGetterPropertySlot(PropertySlot& slot, JSValue customGetterSetter, unsigned attributes, Structure& structure)
 {
+    ASSERT(attributes & CustomAccessorOrValue);
     if (structure.isDictionary()) {
         slot.setCustom(this, attributes, jsCast<CustomGetterSetter*>(customGetterSetter)->getter());
         return;
@@ -1355,7 +1357,7 @@ inline bool JSObject::putOwnDataProperty(VM& vm, PropertyName propertyName, JSVa
 inline void JSObject::putDirect(VM& vm, PropertyName propertyName, JSValue value, unsigned attributes)
 {
     ASSERT(!value.isGetterSetter() && !(attributes & Accessor));
-    ASSERT(!value.isCustomGetterSetter());
+    ASSERT(!value.isCustomGetterSetter() && !(attributes & CustomAccessorOrValue));
     PutPropertySlot slot(this);
     putDirectInternal<PutModeDefineOwnProperty>(vm, propertyName, value, attributes, slot);
 }

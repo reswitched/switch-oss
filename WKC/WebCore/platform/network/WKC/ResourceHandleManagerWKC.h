@@ -2,7 +2,7 @@
  * Copyright (C) 2006 Apple Computer, Inc.  All rights reserved.
  * Copyright (C) 2006 Michael Emmel mike.emmel@gmail.com
  * All rights reserved.
- * Copyright (c) 2010-2018 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2019 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -165,6 +165,7 @@ public:
     int   SSLUnregisterClientCert(void* certid);
     void  SSLClientCertDeleteAll(void);
     bool SSLRegisterBlackCert(const char* in_issuerCommonName, const char* serialNumber);
+    bool SSLRegisterBlackCertByDER(const char* cert, int cert_len);
     void SSLBlackCertDeleteAll(void);
     bool isCertificateBlack(void* data);
     bool SSLRegisterEVSSLOID(const char *issuerCommonName, const char *OID, const char *sha1FingerPrint, const char *SerialNumber);

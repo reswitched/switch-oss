@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2011-2018 ACCESS CO., LTD. All rights reserved.
+ *  Copyright (c) 2011-2019 ACCESS CO., LTD. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -50,6 +50,15 @@ using namespace std;
 
 namespace WebCore {
 
+// The size of a cache file is calculated as rounded up to a multiple of ContentSizeAlignment.
+static constexpr long long ContentSizeAlignment = 16 * 1024;
+
+static long long
+roundUpToMultipleOf(long long x, long long powerOf2)
+{
+    return (x + powerOf2 - 1) & ~(powerOf2 - 1);
+}
+
 // HTTPCacheResource
 
 HTTPCachedResource::HTTPCachedResource(const String& filename)
@@ -74,6 +83,7 @@ HTTPCachedResource::HTTPCachedResource(const String& filename)
     m_secureLevel = WKC::ESecureLevelNonSSL; /* non-ssl */
 
     m_contentLength = 0;
+    m_alignedContentLength = 0;
     m_resourceSize = 0;
 
     m_serverpushed = false;
@@ -89,6 +99,7 @@ HTTPCachedResource::HTTPCachedResource(const String& filename, const URL &url, c
     m_lastUsedTime = currentTime();
 
     m_contentLength = 0;
+    m_alignedContentLength = 0;
     m_resourceSize = 0;
 
     m_url = url.string();
@@ -374,6 +385,7 @@ int HTTPCachedResource::deserialize(char *buffer)
     // number field
     m_expectedContentLength = (*(long long*)buffer); buffer += sizeof(long long);
     m_contentLength = (*(long long*)buffer); buffer += sizeof(long long);
+    m_alignedContentLength = roundUpToMultipleOf(m_contentLength, ContentSizeAlignment);
     m_httpStatusCode = (*(int*)buffer); buffer += sizeof(int);
     m_noCache = (*(int*)buffer); buffer += sizeof(int);
     m_mustRevalidate = (*(int*)buffer); buffer += sizeof(int);
@@ -407,10 +419,12 @@ void HTTPCachedResource::setResourceData(SharedBuffer* resourceData)
 {
     if (!resourceData) {
         m_contentLength = 0;
+        m_alignedContentLength = 0;
     } else {
         resourceData->ref();
         m_resourceData = resourceData;
         m_contentLength = resourceData->size();
+        m_alignedContentLength = roundUpToMultipleOf(m_contentLength, ContentSizeAlignment);
     }
 }
 
@@ -501,15 +515,17 @@ HTTPCachedResource* HTTPCache::createHTTPCachedResource(URL &url, SharedBuffer* 
     if (disabled())
         return 0;
 
-    int contentLength = resourceData->size();
-    if (m_maxContentSize < contentLength)
+    long long originalContentLength = resourceData->size();
+    long long alignedContentLength = roundUpToMultipleOf(originalContentLength, ContentSizeAlignment);
+
+    if (m_maxContentSize < alignedContentLength)
         return 0;   // size over
-    if (m_minContentSize > contentLength)
+    if (m_minContentSize > originalContentLength)
         return 0;   // too small to cache
-    if (m_maxTotalContentsSize < contentLength)
+    if (m_maxTotalContentsSize < alignedContentLength)
         return 0;   // size over
-    if (m_maxTotalContentsSize < m_totalContentsSize + contentLength)
-        if (purgeBySize(contentLength)==0)
+    if (m_maxTotalContentsSize < m_totalContentsSize + alignedContentLength)
+        if (purgeBySize(alignedContentLength)==0)
             return 0; // total size over
     if (m_resourceList.size() >= m_maxContentEntries)
         if (purgeOldest()==0)
@@ -541,7 +557,7 @@ bool HTTPCache::addCachedResource(HTTPCachedResource *resource)
     m_resources.set(resource->url(), resource);
     m_resourceList.append(resource);
     m_totalResourceSize += resource->resourceSize();
-    m_totalContentsSize += resource->contentLength();
+    m_totalContentsSize += resource->alignedContentLength();
 
     return true;
 }
@@ -581,7 +597,7 @@ void HTTPCache::removeResource(HTTPCachedResource *resource)
         }
     }
     m_totalResourceSize -= resource->resourceSize();
-    m_totalContentsSize -= resource->contentLength();
+    m_totalContentsSize -= resource->alignedContentLength();
 }
 
 void HTTPCache::removeResourceByNumber(int listNumber)
@@ -593,7 +609,7 @@ void HTTPCache::removeResourceByNumber(int listNumber)
     m_resources.remove(resource->url());
     m_resourceList.remove(listNumber);
     m_totalResourceSize -= resource->resourceSize();
-    m_totalContentsSize -= resource->contentLength();
+    m_totalContentsSize -= resource->alignedContentLength();
 
     const String fileFullPath = pathByAppendingComponent(m_filePath, resource->fileName());
     wkcFileUnlinkPeer(fileFullPath.utf8().data());
@@ -795,7 +811,7 @@ long long HTTPCache::purgeBySizeInternal(long long size)
         if (resource->isUsed())
             num++;
         else {
-            purgedSize += resource->contentLength();
+            purgedSize += resource->alignedContentLength();
             removeResourceByNumber(num);
             if (purgedSize > size)
                 break;
@@ -825,7 +841,7 @@ long long HTTPCache::purgeOldest()
         if (resource->isUsed())
             num++;
         else {
-            purgedSize += resource->contentLength();
+            purgedSize += resource->alignedContentLength();
             removeResourceByNumber(num);
             break;
         }
@@ -845,11 +861,11 @@ bool HTTPCache::write(HTTPCachedResource *resource)
         if (purgeOldest()==0)
             return false; // entry limit over
 
-    long long contentLength = resource->contentLength();
-    if (m_totalContentsSize + contentLength > m_maxTotalContentsSize)
-        purgeBySize(contentLength);
+    long long alignedContentLength = resource->alignedContentLength();
+    if (m_totalContentsSize + alignedContentLength > m_maxTotalContentsSize)
+        purgeBySize(alignedContentLength);
 
-    if (gCanCacheToDiskCallback && !gCanCacheToDiskCallback(resource->url().utf8().data(), resource->computeCurrentAge(), resource->freshnessLifetime(), resource->contentLength()))
+    if (gCanCacheToDiskCallback && !gCanCacheToDiskCallback(resource->url().utf8().data(), resource->computeCurrentAge(), resource->freshnessLifetime(), resource->contentLength(), alignedContentLength))
         return false;
 
     if (!resource->writeFile(m_filePath))
@@ -858,7 +874,7 @@ bool HTTPCache::write(HTTPCachedResource *resource)
     m_resources.add(resource->url(), resource);
     appendResourceInLastUsedTimeOrder(m_resourceList, resource);
     m_totalResourceSize += resource->resourceSize();
-    m_totalContentsSize += resource->contentLength();
+    m_totalContentsSize += alignedContentLength;
 
     return true;
 }
@@ -1071,13 +1087,18 @@ HTTPCache::dumpResourceList()
     int num = m_resourceList.size();
 
     nxLog_e("HTTP Cache info");
+    nxLog_e("----------");
+    nxLog_e(" total content size: %ld", m_totalContentsSize);
     for (int i = 0; i < num; i++){
         HTTPCachedResource *resource = m_resourceList[i];
         nxLog_e("----------");
         nxLog_e("Cache %d: %s", i, resource->fileName().utf8().data());
         nxLog_e(" URL: %s", resource->url().utf8().data());
         nxLog_e(" last used time: %lf", resource->lastUsedTime());
-        nxLog_e(" mime type: %s content length: %ld HTTP Status code: %d", resource->mimeType().utf8().data(), resource->contentLength(), resource->httpStatusCode());
+        nxLog_e(" HTTP Status code: %d", resource->httpStatusCode());
+        nxLog_e(" mime type: %s", resource->mimeType().utf8().data());
+        nxLog_e(" original content length: %ld", resource->contentLength());
+        nxLog_e(" aligned content length: %ld", resource->alignedContentLength());
         nxLog_e(" expires: %lf max-age: %lf", resource->expires(), resource->maxAge());
         nxLog_e(" Last-Modified: %s", resource->lastModifiedHeader().utf8().data());
         nxLog_e(" eTag: %s", resource->eTagHeader().utf8().data());

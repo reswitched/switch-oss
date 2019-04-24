@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2011-2018 ACCESS CO., LTD. All rights reserved.
+ *  Copyright (c) 2011-2019 ACCESS CO., LTD. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -61,6 +61,7 @@ public:
     inline const String& suggestedFilename() const { return m_suggestedFilename; }
     inline const String& textEncodingName() const { return m_textEncodingName; }
     inline long long contentLength() const { return m_contentLength; }
+    inline long long alignedContentLength() const { return m_alignedContentLength; }
     inline const String& fileName() const { return m_fileName; }
     inline int httpStatusCode() const { return m_httpStatusCode; }
     inline bool noCache() const { return m_noCache; }
@@ -124,6 +125,7 @@ private:
 
     SharedBuffer* m_resourceData;
     long long m_contentLength;
+    long long m_alignedContentLength;
     int m_resourceSize;
     bool m_used;
 

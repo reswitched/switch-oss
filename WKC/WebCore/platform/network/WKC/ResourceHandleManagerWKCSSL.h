@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2019 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -144,6 +144,7 @@ public:
 
     // Certificate Black List
     bool SSLRegisterBlackCert(const char* in_issuerCommonName, const char* serialNumber);
+    bool SSLRegisterBlackCertByDER(const char* cert, int cert_len);
     void SSLBlackCertDeleteAll(void);
     bool isCertificateBlack(void* data);
 

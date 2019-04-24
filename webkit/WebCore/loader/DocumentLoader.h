@@ -363,6 +363,8 @@ namespace WebCore {
         void contentFilterDidDecide();
 #endif
 
+        bool disallowWebArchive() const;
+
         Frame* m_frame;
         Ref<CachedResourceLoader> m_cachedResourceLoader;
 

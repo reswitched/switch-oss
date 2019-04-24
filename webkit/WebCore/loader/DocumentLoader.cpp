@@ -78,6 +78,10 @@
 #include "ContentFilter.h"
 #endif
 
+#if USE(QUICK_LOOK)
+#include "QuickLook.h"
+#endif
+
 namespace WebCore {
 
 static void cancelAll(const ResourceLoaderMap& loaders)
@@ -740,6 +744,64 @@ void DocumentLoader::responseReceived(CachedResource* resource, const ResourceRe
 #endif
 }
 
+// Prevent web archives from loading if it is remote or it is not the main frame because they
+// can claim to be from any domain and thus avoid cross-domain security checks (4120255, 45524528).
+bool DocumentLoader::disallowWebArchive() const
+{
+    using MIMETypeHashSet = HashSet<String, CaseFoldingHash>;
+#if PLATFORM(WKC)
+    WKC_DEFINE_STATIC_PTR(MIMETypeHashSet*, webArchiveMIMETypes, 0);
+    if (!webArchiveMIMETypes) {
+        webArchiveMIMETypes = new MIMETypeHashSet({
+            ASCIILiteral("application/x-webarchive"),
+            ASCIILiteral("application/x-mimearchive"),
+            ASCIILiteral("multipart/related"),
+#if PLATFORM(GTK)
+            ASCIILiteral("message/rfc822"),
+#endif
+        });
+    }
+#else
+    static NeverDestroyed<MIMETypeHashSet> webArchiveMIMETypes {
+        MIMETypeHashSet {
+            ASCIILiteral("application/x-webarchive"),
+            ASCIILiteral("application/x-mimearchive"),
+            ASCIILiteral("multipart/related"),
+#if PLATFORM(GTK)
+            ASCIILiteral("message/rfc822"),
+#endif
+        }
+    };
+#endif
+
+    String mimeType = m_response.mimeType();
+#if PLATFORM(WKC)
+    if (mimeType.isNull() || !webArchiveMIMETypes->contains(mimeType))
+#else
+    if (mimeType.isNull() || !webArchiveMIMETypes.get().contains(mimeType))
+#endif
+        return false;
+
+#if USE(QUICK_LOOK)
+    if (m_response.url().protocolIs(QLPreviewProtocol()))
+        return false;
+#endif
+
+    if (m_substituteData.isValid())
+        return false;
+
+    if (!SchemeRegistry::shouldTreatURLSchemeAsLocal(m_request.url().protocol()))
+        return true;
+
+    if (!frame() || frame()->isMainFrame())
+        return false;
+
+    // On purpose of maintaining existing tests.
+    if (!frame()->document() || frame()->document()->topDocument().alwaysAllowLocalWebarchive())
+        return false;
+    return true;
+}
+
 void DocumentLoader::continueAfterContentPolicy(PolicyAction policy)
 {
     ASSERT(m_waitingForContentPolicy);
@@ -747,20 +809,9 @@ void DocumentLoader::continueAfterContentPolicy(PolicyAction policy)
     if (isStopping())
         return;
 
-    URL url = m_request.url();
-    const String& mimeType = m_response.mimeType();
-    
     switch (policy) {
     case PolicyUse: {
-        // Prevent remote web archives from loading because they can claim to be from any domain and thus avoid cross-domain security checks (4120255).
-        bool isRemoteWebArchive = (equalIgnoringCase("application/x-webarchive", mimeType)
-            || equalIgnoringCase("application/x-mimearchive", mimeType)
-#if PLATFORM(GTK)
-            || equalIgnoringCase("message/rfc822", mimeType)
-#endif
-            || equalIgnoringCase("multipart/related", mimeType))
-            && !m_substituteData.isValid() && !SchemeRegistry::shouldTreatURLSchemeAsLocal(url.protocol());
-        if (!frameLoader()->client().canShowMIMEType(mimeType) || isRemoteWebArchive) {
+        if (!frameLoader()->client().canShowMIMEType(m_response.mimeType()) || disallowWebArchive()) {
             frameLoader()->policyChecker().cannotShowMIMEType(m_response);
             // Check reachedTerminalState since the load may have already been canceled inside of _handleUnimplementablePolicyWithErrorCode::.
             stopLoadingForPolicyChange();

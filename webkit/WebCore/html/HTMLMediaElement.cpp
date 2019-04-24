@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2015 Apple Inc. All rights reserved.
+ * Copyright (C) 2007-2018 Apple Inc. All rights reserved.
  * Copyright (c) 2015-2017 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -6056,9 +6056,10 @@ void HTMLMediaElement::markCaptionAndSubtitleTracksAsUnconfigured(ReconfigureMod
 
     m_processingPreferenceChange = true;
     clearFlags(m_pendingActionFlags, ConfigureTextTracks);
-    if (mode == Immediately)
+    if (mode == Immediately) {
+        Ref<HTMLMediaElement> protectedThis(*this); // configureTextTracks calls methods that can trigger arbitrary DOM mutations.
         configureTextTracks();
-    else
+    } else
         scheduleDelayedAction(ConfigureTextTracks);
 }
 
