@@ -2530,6 +2530,11 @@ static inline bool frameElementAndViewPermitScroll(HTMLFrameElementBase* frameEl
 
 bool RenderLayer::allowsCurrentScroll() const
 {
+#if PLATFORM(WKC)
+    FrameView& frameView = renderer().view().frameView();
+    if (frameView.prohibitsScrolling())
+        return false;
+#endif
     if (!renderer().hasOverflowClip())
         return false;
 

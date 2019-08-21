@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2015-2019 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -279,46 +279,126 @@ CryptoAlgorithmRegistry::platformRegisterAlgorithms(void)
 void
 CryptoAlgorithmAES_CBC::platformEncrypt(const CryptoAlgorithmAesCbcParams& params, const CryptoKeyAES& key, const CryptoOperationData& data, VectorCallback success, VoidCallback failureCallback, ExceptionCode& ec)
 {
-    AES_KEY aes;
-    int ret = AES_set_encrypt_key(key.key().data(), key.key().size()*8, &aes);
-    if (ret<0) {
-        ec = ABORT_ERR;
-        failureCallback();
-        return;
+    EVP_CIPHER_CTX* ctx = nullptr;
+    const EVP_CIPHER* cipher = nullptr;
+
+    size_t buflen = ((data.second + AES_BLOCK_SIZE) / AES_BLOCK_SIZE) * AES_BLOCK_SIZE;
+    Vector<uint8_t> ciphertext_buf(buflen);
+
+    unsigned char* ciphertext = ciphertext_buf.data();
+    int ciphertext_len = 0;
+
+    const unsigned char* plaintext = data.first;
+    int plaintext_len = data.second;
+
+    int len = 0;
+
+    ctx = EVP_CIPHER_CTX_new();
+    if (!ctx)
+        goto error;
+
+    switch (key.key().size() * 8) {
+    case 128:
+        cipher = EVP_aes_128_cbc();
+        break;
+    case 192:
+        cipher = EVP_aes_192_cbc();
+        break;
+    case 256:
+        cipher = EVP_aes_256_cbc();
+        break;
+    default:
+        goto error;
     }
-    size_t buflen = data.second;
-    if (buflen < AES_BLOCK_SIZE)
-        buflen = AES_BLOCK_SIZE + 1;
-    Vector<uint8_t> out(buflen);
-    AES_cbc_encrypt(data.first, out.data(), data.second, &aes, (unsigned char *)params.iv.data(), AES_ENCRYPT);
-    out.shrink(data.second);
-    success(out);
+
+    if (1 != EVP_EncryptInit_ex(ctx, cipher, nullptr, key.key().data(), reinterpret_cast<const unsigned char *>(params.iv.data())))
+        goto error;
+
+    if (1 != EVP_EncryptUpdate(ctx, ciphertext, &len, plaintext, plaintext_len))
+        goto error;
+
+    ciphertext_len += len;
+
+    if (1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len))
+        goto error;
+
+    ciphertext_len += len;
+
+    EVP_CIPHER_CTX_free(ctx);
+
+    ciphertext_buf.shrink(ciphertext_len);
+    success(ciphertext_buf);
+
+    return;
+
+error:
+    if (ctx)
+        EVP_CIPHER_CTX_free(ctx);
+
+    ec = ABORT_ERR;
+    failureCallback();
 }
 
 void
 CryptoAlgorithmAES_CBC::platformDecrypt(const CryptoAlgorithmAesCbcParams& params, const CryptoKeyAES& key, const CryptoOperationData& data, VectorCallback success, VoidCallback failureCallback, ExceptionCode& ec)
 {
-    AES_KEY aes;
-    int ret = AES_set_decrypt_key(key.key().data(), key.key().size()*8, &aes);
-    if (ret<0) {
-        ec = ABORT_ERR;
-        failureCallback();
-        return;
-    }
-    Vector<uint8_t> out(data.second);
-    AES_cbc_encrypt(data.first, out.data(), data.second, &aes, (unsigned char *)params.iv.data(), AES_DECRYPT);
+    EVP_CIPHER_CTX* ctx = nullptr;
+    const EVP_CIPHER* cipher = nullptr;
 
-    if (out.isEmpty()) {
-        ec = ABORT_ERR;
-        failureCallback();
-        return;
+    Vector<uint8_t> plaintext_buf(data.second);
+
+    unsigned char* plaintext = plaintext_buf.data();
+    int plaintext_len = 0;
+
+    const unsigned char* ciphertext = data.first;
+    int ciphertext_len = data.second;
+
+    int len = 0;
+
+    ctx = EVP_CIPHER_CTX_new();
+    if (!ctx)
+        goto error;
+
+    switch (key.key().size() * 8) {
+    case 128:
+        cipher = EVP_aes_128_cbc();
+        break;
+    case 192:
+        cipher = EVP_aes_192_cbc();
+        break;
+    case 256:
+        cipher = EVP_aes_256_cbc();
+        break;
+    default:
+        goto error;
     }
-    size_t destlen = ::strlen((char *)out.data());
-    if (destlen > AES_BLOCK_SIZE && !(destlen % AES_BLOCK_SIZE)) {
-        destlen -= AES_BLOCK_SIZE;
-        out.shrink(destlen);
-    }
-    success(out);
+
+    if (1 != EVP_DecryptInit_ex(ctx, cipher, nullptr, key.key().data(), reinterpret_cast<const unsigned char *>(params.iv.data())))
+        goto error;
+
+    if (1 != EVP_DecryptUpdate(ctx, plaintext, &len, ciphertext, ciphertext_len))
+        goto error;
+
+    plaintext_len += len;
+
+    if (1 != EVP_DecryptFinal_ex(ctx, plaintext + len, &len))
+        goto error;
+
+    plaintext_len += len;
+
+    EVP_CIPHER_CTX_free(ctx);
+
+    plaintext_buf.shrink(plaintext_len);
+    success(plaintext_buf);
+
+    return;
+
+error:
+    if (ctx)
+        EVP_CIPHER_CTX_free(ctx);
+
+    ec = ABORT_ERR;
+    failureCallback();
 }
 
 void

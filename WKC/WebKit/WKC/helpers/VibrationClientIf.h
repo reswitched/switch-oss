@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2016 ACCESS CO., LTD. All rights reserved.
+ *  Copyright (c) 2016-2019 ACCESS CO., LTD. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Library General Public
@@ -31,6 +31,8 @@ public:
     virtual void vibrate(const unsigned& time) = 0;
 
     virtual void cancelVibration() = 0;
+
+    virtual void vibrationEnd() = 0;
 
     virtual void vibrationDestroyed() = 0;
 };

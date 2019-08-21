@@ -60,7 +60,7 @@
 #define ENABLE_FONT_LOAD_EVENTS 1
 #define ENABLE_FTPDIR 0
 #define ENABLE_FULLSCREEN_API 1
-#define ENABLE_INTL 1
+#define ENABLE_INTL 0
 // ref.http://code.google.com/p/chromium/issues/detail?id=152430
 #define ENABLE_MATHML 0
 #define ENABLE_MHTML 1
@@ -125,7 +125,7 @@
 #define ENABLE_SPEECH_SYNTHESIS 0
 
 #define ENABLE_MEDIA_SOURCE 1
-#define ENABLE_MEDIA_STREAM 1
+#define ENABLE_MEDIA_STREAM 0
 #define ENABLE_VIDEO 1
 #define ENABLE_VIDEO_TRACK 1
 #define ENABLE_WEBVTT_REGIONS 1
@@ -798,7 +798,7 @@
 #endif
 
 #if !defined(HAVE_VASPRINTF)
-#if !COMPILER(MSVC) &&!COMPILER(RVCT) && !COMPILER(MINGW)
+#if !COMPILER(MSVC) &&!COMPILER(RVCT) && !COMPILER(MINGW) && !PLATFORM(WKC)
 #define HAVE_VASPRINTF 1
 #endif
 #endif

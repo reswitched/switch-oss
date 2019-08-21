@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2017 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2019 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -641,7 +641,8 @@ void ResourceHandleManagerSSL::initializeHandleSSL(ResourceHandle* job)
         curl_easy_setopt(d->m_handle, CURLOPT_SSL_VERIFYPEER, 1);
     }
 
-    curl_easy_setopt(d->m_handle, CURLOPT_SSL_CIPHER_LIST, "ALL:!aNULL:!eNULL:!SSLv2:!RC2:!RC4:!DES:!EXPORT56:!ADH:!DH:!kECDH:+kECDHe:+HIGH:+MEDIUM:!LOW");
+    curl_easy_setopt(d->m_handle, CURLOPT_SSL_CIPHER_LIST,
+        "ECDHE+ECDSA+AESGCM:ECDHE+ECDSA+AES:ECDHE+AESGCM:ECDHE+AES:RSA+AESGCM:RSA+AES+SHA:!AESCCM");
 //    curl_easy_setopt(d->m_handle, CURLOPT_SSL_VERIFYSTATUS, (long)1);
 
     d->m_SSLVerifyPeerResult = 0;
@@ -1265,6 +1266,65 @@ bool ResourceHandleManagerSSL::SSLRegisterBlackCert(const char* issuerCommonName
 
     m_certBlackList.add(black);
     return true;
+}
+
+bool ResourceHandleManagerSSL::SSLRegisterBlackCertByDER(const char* cert, int cert_len)
+{
+    bool ret;
+    X509 *x = 0;
+    int index;
+
+    X509_NAME_ENTRY* entry = 0;
+    unsigned char* issuerName = 0;
+    int len = 0;
+    BIGNUM* bigNumSerialNumber = 0;
+    const ASN1_INTEGER* ansiIntegerSerialNumber;
+    char* hexSerialNumberStr = 0;
+    bool result;
+
+    x = d2i_X509(0, reinterpret_cast<const unsigned char **>(&cert), cert_len);
+    if (!x) {
+        ret =  false;
+        goto end;
+    }
+
+    // Find the position of the commonName in the certificate
+    index = X509_NAME_get_index_by_NID(X509_get_issuer_name(x), NID_commonName, -1);
+    if (index == -1) { // -1 means not found
+        // Find the position of the organizationalUnitName in the certificate
+        index = X509_NAME_get_index_by_NID(X509_get_issuer_name(x), NID_organizationalUnitName, -1);
+        if (index == -1) { // -1 means not found
+            // Certificate has no commonName or organizationalUnitName
+            // This may be illegal!!!
+            ret = false;
+            goto end;
+        }
+    }
+
+    // Extract the issuerName
+    entry = X509_NAME_get_entry(X509_get_issuer_name(x), index);
+    len = ASN1_STRING_to_UTF8(&issuerName, entry->value);
+
+    // Extract the serial
+    ansiIntegerSerialNumber = X509_get0_serialNumber(x);
+    bigNumSerialNumber = ASN1_INTEGER_to_BN(ansiIntegerSerialNumber, nullptr);
+    // Convert serial to Hexadecimal
+    hexSerialNumberStr = BN_bn2hex(bigNumSerialNumber);
+
+    // Register with Black List
+    result = SSLRegisterBlackCert(reinterpret_cast<char*>(issuerName), hexSerialNumberStr);
+    OPENSSL_free(hexSerialNumberStr);
+    OPENSSL_free(issuerName);
+    if (!result) {
+        ret = false;
+        goto end;
+    }
+    ret = true;
+
+end:
+    if (x) X509_free(x);
+
+    return ret;
 }
 
 void ResourceHandleManagerSSL::SSLBlackCertDeleteAll(void)

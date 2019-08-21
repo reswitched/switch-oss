@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2011-2019 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -135,13 +135,24 @@ HistoryItem::create(const String& urlString, const String& title)
 {
     RefPtr<WebCore::HistoryItem> item = WebCore::HistoryItem::create(urlString, title);
     HistoryItemPrivate wobj(item.get());
-    return new HistoryItem(&wobj.wkc(), true);
+    void* p = WTF::fastMalloc(sizeof(HistoryItem));
+    return new (p) HistoryItem(&wobj.wkc(), true);
+}
+
+HistoryItem*
+HistoryItem::create(HistoryItem* parent, bool needsRef)
+{
+    void* p = WTF::fastMalloc(sizeof(HistoryItem));
+    return new (p) HistoryItem(parent, needsRef);
 }
 
 void
 HistoryItem::destroy(HistoryItem* self)
 {
-    delete self;
+    if (!self)
+        return;
+    self->~HistoryItem();
+    WTF::fastFree(self);
 }
 
 HistoryItem::HistoryItem(HistoryItemPrivate& parent)

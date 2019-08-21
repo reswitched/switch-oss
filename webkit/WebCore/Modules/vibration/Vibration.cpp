@@ -97,12 +97,18 @@ void Vibration::timerFired()
 
     if (m_pattern.isEmpty()) {
         m_state = State::Idle;
+#if PLATFORM(WKC)
+        m_vibrationClient->vibrationEnd();
+#endif
         return;
     }
 
     switch (m_state) {
     case State::Vibrating:
         m_state = State::Waiting;
+#if PLATFORM(WKC)
+        m_vibrationClient->vibrationEnd();
+#endif
         break;
     case State::Waiting:
     case State::Idle:

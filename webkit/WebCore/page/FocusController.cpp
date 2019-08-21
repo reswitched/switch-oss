@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2006, 2007, 2013 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Nuanti Ltd.
- * Copyright (C) 2012-2018 ACCESS CO., LTD. All rights reserved.
+ * Copyright (C) 2012-2019 ACCESS CO., LTD. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -789,14 +789,17 @@ static bool isFocusControlBannedElement(const FocusCandidate& candidate)
     if (view->parent())
         frameRect = view->parent()->contentsToWindow(frameRect);
 
-    Vector<FloatQuad> quads;
-    candidateElement.renderer()->absoluteQuads(quads);
-    size_t n = quads.size();
+    Vector<IntRect> rects;
+    size_t n = 1;
+    if (candidate.visibleNode->renderer()) {
+        candidate.visibleNode->renderer()->focusRingRects(rects);
+        n = rects.size();
+    }
     LayoutRect candidateRect = candidate.rect;
 
     for (size_t i = 0; i < n; ++i) {
         if (n != 1)
-            candidateRect = rectToAbsoluteCoordinates(candidateElement.document().frame(), quads[i].enclosingBoundingBox());
+            candidateRect = rectToAbsoluteCoordinates(candidateElement.document().frame(), rects[i]);
 
         if (candidateRect.isEmpty())
             continue;
@@ -1821,14 +1824,6 @@ FocusController::findNearestClickableElementFromPoint(const IntPoint& point, con
 
     Element* root = ElementTraversal::firstWithin(*fr.document());
     Element* e = findNearestClickableElementFromPoint(root, contentsPoint, scopeRect);
-
-    if (is<HTMLAreaElement>(e)) {
-        HTMLAreaElement* area = downcast<HTMLAreaElement>(e);
-        HTMLImageElement* image = area->imageElement();
-        if (!image || !image->renderer())
-            return 0;
-        e = image;
-    }
 
     return e;
 }

@@ -292,7 +292,7 @@ GetByIdStatus GetByIdStatus::computeFor(const StructureSet& set, UniquedStringIm
         PropertyOffset offset = structure->getConcurrently(uid, attributes);
         if (!isValidOffset(offset))
             return GetByIdStatus(TakesSlowPath); // It's probably a prototype lookup. Give up on life for now, even though we could totally be way smarter about it.
-        if (attributes & Accessor)
+        if (attributes & CustomAccessorOrValue)
             return GetByIdStatus(MakesCalls); // We could be smarter here, like strenght-reducing this to a Call.
         
         if (!result.appendVariant(GetByIdVariant(structure, offset)))

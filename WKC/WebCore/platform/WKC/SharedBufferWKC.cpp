@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2008 Collabora Ltd.
- * Copyright (c) 2010, 2015 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2010-2019 ACCESS CO., LTD. All rights reserved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -23,17 +23,47 @@
 #include "CString.h"
 #include "FileSystem.h"
 
-#include "NotImplemented.h"
+#include <wkc/wkcfilepeer.h>
+
+#ifdef __WKC_IMPLICIT_INCLUDE_SYSSTAT
+#include <sys/stat.h>
+#endif
 
 namespace WebCore {
 
 RefPtr<SharedBuffer>
 SharedBuffer::createFromReadingFile(const String& filePath)
 {
-    notImplemented();
     if (filePath.isEmpty())
-        return 0;
-    return 0;
+        return nullptr;
+
+    CString filename = fileSystemRepresentation(filePath);
+    void* fd = wkcFileFOpenPeer(WKC_FILEOPEN_USAGE_WEBCORE, filename.data(), "rb");
+    if (!fd)
+        return nullptr;
+
+    struct stat fileStat;
+    if (wkcFileFStatPeer(fd, &fileStat) == -1) {
+        wkcFileFClosePeer(fd);
+        return nullptr;
+    }
+
+    size_t bytesToRead = fileStat.st_size;
+    if (fileStat.st_size < 0 || bytesToRead != static_cast<unsigned long long>(fileStat.st_size)) {
+        wkcFileFClosePeer(fd);
+        return nullptr;
+    }
+
+    Vector<char> buffer(bytesToRead);
+
+    size_t totalBytesRead = 0;
+    ssize_t bytesRead;
+    while ((bytesRead = wkcFileFReadPeer(buffer.data() + totalBytesRead, 1, bytesToRead - totalBytesRead, fd)) > 0)
+        totalBytesRead += bytesRead;
+
+    wkcFileFClosePeer(fd);
+
+    return totalBytesRead == bytesToRead ? SharedBuffer::adoptVector(buffer) : nullptr;
 }
 
 } // namespace WebCore

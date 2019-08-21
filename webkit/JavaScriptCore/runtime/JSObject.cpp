@@ -1280,6 +1280,7 @@ void JSObject::putDirectCustomAccessor(VM& vm, PropertyName propertyName, JSValu
 
 void JSObject::putDirectNonIndexAccessor(VM& vm, PropertyName propertyName, JSValue value, unsigned attributes)
 {
+    ASSERT(attributes & Accessor);
     PutPropertySlot slot(this);
     putDirectInternal<PutModeDefineOwnProperty>(vm, propertyName, value, attributes, slot);
 
@@ -2225,7 +2226,8 @@ bool JSObject::putDirectIndexBeyondVectorLengthWithArrayStorage(ExecState* exec,
 bool JSObject::putDirectIndexSlowOrBeyondVectorLength(ExecState* exec, unsigned i, JSValue value, unsigned attributes, PutDirectIndexMode mode)
 {
     VM& vm = exec->vm();
-    
+    ASSERT(!value.isCustomGetterSetter());
+
     if (!canDoFastPutDirectIndex(this)) {
         PropertyDescriptor descriptor;
         descriptor.setDescriptor(value, attributes);
