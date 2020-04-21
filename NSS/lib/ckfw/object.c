@@ -542,7 +542,7 @@ nssCKFWObject_GetAttribute(
     CK_RV *pError)
 {
     NSSItem *rv = (NSSItem *)NULL;
-    NSSCKFWItem mdItem;
+    NSSCKFWItem mdItem = { PR_FALSE, NULL };
 
 #ifdef NSSDEBUG
     if (!pError) {
@@ -613,6 +613,7 @@ nssCKFWObject_GetAttribute(
 
     (void)nsslibc_memcpy(rv->data, mdItem.item->data, rv->size);
 
+done:
     if (PR_TRUE == mdItem.needsFreeing) {
         PR_ASSERT(fwObject->mdObject->FreeAttribute);
         if (fwObject->mdObject->FreeAttribute) {
@@ -620,7 +621,6 @@ nssCKFWObject_GetAttribute(
         }
     }
 
-done:
     (void)nssCKFWMutex_Unlock(fwObject->mutex);
     return rv;
 }

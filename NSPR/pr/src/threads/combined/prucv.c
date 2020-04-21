@@ -161,22 +161,41 @@ PRStatus _PR_WaitCondVar(
     PR_ASSERT(!(thread->flags & _PR_IDLE_THREAD));
 
 #ifdef _PR_GLOBAL_THREADS_ONLY
+#ifdef NN_NINTENDO_SDK
+    _PR_MD_LOCK(&thread->threadLock);
+#endif
     if (_PR_PENDING_INTERRUPT(thread)) {
         PR_SetError(PR_PENDING_INTERRUPT_ERROR, 0);
         thread->flags &= ~_PR_INTERRUPT;
+#ifdef NN_NINTENDO_SDK
+        _PR_MD_UNLOCK(&thread->threadLock);
+#endif
         return PR_FAILURE;
     }
-
     thread->wait.cvar = cvar;
     lock->owner = NULL;
+#ifdef NN_NINTENDO_SDK
+    _PR_MD_UNLOCK(&thread->threadLock);
+#endif
+
     _PR_MD_WAIT_CV(&cvar->md,&lock->ilock, timeout);
+
+#ifdef NN_NINTENDO_SDK
+    _PR_MD_LOCK(&thread->threadLock);
+#endif
     thread->wait.cvar = NULL;
     lock->owner = thread;
     if (_PR_PENDING_INTERRUPT(thread)) {
         PR_SetError(PR_PENDING_INTERRUPT_ERROR, 0);
         thread->flags &= ~_PR_INTERRUPT;
+#ifdef NN_NINTENDO_SDK
+        _PR_MD_UNLOCK(&thread->threadLock);
+#endif
         return PR_FAILURE;
     }
+#ifdef NN_NINTENDO_SDK
+    _PR_MD_UNLOCK(&thread->threadLock);
+#endif
 
     return PR_SUCCESS;
 #else  /* _PR_GLOBAL_THREADS_ONLY */

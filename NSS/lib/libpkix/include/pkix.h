@@ -285,6 +285,17 @@ PKIX_ValidateChain_NB(
  *  Returns a Build Error if the function fails in a non-fatal way.
  *  Returns a Fatal Error if the function fails in an unrecoverable way.
  */
+#ifdef NN_NINTENDO_SDK
+PKIX_Error *
+PKIX_BuildChain(
+        PKIX_ProcessingParams *params,
+        void **pNBIOContext,
+        void **pState,
+        PKIX_BuildResult **pResult,
+	PKIX_VerifyNode **pVerifyNode,
+        void *plContext,
+        const char * pHostName);
+#else
 PKIX_Error *
 PKIX_BuildChain(
         PKIX_ProcessingParams *params,
@@ -293,6 +304,7 @@ PKIX_BuildChain(
         PKIX_BuildResult **pResult,
 	PKIX_VerifyNode **pVerifyNode,
         void *plContext);
+#endif
 
 #ifdef __cplusplus
 }

@@ -40,7 +40,7 @@
 
 
 #ifdef NN_NINTENDO_SDK
-#include "nnsdk_sdb.c"
+#include "softoken/nnsdk_sdb.h"
 #endif    /*  NN_NINTENDO_SDK  */
 
 
@@ -118,6 +118,9 @@ struct SDBPrivateStr {
     char *cacheTable;	        /* invariant, SQL table cache of db */
     PRMonitor *dbMon;		/* invariant, monitor to protect
 				 * sqlXact* fields, and use of the sqlReadDB */
+#ifdef NN_NINTENDO_SDK
+    PRThread* pMonitorOwnerThread;
+#endif // NN_NINTENDO_SDK
 };
 
 typedef struct SDBPrivateStr SDBPrivate;
@@ -626,6 +629,9 @@ sdb_openDBLocal(SDBPrivate *sdb_p, sqlite3 **sqlDB, const char **table)
 
     /* leave holding the lock. only one thread can actually use a given
      * database connection at once */
+#ifdef NN_NINTENDO_SDK
+    sdb_p->pMonitorOwnerThread = PR_GetCurrentThread();
+#endif
 
     return CKR_OK;
 }
@@ -634,10 +640,19 @@ sdb_openDBLocal(SDBPrivate *sdb_p, sqlite3 **sqlDB, const char **table)
 static CK_RV
 sdb_closeDBLocal(SDBPrivate *sdb_p, sqlite3 *sqlDB)
 {
+#ifdef NN_NINTENDO_SDK
+    if (sdb_p->sqlXactDB != sqlDB ||
+        (sdb_p->pMonitorOwnerThread != NULL &&
+         sdb_p->pMonitorOwnerThread == PR_GetCurrentThread())) {
+        PR_ExitMonitor(sdb_p->dbMon);
+        sdb_p->pMonitorOwnerThread = NULL;
+    }
+#else
    if (sdb_p->sqlXactDB != sqlDB) {
 	/* if we weren't in a transaction, we got a lock */
         PR_ExitMonitor(sdb_p->dbMon);
    }
+#endif // NN_NINTENDO_SDK
    return CKR_OK;
 }
 
@@ -648,6 +663,9 @@ sdb_closeDBLocal(SDBPrivate *sdb_p, sqlite3 *sqlDB)
 static int
 sdb_openDB(const char *name, sqlite3 **sqlDB, int flags)
 {
+#ifdef NN_NINTENDO_SDK
+    return nnsdkSdbOpenDb(name, sqlDB, flags, SDB_SQLITE_BUSY_TIMEOUT);
+#else
     int sqlerr;
     /*
      * in sqlite3 3.5.0, there is a new open call that allows us
@@ -660,10 +678,6 @@ sdb_openDB(const char *name, sqlite3 **sqlDB, int flags)
 	return sqlerr;
     }
 
-#ifdef NN_NINTENDO_SDK
-    sdb_customizeDB(*sqlDB);
-#endif    /*  NN_NINTENDO_SDK  */
-
     sqlerr = sqlite3_busy_timeout(*sqlDB, SDB_SQLITE_BUSY_TIMEOUT);
     if (sqlerr != SQLITE_OK) {
 	sqlite3_close(*sqlDB);
@@ -671,6 +685,7 @@ sdb_openDB(const char *name, sqlite3 **sqlDB, int flags)
 	return sqlerr;
     }
     return SQLITE_OK;
+#endif // NN_NINTENDO_SDK
 }
 
 /* Sigh, if we created a new table since we opened the database,
@@ -1435,9 +1450,13 @@ sdb_complete(SDB *sdb, const char *cmd)
 
     error = sdb_mapSQLError(sdb_p->type, sqlerr);
 
+#ifdef NN_NINTENDO_SDK
+    nnsdkSdbClose(sqlDB);
+#else
     /* We just finished a transaction.
      * Free the database, and remove it from the list */
     sqlite3_close(sqlDB);
+#endif // NN_NINTENDO_SDK
 
     return error;
 }
@@ -1758,7 +1777,11 @@ sdb_init(char *dbname, char *table, sdbDataType type, int *inUpdate,
      * sqlite3 will always create it.
      */
     LOCK_SQLITE();
+#ifdef NN_NINTENDO_SDK
+    create = nnsdkSdbIsDbExists(dbname);
+#else
     create = (PR_Access(dbname, PR_ACCESS_EXISTS) != PR_SUCCESS);
+#endif
     if ((flags == SDB_RDONLY) && create) {
 	error = sdb_mapSQLError(type, SQLITE_CANTOPEN);
 	goto loser;
@@ -1969,6 +1992,9 @@ sdb_init(char *dbname, char *table, sdbDataType type, int *inUpdate,
     /* these fields are protected by the lock */
     sdb_p->sqlXactDB = NULL;
     sdb_p->sqlXactThread = NULL;
+#ifdef NN_NINTENDO_SDK
+    sdb_p->pMonitorOwnerThread = NULL;
+#endif
     sdb->private = sdb_p;
     sdb->version = 0;
     sdb->sdb_flags = inFlags | SDB_HAS_META;
@@ -2123,6 +2149,10 @@ loser:
 CK_RV
 s_shutdown()
 {
+#ifdef NN_NINTENDO_SDK
+    nnsdkSdbShutdown();
+#endif
+
 #ifdef SQLITE_UNSAFE_THREADS
     if (sqlite_lock) {
 	PR_DestroyLock(sqlite_lock);

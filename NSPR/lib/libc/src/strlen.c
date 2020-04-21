@@ -8,6 +8,10 @@
 #include "prlog.h"
 #include <string.h>
 
+#ifdef NN_NINTENDO_SDK
+#include <md/nnsdk_NsprUtil.h>
+#endif // NN_NINTENDO_SDK
+
 PR_IMPLEMENT(PRUint32)
 PL_strlen(const char *str)
 {

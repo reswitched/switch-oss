@@ -157,6 +157,26 @@ nssTrustDomain_GetSessionForToken (
     return nssToken_GetDefaultSession(token);
 }
 
+#ifdef NN_NINTENDO_SDK
+NSS_IMPLEMENT NSSSlot **
+nnsdkNssPortGetActiveSlots (
+  NSSTrustDomain *td,
+  PRUint32 *updateLevel
+)
+{
+    return nssTrustDomain_GetActiveSlots(td, updateLevel);
+}
+
+NSS_IMPLEMENT nssSession *
+nnsdkNssPortGetSessionForToken (
+  NSSTrustDomain *td,
+  NSSToken *token
+)
+{
+    return nssTrustDomain_GetSessionForToken(td, token);
+}
+#endif /* NN_NINTENDO_SDK */
+
 NSS_IMPLEMENT PRStatus
 NSSTrustDomain_SetDefaultCallback (
   NSSTrustDomain *td,

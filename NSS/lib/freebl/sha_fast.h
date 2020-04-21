@@ -9,7 +9,7 @@
 
 #define SHA1_INPUT_LEN 64
 
-#if defined(IS_64) && !defined(__sparc) 
+#if defined(IS_64) && !defined(__sparc) && !defined(NN_NINTENDO_SDK)
 typedef PRUint64 SHA_HW_t;
 #define SHA1_USING_64_BIT 1
 #else

@@ -36,7 +36,8 @@ static PZLock *cacheLock = NULL;
 #define UNLOCK_CACHE PZ_Unlock(cacheLock)
 
 #if defined(NN_NINTENDO_SDK)
-extern void SSL_UpdateSessionCacheList();
+extern void SSL_UpdateSessionCacheList(sslSessionID *sid);
+extern void SSL_CheckSessionCacheMemory();
 #endif // NN_NINTENDO_SDK
 
 static SECStatus
@@ -258,6 +259,10 @@ ssl_LookupSID(const PRIPv6Addr *addr, PRUint16 port, const char *peerID,
     sslSessionID *sid;
     PRUint32 now;
 
+#if defined(NN_NINTENDO_SDK)
+    SSL_CheckSessionCacheMemory();
+#endif
+
     if (!urlSvrName)
         return NULL;
     now = ssl_Time();
@@ -353,16 +358,17 @@ CacheSID(sslSessionID *sid)
     if (!sid->expirationTime)
         sid->expirationTime = sid->creationTime + expirationPeriod;
 
-#if defined(NN_NINTENDO_SDK)
-    SSL_UpdateSessionCacheList();
-#endif
-
     /*
      * Put sid into the cache.  Bump reference count to indicate that
      * cache is holding a reference. Uncache will reduce the cache
      * reference.
      */
     LOCK_CACHE;
+
+#if defined(NN_NINTENDO_SDK)
+    SSL_UpdateSessionCacheList(sid);
+#endif
+
     sid->references++;
     sid->cached = in_client_cache;
     sid->next = cache;

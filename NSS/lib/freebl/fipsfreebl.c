@@ -85,6 +85,7 @@ BOOL WINAPI DllMain(
  * the linker line */
 
 
+#ifndef NN_NINTENDO_SDK
 /* FIPS preprocessor directives for RC2-ECB and RC2-CBC.        */
 #define FIPS_RC2_KEY_LENGTH                      5  /*  40-bits */
 #define FIPS_RC2_ENCRYPT_LENGTH                  8  /*  64-bits */
@@ -1533,6 +1534,7 @@ freebl_fips_RNG_PowerUpSelfTest( void )
        
    return( SECSuccess ); 
 }
+#endif    /*  !NN_NINTENDO_SDK  */
 
 static SECStatus
 freebl_fipsSoftwareIntegrityTest(const char *libname)
@@ -1552,6 +1554,7 @@ freebl_fipsSoftwareIntegrityTest(const char *libname)
 static SECStatus
 freebl_fipsPowerUpSelfTest( unsigned int tests )
 {
+#ifndef NN_NINTENDO_SDK
     SECStatus rv;
 
     /*
@@ -1629,6 +1632,8 @@ freebl_fipsPowerUpSelfTest( unsigned int tests )
         return rv;
 #endif
     }
+#endif    /*  !NN_NINTENDO_SDK  */
+
     /* Passed Power-Up SelfTest(s). */
     return( SECSuccess );
 }

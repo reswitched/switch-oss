@@ -66,7 +66,30 @@ ssl_DefRecv(sslSocket *ss, unsigned char *buf, int len, int flags)
     PRFileDesc *lower = ss->fd->lower;
     int rv;
 
+#if defined(NN_NINTENDO_SDK) && defined(NN_ENABLE_SSL_PRIVATE)
+    if(IS_DTLS(ss))
+    {
+        PRNetAddr remoteAddr;
+        memset(&remoteAddr, 0, sizeof(remoteAddr));
+        rv = lower->methods->recvfrom(lower, (void *)buf, len, flags, &remoteAddr, ss->rTimeout);
+
+        if( rv > 0 &&
+                    ( remoteAddr.inet.ip   != ss->peerIp ||
+                      remoteAddr.inet.port != ss->peerPort) )
+        {
+            printf("\n\nGot packet from unexpected peer! IP: %u, Port: %u\n\n", PR_ntohl(remoteAddr.inet.ip), PR_ntohs(remoteAddr.inet.port));
+            PORT_SetError(PR_WOULD_BLOCK_ERROR);
+            return SECFailure;
+        }
+    }
+    else
+    {
+#endif // NN_NINTENDO_SDK  && NN_ENABLE_SSL_PRIVATE
     rv = lower->methods->recv(lower, (void *)buf, len, flags, ss->rTimeout);
+#if defined(NN_NINTENDO_SDK) && defined(NN_ENABLE_SSL_PRIVATE)
+    }
+#endif // NN_NINTENDO_SDK && NN_ENABLE_SSL_PRIVATE
+
     if (rv < 0) {
         DEFINE_ERROR
         MAP_ERROR(PR_SOCKET_SHUTDOWN_ERROR, PR_CONNECT_RESET_ERROR)
@@ -100,8 +123,26 @@ ssl_DefSend(sslSocket *ss, const unsigned char *buf, int len, int flags)
     }
 #endif
     do {
-        int rv = lower->methods->send(lower, (const void *)(buf + sent),
+        int rv = -1;
+#if defined(NN_NINTENDO_SDK) && defined(NN_ENABLE_SSL_PRIVATE)
+        if(IS_DTLS(ss))
+        {
+            PRNetAddr addr;
+            memset(&addr, 0, sizeof(addr));
+            addr.inet.family = PR_AF_INET;
+            addr.inet.ip     = ss->peerIp;
+            addr.inet.port   = ss->peerPort;
+            rv = lower->methods->sendto(lower, (const void *)(buf + sent),
+                                      len - sent, flags, &addr, ss->wTimeout);
+        }
+        else
+        {
+#endif // NN_NINTENDO_SDK && NN_ENABLE_SSL_PRIVATE
+        rv = lower->methods->send(lower, (const void *)(buf + sent),
                                       len - sent, flags, ss->wTimeout);
+#if defined(NN_NINTENDO_SDK) && defined(NN_ENABLE_SSL_PRIVATE)
+        }
+#endif // NN_NINTENDO_SDK && NN_ENABLE_SSL_PRIVATE
         if (rv < 0) {
             PRErrorCode err = PR_GetError();
             if (err == PR_WOULD_BLOCK_ERROR) {
@@ -167,6 +208,22 @@ ssl_DefWrite(sslSocket *ss, const unsigned char *buf, int len)
 int
 ssl_DefGetpeername(sslSocket *ss, PRNetAddr *name)
 {
+#if defined(NN_NINTENDO_SDK) && defined(NN_ENABLE_SSL_PRIVATE)
+    if(IS_DTLS(ss))
+    {
+        if(ss->peerIp == 0 || ss->peerPort == 0)
+        {
+            return -1;
+        }
+
+        memset(name, 0, sizeof(*name));
+        name->inet.family = PR_AF_INET;
+        name->inet.ip     = ss->peerIp;
+        name->inet.port   = ss->peerPort;
+
+        return 0;
+    }
+#endif // NN_NINTENDO_SDK && NN_ENABLE_SSL_PRIVATE
     PRFileDesc *lower = ss->fd->lower;
     int rv;
 

@@ -247,8 +247,11 @@ SECITEM_ArenaDupItem(PLArenaPool *arena, const SECItem *from)
 	to->data = (unsigned char *)PORT_Alloc(from->len);
     }
     if ( to->data == NULL ) {
-	PORT_Free(to);
-	return(NULL);
+        /*  Only free 'to' if it came from the heap  */
+        if ( arena == NULL) {
+            PORT_Free(to);
+        }
+        return(NULL);
     }
 
     to->len = from->len;

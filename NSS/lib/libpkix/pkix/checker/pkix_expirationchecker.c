@@ -10,6 +10,7 @@
 
 
 #include "pkix_expirationchecker.h"
+#include "libpkix/nnsdk_pkix_date.h"
 
 /* --Private-Functions-------------------------------------------- */
 
@@ -36,8 +37,12 @@ pkix_ExpirationChecker_Check(
                     (checker, (PKIX_PL_Object **)&testDate, plContext),
                     PKIX_CERTCHAINCHECKERGETCERTCHAINCHECKERSTATEFAILED);
 
-        PKIX_CHECK(PKIX_PL_Cert_CheckValidity(cert, testDate, plContext),
-                    PKIX_CERTCHECKVALIDITYFAILED);
+        NN_SDK_PKIX_DATE_TIME_CHECK_AND_CALL(
+            testDate,
+            plContext,
+            PKIX_CHECK(PKIX_PL_Cert_CheckValidity(cert, testDate, plContext),
+                       PKIX_CERTCHECKVALIDITYFAILED)
+        );
 
 cleanup:
 

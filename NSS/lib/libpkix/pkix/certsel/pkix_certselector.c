@@ -9,6 +9,7 @@
  */
 
 #include "pkix_certselector.h"
+#include "libpkix/nnsdk_pkix_date.h"
 
 /* --Private-Functions-------------------------------------------- */
 
@@ -365,9 +366,13 @@ pkix_CertSelector_Match_CertificateValid(
 
         /* If the validityTime is not set, all certificates are acceptable */
         if (validityTime) {
+            NN_SDK_PKIX_DATE_TIME_CHECK_AND_CALL(
+                validityTime,
+                plContext,
                 PKIX_CHECK(PKIX_PL_Cert_CheckValidity
                         (cert, validityTime, plContext),
-                        PKIX_CERTCHECKVALIDITYFAILED);
+                        PKIX_CERTCHECKVALIDITYFAILED)
+            );
         }
 
 cleanup:
@@ -1270,9 +1275,13 @@ pkix_CertSelector_DefaultMatch(
                     PKIX_COMCERTSELPARAMSGETCERTIFICATEVALIDFAILED);
 
         if (selDate){
+            NN_SDK_PKIX_DATE_TIME_CHECK_AND_CALL(
+                selDate,
+                plContext,
                 PKIX_CHECK(PKIX_PL_Cert_CheckValidity
                             (cert, selDate, plContext),
-                            PKIX_CERTCHECKVALIDITYFAILED);
+                            PKIX_CERTCHECKVALIDITYFAILED)
+            );
         }
 
         PKIX_CHECK(pkix_CertSelector_Match_BasicConstraint

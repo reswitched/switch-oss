@@ -30,6 +30,18 @@ PR_BEGIN_EXTERN_C
 ** by PRUint32.)  Memory allocated by PR_Malloc, PR_Calloc, or PR_Realloc
 ** must be freed by PR_Free.
 */
+#ifdef NNSDK_ENABLE_MTRACK
+#include "../src/md/nnsdk/mtrack.h"
+
+#define PR_Malloc(size)             mtrackMalloc(size, __FILE__, __LINE__)
+
+#define PR_Calloc(nelem, elsize)    mtrackCalloc(nelem * elsize, __FILE__, __LINE__)
+
+#define PR_Realloc(ptr, size)       mtrackRealloc(ptr, size, __FILE__, __LINE__)
+
+#define PR_Free                     mtrackFree
+
+#else
 
 NSPR_API(void *) PR_Malloc(PRUint32 size);
 
@@ -38,6 +50,8 @@ NSPR_API(void *) PR_Calloc(PRUint32 nelem, PRUint32 elsize);
 NSPR_API(void *) PR_Realloc(void *ptr, PRUint32 size);
 
 NSPR_API(void) PR_Free(void *ptr);
+
+#endif    /*  NNSDK_ENABLE_MTRACK  */
 
 /*
 ** The following are some convenience macros defined in terms of

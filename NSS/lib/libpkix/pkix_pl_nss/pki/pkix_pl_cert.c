@@ -10,6 +10,11 @@
 
 #include "pkix_pl_cert.h"
 
+#ifdef NN_NINTENDO_SDK
+#include "libpkix/nnsdk_pkix_date.h"
+#include "libpkix/nnsdk_pkix_pl_cert.h"
+#endif
+
 extern PKIX_PL_HashTable *cachedCertSigTable;
 
 /* --Private-Cert-Functions------------------------------------- */
@@ -587,7 +592,11 @@ cleanup:
  *  Returns a Cert Error if the function fails in a non-fatal way.
  *  Returns a Fatal Error if the function fails in an unrecoverable way.
  */
+#ifdef NN_NINTENDO_SDK
+PKIX_Error *
+#else
 static PKIX_Error *
+#endif
 pkix_pl_Cert_GetNssSubjectAltNames(
         PKIX_PL_Cert *cert,
         PKIX_Boolean hasLock,
@@ -2907,6 +2916,8 @@ PKIX_PL_Cert_CheckValidity(
                 PKIX_CHECK(pkix_pl_Date_GetPRTime
                         (date, &timeToCheck, plContext),
                         PKIX_DATEGETPRTIMEFAILED);
+
+                NN_SDK_PKIX_DATE_TIME_CHECK(timeToCheck);
         } else {
                 timeToCheck = PR_Now();
         }

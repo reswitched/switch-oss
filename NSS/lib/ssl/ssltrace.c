@@ -93,7 +93,7 @@ ssl_Trace(const char *format, ...)
         va_end(args);
 
 #if defined (NN_NINTENDO_SDK)
-        nnsdkNssSdkLog("%s\n", buf);
+        NN_SSL_DBG_CLOG("%s\n", buf);
 #else
         fputs(buf, ssl_trace_iob);
         fputs("\n", ssl_trace_iob);

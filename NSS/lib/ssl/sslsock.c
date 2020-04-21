@@ -2811,6 +2811,27 @@ ssl_GetPeerName(PRFileDesc *fd, PRNetAddr *addr)
 SECStatus
 ssl_GetPeerInfo(sslSocket *ss)
 {
+#if defined(NN_NINTENDO_SDK) && defined(NN_ENABLE_SSL_PRIVATE)
+    if(IS_DTLS(ss))
+    {
+        if(ss->peerIp == 0 || ss->peerPort == 0)
+        {
+            return SECFailure;
+        }
+
+        PRNetAddr sin;
+        PORT_Memset(&sin, 0, sizeof(sin));
+        sin.inet.family = PR_AF_INET;
+        sin.inet.ip     = ss->peerIp;
+        sin.inet.port   = ss->peerPort;
+
+        PR_ConvertIPv4AddrToIPv6(sin.inet.ip, &ss->sec.ci.peer);
+        ss->sec.ci.port = sin.inet.port;
+
+        return SECSuccess;
+    }
+#endif // NN_NINTENDO_SDK && NN_ENABLE_SSL_PRIVATE
+
     PRFileDesc *osfd;
     int rv;
     PRNetAddr sin;

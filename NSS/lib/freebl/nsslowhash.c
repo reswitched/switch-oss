@@ -55,6 +55,7 @@ NSSLOW_Init(void)
 
    /* make sure the FIPS product is installed if we are trying to
     * go into FIPS mode */
+#ifndef NN_NINTENDO_SDK
    if (nsslow_GetFIPSEnabled()) {
 	if (BL_FIPSEntryOK(PR_TRUE) != SECSuccess) {
 	    PORT_SetError(SEC_ERROR_LIBRARY_FAILURE);
@@ -62,6 +63,7 @@ NSSLOW_Init(void)
 	    return NULL;
 	}
    }
+#endif
    post_failed = PR_FALSE;
     
    return &dummyContext;

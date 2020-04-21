@@ -1361,6 +1361,11 @@ struct sslSocketStr {
 
     /* Whether we are doing stream or datagram mode */
     SSLProtocolVariant protocolVariant;
+
+#if defined(NN_NINTENDO_SDK) && defined(NN_ENABLE_SSL_PRIVATE)
+    PRUint32 peerIp;   // In net byte order
+    PRUint16 peerPort; // In net byte order
+#endif // NN_NINTENDO_SDK && NN_ENABLE_SSL_PRIVATE
 };
 
 /* All the global data items declared here should be protected using the
