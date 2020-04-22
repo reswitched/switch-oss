@@ -24,6 +24,8 @@
 #endif
 #include "pk11priv.h"
 
+#include "nnsdk_sectime.h"
+
 const SEC_ASN1Template SEC_CERTExtensionTemplate[] = {
     { SEC_ASN1_SEQUENCE, 0, NULL, sizeof(CERTCertExtension) },
     { SEC_ASN1_OBJECT_ID, offsetof(CERTCertExtension, id) },
@@ -1459,6 +1461,7 @@ CachedCrl_Verify(CRLDPCache* cache, CachedCrl* crlobject, PRTime vfdate,
                 cache->dbHandle, cache->issuerDERCert, NULL, PR_FALSE, PR_TRUE);
 
             if (issuer) {
+                NN_SDK_CRL_CERT_TIME_CHECK(issuer, vfdate);
                 signstatus =
                     CERT_VerifyCRL(crlobject->crl, issuer, vfdate, wincx);
                 CERT_DestroyCertificate(issuer);
@@ -2386,6 +2389,7 @@ cert_CheckCertRevocationStatus(CERTCertificate* cert, CERTCertificate* issuer,
     }
 
     if (t &&
+        !NN_SDK_CRL_TIME_CHECK(t) &&
         secCertTimeValid != CERT_CheckCertValidTimes(issuer, t, PR_FALSE)) {
         /* we won't be able to check the CRL's signature if the issuer cert
            is expired as of the time we are verifying. This may cause a valid
@@ -2416,6 +2420,8 @@ cert_CheckCertRevocationStatus(CERTCertificate* cert, CERTCertificate* issuer,
                        certificate revoked if the time we are inquiring about
                        is past the revocation date */
                     if (t >= revocationDate) {
+                        rv = SECFailure;
+                    } else if (NN_SDK_CRL_TIME_CHECK(t)) {
                         rv = SECFailure;
                     } else {
                         status = certRevocationStatusValid;

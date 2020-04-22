@@ -275,6 +275,10 @@ struct CERTCertificateStr {
     } options;
     int series; /* was int authsocketcount; record the series of the pkcs11ID */
 
+#if defined(NN_NINTENDO_SDK)
+    CERTCrlDistributionPoints* dps;
+#endif    /*  NN_NINTENDO_SDK  */
+
     /* This is PKCS #11 stuff. */
     PK11SlotInfo *slot;        /*if this cert came of a token, which is it*/
     CK_OBJECT_HANDLE pkcs11ID; /*and which object on that token is it */

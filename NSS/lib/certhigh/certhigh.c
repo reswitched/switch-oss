@@ -830,6 +830,12 @@ CERT_FindCRLDistributionPoints(CERTCertificate *cert)
     encodedExtenValue.data = NULL;
     encodedExtenValue.len = 0;
 
+#if defined(NN_NINTENDO_SDK)
+    if (cert->dps != NULL) {
+        return cert->dps;
+    }
+#endif    /*  NN_NINTENDO_SDK  */
+
     rv = cert_FindExtension(cert->extensions, SEC_OID_X509_CRL_DIST_POINTS,
                             &encodedExtenValue);
     if (rv != SECSuccess) {
@@ -839,6 +845,10 @@ CERT_FindCRLDistributionPoints(CERTCertificate *cert)
     dps = CERT_DecodeCRLDistributionPoints(cert->arena, &encodedExtenValue);
 
     PORT_Free(encodedExtenValue.data);
+
+#if defined(NN_NINTENDO_SDK)
+    cert->dps = dps;
+#endif    /*  NN_NINTENDO_SDK  */
 
     return dps;
 }

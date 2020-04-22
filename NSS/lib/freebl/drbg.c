@@ -96,7 +96,8 @@ struct RNGContextStr {
      * RNG_RandomUpdate. */
     PRUint8  additionalDataCache[PRNG_ADDITONAL_DATA_CACHE_SIZE];
     PRUint32 additionalAvail;
-    PRBool   isValid;          /* false if RNG reaches an invalid state */
+    PRBool isValid;   /* false if RNG reaches an invalid state */
+    PRBool isKatTest; /* true if running NIST PRNG KAT tests */
 };
 
 typedef struct RNGContextStr RNGContext;
@@ -149,7 +150,7 @@ prng_Hash_df(PRUint8 *requested_bytes, unsigned int no_of_bytes_to_return,
 
 
 /*
- * Hash_DRBG Instantiate NIST SP 800-80 10.1.1.2
+ * Hash_DRBG Instantiate NIST SP 800-90 10.1.1.2
  *
  * NOTE: bytes & len are entropy || nonce || personalization_string. In
  * normal operation, NSS calculates them all together in a single call.
@@ -157,11 +158,13 @@ prng_Hash_df(PRUint8 *requested_bytes, unsigned int no_of_bytes_to_return,
 static SECStatus
 prng_instantiate(RNGContext *rng, const PRUint8 *bytes, unsigned int len)
 {
-    if (len < PRNG_SEEDLEN) {
-	/* if the seedlen is to small, it's probably because we failed to get
-	 * enough random data */
-	PORT_SetError(SEC_ERROR_NEED_RANDOM);
-	return SECFailure;
+    if (!rng->isKatTest && len < PRNG_SEEDLEN) {
+        /* If the seedlen is too small, it's probably because we failed to get
+         * enough random data.
+         * This is stricter than NIST SP800-90A requires. Don't enforce it for
+         * tests. */
+        PORT_SetError(SEC_ERROR_NEED_RANDOM);
+        return SECFailure;
     }
     prng_Hash_df(V(rng), VSize(rng), bytes, len, NULL, 0);
     rng->V_type = prngCGenerateType;
@@ -233,6 +236,7 @@ prng_reseed_test(RNGContext *rng, const PRUint8 *entropy,
 {
     SECStatus rv;
 
+#ifndef NN_NINTENDO_SDK
     /* do health checks in FIPS mode */
     rv = PRNGTEST_RunHealthTests();
     if (rv != SECSuccess) {
@@ -240,6 +244,7 @@ prng_reseed_test(RNGContext *rng, const PRUint8 *entropy,
 	rng->isValid = PR_FALSE;
 	return SECFailure;
     }
+#endif    /*  NN_NINTENDO_SDK  */
     return prng_reseed(rng, entropy, entropy_len, 
 				additional_input, additional_input_len);
 }
@@ -272,7 +277,7 @@ prng_reseed_test(RNGContext *rng, const PRUint8 *entropy,
 
 #define PRNG_ADD_BITS_AND_CARRY(dest, dest_len, add, len, carry) \
     PRNG_ADD_BITS(dest, dest_len, add, len, carry) \
-    PRNG_ADD_CARRY_ONLY(dest, dest_len - len, carry)
+    PRNG_ADD_CARRY_ONLY(dest, dest_len - len - 1, carry)
 
 /*
  * This function expands the internal state of the prng to fulfill any number
@@ -440,6 +445,7 @@ static PRStatus rng_init(void)
 	}
 	/* the RNG is in a valid state */
 	globalrng->isValid = PR_TRUE;
+	globalrng->isKatTest = PR_FALSE;
 
 	/* fetch one random value so that we can populate rng->oldV for our
 	 * continous random number test. */
@@ -676,6 +682,41 @@ RNG_RNGShutdown(void)
     coRNGInit = pristineCallOnce;
 }
 
+#ifdef NN_NINTENDO_SDK
+SECStatus
+PRNGTEST_Instantiate(const PRUint8 *entropy, unsigned int entropy_len, 
+		const PRUint8 *nonce, unsigned int nonce_len,
+		const PRUint8 *personal_string, unsigned int ps_len)
+{
+    return SECSuccess;
+}
+
+SECStatus
+PRNGTEST_Reseed(const PRUint8 *entropy, unsigned int entropy_len, 
+		  const PRUint8 *additional, unsigned int additional_len)
+{
+    return SECSuccess;
+}
+
+SECStatus
+PRNGTEST_Generate(PRUint8 *bytes, unsigned int bytes_len, 
+		  const PRUint8 *additional, unsigned int additional_len)
+{
+    return SECSuccess;
+}
+
+SECStatus
+PRNGTEST_Uninstantiate()
+{
+    return SECSuccess;
+}
+
+SECStatus
+PRNGTEST_RunHealthTests()
+{
+    return SECSuccess;
+}
+#else
 /*
  * Test case interface. used by fips testing and power on self test
  */
@@ -683,6 +724,17 @@ RNG_RNGShutdown(void)
   * allows us to test the internal random number generator without losing
   * entropy we may have previously collected. */
 RNGContext testContext;
+
+SECStatus
+PRNGTEST_Instantiate_Kat(const PRUint8 *entropy, unsigned int entropy_len,
+                         const PRUint8 *nonce, unsigned int nonce_len,
+                         const PRUint8 *personal_string, unsigned int ps_len)
+{
+    testContext.isKatTest = PR_TRUE;
+    return PRNGTEST_Instantiate(entropy, entropy_len,
+                                nonce, nonce_len,
+                                personal_string, ps_len);
+}
 
 /*
  * Test vector API. Use NIST SP 800-90 general interface so one of the
@@ -935,3 +987,4 @@ PRNGTEST_RunHealthTests()
   
    return SECSuccess;
 }
+#endif    /*  NN_NINTENDO_SDK  */

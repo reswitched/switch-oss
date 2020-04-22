@@ -8,6 +8,10 @@
 
 #include "pkix_pl_ocspresponse.h"
 
+#ifdef NN_NINTENDO_SDK
+#include "libpkix/nnsdk_pkix_pl_cert.h"
+#endif
+
 /* ----Public functions------------------------------------- */
 /*
  * This is the libpkix replacement for CERT_VerifyOCSPResponseSignature.
@@ -73,6 +77,16 @@ PKIX_PL_OcspResponse_UseBuildChain(
                 	PKIX_PROCESSINGPARAMSSETTARGETCERTCONSTRAINTSFAILED);
 	}
 
+#ifdef NN_NINTENDO_SDK
+        buildError = PKIX_BuildChain
+                (caProcParams,
+                &nbioContext,
+                pState,
+                pBuildResult,
+		pVerifyTree,
+                plContext,
+                NULL);
+#else
         buildError = PKIX_BuildChain
                 (caProcParams,
                 &nbioContext,
@@ -80,6 +94,7 @@ PKIX_PL_OcspResponse_UseBuildChain(
                 pBuildResult,
 		pVerifyTree,
                 plContext);
+#endif
 
         /* non-null nbioContext means the build would block */
         if (nbioContext != NULL) {
@@ -964,6 +979,8 @@ cleanup:
 	if (issuerCert)
 	    CERT_DestroyCertificate(issuerCert);
         
+        /*  Must decref buildResults, otherwise it leaks resources  */
+        PKIX_DECREF(buildResult);
         PKIX_RETURN(OCSPRESPONSE);
 }
 

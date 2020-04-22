@@ -381,3 +381,8 @@ cleanup:
 
         PKIX_RETURN(HASHTABLE);
 }
+
+
+#ifdef NN_NINTENDO_SDK
+#include "libpkix/nnsdk_pkix_pl_hashtable.c"
+#endif    /*  NN_NINTENDO_SDK  */

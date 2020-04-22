@@ -9,6 +9,7 @@
  */
 
 #include "pkix_pl_pk11certstore.h"
+#include "libpkix/nnsdk_pkix_date.h"
 
 /*
  * PKIX_DEFAULT_MAX_RESPONSE_LENGTH (64 * 1024) is too small for downloading
@@ -192,6 +193,8 @@ pkix_pl_Pk11CertStore_CertQuery(
                         (certValid, &prtime, plContext),
                         PKIX_DATEGETPRTIMEFAILED);
                 validOnly = PR_TRUE;
+
+                NN_SDK_PKIX_DATE_TIME_VALID(prtime, &validOnly);
         }
 
         /*

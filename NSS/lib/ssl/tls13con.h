@@ -36,6 +36,10 @@ PRBool tls13_InHsState(sslSocket *ss, ...);
 #define TLS13_IN_HS_STATE(ss, ...) \
     tls13_InHsState(ss, __VA_ARGS__, wait_invalid)
 
+#ifdef NN_NINTENDO_SDK
+#include <nnsdk_NssUtil.h>
+#endif // NN_NINTENDO_SDK
+
 SSLHashType tls13_GetHash(sslSocket *ss);
 CK_MECHANISM_TYPE tls13_GetHkdfMechanism(sslSocket *ss);
 void tls13_FatalError(sslSocket *ss, PRErrorCode prError,

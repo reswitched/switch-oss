@@ -13,6 +13,10 @@
 
 #include "pkix_build.h"
 
+#ifdef NN_NINTENDO_SDK
+#include "libpkix/nnsdk_pkix_pl_cert.h"
+#endif
+
 extern PRLogModuleInfo *pkixLog;
 
 /*
@@ -3099,6 +3103,17 @@ fatal:
  *  Returns a Build Error if the function fails in a non-fatal way
  *  Returns a Fatal Error if the function fails in an unrecoverable way.
  */
+#ifdef NN_NINTENDO_SDK
+static PKIX_Error *
+pkix_Build_InitiateBuildChain(
+        PKIX_ProcessingParams *procParams,
+        void **pNBIOContext,
+        PKIX_ForwardBuilderState **pState,
+        PKIX_BuildResult **pBuildResult,
+        PKIX_VerifyNode **pVerifyNode,
+        void *plContext,
+        const char* pHostName)
+#else
 static PKIX_Error *
 pkix_Build_InitiateBuildChain(
         PKIX_ProcessingParams *procParams,
@@ -3107,6 +3122,7 @@ pkix_Build_InitiateBuildChain(
         PKIX_BuildResult **pBuildResult,
         PKIX_VerifyNode **pVerifyNode,
         void *plContext)
+#endif
 {
         PKIX_UInt32 numAnchors = 0;
         PKIX_UInt32 numCertStores = 0;
@@ -3249,11 +3265,31 @@ pkix_Build_InitiateBuildChain(
                     plContext),
                     PKIX_CERTISCERTTRUSTEDFAILED);
 
+#ifdef NN_NINTENDO_SDK
+            PKIX_CHECK_NO_GOTO(PKIX_PL_Cert_GetAllSubjectNames(targetCert, &targetSubjNames, plContext), PKIX_CERTGETALLSUBJECTNAMESFAILED);
+            if(PKIX_ERROR_RECEIVED)
+            {
+                if(pHostName != NULL)
+                {
+                    PKIX_CHECK(PKIX_PL_Cert_GetDomainSubjectNames
+                            (targetCert,
+                            &targetSubjNames,
+                            plContext,
+                            pHostName),
+                            PKIX_CERTGETALLSUBJECTNAMESFAILED);
+                }
+                else
+                {
+                    goto cleanup;
+                }
+            }
+#else
             PKIX_CHECK(PKIX_PL_Cert_GetAllSubjectNames
                     (targetCert,
                     &targetSubjNames,
                     plContext),
                     PKIX_CERTGETALLSUBJECTNAMESFAILED);
+#endif /* NN_NINTENDO_SDK */
     
             PKIX_CHECK(PKIX_PL_Cert_GetSubjectPublicKey
                     (targetCert, &targetPubKey, plContext),
@@ -3657,6 +3693,17 @@ cleanup:
 /*
  * FUNCTION: PKIX_BuildChain (see comments in pkix.h)
  */
+#ifdef NN_NINTENDO_SDK
+PKIX_Error *
+PKIX_BuildChain(
+        PKIX_ProcessingParams *procParams,
+        void **pNBIOContext,
+        void **pState,
+        PKIX_BuildResult **pBuildResult,
+        PKIX_VerifyNode **pVerifyNode,
+        void *plContext,
+        const char* pHostName)
+#else
 PKIX_Error *
 PKIX_BuildChain(
         PKIX_ProcessingParams *procParams,
@@ -3665,6 +3712,7 @@ PKIX_BuildChain(
         PKIX_BuildResult **pBuildResult,
         PKIX_VerifyNode **pVerifyNode,
         void *plContext)
+#endif
 {
         PKIX_ForwardBuilderState *state = NULL;
         PKIX_BuildResult *buildResult = NULL;
@@ -3677,6 +3725,17 @@ PKIX_BuildChain(
         *pNBIOContext = NULL;
 
         if (*pState == NULL) {
+#ifdef NN_NINTENDO_SDK
+                PKIX_CHECK(pkix_Build_InitiateBuildChain
+                        (procParams,
+                        &nbioContext,
+                        &state,
+                        &buildResult,
+                        pVerifyNode,
+                        plContext,
+                        pHostName),
+                        PKIX_BUILDINITIATEBUILDCHAINFAILED);
+#else
                 PKIX_CHECK(pkix_Build_InitiateBuildChain
                         (procParams,
                         &nbioContext,
@@ -3685,10 +3744,22 @@ PKIX_BuildChain(
                         pVerifyNode,
                         plContext),
                         PKIX_BUILDINITIATEBUILDCHAINFAILED);
+#endif
         } else {
                 state = (PKIX_ForwardBuilderState *)(*pState);
                 *pState = NULL; /* no net change in reference count */
                 if (state->status == BUILD_SHORTCUTPENDING) {
+#ifdef NN_NINTENDO_SDK
+                        PKIX_CHECK(pkix_Build_InitiateBuildChain
+                                (procParams,
+                                &nbioContext,
+                                &state,
+                                &buildResult,
+                                pVerifyNode,
+                                plContext,
+                                pHostName),
+                                PKIX_BUILDINITIATEBUILDCHAINFAILED);
+#else
                         PKIX_CHECK(pkix_Build_InitiateBuildChain
                                 (procParams,
                                 &nbioContext,
@@ -3697,6 +3768,7 @@ PKIX_BuildChain(
                                 pVerifyNode,
                                 plContext),
                                 PKIX_BUILDINITIATEBUILDCHAINFAILED);
+#endif
                 } else {
                         PKIX_CHECK(pkix_Build_ResumeBuildChain
                                 (&nbioContext,

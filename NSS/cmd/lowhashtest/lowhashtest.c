@@ -400,8 +400,12 @@ Usage(char *progName)
     exit(-1);
 }
 
+#if defined(NN_NINTENDO_SDK) && defined(NNSDK_NSS_TEST)
+int lowhashtestMain(int argc, char **argv)
+#else
 int
 main(int argc, char **argv)
+#endif    //  NN_NINTENDO_SDK && NNSDK_NSS_TEST
 {
     NSSLOWInitContext *initCtx;
     int rv = 0; /* counts the number of failures */

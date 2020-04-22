@@ -1549,10 +1549,18 @@ extern const CERTRevocationFlags *CERT_GetClassicOCSPDisabledPolicy(void);
  *  paramsOut specifies the parameters the caller would like to get back.
  *   the caller may pass NULL, in which case no parameters are returned.
  */
+#ifdef NN_NINTENDO_SDK
+extern SECStatus CERT_PKIXVerifyCert(CERTCertificate *cert,
+                                     SECCertificateUsage usages,
+                                     CERTValInParam *paramsIn,
+                                     CERTValOutParam *paramsOut, void *wincx,
+                                     const char* pHostName);
+#else
 extern SECStatus CERT_PKIXVerifyCert(CERTCertificate *cert,
                                      SECCertificateUsage usages,
                                      CERTValInParam *paramsIn,
                                      CERTValOutParam *paramsOut, void *wincx);
+#endif
 
 /* Makes old cert validation APIs(CERT_VerifyCert, CERT_VerifyCertificate)
  * to use libpkix validation engine. The function should be called ones at

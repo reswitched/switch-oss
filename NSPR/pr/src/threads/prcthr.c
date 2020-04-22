@@ -154,17 +154,32 @@ PR_IMPLEMENT(PRStatus) PR_Interrupt(PRThread *thread)
 #ifdef _PR_GLOBAL_THREADS_ONLY
     PRCondVar *victim;
 
-    _PR_THREAD_LOCK(thread);
+#ifdef NN_NINTENDO_SDK
+    _PR_MD_LOCK(&thread->threadLock);
+#else
+	_PR_THREAD_LOCK(thread);
+#endif
     thread->flags |= _PR_INTERRUPT;
     victim = thread->wait.cvar;
-    _PR_THREAD_UNLOCK(thread);
+#ifndef NN_NINTENDO_SDK
+	_PR_THREAD_UNLOCK(thread);
+#endif
     if ((NULL != victim) && (!(thread->flags & _PR_INTERRUPT_BLOCKED))) {
         int haveLock = (victim->lock->owner == _PR_MD_CURRENT_THREAD());
+#ifdef NN_NINTENDO_SDK
+        _PR_MD_UNLOCK(&thread->threadLock);
+#endif
 
         if (!haveLock) PR_Lock(victim->lock);
         PR_NotifyAllCondVar(victim);
         if (!haveLock) PR_Unlock(victim->lock);
     }
+#ifdef NN_NINTENDO_SDK
+    else
+    {
+        _PR_MD_UNLOCK(&thread->threadLock);
+    }
+#endif
     return PR_SUCCESS;
 #else  /* ! _PR_GLOBAL_THREADS_ONLY */
     PRIntn is;

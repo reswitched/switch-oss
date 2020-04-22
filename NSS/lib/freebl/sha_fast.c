@@ -20,7 +20,15 @@
 #include "ssltrace.h"
 #endif
 
+#ifdef NN_NINTENDO_SDK
+#include "nnsdk_freebl.h"
+#endif
+
+#ifdef NNSDK_ENABLE_FREEBL_AARCH64_SHA
+extern void shaCompress(volatile SHA_HW_t *X, const PRUint32 *inbuf);
+#else
 static void shaCompress(volatile SHA_HW_t *X, const PRUint32 * datain);
+#endif    /*  NNSDK_ENABLE_FREEBL_AARCH64_SHA  */
 
 #define W u.w
 #define B u.b
@@ -246,6 +254,7 @@ SHA1_EndRaw(SHA1Context *ctx, unsigned char *hashout,
  * results in code that is 3 times faster than the previous NSS sha_fast
  * code on AMD64.
  */
+#ifndef NNSDK_ENABLE_FREEBL_AARCH64_SHA
 static void 
 shaCompress(volatile SHA_HW_t *X, const PRUint32 *inbuf) 
 {
@@ -381,6 +390,7 @@ shaCompress(volatile SHA_HW_t *X, const PRUint32 *inbuf)
   XH(3) += D;
   XH(4) += E;
 }
+#endif    /*  NNSDK_ENABLE_FREEBL_AARCH64_SHA  */
 
 /*************************************************************************
 ** Code below this line added to make SHA code support BLAPI interface

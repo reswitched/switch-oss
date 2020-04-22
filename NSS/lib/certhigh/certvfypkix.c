@@ -42,6 +42,10 @@ PRInt32 parallelFnInvocationCount;
 static PRBool usePKIXValidationEngine = PR_FALSE;
 #endif /* NSS_DISABLE_LIBPKIX */
 
+#ifdef NN_NINTENDO_SDK
+#include "libpkix/nnsdk_pkix_pl_ocspresponse.h"
+#endif
+
 /*
  * FUNCTION: CERT_SetUsePKIXForValidation
  * DESCRIPTION:
@@ -774,10 +778,17 @@ cert_BuildAndValidateChain(
             }
         }
 
+#ifdef NN_NINTENDO_SDK
+        PKIX_CHECK(
+            PKIX_BuildChain(procParams, &nbioContext, &state,
+                            &result, &verifyNode, plContext, NULL),
+            PKIX_UNABLETOBUILDCHAIN);
+#else
         PKIX_CHECK(
             PKIX_BuildChain(procParams, &nbioContext, &state,
                             &result, &verifyNode, plContext),
             PKIX_UNABLETOBUILDCHAIN);
+#endif
 
     } while (nbioContext && state);
 
@@ -1440,6 +1451,9 @@ setRevocationMethod(PKIX_RevocationChecker *revChecker,
     PKIX_UInt32 methodFlags = 0;
     PKIX_Error *error = NULL;
     PKIX_UInt32 priority = 0;
+#ifdef NN_NINTENDO_SDK
+    PKIX_PL_VerifyCallback verifyFn = NULL;
+#endif    /*  NN_NINTENDO_SDK  */
 
     if (revTest->number_of_defined_methods <= (PRUint32)certRevMethod) {
         return NULL;
@@ -1457,11 +1471,29 @@ setRevocationMethod(PKIX_RevocationChecker *revChecker,
         pkixRevMethod == PKIX_RevocationMethod_OCSP) {
         methodFlags |= PKIX_REV_M_FORBID_NETWORK_FETCHING;
     }
+
+#ifdef NN_NINTENDO_SDK
+    /*  If OCSP is being requested, use a custom verify function which will
+        take into account any trust anchors supplied to pkix.  Otherwise,
+        use NULL and pkix will supply its own verification internally.  */
+    if (pkixRevMethod == PKIX_RevocationMethod_OCSP)
+    {
+        verifyFn = nnsdkNssOcspResponseVerify;
+    }
+
+    error =
+        PKIX_RevocationChecker_CreateAndAddMethod(revChecker, procParams,
+                                                  pkixRevMethod, methodFlags,
+                                                  priority, verifyFn,
+                                                  isLeafTest, plContext);
+#else
     error =
         PKIX_RevocationChecker_CreateAndAddMethod(revChecker, procParams,
                                                   pkixRevMethod, methodFlags,
                                                   priority, NULL,
                                                   isLeafTest, plContext);
+#endif    /*  NN_NINTENDO_SDK  */
+
     return error;
 }
 
@@ -2026,6 +2058,16 @@ CERT_DestroyCERTRevocationFlags(CERTRevocationFlags *flags)
  *
  *    CERT_PKIXVerifyCert(cert, &output, args
  */
+#ifdef NN_NINTENDO_SDK
+SECStatus
+CERT_PKIXVerifyCert(
+    CERTCertificate *cert,
+    SECCertificateUsage usages,
+    CERTValInParam *paramsIn,
+    CERTValOutParam *paramsOut,
+    void *wincx,
+    const char* pHostName)
+#else
 SECStatus
 CERT_PKIXVerifyCert(
     CERTCertificate *cert,
@@ -2033,6 +2075,7 @@ CERT_PKIXVerifyCert(
     CERTValInParam *paramsIn,
     CERTValOutParam *paramsOut,
     void *wincx)
+#endif
 {
 #ifdef NSS_DISABLE_LIBPKIX
     PORT_SetError(PR_NOT_IMPLEMENTED_ERROR);
@@ -2164,9 +2207,15 @@ CERT_PKIXVerifyCert(
             goto cleanup;
         }
 
+#ifdef NN_NINTENDO_SDK
+        error = PKIX_BuildChain(procParams, &nbioContext,
+                                &buildState, &buildResult, &verifyNode,
+                                plContext, pHostName);
+#else
         error = PKIX_BuildChain(procParams, &nbioContext,
                                 &buildState, &buildResult, &verifyNode,
                                 plContext);
+#endif
         if (error != NULL) {
             goto cleanup;
         }
