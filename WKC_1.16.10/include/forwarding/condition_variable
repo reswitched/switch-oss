@@ -1,0 +1,5 @@
+/*
+ * Copyright (c) 2018 ACCESS CO., LTD. All rights reserved.
+ */
+
+#include <wkcconditionvariable.h>
