@@ -1,4 +1,0 @@
-repo: a4b34919bf34db2ee22acbbc305693c8980b6dc6
-node: 88265db540d75d59e12ea8dbc34031160fce9ccc
-branch: default
-tag: NSPR_4_12_RTM
