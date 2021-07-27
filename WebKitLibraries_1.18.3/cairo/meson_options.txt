@@ -1,0 +1,36 @@
+# Cairo font backends
+option('fontconfig', type : 'feature', value : 'auto')
+option('freetype', type : 'feature', value : 'auto')
+
+# Cairo surface backends
+option('cogl', type : 'feature', value : 'disabled')
+option('directfb', type : 'feature', value : 'disabled')
+option('gl-backend', type : 'combo', value : 'disabled',
+       # FIXME: https://github.com/mesonbuild/meson/issues/4566
+       choices : ['auto', 'gl', 'glesv2', 'glesv3', 'disabled'])
+option('glesv2', type : 'feature', value : 'disabled')
+option('glesv3', type : 'feature', value : 'disabled')
+option('drm', type : 'feature', value : 'disabled')
+option('openvg', type : 'feature', value : 'disabled')
+option('png', type : 'feature', value : 'auto') # png and svg surfaces
+option('qt', type : 'feature', value : 'disabled')
+option('tee', type : 'feature', value : 'disabled')
+option('xcb', type : 'feature', value : 'auto')
+option('xlib', type : 'feature', value : 'auto')
+#option('xml', type : 'feature', value : 'disabled')
+option('zlib', type : 'feature', value : 'auto') # script, ps, pdf, xml surfaces
+
+# Tests
+option('tests', type : 'feature', value : 'auto')
+
+# Util deps
+option('gtk2-utils', type : 'feature', value : 'disabled')
+
+# Misc deps
+option('glib', type : 'feature', value : 'auto')
+option('spectre', type : 'feature', value : 'auto')
+
+# FIXME: implement these to avoid automagic
+#option('egl', type : 'feature', value : 'auto')
+#option('glx', type : 'feature', value : 'auto')
+#option('wgl', type : 'feature', value : 'auto')
