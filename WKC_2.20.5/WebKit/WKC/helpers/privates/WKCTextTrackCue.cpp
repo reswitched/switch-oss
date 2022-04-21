@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, 2016 ACCESS CO., LTD. All rights reserved.
+ * Copyright (c) 2013-2022 ACCESS CO., LTD. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -83,12 +83,7 @@ TextTrackCuePrivate::line() const
 int
 TextTrackCuePrivate::position() const
 {
-    struct VariantVisitor {
-        int operator()(double x) { return static_cast<int>(x); }
-        int operator()(WebCore::VTTCue::AutoKeyword) { return 0; }
-    };
-    auto variant = static_cast<WebCore::VTTCue*>(m_webcore)->position();
-    return WTF::visit(VariantVisitor{}, variant);
+    return (static_cast<WebCore::VTTCue*>(m_webcore))->calculateComputedTextPosition();
 }
 int
 TextTrackCuePrivate::size() const
