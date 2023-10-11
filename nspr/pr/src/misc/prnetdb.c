@@ -848,12 +848,19 @@ PR_IMPLEMENT(PRStatus) PR_GetIPNodeByName(
         _PR_ImplicitInitialization();
     }
 
+#ifdef NN_NINTENDO_SDK
+    if(af == PR_AF_INET6) {
+        PR_SetError(PR_NOT_IMPLEMENTED_ERROR, 0);
+        return PR_FAILURE;
+    }
+#endif
+
     if (af != PR_AF_INET && af != PR_AF_INET6) {
         PR_SetError(PR_INVALID_ARGUMENT_ERROR, 0);
         return PR_FAILURE;
     }
 
-#if defined(_PR_INET6) && defined(_PR_HAVE_GETHOSTBYNAME2)
+#if !defined(NN_NINTENDO_SDK) && defined(_PR_INET6) && defined(_PR_HAVE_GETHOSTBYNAME2)
     PR_Lock(_pr_query_ifs_lock);
     /*
      * Keep querying the presence of IPv4 and IPv6 interfaces until
@@ -906,7 +913,7 @@ PR_IMPLEMENT(PRStatus) PR_GetIPNodeByName(
 #endif
 
     /* Do not need to lock the DNS lock if getipnodebyname() is called */
-#ifdef _PR_INET6
+#if !defined(NN_NINTENDO_SDK) && defined(_PR_INET6)
 #ifdef _PR_HAVE_GETHOSTBYNAME2
     LOCK_DNS();
     if (af == PR_AF_INET6)
@@ -938,7 +945,7 @@ PR_IMPLEMENT(PRStatus) PR_GetIPNodeByName(
 #else
 #error "Unknown name-to-address translation function"
 #endif  /* _PR_HAVE_GETHOSTBYNAME2 */
-#elif defined(_PR_INET6_PROBE) && defined(_PR_HAVE_GETIPNODEBYNAME)
+#elif !defined(NN_NINTENDO_SDK) && defined(_PR_INET6_PROBE) && defined(_PR_HAVE_GETIPNODEBYNAME)
     if (_pr_ipv6_is_present())
     {
 #ifdef PR_GETIPNODE_NOT_THREADSAFE
@@ -958,9 +965,9 @@ PR_IMPLEMENT(PRStatus) PR_GetIPNodeByName(
 
     if (NULL == h)
     {
-#if defined(_PR_INET6) && defined(_PR_HAVE_GETIPNODEBYNAME)
+#if !defined(NN_NINTENDO_SDK) && defined(_PR_INET6) && defined(_PR_HAVE_GETIPNODEBYNAME)
         PR_SetError(PR_DIRECTORY_LOOKUP_ERROR, error_num);
-#elif defined(_PR_INET6_PROBE) && defined(_PR_HAVE_GETIPNODEBYNAME)
+#elif !defined(NN_NINTENDO_SDK) &&  defined(_PR_INET6_PROBE) && defined(_PR_HAVE_GETIPNODEBYNAME)
         if (_pr_ipv6_is_present()) {
             PR_SetError(PR_DIRECTORY_LOOKUP_ERROR, error_num);
         }
@@ -982,14 +989,14 @@ PR_IMPLEMENT(PRStatus) PR_GetIPNodeByName(
         if (PR_SUCCESS != rv) {
             PR_SetError(PR_INSUFFICIENT_RESOURCES_ERROR, 0);
         }
-#if defined(_PR_INET6) && defined(_PR_HAVE_GETIPNODEBYNAME)
+#if !defined(NN_NINTENDO_SDK) && defined(_PR_INET6) && defined(_PR_HAVE_GETIPNODEBYNAME)
         freehostent(h);
-#elif defined(_PR_INET6_PROBE) && defined(_PR_HAVE_GETIPNODEBYNAME)
+#elif !defined(NN_NINTENDO_SDK) && defined(_PR_INET6_PROBE) && defined(_PR_HAVE_GETIPNODEBYNAME)
         if (_pr_ipv6_is_present()) {
             (*((_pr_freehostent_t)_pr_freehostent_fp))(h);
         }
 #endif
-#if defined(_PR_INET6) && defined(_PR_HAVE_GETHOSTBYNAME2)
+#if !defined(NN_NINTENDO_SDK) && defined(_PR_INET6) && defined(_PR_HAVE_GETHOSTBYNAME2)
         if ((PR_SUCCESS == rv) && (flags & PR_AI_V4MAPPED)
             && ((flags & PR_AI_ALL)
                 || ((flags & PR_AI_ADDRCONFIG) && _pr_have_inet_if))
@@ -1003,11 +1010,11 @@ PR_IMPLEMENT(PRStatus) PR_GetIPNodeByName(
     }
 
     /* Must match the convoluted logic above for LOCK_DNS() */
-#ifdef _PR_INET6
+#if !defined(NN_NINTENDO_SDK) && defined(_PR_INET6)
 #ifdef _PR_HAVE_GETHOSTBYNAME2
     UNLOCK_DNS();
 #endif  /* _PR_HAVE_GETHOSTBYNAME2 */
-#elif defined(_PR_INET6_PROBE) && defined(_PR_HAVE_GETIPNODEBYNAME)
+#elif !defined(NN_NINTENDO_SDK) && defined(_PR_INET6_PROBE) && defined(_PR_HAVE_GETIPNODEBYNAME)
 #ifdef PR_GETIPNODE_NOT_THREADSAFE
     UNLOCK_DNS();
 #else

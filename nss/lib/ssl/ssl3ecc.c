@@ -31,6 +31,10 @@
 
 #include <stdio.h>
 
+#ifdef NN_NINTENDO_SDK
+#include "nnsdk_Telemetry.h"
+#endif // NN_NINTENDO_SDK
+
 SECStatus
 ssl_NamedGroup2ECParams(PLArenaPool *arena, const sslNamedGroupDef *ecGroup,
                         SECKEYECParams *params)
@@ -214,6 +218,10 @@ ssl3_SendECDHClientKeyExchange(sslSocket *ss, SECKEYPublicKey *svrPubKey)
                                 CKA_DERIVE, 0, CKD_NULL, NULL, NULL);
 
     if (pms == NULL) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(PORT_GetError());
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam38);
+#endif // NN_NINTENDO_SDK
         (void)SSL3_SendAlert(ss, alert_fatal, illegal_parameter);
         ssl_MapLowLevelError(SSL_ERROR_CLIENT_KEY_EXCHANGE_FAILURE);
         goto loser;
@@ -284,6 +292,9 @@ ssl3_HandleECDHClientKeyExchange(sslSocket *ss, PRUint8 *b,
 
     /* we have to catch the case when the client's public key has length 0. */
     if (!clntPubKey.u.ec.publicValue.len) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam39);
+#endif // NN_NINTENDO_SDK
         (void)SSL3_SendAlert(ss, alert_fatal, illegal_parameter);
         PORT_SetError(errCode);
         return SECFailure;
@@ -529,6 +540,9 @@ ssl3_HandleECDHServerKeyExchange(sslSocket *ss, PRUint8 *b, PRUint32 length)
 
     /* Fail if the provided point has length 0. */
     if (!ec_point.len) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam40);
+#endif // NN_NINTENDO_SDK
         /* desc and errCode are initialized already */
         goto alert_loser;
     }
@@ -545,12 +559,20 @@ ssl3_HandleECDHServerKeyExchange(sslSocket *ss, PRUint8 *b, PRUint32 length)
     if (ss->ssl3.prSpec->version == SSL_LIBRARY_VERSION_TLS_1_2) {
         rv = ssl_ConsumeSignatureScheme(ss, &b, &length, &sigScheme);
         if (rv != SECSuccess) {
+#ifdef NN_NINTENDO_SDK
+            NnSdkTelemetrySetAlertDebugInfo(PORT_GetError());
+            NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam41);
+#endif // NN_NINTENDO_SDK
             errCode = PORT_GetError();
             goto alert_loser; /* malformed or unsupported. */
         }
         rv = ssl_CheckSignatureSchemeConsistency(
             ss, sigScheme, &ss->sec.peerCert->subjectPublicKeyInfo);
         if (rv != SECSuccess) {
+#ifdef NN_NINTENDO_SDK
+            NnSdkTelemetrySetAlertDebugInfo(PORT_GetError());
+            NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam42);
+#endif // NN_NINTENDO_SDK
             errCode = PORT_GetError();
             goto alert_loser;
         }
@@ -569,6 +591,12 @@ ssl3_HandleECDHServerKeyExchange(sslSocket *ss, PRUint8 *b, PRUint32 length)
     if (length != 0) {
         if (isTLS)
             desc = decode_error;
+#ifdef NN_NINTENDO_SDK
+        else {
+            NnSdkTelemetrySetAlertDebugInfo(length);
+            NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam43);
+        }
+#endif // NN_NINTENDO_SDK
         goto alert_loser; /* malformed. */
     }
 
@@ -588,12 +616,20 @@ ssl3_HandleECDHServerKeyExchange(sslSocket *ss, PRUint8 *b, PRUint32 length)
                                  &hashes);
 
     if (rv != SECSuccess) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(PORT_GetError());
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam44);
+#endif // NN_NINTENDO_SDK
         errCode =
             ssl_MapLowLevelError(SSL_ERROR_SERVER_KEY_EXCHANGE_FAILURE);
         goto alert_loser;
     }
     rv = ssl3_VerifySignedHashes(ss, sigScheme, &hashes, &signature);
     if (rv != SECSuccess) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(PORT_GetError());
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam45);
+#endif // NN_NINTENDO_SDK
         errCode =
             ssl_MapLowLevelError(SSL_ERROR_SERVER_KEY_EXCHANGE_FAILURE);
         goto alert_loser;

@@ -1101,8 +1101,7 @@ struct sslSocketStr {
     SSLAntiReplayContext *antiReplay;
 
 #if defined(NN_NINTENDO_SDK) && defined(NN_ENABLE_SSL_PRIVATE)
-    PRUint32 peerIp;   // In net byte order
-    PRUint16 peerPort; // In net byte order
+    PRNetAddr peerAddr;
 #endif // NN_NINTENDO_SDK && NN_ENABLE_SSL_PRIVATE
 };
 
@@ -1864,7 +1863,9 @@ SEC_END_PROTOS
 #if defined(XP_UNIX) || defined(XP_OS2) || defined(XP_BEOS)
 #define SSL_GETPID getpid
 #elif defined(WIN32)
+#if !defined(NN_NINTENDO_SDK)
 extern int __cdecl _getpid(void);
+#endif
 #define SSL_GETPID _getpid
 #else
 #define SSL_GETPID() 0

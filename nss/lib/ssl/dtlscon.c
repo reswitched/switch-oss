@@ -12,6 +12,10 @@
 #include "sslproto.h"
 #include "dtls13con.h"
 
+#ifdef NN_NINTENDO_SDK
+#include "nnsdk_Telemetry.h"
+#endif // NN_NINTENDO_SDK
+
 #ifndef PR_ARRAY_SIZE
 #define PR_ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 #endif
@@ -1165,6 +1169,10 @@ dtls_HandleHelloVerifyRequest(sslSocket *ss, PRUint8 *b, PRUint32 length)
 
     if (rv == SECSuccess)
         return rv;
+#ifdef NN_NINTENDO_SDK
+    else
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam3);
+#endif // NN_NINTENDO_SDK
 
 alert_loser:
     (void)SSL3_SendAlert(ss, alert_fatal, desc);

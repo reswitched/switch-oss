@@ -12,6 +12,10 @@
 #include "sslproto.h"
 #include "ssl3prot.h"
 
+#ifdef NN_NINTENDO_SDK
+#include "nnsdk_Telemetry.h"
+#endif // NN_NINTENDO_SDK
+
 struct ssl2GatherStr {
     /* true when ssl3_GatherData encounters an SSLv2 handshake */
     PRBool isV2;
@@ -202,6 +206,10 @@ ssl3_GatherData(sslSocket *ss, sslGather *gs, int flags, ssl2Gather *ssl2gs)
                     /* Reject v2 records that don't even carry enough data to
                      * resemble a valid ClientHello header. */
                     if (gs->remainder < SSL_HL_CLIENT_HELLO_HBYTES) {
+#ifdef NN_NINTENDO_SDK
+                        NnSdkTelemetrySetAlertDebugInfo(gs->remainder);
+                        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam55);
+#endif // NN_NINTENDO_SDK
                         SSL3_SendAlert(ss, alert_fatal, illegal_parameter);
                         PORT_SetError(SSL_ERROR_RX_MALFORMED_CLIENT_HELLO);
                         return SECFailure;

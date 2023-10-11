@@ -431,6 +431,7 @@ pkix_List_Duplicate(
         PKIX_PL_Object *object,
         PKIX_PL_Object **pNewObject,
         void *plContext)
+#ifndef NN_NINTENDO_SDK // Use recursive method
 {
         PKIX_List *list = NULL;
         PKIX_List *listDuplicate = NULL;
@@ -480,6 +481,63 @@ cleanup:
 
         PKIX_RETURN(LIST);
 }
+#else // Use iteratave method
+{
+        PKIX_List *list = NULL;
+        PKIX_List *listDuplicateHead = NULL;
+        PKIX_List *listDuplicateTail = NULL;
+
+        PKIX_ENTER(LIST, "pkix_List_Duplicate");
+        PKIX_NULLCHECK_TWO(object, pNewObject);
+
+        PKIX_CHECK(pkix_CheckType(object, PKIX_LIST_TYPE, plContext),
+                    PKIX_OBJECTNOTLIST);
+
+        list = (PKIX_List *)object;
+
+        do{
+                PKIX_List *listDuplicateElement = NULL;
+
+                if (list->immutable){
+                        PKIX_CHECK(pkix_duplicateImmutable
+                                (object, pNewObject, plContext),
+                                PKIX_DUPLICATEIMMUTABLEFAILED);
+                        break;
+                }
+
+                PKIX_CHECK(pkix_List_Create_Internal
+                        (list->isHeader, &listDuplicateElement, plContext),
+                        PKIX_LISTCREATEINTERNALFAILED);
+
+                listDuplicateElement->length = list->length;
+
+                PKIX_INCREF(list->item);
+                listDuplicateElement->item = list->item;
+
+                if (listDuplicateHead == NULL){
+                        listDuplicateHead = listDuplicateElement;
+                } else {
+                        listDuplicateTail->next = listDuplicateElement;
+                }
+
+                listDuplicateTail = listDuplicateElement;
+
+                list = list->next;
+        } while(list != NULL);
+
+        if (listDuplicateHead != NULL){
+                *pNewObject = (PKIX_PL_Object *)listDuplicateHead;
+        }
+
+cleanup:
+
+        if (PKIX_ERROR_RECEIVED){
+                PKIX_DECREF(listDuplicateHead);
+        }
+
+        PKIX_RETURN(LIST);
+}
+#endif // NN_NINTENDO_SDK
 
 
 /*

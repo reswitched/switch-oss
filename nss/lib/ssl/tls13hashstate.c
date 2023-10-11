@@ -15,6 +15,10 @@
 #include "tls13err.h"
 #include "tls13hashstate.h"
 
+#ifdef NN_NINTENDO_SDK
+#include "nnsdk_Telemetry.h"
+#endif // NN_NINTENDO_SDK
+
 /*
  * The cookie is structured as a self-encrypted structure with the
  * inner value being.
@@ -107,12 +111,20 @@ tls13_RecoverHashState(sslSocket *ss,
     /* Should start with 0xff. */
     rv = sslRead_ReadNumber(&reader, 1, &sentinel);
     if ((rv != SECSuccess) || (sentinel != 0xff)) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(PORT_GetError());
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam89);
+#endif // NN_NINTENDO_SDK
         FATAL_ERROR(ss, SSL_ERROR_RX_MALFORMED_CLIENT_HELLO, illegal_parameter);
         return SECFailure;
     }
     /* The cipher suite should be the same or there are some shenanigans. */
     rv = sslRead_ReadNumber(&reader, 2, &cipherSuite);
     if (rv != SECSuccess) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(PORT_GetError());
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam90);
+#endif // NN_NINTENDO_SDK
         FATAL_ERROR(ss, SSL_ERROR_RX_MALFORMED_CLIENT_HELLO, illegal_parameter);
         return SECFailure;
     }
@@ -120,6 +132,10 @@ tls13_RecoverHashState(sslSocket *ss,
     /* The named group, if any. */
     rv = sslRead_ReadNumber(&reader, 2, &group);
     if (rv != SECSuccess) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(PORT_GetError());
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam91);
+#endif // NN_NINTENDO_SDK
         FATAL_ERROR(ss, SSL_ERROR_RX_MALFORMED_CLIENT_HELLO, illegal_parameter);
         return SECFailure;
     }
@@ -129,11 +145,19 @@ tls13_RecoverHashState(sslSocket *ss,
     PORT_Assert(ss->xtnData.applicationToken.len == 0);
     rv = sslRead_ReadNumber(&reader, 2, &appTokenLen);
     if (rv != SECSuccess) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(PORT_GetError());
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam92);
+#endif // NN_NINTENDO_SDK
         FATAL_ERROR(ss, SSL_ERROR_RX_MALFORMED_CLIENT_HELLO, illegal_parameter);
         return SECFailure;
     }
     if (SECITEM_AllocItem(NULL, &ss->xtnData.applicationToken,
                           appTokenLen) == NULL) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(PORT_GetError());
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_InternalError67);
+#endif // NN_NINTENDO_SDK
         FATAL_ERROR(ss, PORT_GetError(), internal_error);
         return SECFailure;
     }
@@ -141,6 +165,10 @@ tls13_RecoverHashState(sslSocket *ss,
     sslReadBuffer appTokenReader = { 0 };
     rv = sslRead_Read(&reader, appTokenLen, &appTokenReader);
     if (rv != SECSuccess) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(PORT_GetError());
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam93);
+#endif // NN_NINTENDO_SDK
         FATAL_ERROR(ss, SSL_ERROR_RX_MALFORMED_CLIENT_HELLO, illegal_parameter);
         return SECFailure;
     }
@@ -150,6 +178,10 @@ tls13_RecoverHashState(sslSocket *ss,
     /* The remainder is the hash. */
     unsigned int hashLen = SSL_READER_REMAINING(&reader);
     if (hashLen != tls13_GetHashSize(ss)) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo2((uint16_t)hashLen, (uint16_t)tls13_GetHashSize(ss));
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam94);
+#endif // NN_NINTENDO_SDK
         FATAL_ERROR(ss, SSL_ERROR_RX_MALFORMED_CLIENT_HELLO, illegal_parameter);
         return SECFailure;
     }

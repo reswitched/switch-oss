@@ -27,7 +27,6 @@
 #endif
 #endif
 #endif
-#endif    /*  !NN_NINTENDO_SDK  */
 
 #ifdef __BEOS__
 #ifndef XP_BEOS
@@ -40,6 +39,7 @@
 #define XP_UNIX
 #endif
 #endif
+#endif    /*  !NN_NINTENDO_SDK  */
 
 #include <sys/types.h>
 

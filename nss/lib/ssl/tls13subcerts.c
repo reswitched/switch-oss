@@ -16,6 +16,10 @@
 #include "tls13hkdf.h"
 #include "tls13subcerts.h"
 
+#ifdef NN_NINTENDO_SDK
+#include "nnsdk_Telemetry.h"
+#endif // NN_NINTENDO_SDK
+
 /* Parses the delegated credential (DC) from the raw extension |b| of length
  * |length|. Memory for the DC is allocated and set to |*dcp|.
  *
@@ -362,12 +366,20 @@ tls13_VerifyCredentialSignature(sslSocket *ss, sslDelegatedCredential *dc)
     /* Hash the message that was signed by the delegator. */
     rv = tls13_HashCredentialSignatureMessage(&hash, dc->alg, cert, &dcBuf);
     if (rv != SECSuccess) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(PORT_GetError());
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_InternalError68);
+#endif // NN_NINTENDO_SDK
         FATAL_ERROR(ss, PORT_GetError(), internal_error);
         goto loser;
     }
 
     pubKey = SECKEY_ExtractPublicKey(&cert->subjectPublicKeyInfo);
     if (pubKey == NULL) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(PORT_GetError());
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_InternalError69);
+#endif // NN_NINTENDO_SDK
         FATAL_ERROR(ss, SSL_ERROR_EXTRACT_PUBLIC_KEY_FAILURE, internal_error);
         goto loser;
     }
@@ -376,6 +388,10 @@ tls13_VerifyCredentialSignature(sslSocket *ss, sslDelegatedCredential *dc)
     rv = ssl_VerifySignedHashesWithPubKey(ss, pubKey, dc->alg,
                                           &hash, &dc->signature);
     if (rv != SECSuccess) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(PORT_GetError());
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam95);
+#endif // NN_NINTENDO_SDK
         FATAL_ERROR(ss, SSL_ERROR_DC_BAD_SIGNATURE, illegal_parameter);
         goto loser;
     }
@@ -424,6 +440,10 @@ tls13_CheckCertDelegationUsage(sslSocket *ss)
     if (!found ||
         !cert->keyUsagePresent ||
         !(cert->keyUsage & KU_DIGITAL_SIGNATURE)) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(cert->keyUsage);
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam96);
+#endif // NN_NINTENDO_SDK
         FATAL_ERROR(ss, SSL_ERROR_DC_INVALID_KEY_USAGE, illegal_parameter);
         return SECFailure;
     }
@@ -440,12 +460,20 @@ tls13_CheckCredentialExpiration(sslSocket *ss, sslDelegatedCredential *dc)
 
     rv = DER_DecodeTimeChoice(&start, &cert->validity.notBefore);
     if (rv != SECSuccess) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(PORT_GetError());
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_InternalError70);
+#endif // NN_NINTENDO_SDK
         FATAL_ERROR(ss, PORT_GetError(), internal_error);
         return SECFailure;
     }
 
     end = start + ((PRTime)dc->validTime * PR_USEC_PER_SEC);
     if (ssl_Time(ss) > end) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(dc->validTime);
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam97);
+#endif // NN_NINTENDO_SDK
         FATAL_ERROR(ss, SSL_ERROR_DC_EXPIRED, illegal_parameter);
         return SECFailure;
     }
@@ -473,6 +501,10 @@ tls13_VerifyDelegatedCredential(sslSocket *ss,
 
     rv = DER_DecodeTimeChoice(&start, &cert->validity.notBefore);
     if (rv != SECSuccess) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(PORT_GetError());
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_InternalError71);
+#endif // NN_NINTENDO_SDK
         FATAL_ERROR(ss, PORT_GetError(), internal_error);
         return SECFailure;
     }

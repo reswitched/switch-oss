@@ -28,6 +28,10 @@
 #include "tls13exthandle.h"
 #include "tls13hkdf.h"
 
+#ifdef NN_NINTENDO_SDK
+#include "nnsdk_Telemetry.h"
+#endif // NN_NINTENDO_SDK
+
 const char kHkdfPurposeEsniKey[] = "esni key";
 const char kHkdfPurposeEsniIv[] = "esni iv";
 
@@ -839,6 +843,10 @@ tls13_ServerDecryptEsniXtn(const sslSocket *ss, const PRUint8 *in, unsigned int 
     return SECSuccess;
 
 loser:
+#ifdef NN_NINTENDO_SDK
+    NnSdkTelemetrySetAlertDebugInfo(PORT_GetError());
+    NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam79);
+#endif // NN_NINTENDO_SDK
     FATAL_ERROR(CONST_CAST(sslSocket, ss), SSL_ERROR_RX_MALFORMED_ESNI_EXTENSION, illegal_parameter);
     ssl_DestroyKeyMaterial(&keyMat); /* Safe because zeroed. */
     if (entry) {
