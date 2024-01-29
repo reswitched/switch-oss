@@ -1908,6 +1908,7 @@ PKIX_PL_Cert_GetAllSubjectNames(
         void *plContext)
 {
         CERTGeneralName *nssOriginalSubjectName = NULL;
+        CERTGeneralName *nssCurSubjectName = NULL;
         CERTGeneralName *nssTempSubjectName = NULL;
         PKIX_List *allSubjectNames = NULL;
         PKIX_PL_GeneralName *pkixSubjectName = NULL;
@@ -1916,6 +1917,11 @@ PKIX_PL_Cert_GetAllSubjectNames(
         PKIX_ENTER(CERT, "PKIX_PL_Cert_GetAllSubjectNames");
         PKIX_NULLCHECK_THREE(cert, cert->nssCert, pAllSubjectNames);
 
+
+        arena = PORT_NewArena(DER_DEFAULT_CHUNKSIZE);
+        if (arena == NULL) {
+                PKIX_ERROR(PKIX_OUTOFMEMORY);
+        }
 
         if (cert->nssCert->subjectName == NULL){
                 /* if there is no subject DN, just get altnames */
@@ -1928,12 +1934,6 @@ PKIX_PL_Cert_GetAllSubjectNames(
                             PKIX_CERTGETNSSSUBJECTALTNAMESFAILED);
 
         } else { /* get subject DN and altnames */
-
-                arena = PORT_NewArena(DER_DEFAULT_CHUNKSIZE);
-                if (arena == NULL) {
-                        PKIX_ERROR(PKIX_OUTOFMEMORY);
-                }
-
                 /* This NSS call returns both Subject and  Subject Alt Names */
                 PKIX_CERT_DEBUG("\t\tCalling CERT_GetCertificateNames\n");
                 nssOriginalSubjectName =
@@ -1945,12 +1945,25 @@ PKIX_PL_Cert_GetAllSubjectNames(
                 goto cleanup;
         }
 
-        nssTempSubjectName = nssOriginalSubjectName;
 
         PKIX_CHECK(PKIX_List_Create(&allSubjectNames, plContext),
                     PKIX_LISTCREATEFAILED);
 
+        nssCurSubjectName = nssOriginalSubjectName;
+
+        nssTempSubjectName = CERT_NewGeneralName(arena, (CERTGeneralNameType)0);
+        if (nssTempSubjectName == NULL) {
+                PKIX_ERROR(PKIX_OUTOFMEMORY);
+                goto cleanup;
+        }
+
         do {
+                // Copy only the one general name(not the rest of the list)
+                if (cert_CopyOneGeneralName(arena, nssTempSubjectName, nssCurSubjectName) != SECSuccess) {
+                        PKIX_ERROR(PKIX_OUTOFMEMORY);
+                        goto cleanup;
+                }
+
                 PKIX_CHECK(pkix_pl_GeneralName_Create
                             (nssTempSubjectName, &pkixSubjectName, plContext),
                             PKIX_GENERALNAMECREATEFAILED);
@@ -1965,9 +1978,9 @@ PKIX_PL_Cert_GetAllSubjectNames(
 
                 PKIX_CERT_DEBUG
                         ("\t\tCalling CERT_GetNextGeneralName).\n");
-                nssTempSubjectName = CERT_GetNextGeneralName
-                        (nssTempSubjectName);
-        } while (nssTempSubjectName != nssOriginalSubjectName);
+                nssCurSubjectName = CERT_GetNextGeneralName
+                        (nssCurSubjectName);
+        } while (nssCurSubjectName != nssOriginalSubjectName);
 
         *pAllSubjectNames = allSubjectNames;
 

@@ -23,7 +23,7 @@ static PRStatus PR_CALLBACK nnsdkStdIoClose(PRFileDesc *fd) {
 }
 
 static PRInt32 PR_CALLBACK nnsdkStdOutErrWrite(PRFileDesc *fd, const void *buf, PRInt32 amount) {
-    NNC_SDK_LOG(buf);
+    NNC_SDK_LOG("%s", (const char*)buf);
     return amount;
 }
 

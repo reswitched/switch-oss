@@ -18,6 +18,10 @@
 #include "tls13esni.h"
 #include "tls13exthandle.h" /* For tls13_ServerSendStatusRequestXtn. */
 
+#ifdef NN_NINTENDO_SDK
+#include "nnsdk_Telemetry.h"
+#endif // NN_NINTENDO_SDK
+
 PRBool
 ssl_ShouldSendSNIExtension(const sslSocket *ss, const char *url)
 {
@@ -333,6 +337,10 @@ ssl3_SelectAppProtocol(const sslSocket *ss, TLSExtensionData *xtnData,
     rv = ss->nextProtoCallback(ss->nextProtoArg, ss->fd, data->data, data->len,
                                result.data, &result.len, sizeof(resultBuffer));
     if (rv != SECSuccess) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(PORT_GetError());
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_InternalError15);
+#endif // NN_NINTENDO_SDK
         /* Expect callback to call PORT_SetError() */
         ssl3_ExtSendAlert(ss, alert_fatal, internal_error);
         return SECFailure;
@@ -371,6 +379,10 @@ ssl3_ServerHandleAppProtoXtn(const sslSocket *ss, TLSExtensionData *xtnData,
     /* We expressly don't want to allow ALPN on renegotiation,
      * despite it being permitted by the spec. */
     if (ss->firstHsDone || data->len == 0) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo2((uint16_t)ss->firstHsDone, (uint16_t)data->len);
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam48);
+#endif // NN_NINTENDO_SDK
         /* Clients MUST send a non-empty ALPN extension. */
         ssl3_ExtSendAlert(ss, alert_fatal, illegal_parameter);
         PORT_SetError(SSL_ERROR_NEXT_PROTOCOL_DATA_INVALID);
@@ -401,6 +413,10 @@ ssl3_ServerHandleAppProtoXtn(const sslSocket *ss, TLSExtensionData *xtnData,
                                           ssl_app_layer_protocol_xtn,
                                           ssl3_ServerSendAppProtoXtn);
         if (rv != SECSuccess) {
+#ifdef NN_NINTENDO_SDK
+            NnSdkTelemetrySetAlertDebugInfo(PORT_GetError());
+            NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_InternalError16);
+#endif // NN_NINTENDO_SDK
             ssl3_ExtSendAlert(ss, alert_fatal, internal_error);
             PORT_SetError(SEC_ERROR_LIBRARY_FAILURE);
             return rv;
@@ -451,6 +467,10 @@ ssl3_ClientHandleAppProtoXtn(const sslSocket *ss, TLSExtensionData *xtnData,
     }
 
     if (!ssl_AlpnTagAllowed(ss, &protocol_name)) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo2((uint16_t)ss->opt.nextProtoNego.len, (uint16_t)protocol_name.len);
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam49);
+#endif // NN_NINTENDO_SDK
         ssl3_ExtSendAlert(ss, alert_fatal, illegal_parameter);
         PORT_SetError(SSL_ERROR_NEXT_PROTOCOL_DATA_INVALID);
         return SECFailure;
@@ -598,6 +618,10 @@ ssl3_ClientHandleStatusRequestXtn(const sslSocket *ss, TLSExtensionData *xtnData
             return SECFailure; /* code already set */
         }
     } else if (data->len != 0) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(data->len);
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam50);
+#endif // NN_NINTENDO_SDK
         ssl3_ExtSendAlert(ss, alert_fatal, illegal_parameter);
         PORT_SetError(SSL_ERROR_RX_MALFORMED_SERVER_HELLO);
         return SECFailure;
@@ -1225,6 +1249,10 @@ ssl3_ProcessSessionTicketCommon(sslSocket *ss, const SECItem *ticket,
             return SECSuccess;
         }
 
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(PORT_GetError());
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam51);
+#endif // NN_NINTENDO_SDK
         SSL3_SendAlert(ss, alert_fatal, illegal_parameter);
         goto loser;
     }
@@ -1482,6 +1510,10 @@ ssl3_ClientHandleUseSRTPXtn(const sslSocket *ss, TLSExtensionData *xtnData,
     }
 
     if (!found) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(cipher);
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam52);
+#endif // NN_NINTENDO_SDK
         ssl3_ExtSendAlert(ss, alert_fatal, illegal_parameter);
         PORT_SetError(SSL_ERROR_RX_MALFORMED_SERVER_HELLO);
         return SECFailure;
@@ -1496,6 +1528,10 @@ ssl3_ClientHandleUseSRTPXtn(const sslSocket *ss, TLSExtensionData *xtnData,
 
     /* We didn't offer an MKI, so this must be 0 length */
     if (litem.len != 0) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(litem.len);
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam53);
+#endif // NN_NINTENDO_SDK
         ssl3_ExtSendAlert(ss, alert_fatal, illegal_parameter);
         PORT_SetError(SSL_ERROR_RX_MALFORMED_SERVER_HELLO);
         return SECFailure;
@@ -1943,6 +1979,10 @@ ssl_HandleRecordSizeLimitXtn(const sslSocket *ss, TLSExtensionData *xtnData,
             return SECFailure; /* error already set. */
         }
     } else if (limit > maxLimit) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(limit);
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam54);
+#endif // NN_NINTENDO_SDK
         /* The client can sensibly check the maximum. */
         ssl3_ExtSendAlert(ss, alert_fatal, illegal_parameter);
         PORT_SetError(SSL_ERROR_RX_MALFORMED_HANDSHAKE);

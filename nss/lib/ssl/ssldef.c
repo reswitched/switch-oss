@@ -60,6 +60,27 @@ ssl_DefShutdown(sslSocket *ss, int how)
     return rv;
 }
 
+#if defined(NN_NINTENDO_SDK) && defined(NN_ENABLE_SSL_PRIVATE)
+static int
+IsFromPeer(sslSocket *ss, PRNetAddr* pRemoteAddr)
+{
+    if (pRemoteAddr->raw.family == AF_INET)
+    {
+        return (pRemoteAddr->inet.ip   == ss->peerAddr.inet.ip) && 
+               (pRemoteAddr->inet.port == ss->peerAddr.inet.port);
+    }
+#ifdef NN_ENABLE_IPV6
+    else if (pRemoteAddr->raw.family == PR_AF_INET6)
+    {
+        return (memcmp(&pRemoteAddr->ipv6.ip, &ss->peerAddr.ipv6.ip, sizeof(ss->peerAddr.ipv6.ip)) == 0) && 
+               (pRemoteAddr->ipv6.port == ss->peerAddr.ipv6.port);
+    }
+#endif // NN_ENABLE_IPV6
+
+    return 0;
+}
+#endif // NN_NINTENDO_SDK && NN_ENABLE_SSL_PRIVATE
+
 int
 ssl_DefRecv(sslSocket *ss, unsigned char *buf, int len, int flags)
 {
@@ -73,20 +94,19 @@ ssl_DefRecv(sslSocket *ss, unsigned char *buf, int len, int flags)
     {
         PRNetAddr remoteAddr;
         memset(&remoteAddr, 0, sizeof(remoteAddr));
+        remoteAddr.raw.family = ss->peerAddr.raw.family;
         rv = lower->methods->recvfrom(lower, (void *)buf, len, flags, &remoteAddr, ss->rTimeout);
 
-        if( rv > 0 &&
-                    ( remoteAddr.inet.ip   != ss->peerIp ||
-                      remoteAddr.inet.port != ss->peerPort) )
+        if( rv > 0 && !IsFromPeer(ss, &remoteAddr) )
         {
-            printf("\n\nGot packet from unexpected peer! IP: %u, Port: %u\n\n", PR_ntohl(remoteAddr.inet.ip), PR_ntohs(remoteAddr.inet.port));
+            printf("\nWARNING: Got packet from unexpected peer!\n\n");
             PORT_SetError(PR_WOULD_BLOCK_ERROR);
             return SECFailure;
         }
     }
     else
     {
-#endif // NN_NINTENDO_SDK  && NN_ENABLE_SSL_PRIVATE
+#endif // NN_NINTENDO_SDK && NN_ENABLE_SSL_PRIVATE
     rv = lower->methods->recv(lower, (void *)buf, len, flags, ss->rTimeout);
 #if defined(NN_NINTENDO_SDK) && defined(NN_ENABLE_SSL_PRIVATE)
     }
@@ -129,13 +149,8 @@ ssl_DefSend(sslSocket *ss, const unsigned char *buf, int len, int flags)
 #if defined(NN_NINTENDO_SDK) && defined(NN_ENABLE_SSL_PRIVATE)
         if(IS_DTLS(ss))
         {
-            PRNetAddr addr;
-            memset(&addr, 0, sizeof(addr));
-            addr.inet.family = PR_AF_INET;
-            addr.inet.ip     = ss->peerIp;
-            addr.inet.port   = ss->peerPort;
             rv = lower->methods->sendto(lower, (const void *)(buf + sent),
-                                      len - sent, flags, &addr, ss->wTimeout);
+                                      len - sent, flags, &ss->peerAddr, ss->wTimeout);
         }
         else
         {
@@ -213,16 +228,7 @@ ssl_DefGetpeername(sslSocket *ss, PRNetAddr *name)
 #if defined(NN_NINTENDO_SDK) && defined(NN_ENABLE_SSL_PRIVATE)
     if(IS_DTLS(ss))
     {
-        if(ss->peerIp == 0 || ss->peerPort == 0)
-        {
-            return -1;
-        }
-
-        memset(name, 0, sizeof(*name));
-        name->inet.family = PR_AF_INET;
-        name->inet.ip     = ss->peerIp;
-        name->inet.port   = ss->peerPort;
-
+        memcpy(name, &ss->peerAddr, sizeof(ss->peerAddr));
         return 0;
     }
 #endif // NN_NINTENDO_SDK && NN_ENABLE_SSL_PRIVATE

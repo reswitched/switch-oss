@@ -16,6 +16,10 @@
 #include "tls13exthandle.h"
 #include "tls13subcerts.h"
 
+#ifdef NN_NINTENDO_SDK
+#include "nnsdk_Telemetry.h"
+#endif // NN_NINTENDO_SDK
+
 SECStatus
 tls13_ServerSendStatusRequestXtn(const sslSocket *ss, TLSExtensionData *xtnData,
                                  sslBuffer *buf, PRBool *added)
@@ -244,6 +248,10 @@ tls13_ClientHandleKeyShareXtn(const sslSocket *ss, TLSExtensionData *xtnData,
     sslReader rdr = SSL_READER(data->data, data->len);
     rv = tls13_DecodeKeyShareEntry(&rdr, &ks);
     if ((rv != SECSuccess) || !ks) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(PORT_GetError());
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam80);
+#endif // NN_NINTENDO_SDK
         ssl3_ExtSendAlert(ss, alert_fatal, illegal_parameter);
         PORT_SetError(SSL_ERROR_RX_MALFORMED_KEY_SHARE);
         return SECFailure;
@@ -288,6 +296,9 @@ tls13_ClientHandleKeyShareXtnHrr(const sslSocket *ss, TLSExtensionData *xtnData,
      * requested group, abort. */
     if (!ssl_NamedGroupEnabled(ss, group) ||
         ssl_HaveEphemeralKeyPair(ss, group)) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam81);
+#endif // NN_NINTENDO_SDK
         ssl3_ExtSendAlert(ss, alert_fatal, illegal_parameter);
         PORT_SetError(SSL_ERROR_RX_MALFORMED_HELLO_RETRY_REQUEST);
         return SECFailure;
@@ -299,6 +310,10 @@ tls13_ClientHandleKeyShareXtnHrr(const sslSocket *ss, TLSExtensionData *xtnData,
     /* And replace with our new share. */
     rv = tls13_AddKeyShare(CONST_CAST(sslSocket, ss), group);
     if (rv != SECSuccess) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(PORT_GetError());
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_InternalError66);
+#endif // NN_NINTENDO_SDK
         ssl3_ExtSendAlert(ss, alert_fatal, internal_error);
         PORT_SetError(SEC_ERROR_KEYGEN_FAIL);
         return SECFailure;
@@ -525,6 +540,10 @@ tls13_ServerHandlePreSharedKeyXtn(const sslSocket *ss, TLSExtensionData *xtnData
         if (rv != SECSuccess)
             return rv;
         if (!label.len) {
+#ifdef NN_NINTENDO_SDK
+            NnSdkTelemetrySetAlertDebugInfo(PORT_GetError());
+            NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam82);
+#endif // NN_NINTENDO_SDK
             goto alert_loser;
         }
 
@@ -567,6 +586,10 @@ tls13_ServerHandlePreSharedKeyXtn(const sslSocket *ss, TLSExtensionData *xtnData
     if (rv != SECSuccess)
         return SECFailure;
     if (data->len) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(PORT_GetError());
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam83);
+#endif // NN_NINTENDO_SDK
         goto alert_loser;
     }
 
@@ -577,6 +600,10 @@ tls13_ServerHandlePreSharedKeyXtn(const sslSocket *ss, TLSExtensionData *xtnData
         if (rv != SECSuccess)
             return rv;
         if (binder.len < 32) {
+#ifdef NN_NINTENDO_SDK
+            NnSdkTelemetrySetAlertDebugInfo(binder.len);
+            NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam84);
+#endif // NN_NINTENDO_SDK
             goto alert_loser;
         }
 
@@ -586,8 +613,16 @@ tls13_ServerHandlePreSharedKeyXtn(const sslSocket *ss, TLSExtensionData *xtnData
         ++numBinders;
     }
 
+#ifdef NN_NINTENDO_SDK
+    if (numBinders != numIdentities) {
+        NnSdkTelemetrySetAlertDebugInfo2((uint16_t)numBinders, (uint16_t)numIdentities);
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam85);
+        goto alert_loser;
+    }
+#else
     if (numBinders != numIdentities)
         goto alert_loser;
+#endif // NN_NINTENDO_SDK
 
     /* Keep track of negotiated extensions. Note that this does not
      * mean we are resuming. */
@@ -1388,6 +1423,10 @@ tls13_ClientCheckEsniXtn(sslSocket *ss)
     }
 
     if (esniExtension->data.len != sizeof(ss->xtnData.esniNonce)) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(esniExtension->data.len);
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam86);
+#endif // NN_NINTENDO_SDK
         FATAL_ERROR(ss, SSL_ERROR_RX_MALFORMED_ESNI_EXTENSION, illegal_parameter);
         return SECFailure;
     }
@@ -1395,6 +1434,9 @@ tls13_ClientCheckEsniXtn(sslSocket *ss)
     if (0 != NSS_SecureMemcmp(esniExtension->data.data,
                               ss->xtnData.esniNonce,
                               sizeof(ss->xtnData.esniNonce))) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam87);
+#endif // NN_NINTENDO_SDK
         FATAL_ERROR(ss, SSL_ERROR_RX_MALFORMED_ESNI_EXTENSION, illegal_parameter);
         return SECFailure;
     }
@@ -1436,6 +1478,10 @@ tls13_ClientHandleDelegatedCredentialsXtn(const sslSocket *ss,
 {
     if (!ss->opt.enableDelegatedCredentials ||
         ss->version < SSL_LIBRARY_VERSION_TLS_1_3) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetAlertDebugInfo(ss->version);
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam88);
+#endif // NN_NINTENDO_SDK
         ssl3_ExtSendAlert(ss, alert_fatal, illegal_parameter);
         PORT_SetError(SSL_ERROR_RX_UNEXPECTED_EXTENSION);
         return SECFailure;

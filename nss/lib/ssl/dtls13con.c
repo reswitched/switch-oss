@@ -11,6 +11,10 @@
 #include "sslimpl.h"
 #include "sslproto.h"
 
+#ifdef NN_NINTENDO_SDK
+#include "nnsdk_Telemetry.h"
+#endif // NN_NINTENDO_SDK
+
 SECStatus
 dtls13_InsertCipherTextHeader(const sslSocket *ss, ssl3CipherSpec *cwSpec,
                               sslBuffer *wrBuf, PRBool *needsLength)
@@ -354,6 +358,9 @@ dtls13_HandleOutOfEpochRecord(sslSocket *ss, const ssl3CipherSpec *spec,
     PORT_Assert(ss->version >= SSL_LIBRARY_VERSION_TLS_1_3);
     /* Can't happen, but double check. */
     if (!IS_DTLS(ss) || (ss->version < SSL_LIBRARY_VERSION_TLS_1_3)) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_InternalError1);
+#endif // NN_NINTENDO_SDK
         tls13_FatalError(ss, SEC_ERROR_LIBRARY_FAILURE, internal_error);
         return SECFailure;
     }
@@ -401,6 +408,9 @@ dtls13_HandleOutOfEpochRecord(sslSocket *ss, const ssl3CipherSpec *spec,
     SSL_TRC(10, ("%d: SSL3[%d]: unexpected out of epoch record type %d", SSL_GETPID(),
                  ss->fd, rType));
 
+#ifdef NN_NINTENDO_SDK
+    NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam1);
+#endif // NN_NINTENDO_SDK
     (void)SSL3_SendAlert(ss, alert_fatal, illegal_parameter);
     PORT_SetError(SSL_ERROR_RX_UNKNOWN_RECORD_TYPE);
     return SECFailure;
@@ -419,6 +429,9 @@ dtls13_HandleAck(sslSocket *ss, sslBuffer *databuf)
 
     PORT_Assert(IS_DTLS(ss));
     if (!tls13_MaybeTls13(ss)) {
+#ifdef NN_NINTENDO_SDK
+        NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam2);
+#endif // NN_NINTENDO_SDK
         tls13_FatalError(ss, SSL_ERROR_RX_UNKNOWN_RECORD_TYPE, illegal_parameter);
         return SECFailure;
     }

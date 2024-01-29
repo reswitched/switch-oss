@@ -18,6 +18,10 @@
 #include "tls13exthandle.h"
 #include "tls13subcerts.h"
 
+#ifdef NN_NINTENDO_SDK
+#include "nnsdk_Telemetry.h"
+#endif // NN_NINTENDO_SDK
+
 /* Callback function that handles a received extension. */
 typedef SECStatus (*ssl3ExtensionHandlerFunc)(const sslSocket *ss,
                                               TLSExtensionData *xtnData,
@@ -352,6 +356,10 @@ ssl3_ParseExtensions(sslSocket *ss, PRUint8 **b, PRUint32 *length)
              cursor != &ss->ssl3.hs.remoteExtensions;
              cursor = PR_NEXT_LINK(cursor)) {
             if (((TLSExtension *)cursor)->type == extension_type) {
+#ifdef NN_NINTENDO_SDK
+                NnSdkTelemetrySetAlertDebugInfo(((TLSExtension *)cursor)->type);
+                NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam46);
+#endif // NN_NINTENDO_SDK
                 (void)SSL3_SendAlert(ss, alert_fatal, illegal_parameter);
                 PORT_SetError(SSL_ERROR_RX_UNEXPECTED_EXTENSION);
                 return SECFailure;
@@ -543,6 +551,9 @@ ssl3_HandleParsedExtensions(sslSocket *ss, SSLHandshakeType message)
         if (ss->sec.isServer && isTLS13 &&
             (extension->type == ssl_tls13_pre_shared_key_xtn) &&
             (PR_NEXT_LINK(cursor) != &ss->ssl3.hs.remoteExtensions)) {
+#ifdef NN_NINTENDO_SDK
+            NnSdkTelemetrySetSentAlertLocation(nnsslCodePathNode_IllegalParam47);
+#endif // NN_NINTENDO_SDK
             tls13_FatalError(ss,
                              SSL_ERROR_RX_MALFORMED_CLIENT_HELLO,
                              illegal_parameter);

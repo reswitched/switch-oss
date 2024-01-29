@@ -46,6 +46,9 @@ void CERT_DestroyGeneralName(CERTGeneralName *name);
 
 SECStatus CERT_CompareGeneralName(CERTGeneralName *a, CERTGeneralName *b);
 
+SECStatus cert_CopyOneGeneralName(PLArenaPool *arena, CERTGeneralName *dest,
+                                 CERTGeneralName *src);
+
 SECStatus CERT_CopyGeneralName(PLArenaPool *arena, CERTGeneralName *dest,
                                CERTGeneralName *src);
 

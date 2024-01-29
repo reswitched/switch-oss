@@ -3188,19 +3188,22 @@ ssl_GetPeerInfo(sslSocket *ss)
 #if defined(NN_NINTENDO_SDK) && defined(NN_ENABLE_SSL_PRIVATE)
     if(IS_DTLS(ss))
     {
-        if(ss->peerIp == 0 || ss->peerPort == 0)
+        if (ss->peerAddr.raw.family == AF_INET)
+        {
+            PR_ConvertIPv4AddrToIPv6(ss->peerAddr.inet.ip, &ss->sec.ci.peer);
+            ss->sec.ci.port = ss->peerAddr.inet.port;
+        }
+#ifdef NN_ENABLE_IPV6
+        else if (ss->peerAddr.raw.family == PR_AF_INET6)
+        {
+            memcpy(&ss->sec.ci.peer, &ss->peerAddr.ipv6.ip, sizeof(ss->peerAddr.ipv6.ip));
+            ss->sec.ci.port = ss->peerAddr.ipv6.port;
+        }
+#endif // NN_ENABLE_IPV6
+        else
         {
             return SECFailure;
         }
-
-        PRNetAddr sin;
-        PORT_Memset(&sin, 0, sizeof(sin));
-        sin.inet.family = PR_AF_INET;
-        sin.inet.ip     = ss->peerIp;
-        sin.inet.port   = ss->peerPort;
-
-        PR_ConvertIPv4AddrToIPv6(sin.inet.ip, &ss->sec.ci.peer);
-        ss->sec.ci.port = sin.inet.port;
 
         return SECSuccess;
     }
